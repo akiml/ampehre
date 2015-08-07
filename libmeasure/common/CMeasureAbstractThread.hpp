@@ -1,0 +1,73 @@
+/*
+ * CMeasureAbstractThread.hpp
+ * 
+ * Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>
+ * All rights reserved.
+ * 
+ * This software may be modified and distributed under the terms
+ * of the BSD license. See the LICENSE file for details.
+ * 
+ * encoding: UTF-8
+ * tab size: 4
+ * 
+ * author: Christoph Knorr (cknorr@mail.upb.de)
+ * created: 5/22/15
+ * version: 0.5.3 - add abstract measure and abstract measure thread
+ */
+
+#ifndef __CMEASUREABSTRACTTHREAD_HPP__
+#define __CMEASUREABSTRACTTHREAD_HPP__
+
+#include <iostream>
+#include <ctime>
+#include <string>
+
+#include <stdint.h>
+
+#include "CMeasureAbstractResource.hpp"
+#include "CMeasureThreadTimer.hpp"
+#include "CThread.hpp"
+#include "CMutex.hpp"
+#include "CSemaphore.hpp"
+
+#include "../../include/measurement.h"
+
+namespace NLibMeasure {
+	class CMeasureAbstractThread : protected CThread {
+		protected:
+			pthread_t mThreadID;
+			int32_t mThreadNum;
+			bool mThreadStateRun;
+			bool mThreadStateStop;
+			
+			CLogger& mrLog;
+			
+			CSemaphore& mrStartSem;
+			
+			MEASUREMENT* mpMeasurement;
+			CMeasureAbstractResource& mrMeasureResource;
+			CMeasureThreadTimer mTimer;
+			CMutex mMutexTimer;
+			
+			CMutex *mpMutexStart;
+			
+			std::string mThreadType;
+			
+		protected:
+			CMeasureAbstractThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureResource);
+			~CMeasureAbstractThread();
+			void calcTimeDiff(struct timespec* time_cur, struct timespec* time_temp, struct timespec* time_diff, double* time_diff_double);
+			
+		private:
+			virtual void run(void) = 0;
+			
+		public:
+			static void* startThread(void* pThreadObject);
+			virtual void start(CMutex *pMutexStart = 0);
+			virtual void stop(void);
+			virtual void join(void);
+			virtual void exit(void);
+	};
+}
+
+#endif /* __CMEASUREABSTRACTTHREAD_HPP__ */

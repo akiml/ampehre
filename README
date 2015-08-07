@@ -1,0 +1,59 @@
+ampehre
+Accurate Measuring of Power and Energy for Heterogeneous Resource Environments
+
+author: Achim Lösch (achim.loesch@upb.de)
+author: Christoph Knorr (cknorr@mail.upb.de)
+
+All files of the ampehre project are distributed under the terms of the
+2-clause BSD license (see LICENSE file for further information).
+
+The Linux driver found in the driver folder is dual licensed under the
+terms of the 2-clause BSD license and the GPLv2 license.
+
+The source code in subdirectory cJSON is distributed under the terms of
+the MIT license. You can download the original cJSON source code from
+SourceForge (http://sourceforge.net/projects/cjson/).
+
+History:
+0.1.0 - initial implementation
+0.1.1 - add functionality to force FPGA to idle
+0.1.2 - add GPU frequency measurements
+0.1.3 - add CPU frequency measurements
+0.1.4 - add signals for measuring system start and stop
+0.1.5 - add CPU performance counters
+0.1.6 - add an measuring system driver for cpu stat readings
+0.1.7 - add CPU utilization measurements
+0.1.8 - add GPU utilization measurements
+0.1.9 - add FPGA utilization measurements
+0.1.10 - add child execution time measurement
+0.1.11 - add a seperate csv printer file to hettime tool
+0.1.12 - use more C++ features in library
+0.1.13 - make GPU frequency settable
+0.1.14 - write a cpufreq test app
+0.1.15 - make CPU frequency settable
+0.1.16 - add wrapper for heterogenous node and test tool
+0.1.17 - add a hettime dummy executable for some hetsched measurements
+0.1.18 - hettime dummy tool can be used similar to ordinary "sleep" command
+0.1.19 - add a hettime based idle power measurement tool
+0.2.0 - add support for msr registers to the measure driver
+0.2.1 - add support for IPMI to the measure driver
+0.2.2 - add semaphore to synchronize the start of the measurements
+0.2.3 - add gpu_management tool and use the tool in the libmeasure
+0.2.4 - add version check functionality to library, wrappers, and tools
+0.2.5 - add gaussblur example application
+0.3.0 - extend libmeasure and add application for online monitoring
+0.3.1 - add correlation example application
+0.3.2 - add a networking component to show influence of a task to measurements in GUI
+0.3.3 - add cpu memory info to measure driver
+0.3.4 - add a tool for first intergration tests of mic
+0.4.0 - MIC integration into libmeasure
+0.4.1 - add MIC support to msmonitor
+0.5.0 - add cpu, gpu and mic memory information
+0.5.1 - modularised libmeasure
+0.5.2 - delete different ThreadTimer classes in libmeasure
+0.5.3 - add abstract measure and abstract measure thread
+0.5.4 - add dynamic loading of resource specific libraries
+0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+0.5.6 - extended hettime csv printer
+0.5.7 - add automatic detection of ipmi device to measure driver
+0.5.8 - change project name to ampehre

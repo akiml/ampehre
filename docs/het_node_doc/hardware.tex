@@ -1,0 +1,69 @@
+%
+% hardware.tex
+%
+% Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>
+% All rights reserved.
+%
+% This documentation may be modified and distributed under the terms
+% of the BSD license. See the LICENSE file for details.
+%
+% encoding: UTF-8
+% tab size: 4
+%
+% author: Achim Lösch (achim.loesch@upb.de)
+% created: 7/24/14
+% version: 0.5.8 - change project name to ampehre
+%
+
+\section{Hardware Requirements}
+\label{sec:hardware}
+
+The hardware requirements mentioned in this section are related to the resource-specific modules. For instance, if your GPU is manufactured by AMD, you cannot use our module, as the GPU module only works with Nvidia Tesla GPUs. Anyway, you are still able to use our measuring framework by disabling the GPU module (explained in Section \ref{sec:BuildInstallInstructions}).
+
+\subsection{System}
+
+\begin{itemize}
+	\item We obtain all system-related measurements via IPMI (Intelligent Platform Management Interface) utilizing a Linux kernel module accessible via the device file system entry \texttt{/dev/measure}.
+	\item With IPMI we are able to get data from thermal and power sensors of both the motherboard (systemboard) and the power supply.
+	\item Our server is a \textit{Dell Poweredge T620}. Hence, in order to read some non-documented DELL features/sensors via IPMI, we implemented an additional wrapper library which composes raw IPMI messages for message exchanging with the BMC.
+	\item Therefore, we guess that our measurement library can only work on \textbf{Dell} systems including \textbf{iDRAC 7} (and iDRAC 8?) BMCs.
+	\item We compile the source code to a dynamically loadable module. The system module is named \texttt{libms\_sys\_dell\_idrac7.so}.
+\end{itemize}
+
+\subsection{CPU}
+
+\begin{itemize}
+	\item Most energy and thermal sensor data are stored in MSRs (Model Specific Registers) of the Intel RAPL (Running Average Power Limit) interface. We read the MSRs via our kernel module \texttt{/dev/measure}.
+	\item The module is also used to collect some CPU utilization values.
+	\item Additionally, we are able to set the CPU governor and other values such as minimum and maximum core frequencies via the GNU library \texttt{libcpufreq}.
+	\item We deployed \textit{two Intel Xeon E5-2609 v2} CPUs (microarchitecture: Ivy Bridge) to our server.
+	\item As our library samples CPU registers which are model-specific, you can use our library only on systems with compatible CPUs. We guess that \textbf{Intel} CPUs with \textbf{Sandy Bridge}, \textbf{Ivy Bridge}, or \textbf{Haswell} microarchitectures should work well, if they \textbf{don't have an integrated graphics processing unit}. Integrated graphics are often available for consumer products such as the Core i3/i5/i7-processors.
+	\item We compile the source code to a dynamically loadable module. The CPU module is named \texttt{libms\_cpu\_intel\_xeon\_sandy.so}.
+\end{itemize}
+
+\subsection{GPU}
+
+\begin{itemize}
+	\item Measured values are retrieved by calling functions of the NVML (Nvidia Management Library).
+	\item We deployed a \textit{Nvidia Tesla K20c} to our system.
+	\item All \textbf{Nvidia Tesla} GPUs with \textbf{Kepler} microarchitecture are supported (GK104, GK110, and GK210).
+	\item We compile the source code to a dynamically loadable module. The GPU module is named \texttt{libms\_gpu\_nvidia\_tesla\_kepler.so}.
+\end{itemize}
+
+\subsection{FPGA}
+
+\begin{itemize}
+	\item We utilize the MaxelerOS library to obtain power, temperature, and utilization.
+	\item We deployed a \textit{Maxeler Vectis} FPGA card to our system.
+	\item Currently, our library only supports \textbf{Maxeler Vectis} (MAX3A) FPGA cards.
+	\item We compile the source code to a dynamically loadable module. The FPGA module is named \texttt{libms\_fpga\_maxeler\_max3a.so}.
+\end{itemize}
+
+\subsection{MIC}
+
+\begin{itemize}
+	\item We use Intel's \texttt{libmicmgmt} MIC management library to obtain the measurements.
+	\item We deployed a passively cooled \textit{Intel Xeon Phi 31S1P}.
+	\item All \textbf{Intel Xeon Phi} with \textbf{Knights Corner} (KNC) architecture should work well with the library.
+	\item We compile the source code to a dynamically loadable module. The MIC module is named \texttt{libms\_mic\_intel\_knc.so}.
+\end{itemize}
