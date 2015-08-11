@@ -2,3 +2,5 @@ _site
 .sass-cache
 .kateproject
 .kateproject.d
+Gemfile
+Gemfile.lock
