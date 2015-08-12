@@ -17,6 +17,6 @@ We provide a detailed documentation of the Ampehre project which covers the foll
     - Modular Expandability
   - Hardware Requirements
 
-You can find the documentation of Ampehre version 0.5.9 [here]({{site.baseurl}}/assets/het_node_doc.pdf).
+You can find the documentation of Ampehre version 0.5.9 [here]({{site.baseurl}}/assets/het_node_doc_v0_5_9.pdf).
 
 The latest version is also always available in the github repository at [github.com/akiml/ampehre](https://github.com/akiml/ampehre/blob/master/docs/het_node_doc/het_node_doc.pdf).

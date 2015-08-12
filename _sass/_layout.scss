@@ -86,7 +86,11 @@
     }
 }
 
-
+.site-abbr {
+    font-size: $base-font-size;
+    color: $grey-color;
+    font-weight: bold;
+}
 
 /**
  * Site footer
@@ -166,7 +170,12 @@
 }
 
 .page-heading {
+	margin-top:20px;
     font-size: 20px;
+}
+
+.large-page-heading {
+    font-size: 24px;
 }
 
 .post-list {
@@ -176,6 +185,13 @@
     > li {
         margin-bottom: $spacing-unit;
     }
+}
+
+.seperator {
+	border :none;
+	border-top: 1px solid $grey-color-light;
+	background-color:$grey-color-light;
+	height: 1px;
 }
 
 .post-meta {
@@ -188,7 +204,10 @@
     font-size: 24px;
 }
 
-
+.post-brief {
+    font-size: 18px;
+    color: $text-color;
+}
 
 /**
  * Posts

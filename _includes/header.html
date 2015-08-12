@@ -13,8 +13,8 @@
         </svg>
       </a>
       <div class="trigger">
-      	 <a class="page-link" href="{{site.baseurl}}/"> Home</a>
-	{% assign pages = site.pages | sort:"weight"  %}
+      	 <a class="page-link" href="{{site.baseurl}}/"> News</a>
+		{% assign pages = site.pages | sort:"weight"  %}
         {% for p in pages %}
           {% if p.title %}
           <a class="page-link" href="{{ p.url | prepend: site.baseurl }}">{{ p.title }}</a>
@@ -22,7 +22,10 @@
         {% endfor %}
       </div>
     </nav>
-
   </div>
 
+  <hr class="seperator">
+  <center>
+  <span class="site-abbr"><font color=#000000>A</font>ccurate <font color=#000000>M</font>easuring of <font color=#000000>P</font>ower and <font color=#000000>E</font>nergy for <font color=#000000>H</font>eterogeneous <font color=#000000>R</font>esource <font color=#000000>E</font>nvironments </span>
+  </center>
 </header>

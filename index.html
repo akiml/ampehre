@@ -4,17 +4,24 @@ layout: default
 
 <div class="home">
 
+  <h1 class="large-page-heading">Welcome to the Ampehre project page!</h6>
+	
+  <img src="{{ site.baseurl }}/assets/msmonitor.png" alt="msmonitor" width="$content-width height="80">
+	
   <h1 class="page-heading">Posts</h1>
-
+  
   <ul class="post-list">
     {% for post in site.posts %}
+	  <hr class="seperator">
       <li>
         <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
 
         <h2>
           <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
         </h2>
+        <span class="post-brief">{{ post.brief }}</a>
       </li>
+      <hr class="seperator">
     {% endfor %}
   </ul>
 
