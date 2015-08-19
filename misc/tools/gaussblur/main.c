@@ -41,11 +41,11 @@ int main(int argc, char **argv) {
 	
 	int32_t opt;
 	
-	while ((opt = getopt(argc, argv, "c:e:s:h?")) != -1) {
+	while ((opt = getopt(argc, argv, "i:e:s:h?")) != -1) {
 		switch (opt) {
 			case 'i':
 				if (!check_string_is_number(optarg)) {
-					LOG_ERROR("The argument of option 'c' is not a number.");
+					LOG_ERROR("The argument of option 'i' is not a number.");
 					print_help(argv, settings);
 					free_settings(&settings);
 					return EXIT_FAILURE;
@@ -110,7 +110,7 @@ static void print_help(char **argv, ARGUMENTS *settings) {
 			"Usage:\n"
 			"%s [-h|-?] -e ENERGY_LOOPS -i ITERATIONS -s SIZE]\n\n"
 			"-e ENERGY_LOOPS | Number of energy loops.\n"
-			"-c CHECKPOINTS  | Number of outer loop iterations. This is similar to checkpoint\n"
+			"-i ITERATIONS   | Number of outer loop iterations. This is similar to checkpoint\n"
 			"                | counts in applications handled by the user space scheduler.\n"
 			"-s SIZE         | Size of input data.\n"
 			"-h              | Print this help message.\n"
