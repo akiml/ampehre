@@ -8,7 +8,7 @@ weight: 2
 The Ampehre project is a BSD-licensed modular software framework used to sample various types of sensors embedded in integrated circuits or on circuit boards
 deployed to servers with a focus to heterogeneous computing. The project is developed at the Conputer Engineering Group of the University of Paderborn.
 
-It enables accurate measuring of power, energy, temperature, and device utilization for computing resources such as CPUs (Central Processing Unit),
+It enables accurate measurements of power, energy, temperature, and device utilization for computing resources such as CPUs (Central Processing Unit),
 GPUs (Graphics Processing Unit), FPGAs (Field Programmable Gate Array), and MICs (Many Integrated Core) as well as system-wide measuring via IPMI (Intelligent Platform Management Platform).
 For this, no dedicated measuring equipment such as DMMs (Digital Multimeter) is needed.
 
