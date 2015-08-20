@@ -24,14 +24,14 @@ typedef void* (*init_measure_thread_t)(void*, void*, MEASUREMENT*, void* pMeasur
 typedef void (*fini_measure_thread_t)(void*);
 
 namespace NLibMeasure{
-	CResourceLibraryHandler::CResourceLibraryHandler(CLogger& rLogger, std::string libname, uint64_t* pParams):
+	CResourceLibraryHandler::CResourceLibraryHandler(CLogger& rLogger,const std::string& rLibname, uint64_t* pParams):
 		mpLibhandler(0),
 		mpResource(0),
 		mpResourceThread(0),
 		mMutexStartResource(),
 		mrLog(rLogger)
 		{
-			mpLibhandler = openLibrary(libname);
+			mpLibhandler = openLibrary(rLibname);
 			initResource(pParams);
 	}
 
@@ -73,13 +73,13 @@ namespace NLibMeasure{
 		mpResourceThread = 0;
 	}
 	
-	void* CResourceLibraryHandler::loadFunction(std::string functionname) {
-		void* function = (void*) dlsym(mpLibhandler, functionname.c_str());
+	void* CResourceLibraryHandler::loadFunction(const std::string& rFunctionname) {
+		void* function = (void*) dlsym(mpLibhandler, rFunctionname.c_str());
 		char* dlsym_error = dlerror();
 		if(dlsym_error){
 			mrLog.lock();
 			mrLog()
-			<< "!!! 'mgmt' (thread main): Error: Cannot load symbol " << functionname << ": " << dlsym_error << " (file: " << __FILE__ << ", line: " << __LINE__ << ")." << std::endl
+			<< "!!! 'mgmt' (thread main): Error: Cannot load symbol " << rFunctionname << ": " << dlsym_error << " (file: " << __FILE__ << ", line: " << __LINE__ << ")." << std::endl
 			<< std::endl;
 			mrLog.unlock();
 			exit(EXIT_FAILURE);
@@ -94,12 +94,12 @@ namespace NLibMeasure{
 		fini_resource((void*)mpResource);
 	}
 	
-	void* CResourceLibraryHandler::openLibrary(std::string libname) {
-		void* handler = dlopen(libname.c_str() , RTLD_LAZY | RTLD_LOCAL);
+	void* CResourceLibraryHandler::openLibrary(const std::string& rLibname) {
+		void* handler = dlopen(rLibname.c_str() , RTLD_LAZY | RTLD_LOCAL);
 		if (NULL == handler) {
 			mrLog.lock();
 			mrLog()
-			<< "!!! 'mgmt' (thread main): Error: Cannot open library " << libname << ": " << dlerror() << " (file: " << __FILE__ << ", line: " << __LINE__ << ")." << std::endl
+			<< "!!! 'mgmt' (thread main): Error: Cannot open library " << rLibname << ": " << dlerror() << " (file: " << __FILE__ << ", line: " << __LINE__ << ")." << std::endl
 			<< std::endl;
 			mrLog.unlock();
 			exit(EXIT_FAILURE);

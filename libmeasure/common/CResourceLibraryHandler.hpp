@@ -26,10 +26,10 @@
 namespace NLibMeasure {
 	class CResourceLibraryHandler{
 		public:
-			CResourceLibraryHandler(CLogger& rLogger, std::string libname, uint64_t *pParams);
+			CResourceLibraryHandler(CLogger& rLogger,const std::string& rLibname, uint64_t *pParams);
 			~CResourceLibraryHandler();
 			
-			void* loadFunction(std::string functionname);
+			void* loadFunction(const std::string& rFunctionname);
 			
 			void initResourceThread(CSemaphore& rStartSem, MEASUREMENT* pMeasurement);
 			CMeasureAbstractThread* getResourceThread();
@@ -49,7 +49,7 @@ namespace NLibMeasure {
 		private:
 			void initResource(uint64_t *pParams);
 			void finiResource();
-			void* openLibrary(std::string libname);
+			void* openLibrary(const std::string& rLibname);
 			void closeLibrary(void **handler);
 	};
 }
