@@ -141,6 +141,7 @@ namespace NLibMeasure {
 		}
 		
 		cJSON_Delete(json_response);
+		free(jstr_response);
 	}
 	
 	void CMeasureMaxeler::measureTemperature(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
@@ -166,6 +167,8 @@ namespace NLibMeasure {
 		
 		sscanf(meq, "%lf", pMeasurement->maxeler_temperature_cur+MTEMP);
 		sscanf(ieq, "%lf", pMeasurement->maxeler_temperature_cur+ITEMP);
+		
+		free(response);
 	}
 	
 	void CMeasureMaxeler::measureUtilization(MEASUREMENT *pMeasurement, int32_t &rThreadNum) {
@@ -204,5 +207,6 @@ namespace NLibMeasure {
 		pMeasurement->maxeler_util_comp_cur = cJSON_GetObjectItem(json_measurements, "usage")->valuedouble;
 		
 		cJSON_Delete(json_response);
+		free(jstr_response);
 	}
 }
