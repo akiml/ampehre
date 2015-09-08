@@ -34,6 +34,14 @@ namespace NLibMeasure {
 	}
 	
 	void CMeasureMIC::init(void) {	
+#ifdef LIGHT
+		mrLog()
+		<< ">>> 'mic' (light version)" << std::endl;
+#else
+		mrLog()
+		<< ">>> 'mic' (full version)" << std::endl;
+#endif
+		
 		int32_t status							= E_MIC_SUCCESS;
 		int32_t num_of_mic_devices				= 0;
 		int32_t sysfs_num_mic_device			= -1;
@@ -362,9 +370,9 @@ namespace NLibMeasure {
 		
 		micGetPower(pMeasurement, rThreadNum);
 		micGetUtil(pMeasurement, rThreadNum);
-		micGetMemory(pMeasurement, rThreadNum);
 		
 #ifndef LIGHT
+		micGetMemory(pMeasurement, rThreadNum);
 		micGetFrequency(pMeasurement, rThreadNum);
 		micGetTemperature(pMeasurement, rThreadNum);
 #endif /* LIGHT */

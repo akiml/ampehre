@@ -71,6 +71,7 @@ namespace NLibMeasure {
 		while (!mThreadStateStop) {
 			mMutexTimer.lock();
 			
+#ifndef LIGHT
 			mrMeasureResource.measure(mpMeasurement, mThreadNum);
 			
 			// calculated diff time (use internal struct for that)
@@ -85,7 +86,6 @@ namespace NLibMeasure {
 			mpMeasurement->ipmi_energy_server_acc	+=
 				mpMeasurement->ipmi_power_server_cur * mpMeasurement->internal.ipmi_time_diff_double;
 			
-#ifndef LIGHT
 			// result: maximum temperatures
 			mpMeasurement->ipmi_temperature_sysboard_max =
 				(mpMeasurement->ipmi_temperature_sysboard_cur > mpMeasurement->ipmi_temperature_sysboard_max) ?
@@ -106,9 +106,11 @@ namespace NLibMeasure {
 #endif
 		}
 		
+#ifndef LIGHT
 		// result: average power consumption
 		mpMeasurement->ipmi_power_sysboard_avg	= mpMeasurement->ipmi_energy_sysboard_acc/mpMeasurement->ipmi_time_runtime;
 		mpMeasurement->ipmi_power_server_avg	= mpMeasurement->ipmi_energy_server_acc/mpMeasurement->ipmi_time_runtime;
+#endif /* LIGHT */
 		
 #ifdef DEBUG
 		mrLog.lock();

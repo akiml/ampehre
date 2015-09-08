@@ -36,6 +36,14 @@ namespace NLibMeasure {
 	}
 	
 	void CMeasureMaxeler::init(void) {
+#ifdef LIGHT
+		mrLog()
+		<< ">>> 'maxeler' (light version)" << std::endl;
+#else
+		mrLog()
+		<< ">>> 'maxeler' (full version)" << std::endl;
+#endif
+		
 		mMaxDaemonFildes = max_daemon_connect("maxelerosd.sock");
 		if (mMaxDaemonFildes < 0) {
 			mrLog(CLogger::scErr) << "!!! 'maxeler' (thread main): cannot connect to maxeler os daemon. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;

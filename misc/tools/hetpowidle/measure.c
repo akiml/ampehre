@@ -91,6 +91,10 @@ static void init_measuring_system(ARGUMENTS *settings, MSYSTEM **ms, MEASUREMENT
 		ms_set_timer(*m, FPGA  , settings->sample_rate_fpga/1000, (settings->sample_rate_fpga%1000) * 1000000);
 		active_measures |= FPGA;
 	}
+	if (settings->idle_measurements & MEASURE_IDLE_MIC) {
+		ms_set_timer(*m, MIC   , settings->sample_rate_mic /1000, (settings->sample_rate_mic %1000) * 1000000);
+		active_measures |= MIC;
+	}
 	if (settings->idle_measurements & MEASURE_IDLE_SYS) {
 		ms_set_timer(*m, SYSTEM, settings->sample_rate_sys /1000, (settings->sample_rate_sys %1000) * 1000000);
 		active_measures |= SYSTEM;

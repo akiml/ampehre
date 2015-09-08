@@ -47,7 +47,8 @@ void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, ui
 	// Please set the default sampling rates here (in ms)
 	minternal->sample_rate_cpu	=  30;
 	minternal->sample_rate_gpu	=  40;
-	minternal->sample_rate_fpga	=  60;
+	minternal->sample_rate_fpga	=  50;
+	minternal->sample_rate_mic	= 100;
 	minternal->sample_rate_sys	= 100;
 	
 	minternal->resources		= resources;
@@ -67,6 +68,7 @@ void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, ui
 	ms_set_timer(minternal->global_m, CPU   , minternal->sample_rate_cpu /1000, (minternal->sample_rate_cpu %1000) * 1000000);
 	ms_set_timer(minternal->global_m, GPU   , minternal->sample_rate_gpu /1000, (minternal->sample_rate_gpu %1000) * 1000000);
 	ms_set_timer(minternal->global_m, FPGA  , minternal->sample_rate_fpga/1000, (minternal->sample_rate_fpga%1000) * 1000000);
+	ms_set_timer(minternal->global_m, MIC   , minternal->sample_rate_mic /1000, (minternal->sample_rate_mic %1000) * 1000000);
 	ms_set_timer(minternal->global_m, SYSTEM, minternal->sample_rate_sys /1000, (minternal->sample_rate_sys %1000) * 1000000);
 	ms_init_measurement(minternal->global_ms, minternal->global_m, resources);
 }

@@ -101,6 +101,20 @@ void print_json(FILE *file, ARGUMENTS* settings, IDLE_POWER *ip_list, IDLE_POWER
 		cJSON_AddItemToObject(json_root, "fpga_power_avg", json_res);
 	}
 	
+	if (settings->idle_measurements & MEASURE_IDLE_MIC) {
+		cJSON *json_res		= cJSON_CreateArray();
+		cJSON_AddItemToArray(json_res, cJSON_CreateNumber(ip_median->idle_power_mic));
+		cJSON *json_arr		= cJSON_CreateArray();
+		
+		IDLE_POWER *temp = ip_list;
+		while (NULL != temp) {
+			cJSON_AddItemToArray(json_arr, cJSON_CreateNumber(temp->idle_power_mic));
+			temp = temp->next;
+		}
+		cJSON_AddItemToArray(json_res, json_arr);
+		cJSON_AddItemToObject(json_root, "mic_power_avg", json_res);
+	}
+	
 	if (settings->idle_measurements & MEASURE_IDLE_SYS) {
 		cJSON *json_res		= cJSON_CreateArray();
 		cJSON_AddItemToArray(json_res, cJSON_CreateNumber(ip_median->idle_power_sys));

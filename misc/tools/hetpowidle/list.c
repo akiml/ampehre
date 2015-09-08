@@ -56,6 +56,7 @@ IDLE_POWER *create_element(ARGUMENTS *settings, MEASUREMENT *m) {
 	ip->idle_power_cpu			= 0.0;
 	ip->idle_power_gpu			= 0.0;
 	ip->idle_power_fpga			= 0.0;
+	ip->idle_power_mic			= 0.0;
 	ip->idle_power_sys			= 0.0;
 	ip->idle_power_all			= 0.0;
 	ip->next = NULL;
@@ -65,7 +66,7 @@ IDLE_POWER *create_element(ARGUMENTS *settings, MEASUREMENT *m) {
 		ip->idle_power_cpu_0_pkg	+= cpu_power_avg_pkg(m, 0);
 		ip->idle_power_cpu_0_dram	+= cpu_power_avg_dram(m, 0);
 		ip->idle_power_cpu_1_pkg	+= cpu_power_avg_pkg(m, 1);
-		ip->idle_power_cpu_1_dram	+= cpu_power_avg_dram(m, 0);
+		ip->idle_power_cpu_1_dram	+= cpu_power_avg_dram(m, 1);
 		ip->idle_power_cpu			+= ip->idle_power_cpu_0_pkg + ip->idle_power_cpu_0_dram;
 		ip->idle_power_cpu			+= ip->idle_power_cpu_1_pkg + ip->idle_power_cpu_1_dram;
 		ip->idle_power_all			+= ip->idle_power_cpu;
@@ -79,6 +80,11 @@ IDLE_POWER *create_element(ARGUMENTS *settings, MEASUREMENT *m) {
 	if (settings->idle_measurements & MEASURE_IDLE_FPGA) {
 		ip->idle_power_fpga	+= fpga_power_avg_power_usage(m);
 		ip->idle_power_all	+= ip->idle_power_fpga;
+	}
+	
+	if (settings->idle_measurements & MEASURE_IDLE_MIC) {
+		ip->idle_power_mic	+= mic_power_avg_power_usage(m);
+		ip->idle_power_all	+= ip->idle_power_mic;
 	}
 	
 	if (settings->idle_measurements & MEASURE_IDLE_SYS) {

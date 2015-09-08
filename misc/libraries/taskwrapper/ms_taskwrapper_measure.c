@@ -32,6 +32,9 @@ void mstw_init_rel_measurement(MREL_MEASUREMENT *m) {
 	// FPGA
 	m->acc_fpga_energy_total		= 0.0;
 	
+	// MIC
+	m->acc_mic_energy_total			= 0.0;
+	
 	// System
 	m->acc_sysboard_energy_total	= 0.0;
 	m->acc_server_energy_total		= 0.0;
@@ -76,6 +79,11 @@ void mstw_capture_start_measure(MINTERNAL *minternal, MREL_MEASUREMENT *m) {
 		m->cur_fpga_energy_total		= fpga_energy_total_power_usage(minternal->global_m);
 	}
 	
+	// MIC
+	if (minternal->resources & MIC) {
+		m->cur_mic_energy_total			= mic_energy_total_power_usage(minternal->global_m);
+	}
+	
 	// System
 	if (minternal->resources & SYSTEM) {
 		m->cur_sysboard_energy_total	= sysboard_energy_total(minternal->global_m);
@@ -102,6 +110,11 @@ void mstw_capture_stop_measure(MINTERNAL *minternal, MREL_MEASUREMENT *m) {
 	// FPGA
 	if (minternal->resources & FPGA) {
 		m->acc_fpga_energy_total		+= fpga_energy_total_power_usage(minternal->global_m)	- m->cur_fpga_energy_total;
+	}
+	
+	// MIC
+	if (minternal->resources & MIC) {
+		m->acc_mic_energy_total			+= mic_energy_total_power_usage(minternal->global_m)	- m->cur_mic_energy_total;
 	}
 	
 	// System

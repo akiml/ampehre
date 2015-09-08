@@ -222,6 +222,7 @@ namespace NLibMeasure {
 					(mpMeasurement->measure_util_active_cur + mpMeasurement->measure_util_idle_cur);
 			}
 			
+#ifndef LIGHT
 			// result: memory usage
 			mpMeasurement->measure_memory_used_max	=
 				(mpMeasurement->measure_memory_cur[CPU_MEM_RAM_USED]>mpMeasurement->measure_memory_used_max) ?
@@ -240,6 +241,7 @@ namespace NLibMeasure {
 				(mpMeasurement->measure_memory_cur[CPU_MEM_SWAP_FREE]>mpMeasurement->measure_swap_free_max) ?
 				mpMeasurement->measure_memory_cur[CPU_MEM_SWAP_FREE] : mpMeasurement->measure_swap_free_max;
 				
+#endif /* LIGHT */
 			
 #if 0
 			mrLog.lock();

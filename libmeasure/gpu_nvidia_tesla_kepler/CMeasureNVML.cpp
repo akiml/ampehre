@@ -37,6 +37,14 @@ namespace NLibMeasure {
 	}
 	
 	void CMeasureNVML::init(void) {
+#ifdef LIGHT
+		mrLog()
+		<< ">>> 'nvml' (light version)" << std::endl;
+#else
+		mrLog()
+		<< ">>> 'nvml' (full version)" << std::endl;
+#endif
+		
 		nvmlReturn_t result;
 		int32_t rv;
 		char const* args_set_pm[] = {"gpu_management", "-p 1", NULL};
@@ -316,6 +324,7 @@ namespace NLibMeasure {
 			exit(EXIT_FAILURE);
 		}
 		
+#ifndef LIGHT
 		nvmlMemory_t memory;
 		result = nvmlDeviceGetMemoryInfo(mDevice, &memory);
 		if (NVML_SUCCESS != result) {
@@ -327,7 +336,6 @@ namespace NLibMeasure {
 		pMeasurement->nvml_memory_free_cur = (uint32_t)(memory.free >> 10);
 		pMeasurement->nvml_memory_used_cur = (uint32_t)(memory.used >> 10);
 		
-#ifndef LIGHT
 		result = nvmlDeviceGetPerformanceState(mDevice, (nvmlPstates_t*)&(pMeasurement->internal.nvml_power_state));
 		if (NVML_SUCCESS != result) {
 			mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: no performance state reading possible. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;

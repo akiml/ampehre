@@ -33,8 +33,9 @@
 #define MEASURE_IDLE_CPU		0x1
 #define MEASURE_IDLE_GPU		0x2
 #define MEASURE_IDLE_FPGA		0x4
-#define MEASURE_IDLE_SYS		0x8
-#define MEASURE_IDLE_ALL		0xF
+#define MEASURE_IDLE_MIC		0x8
+#define MEASURE_IDLE_SYS		0x10
+#define MEASURE_IDLE_ALL		(MEASURE_IDLE_CPU | MEASURE_IDLE_GPU | MEASURE_IDLE_FPGA | MEASURE_IDLE_MIC | MEASURE_IDLE_SYS)
 
 #define MEASURE_IDLE_ITERATIONS	11
 
@@ -42,6 +43,7 @@ typedef struct __arguments {
 	uint32_t sample_rate_cpu;
 	uint32_t sample_rate_gpu;
 	uint32_t sample_rate_fpga;
+	uint32_t sample_rate_mic;
 	uint32_t sample_rate_sys;
 	enum gpu_frequency gpu_freq;
 	enum cpu_governor cpu_gov;

@@ -28,6 +28,7 @@ typedef struct __idle_power {
 	double idle_power_cpu;
 	double idle_power_gpu;
 	double idle_power_fpga;
+	double idle_power_mic;
 	double idle_power_sys;
 	double idle_power_all;
 	struct __idle_power *next;

@@ -47,6 +47,11 @@ typedef struct __mrel_measurement {
 	
 	double cur_fpga_energy_total;
 	
+	// MIC
+	double acc_mic_energy_total;
+	
+	double cur_mic_energy_total;
+	
 	// System
 	double acc_sysboard_energy_total;
 	double acc_server_energy_total;
@@ -81,7 +86,7 @@ void mstw_reg_sighandler_stop(void(*signal_handler)(int));
 
 /*
  * Register a task for measuring
- * resources is somthing like CPU | GPU | FPGA
+ * resources are something like CPU | GPU | FPGA
  * measurements_per_resource should be 3 if want to measure init, compute, and free phases
  */
 void mstw_reg_task(MTASK **mtask, int measurements_per_resource);

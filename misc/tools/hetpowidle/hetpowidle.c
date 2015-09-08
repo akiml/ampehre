@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 	int32_t opt;
 	size_t optarg_len;
 	
-	while ((opt = getopt(argc, argv, "h?cgfsao:")) != -1) {
+	while ((opt = getopt(argc, argv, "h?cgfmsao:")) != -1) {
 		switch (opt) {
 			case 'c':
 				settings->idle_measurements |= MEASURE_IDLE_CPU;
@@ -48,10 +48,14 @@ int main(int argc, char **argv) {
 			case 'f':
 				settings->idle_measurements |= MEASURE_IDLE_FPGA;
 				break;
+			case 'm':
+				settings->idle_measurements |= MEASURE_IDLE_MIC;
+				break;
 			case 's':
 				settings->idle_measurements |= MEASURE_IDLE_CPU;
 				settings->idle_measurements |= MEASURE_IDLE_GPU;
 				settings->idle_measurements |= MEASURE_IDLE_FPGA;
+				settings->idle_measurements |= MEASURE_IDLE_MIC;
 				settings->idle_measurements |= MEASURE_IDLE_SYS;
 				break;
 			case 'a':
@@ -85,6 +89,9 @@ int main(int argc, char **argv) {
 	if (settings->sample_rate_fpga <  50) {
 		LOG_WARN("FPGA sampling rate should be >= 50ms.");
 	}
+	if (settings->sample_rate_mic <  50) {
+		LOG_WARN("MIC sampling rate should be >= 50ms.");
+	}
 	if (settings->sample_rate_sys  < 100) {
 		LOG_WARN("System sampling rate should be >= 100ms.");
 	}
@@ -92,7 +99,7 @@ int main(int argc, char **argv) {
 	if (settings->idle_measurements != MEASURE_IDLE_NOTHING) {
 		run(settings);
 	} else {
-		LOG_ERROR("Either option -c, -g, -f, -s, or -a is required.");
+		LOG_ERROR("Either option -c, -g, -f, -m, -s, or -a is required.");
 		print_help(argv, settings);
 	}
 	
@@ -104,15 +111,17 @@ int main(int argc, char **argv) {
 static void print_help(char **argv, ARGUMENTS *settings) {
 	fprintf(stderr,
 			"Usage:\n"
-			"%s [-h|-?|-c|-g|-f|-s|-a|-o RESULT_FILE]\n\n"
+			"%s [-h|-?|-c|-g|-f|-m|-s|-a|-o RESULT_FILE]\n\n"
 			"-h             | Print this help message.\n"
 			"-?             | Print this help message.\n"
 			"-c             | Measure idle power of CPU.\n"
 			"-g             | Measure idle power of GPU.\n"
 			"-f             | Measure idle power of FPGA.\n"
+			"-m             | Measure idle power of MIC.\n"
 			"-s             | Measure idle power of SYSTEM.\n"
-			"               | Note that the SYSTEM measurement enables CPU, GPU, and FPGA measurements (same as -a option).\n"
-			"-a             | Measure idle power of all devices (CPU, GPU, FPGA, and SYSTEM).\n"
+			"               | Note that the SYSTEM measurement enables CPU, GPU, MIC, and FPGA\n"
+			"               | measurements (same as -a option).\n"
+			"-a             | Measure idle power of all devices (CPU, GPU, FPGA, MIC, and SYSTEM).\n"
 			"-o RESULT_FILE | Print the measuring results to RESULT_FILE as a json string.\n"
 			"               | Default: %s\n"
 			"\n"
@@ -135,8 +144,9 @@ static void init_settings(ARGUMENTS **settings) {
 	
 	// Please, set the default settings here
 	(*settings)->sample_rate_cpu	= 30;
-	(*settings)->sample_rate_gpu	= 50;
-	(*settings)->sample_rate_fpga	= 60;
+	(*settings)->sample_rate_gpu	= 40;
+	(*settings)->sample_rate_fpga	= 50;
+	(*settings)->sample_rate_mic	= 100;
 	(*settings)->sample_rate_sys	= 100;
 	(*settings)->gpu_freq			= GPU_FREQUENCY_CUR;
 	(*settings)->cpu_gov			= CPU_GOVERNOR_ONDEMAND;

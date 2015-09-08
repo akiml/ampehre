@@ -90,6 +90,7 @@ namespace NLibMeasure {
 			// result: energy consumption
 			mpMeasurement->nvml_energy_acc			+= mpMeasurement->nvml_power_cur * mpMeasurement->internal.nvml_time_diff_double;
 			
+#ifndef LIGHT
 			// result: memory usage
 			mpMeasurement->nvml_memory_used_max		=
 				(mpMeasurement->nvml_memory_used_cur>mpMeasurement->nvml_memory_used_max) ?
@@ -99,7 +100,6 @@ namespace NLibMeasure {
 				(mpMeasurement->nvml_memory_free_cur>mpMeasurement->nvml_memory_free_max) ?
 				mpMeasurement->nvml_memory_free_cur : mpMeasurement->nvml_memory_free_max;
 			
-#ifndef LIGHT
 			// result: maximum temperature
 			mpMeasurement->nvml_temperature_max		=
 				(mpMeasurement->nvml_temperature_cur>mpMeasurement->nvml_temperature_max) ?

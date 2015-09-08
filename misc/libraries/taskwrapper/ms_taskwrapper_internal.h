@@ -25,7 +25,7 @@
 #define LOG_WARN(msg) \
 	fprintf(stderr, "Warning (file: %s, line: %i): %s\n", __FILE__, __LINE__, msg)
 
-#define NUM_OF_RESOURCES 4
+#define NUM_OF_RESOURCES 5
 
 typedef struct __minternal {
 	MSYSTEM *global_ms;
@@ -34,6 +34,7 @@ typedef struct __minternal {
 	uint32_t sample_rate_cpu;
 	uint32_t sample_rate_gpu;
 	uint32_t sample_rate_fpga;
+	uint32_t sample_rate_mic;
 	uint32_t sample_rate_sys;
 } MINTERNAL;
 

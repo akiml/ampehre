@@ -54,6 +54,14 @@ namespace NLibMeasure {
 	}
 	
 	void CMeasureMSR::init(void) {
+#ifdef LIGHT
+		mrLog()
+		<< ">>> 'msr' (light version)" << std::endl;
+#else
+		mrLog()
+		<< ">>> 'msr' (full version)" << std::endl;
+#endif
+		
 		openMeasureDevice();
 		
 		int pseudo_thread_num	= -1;
@@ -265,7 +273,9 @@ namespace NLibMeasure {
 		
 		measureGetUtilization(rThreadNum, pMeasurement->internal.measure_util_cur);
 		
+#ifndef LIGHT
 		measureGetMemInfo(rThreadNum, pMeasurement->measure_memory_cur);
+#endif /* LIGHT */
 	}
 		
 	void CMeasureMSR::readMeasureDevice(int32_t& rThreadNum, int32_t dev, int32_t coreNumber, uint64_t address, uint64_t *pValues, int32_t size) {

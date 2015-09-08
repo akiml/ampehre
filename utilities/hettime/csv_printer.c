@@ -39,7 +39,7 @@ void print_csv(FILE *csv, ARGUMENTS* settings, MEASUREMENT *m, EXEC_TIME *exec_t
 	memset(units, 0, MAX_UNITS_LENGTH*sizeof(char));
 	memset(values, 0, MAX_VALUES_LENGTH*sizeof(char));
 		
-	cur_caption_pos += snprintf(captions + cur_caption_pos, MAX_HEADER_LENGTH - cur_caption_pos, "time_total_ exec_child;"
+	cur_caption_pos += snprintf(captions + cur_caption_pos, MAX_HEADER_LENGTH - cur_caption_pos, "time_total_exec_child;"
 								"unix_timestamp;");
 	cur_value_pos += snprintf(values + cur_value_pos, MAX_VALUES_LENGTH - cur_value_pos, "%lf;%lu;", exec_time->exec_time_diff, (uint64_t)time(NULL));
 	cur_unit_pos += snprintf(units + cur_unit_pos, MAX_UNITS_LENGTH - cur_unit_pos,"s;s;");
@@ -340,7 +340,7 @@ static void print_csv_mic(FILE *csv, char* captions, int* cur_caption_pos, char*
 
 static void print_csv_sysboard(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MEASUREMENT* m){
 
-	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "SYSTEM BOARD;");
+	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "SYSTEM_BOARD;");
 	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, ";");
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,";");
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "time_total_measure_sysb;");

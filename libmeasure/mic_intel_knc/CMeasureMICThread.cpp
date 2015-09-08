@@ -84,6 +84,7 @@ namespace NLibMeasure {
 		while(!mThreadStateStop) {
 			mMutexTimer.lock();
 			
+#ifndef LIGHT
 			mrMeasureResource.measure(mpMeasurement, mThreadNum);
 			
 			// calculated diff time
@@ -92,25 +93,21 @@ namespace NLibMeasure {
 			// result: runtime
 			mpMeasurement->mic_time_runtime += mpMeasurement->internal.mic_time_diff_double;
 			
-#ifndef LIGHT
 			// result: "accumulated frequencies"
 			mpMeasurement->mic_freq_core_acc += mpMeasurement->mic_freq_core_cur * mpMeasurement->internal.mic_time_diff_double;
 			mpMeasurement->mic_freq_mem_acc += mpMeasurement->mic_freq_mem_cur * mpMeasurement->internal.mic_time_diff_double;
-#endif /* LIGHT */
 			
 			// result: energy consumption
 			for (int i=0; i<MIC_NUM_POWER; i++) {
 				mpMeasurement->mic_energy_acc[i] += (double)mpMeasurement->mic_power_cur[i] * mpMeasurement->internal.mic_time_diff_double;
 			}
 			
-#ifndef LIGHT
 			// result: maximum temperatures
 			for (int i=0; i<MIC_NUM_TEMPERATURE; i++) {
 				if (mpMeasurement->mic_temperature_cur[i] > mpMeasurement->mic_temperature_max[i]) {
 					mpMeasurement->mic_temperature_max[i] = mpMeasurement->mic_temperature_cur[i];
 				}
 			}
-#endif /* LIGHT */
 			
 			// result: utilization
 			for (int i=0; i<MIC_NUM_UTIL; i++){
@@ -138,19 +135,18 @@ namespace NLibMeasure {
 			mpMeasurement->mic_memory_free_max		=
 				(mpMeasurement->mic_memory_free_cur>mpMeasurement->mic_memory_free_max) ?
 				mpMeasurement->mic_memory_free_cur : mpMeasurement->mic_memory_free_max;
-		
+#endif /* LIGHT */
 		}
 		
+#ifndef LIGHT
 		// result: average power consumption
 		for (int i=0; i<MIC_NUM_POWER; i++) {
 			mpMeasurement->mic_power_avg[i] = (double) mpMeasurement->mic_energy_acc[i] / mpMeasurement->mic_time_runtime;
 		}
 		
-#ifndef LIGHT
 		//result: average frequencies
 		mpMeasurement->mic_freq_core_avg = mpMeasurement->mic_freq_core_acc / mpMeasurement->mic_time_runtime;
 		mpMeasurement->mic_freq_mem_avg = mpMeasurement->mic_freq_mem_acc / mpMeasurement->mic_time_runtime;
-#endif /* LIGHT */
 		
 		// result average utilization
 		mpMeasurement->mic_util_active_total =
@@ -164,6 +160,7 @@ namespace NLibMeasure {
 		
 		mpMeasurement->mic_util_avg = (mpMeasurement->mic_util_active_total * 100.0) / 
 			(mpMeasurement->mic_util_active_total + mpMeasurement->mic_util_idle_total);
+#endif /* LIGHT */
 		
 #ifdef DEBUG
 		mrLog.lock();

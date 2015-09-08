@@ -34,6 +34,13 @@ namespace NLibMeasure {
 	}
 	
 	void CMeasureIPMI::init(void) {
+#ifdef LIGHT
+		mrLog()
+		<< ">>> 'ipmi' (light version)" << std::endl;
+#else
+		mrLog()
+		<< ">>> 'ipmi' (full version)" << std::endl;
+#endif
 		
 		MS_VERSION version;
 		version.major = MS_MAJOR_VERSION;
@@ -73,6 +80,7 @@ namespace NLibMeasure {
 	void CMeasureIPMI::measureRecordIDs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		double value = 0;
 		
+#ifndef LIGHT
 		value = getTemperature(18);
 		if(value < 0){
 			mrLog.lock();
@@ -81,6 +89,7 @@ namespace NLibMeasure {
 			exit(EXIT_FAILURE);
 		}
 		pMeasurement->ipmi_temperature_sysboard_cur = value;
+#endif /* LIGHT */
 		
 		value = getPower(90);
 		if(value < 0){
@@ -91,6 +100,7 @@ namespace NLibMeasure {
 		}
 		pMeasurement->ipmi_power_sysboard_cur = value;
 		
+#ifndef LIGHT
 		value = getTemperature(153);
 		if(value < 0){
 			mrLog.lock();
@@ -108,6 +118,7 @@ namespace NLibMeasure {
 			exit(EXIT_FAILURE);
 		}
 		pMeasurement->ipmi_temperature_cur[1] = value;
+#endif /* LIGHT */
 	}
 	
 	void CMeasureIPMI::measureRawMsgs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
