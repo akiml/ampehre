@@ -58,3 +58,4 @@ History:
 0.5.7 - add automatic detection of ipmi device to measure driver
 0.5.8 - change project name to ampehre
 0.5.9 - first public release
+0.5.10 - new libmeasure light version plus a couple of smaller fixes
