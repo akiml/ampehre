@@ -19,9 +19,9 @@ Accordingly, our plans for the next releases are broader improvements on the res
 
 You can find the source code for Ampehre at [github.com/akiml/ampehre](https://github.com/akiml/ampehre)
 
-This work was partially supported by the German Research Foundation (DFG) within the Collaborative Research Centre "On-The-Fly Computing" (SFB 901) and the European Union Seventh Framework Programme under grant agreement no. 610996 (SAVE).
+This work was partially supported by the German Research Foundation (DFG) within the Collaborative Research Centre "On-The-Fly Computing" ([SFB 901](http://sfb901.uni-paderborn.de)) and the European Union Seventh Framework Programme under grant agreement no. 610996 ([SAVE](http://www.fp7-save.eu)).
 
 <center>
-<a href="http://sfb901.uni-paderborn.de"><img src="{{ site.baseurl }}/assets/sfb901_logo.png" alt="SFB901 Logo" width="150" height="63"></a>
-<a href="http://www.fp7-save.eu"><img src="{{ site.baseurl }}/assets/save_logo.png" alt="SAVE Logo" width="77" height="67"></a>
+<a href="http://sfb901.uni-paderborn.de"><img src="{{ site.baseurl }}/assets/sfb901_logo.png" alt="SFB901 Logo" width="150" height="63" hspace="50"></a>
+<a href="http://www.fp7-save.eu"><img src="{{ site.baseurl }}/assets/save_logo.png" alt="SAVE Logo" width="77" height="67" hspace="50"></a>
 </center>
