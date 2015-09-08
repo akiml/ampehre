@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "First public Ampehre Release!"
-date:   2015-08-7
+date:   2015-08-07
 categories: ampehre update
 brief: The latest version of Ampehre, v0.5.9, is now publicly available at our github repository.
 --- 

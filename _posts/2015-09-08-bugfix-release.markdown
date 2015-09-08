@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Bug Fix Release!"
+title:  "Bugfix Release!"
 date:   2015-09-08
 categories: ampehre update
 brief: Ampehre v0.5.10 is now available!
@@ -13,7 +13,7 @@ The latest version of Ampehre, v0.5.10, is now available at our github repositor
 
 ---
 
-####Bug Fixes:
+####Bugfixes:
 - Fix GPU frequency settings in ms_hetsched example application.
 - Fix hetpowidle JSON file writer.
 - Fix headers of CSV files created by hettime's CSV file printer.
