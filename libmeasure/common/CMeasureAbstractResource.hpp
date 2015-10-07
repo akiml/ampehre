@@ -39,7 +39,6 @@ namespace NLibMeasure {
 	class CMeasureAbstractResource {
 		protected:
 			CLogger& mrLog;
-			CMutex mMutex;
 			
 		protected:
 			CMeasureAbstractResource(CLogger& rLogger);

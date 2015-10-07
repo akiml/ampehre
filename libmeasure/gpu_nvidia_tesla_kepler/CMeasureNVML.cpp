@@ -314,8 +314,6 @@ namespace NLibMeasure {
 	void CMeasureNVML::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		nvmlReturn_t result;
 		
-		mMutex.lock();
-		
 		result = nvmlDeviceGetPowerUsage(mDevice, &(pMeasurement->nvml_power_cur));
 		if (NVML_SUCCESS != result) {
 			mrLog.lock();
@@ -390,7 +388,6 @@ namespace NLibMeasure {
 		pMeasurement->nvml_util_mem_cur	= utilization.memory;
 #endif /* LIGHT */
 		
-		mMutex.unlock();
 	}
 	
 	int CMeasureNVML::exec_gpu_mgmt(char* args[]){

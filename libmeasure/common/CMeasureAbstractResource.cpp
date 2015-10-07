@@ -18,8 +18,7 @@
 
 namespace NLibMeasure {
     CMeasureAbstractResource::CMeasureAbstractResource(CLogger & rLogger):
-		mrLog(rLogger),
-		mMutex()
+		mrLog(rLogger)
 		{
 		// nothing todo
     }

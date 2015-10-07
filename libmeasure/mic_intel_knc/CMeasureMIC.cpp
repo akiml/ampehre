@@ -366,8 +366,7 @@ namespace NLibMeasure {
 	}
 	
 	void CMeasureMIC::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
-		mMutex.lock();
-		
+
 		micGetPower(pMeasurement, rThreadNum);
 		micGetUtil(pMeasurement, rThreadNum);
 		
@@ -377,7 +376,6 @@ namespace NLibMeasure {
 		micGetTemperature(pMeasurement, rThreadNum);
 #endif /* LIGHT */
 		
-		mMutex.unlock();
 	}
 	
 	void CMeasureMIC::micGetFrequency(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
