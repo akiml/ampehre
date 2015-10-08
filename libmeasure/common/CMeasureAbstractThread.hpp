@@ -56,12 +56,12 @@ namespace NLibMeasure {
 		protected:
 			CMeasureAbstractThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureResource);
 			~CMeasureAbstractThread();
-			void calcTimeDiff(struct timespec* time_cur, struct timespec* time_temp, struct timespec* time_diff, double* time_diff_double);
 			
 		private:
 			virtual void run(void) = 0;
 			
 		public:
+			static void calcTimeDiff(struct timespec* time_cur, struct timespec* time_temp, struct timespec* time_diff, double* time_diff_double);
 			static void* startThread(void* pThreadObject);
 			virtual void start(CMutex *pMutexStart = 0);
 			virtual void stop(void);
