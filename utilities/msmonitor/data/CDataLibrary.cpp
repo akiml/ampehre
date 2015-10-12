@@ -15,6 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.0 - add cpu, gpu and mic memory information
+ *          0.5.11 - add option to msmonitor settings to control the output to csv file
  */
 
 #include "CDataLibrary.hpp"
@@ -126,21 +127,24 @@ namespace NData {
 	
 	void CDataLibrary::run(void) {
 		int i;
+		std::ofstream csv_file;
 		
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
-		char *home_directory = getenv("HOME");
-		
-		std::ostringstream csv_filename;
-		csv_filename << home_directory;
-		csv_filename << "/plot_";
-		csv_filename << sNumberOfCSVs++;
-		csv_filename << ".csv";
-		
-		std::ofstream csv_file(csv_filename.str().c_str());
-		
-		printHeader(csv_file);
+		if(mrSettings.mWriteResultsToCsv) {
+			char *home_directory = getenv("HOME");
+			
+			std::ostringstream csv_filename;
+			csv_filename << home_directory;
+			csv_filename << "/plot_";
+			csv_filename << sNumberOfCSVs++;
+			csv_filename << ".csv";
+			
+			csv_file.open(csv_filename.str().c_str());
+			
+			printHeader(csv_file);
+		}
 		
 		mMutexTimer.lock();
 		
@@ -243,13 +247,17 @@ namespace NData {
 			mrMeasurement.mpYMemoryGpu[tick_second]		= mrMeasurement.mpYMemoryGpu[tick_first];
 			mrMeasurement.mpYMemoryMic[tick_second]		= mrMeasurement.mpYMemoryMic[tick_first];
 			
-			printValues(csv_file);
+			if(mrSettings.mWriteResultsToCsv) {
+				printValues(csv_file);
+			}
 			
 			// increment graph tick
 			mrMeasurement.incTick();
 		}
 		
-		csv_file.close();
+		if(mrSettings.mWriteResultsToCsv) {
+			csv_file.close();
+		}
 		
 		exit();
 	}

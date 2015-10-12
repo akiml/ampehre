@@ -500,6 +500,22 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="groupBoxFileOutput">
+     <property name="title">
+      <string>File Output</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QCheckBox" name="checkBoxPrintToCsv">
+        <property name="text">
+         <string>print results to csv</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

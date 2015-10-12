@@ -15,6 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.0 - add cpu, gpu and mic memory information
+ *          0.5.11 - add option to msmonitor settings to control the output to csv file 
  */
 
 #ifndef __CDATASETTINGS_HPP__
@@ -38,6 +39,8 @@ namespace NData {
 			
 			uint32_t mDataSamplingRate;
 			uint32_t mGUIRefreshRate;
+			
+			bool mWriteResultsToCsv;
 			
 			uint32_t mTimeToBufferData;
 			uint32_t mTimeToShowData;
