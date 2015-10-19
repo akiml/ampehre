@@ -15,6 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.4.1 - add MIC support to msmonitor
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  */
 
 #include "QMSMFormMeasurementAbstract.hpp"
@@ -119,7 +120,7 @@ namespace Ui {
 	}
 	
 	void QMSMFormMeasurementAbstract::slotRefreshGui(void) {
-		setupCurves(mpDataHandler->getMeasurement().getTick()+1);
+		setupCurves();
 		
 		qwtPlot->replot();
 	}

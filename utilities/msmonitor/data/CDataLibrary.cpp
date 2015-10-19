@@ -15,7 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.0 - add cpu, gpu and mic memory information
- *          0.5.11 - add option to msmonitor settings to control the output to csv file
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  */
 
 #include "CDataLibrary.hpp"
@@ -128,6 +128,8 @@ namespace NData {
 	void CDataLibrary::run(void) {
 		int i;
 		std::ofstream csv_file;
+		double clockCpu0_temp;
+		double clockCpu1_temp;
 		
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
@@ -149,9 +151,6 @@ namespace NData {
 		mMutexTimer.lock();
 		
 		// initialize some values
-		uint32_t tick_first		= 0;
-		uint32_t tick_second	= mrSettings.mNumberOfTicks;
-		
 		clock_gettime(CLOCK_REALTIME, &mTimeStart);
 		mTimeCurrent.tv_sec		= mTimeStart.tv_sec;
 		mTimeCurrent.tv_nsec	= mTimeStart.tv_nsec;
@@ -163,96 +162,53 @@ namespace NData {
 		while (!mThreadStateStop) {
 			mMutexTimer.lock();
 			
-			// get next graph tick
-			tick_first	= mrMeasurement.getTick();
-			tick_second	= mrSettings.mNumberOfTicks + tick_first;
-			
 			// store current values
-			mrMeasurement.mpX[tick_first]				= calcTimeSinceStart();
+			mrMeasurement.mpX->push_back(calcTimeSinceStart());
 			
-			mrMeasurement.mpYPowerCpu0[tick_first]		= (mpMSMeasurement->msr_power_cur[0][PKG]
-														  + mpMSMeasurement->msr_power_cur[0][DRAM])/1000.0;
-			mrMeasurement.mpYPowerCpu1[tick_first]		= (mpMSMeasurement->msr_power_cur[1][PKG]
-														  + mpMSMeasurement->msr_power_cur[1][DRAM])/1000.0;
-			mrMeasurement.mpYPowerGpu[tick_first]		= mpMSMeasurement->nvml_power_cur/1000.0;
-			mrMeasurement.mpYPowerFpga[tick_first]		= mpMSMeasurement->maxeler_power_cur[POWER]/1000.0;
-			mrMeasurement.mpYPowerMic[tick_first]		= mpMSMeasurement->mic_power_cur[MIC_POWER]/1000.0;
-			mrMeasurement.mpYPowerSystem[tick_first]	= mpMSMeasurement->ipmi_power_server_cur;
+			mrMeasurement.mpYPowerCpu0->push_back((mpMSMeasurement->msr_power_cur[0][PKG]
+													+ mpMSMeasurement->msr_power_cur[0][DRAM])/1000.0);
+			mrMeasurement.mpYPowerCpu1->push_back((mpMSMeasurement->msr_power_cur[1][PKG]
+													+ mpMSMeasurement->msr_power_cur[1][DRAM])/1000.0);
+			mrMeasurement.mpYPowerGpu->push_back(mpMSMeasurement->nvml_power_cur/1000.0);
+			mrMeasurement.mpYPowerFpga->push_back(mpMSMeasurement->maxeler_power_cur[POWER]/1000.0);
+			mrMeasurement.mpYPowerMic->push_back(mpMSMeasurement->mic_power_cur[MIC_POWER]/1000.0);
+			mrMeasurement.mpYPowerSystem->push_back(mpMSMeasurement->ipmi_power_server_cur);
 			
-			mrMeasurement.mpYTempCpu0[tick_first]		= mpMSMeasurement->msr_temperature_pkg_cur[0];
-			mrMeasurement.mpYTempCpu1[tick_first]		= mpMSMeasurement->msr_temperature_pkg_cur[1];
-			mrMeasurement.mpYTempGpu[tick_first]		= mpMSMeasurement->nvml_temperature_cur;
-			mrMeasurement.mpYTempFpgaM[tick_first]		= mpMSMeasurement->maxeler_temperature_cur[MTEMP];
-			mrMeasurement.mpYTempFpgaI[tick_first]		= mpMSMeasurement->maxeler_temperature_cur[ITEMP];
-			mrMeasurement.mpYTempMicDie[tick_first]		= mpMSMeasurement->mic_temperature_cur[MIC_DIE_TEMP];
-			mrMeasurement.mpYTempSystem[tick_first]		= mpMSMeasurement->ipmi_temperature_sysboard_cur;
+			mrMeasurement.mpYTempCpu0->push_back(mpMSMeasurement->msr_temperature_pkg_cur[0]);
+			mrMeasurement.mpYTempCpu1->push_back(mpMSMeasurement->msr_temperature_pkg_cur[1]);
+			mrMeasurement.mpYTempGpu->push_back(mpMSMeasurement->nvml_temperature_cur);
+			mrMeasurement.mpYTempFpgaM->push_back(mpMSMeasurement->maxeler_temperature_cur[MTEMP]);
+			mrMeasurement.mpYTempFpgaI->push_back(mpMSMeasurement->maxeler_temperature_cur[ITEMP]);
+			mrMeasurement.mpYTempMicDie->push_back(mpMSMeasurement->mic_temperature_cur[MIC_DIE_TEMP]);
+			mrMeasurement.mpYTempSystem->push_back(mpMSMeasurement->ipmi_temperature_sysboard_cur);
 			
-			mrMeasurement.mpYClockCpu0[tick_first]		= 0.0;
-			mrMeasurement.mpYClockCpu1[tick_first]		= 0.0;
+			clockCpu0_temp = 0.0;
+			clockCpu1_temp = 0.0;
 			for (i=0; i<CORES; ++i) {
-				mrMeasurement.mpYClockCpu0[tick_first]	+= mpMSMeasurement->msr_freq_core_eff_cur[0][i];
-				mrMeasurement.mpYClockCpu1[tick_first]	+= mpMSMeasurement->msr_freq_core_eff_cur[1][i];
+				clockCpu0_temp	+= mpMSMeasurement->msr_freq_core_eff_cur[0][i];
+				clockCpu1_temp	+= mpMSMeasurement->msr_freq_core_eff_cur[1][i];
 			}
-			mrMeasurement.mpYClockCpu0[tick_first]		/= CORES;
-			mrMeasurement.mpYClockCpu1[tick_first]		/= CORES;
-			mrMeasurement.mpYClockGpuCore[tick_first]	= mpMSMeasurement->nvml_clock_graphics_cur;
-			mrMeasurement.mpYClockGpuMem[tick_first]	= mpMSMeasurement->nvml_clock_mem_cur;
-			mrMeasurement.mpYClockMicCore[tick_first]	= mpMSMeasurement->mic_freq_core_cur;
-			mrMeasurement.mpYClockMicMem[tick_first]	= mpMSMeasurement->mic_freq_mem_cur;
+			mrMeasurement.mpYClockCpu0->push_back(clockCpu0_temp / CORES);		
+			mrMeasurement.mpYClockCpu1->push_back(clockCpu1_temp / CORES);
+			mrMeasurement.mpYClockGpuCore->push_back(mpMSMeasurement->nvml_clock_graphics_cur);
+			mrMeasurement.mpYClockGpuMem->push_back(mpMSMeasurement->nvml_clock_mem_cur);
+			mrMeasurement.mpYClockMicCore->push_back(mpMSMeasurement->mic_freq_core_cur);
+			mrMeasurement.mpYClockMicMem->push_back(mpMSMeasurement->mic_freq_mem_cur);
 			
-			mrMeasurement.mpYUtilCpu[tick_first]		= mpMSMeasurement->measure_util_avg_cur;
-			mrMeasurement.mpYUtilGpuCore[tick_first]	= mpMSMeasurement->nvml_util_gpu_cur;
-			mrMeasurement.mpYUtilGpuMem[tick_first]		= mpMSMeasurement->nvml_util_mem_cur;
-			mrMeasurement.mpYUtilFpga[tick_first]		= mpMSMeasurement->maxeler_util_comp_cur;
-			mrMeasurement.mpYUtilMic[tick_first]		= mpMSMeasurement->mic_util_avg_cur;
+			mrMeasurement.mpYUtilCpu->push_back(mpMSMeasurement->measure_util_avg_cur);
+			mrMeasurement.mpYUtilGpuCore->push_back(mpMSMeasurement->nvml_util_gpu_cur);
+			mrMeasurement.mpYUtilGpuMem->push_back(mpMSMeasurement->nvml_util_mem_cur);
+			mrMeasurement.mpYUtilFpga->push_back(mpMSMeasurement->maxeler_util_comp_cur);
+			mrMeasurement.mpYUtilMic->push_back(mpMSMeasurement->mic_util_avg_cur);
 			
-			mrMeasurement.mpYMemoryCpu[tick_first]		= mpMSMeasurement->measure_memory_cur[CPU_MEM_RAM_USED]>>10;
-			mrMeasurement.mpYSwapCpu[tick_first]		= mpMSMeasurement->measure_memory_cur[CPU_MEM_SWAP_USED]>>10;
-			mrMeasurement.mpYMemoryGpu[tick_first]		= mpMSMeasurement->nvml_memory_used_cur>>10;
-			mrMeasurement.mpYMemoryMic[tick_first]		= mpMSMeasurement->mic_memory_used_cur>>10;
-			
-			// store it a second time for plotting
-			mrMeasurement.mpX[tick_second]				= mrMeasurement.mpX[tick_first];
-			
-			mrMeasurement.mpYPowerCpu0[tick_second]		= mrMeasurement.mpYPowerCpu0[tick_first];
-			mrMeasurement.mpYPowerCpu1[tick_second]		= mrMeasurement.mpYPowerCpu1[tick_first];
-			mrMeasurement.mpYPowerGpu[tick_second]		= mrMeasurement.mpYPowerGpu[tick_first];
-			mrMeasurement.mpYPowerFpga[tick_second]		= mrMeasurement.mpYPowerFpga[tick_first];
-			mrMeasurement.mpYPowerMic[tick_second]		= mrMeasurement.mpYPowerMic[tick_first];
-			mrMeasurement.mpYPowerSystem[tick_second]	= mrMeasurement.mpYPowerSystem[tick_first];
-			
-			mrMeasurement.mpYTempCpu0[tick_second]		= mrMeasurement.mpYTempCpu0[tick_first];
-			mrMeasurement.mpYTempCpu1[tick_second]		= mrMeasurement.mpYTempCpu1[tick_first];
-			mrMeasurement.mpYTempGpu[tick_second]		= mrMeasurement.mpYTempGpu[tick_first];
-			mrMeasurement.mpYTempFpgaM[tick_second]		= mrMeasurement.mpYTempFpgaM[tick_first];
-			mrMeasurement.mpYTempFpgaI[tick_second]		= mrMeasurement.mpYTempFpgaI[tick_first];
-			mrMeasurement.mpYTempMicDie[tick_second]	= mrMeasurement.mpYTempMicDie[tick_first];
-			mrMeasurement.mpYTempSystem[tick_second]	= mrMeasurement.mpYTempSystem[tick_first];
-			
-			mrMeasurement.mpYClockCpu0[tick_second]		= mrMeasurement.mpYClockCpu0[tick_first];
-			mrMeasurement.mpYClockCpu1[tick_second]		= mrMeasurement.mpYClockCpu1[tick_first];
-			mrMeasurement.mpYClockGpuCore[tick_second]	= mrMeasurement.mpYClockGpuCore[tick_first];
-			mrMeasurement.mpYClockGpuMem[tick_second]	= mrMeasurement.mpYClockGpuMem[tick_first];
-			mrMeasurement.mpYClockMicCore[tick_second]	= mrMeasurement.mpYClockMicCore[tick_first];
-			mrMeasurement.mpYClockMicMem[tick_second]	= mrMeasurement.mpYClockMicMem[tick_first];
-			
-			mrMeasurement.mpYUtilCpu[tick_second]		= mrMeasurement.mpYUtilCpu[tick_first];
-			mrMeasurement.mpYUtilGpuCore[tick_second]	= mrMeasurement.mpYUtilGpuCore[tick_first];
-			mrMeasurement.mpYUtilGpuMem[tick_second]	= mrMeasurement.mpYUtilGpuMem[tick_first];
-			mrMeasurement.mpYUtilFpga[tick_second]		= mrMeasurement.mpYUtilFpga[tick_first];
-			mrMeasurement.mpYUtilMic[tick_second]		= mrMeasurement.mpYUtilMic[tick_first];
-			
-			mrMeasurement.mpYMemoryCpu[tick_second]		= mrMeasurement.mpYMemoryCpu[tick_first];
-			mrMeasurement.mpYSwapCpu[tick_second]		= mrMeasurement.mpYSwapCpu[tick_first];
-			mrMeasurement.mpYMemoryGpu[tick_second]		= mrMeasurement.mpYMemoryGpu[tick_first];
-			mrMeasurement.mpYMemoryMic[tick_second]		= mrMeasurement.mpYMemoryMic[tick_first];
+			mrMeasurement.mpYMemoryCpu->push_back(mpMSMeasurement->measure_memory_cur[CPU_MEM_RAM_USED]>>10);
+			mrMeasurement.mpYSwapCpu->push_back(mpMSMeasurement->measure_memory_cur[CPU_MEM_SWAP_USED]>>10);
+			mrMeasurement.mpYMemoryGpu->push_back(mpMSMeasurement->nvml_memory_used_cur>>10);
+			mrMeasurement.mpYMemoryMic->push_back(mpMSMeasurement->mic_memory_used_cur>>10);
 			
 			if(mrSettings.mWriteResultsToCsv) {
 				printValues(csv_file);
 			}
-			
-			// increment graph tick
-			mrMeasurement.incTick();
 		}
 		
 		if(mrSettings.mWriteResultsToCsv) {
@@ -320,45 +276,43 @@ namespace NData {
 		<< std::endl;
 	}
 	
-	void CDataLibrary::printValues(std::ofstream &rCsvFile) {
-		uint32_t i = mrMeasurement.getTick();
-		
+	void CDataLibrary::printValues(std::ofstream &rCsvFile) {		
 		rCsvFile
 		
-		<< mrMeasurement.mpX[i] << ";"
+		<< mrMeasurement.mpX->getLast() << ";"
 		
-		<< mrMeasurement.mpYPowerCpu0[i] << ";"
-		<< mrMeasurement.mpYPowerCpu1[i] << ";"
-		<< mrMeasurement.mpYPowerGpu[i] << ";"
-		<< mrMeasurement.mpYPowerFpga[i] << ";"
-		<< mrMeasurement.mpYPowerMic[i] << ";"
-		<< mrMeasurement.mpYPowerSystem[i] << ";"
+		<< mrMeasurement.mpYPowerCpu0->getLast() << ";"
+		<< mrMeasurement.mpYPowerCpu1->getLast() << ";"
+		<< mrMeasurement.mpYPowerGpu->getLast() << ";"
+		<< mrMeasurement.mpYPowerFpga->getLast() << ";"
+		<< mrMeasurement.mpYPowerMic->getLast() << ";"
+		<< mrMeasurement.mpYPowerSystem->getLast() << ";"
 		
-		<< mrMeasurement.mpYTempCpu0[i] << ";"
-		<< mrMeasurement.mpYTempCpu1[i] << ";"
-		<< mrMeasurement.mpYTempGpu[i] << ";"
-		<< mrMeasurement.mpYTempFpgaM[i] << ";"
-		<< mrMeasurement.mpYTempFpgaI[i] << ";"
-		<< mrMeasurement.mpYTempMicDie[i] << ";"
-		<< mrMeasurement.mpYTempSystem[i] << ";"
+		<< mrMeasurement.mpYTempCpu0->getLast() << ";"
+		<< mrMeasurement.mpYTempCpu1->getLast() << ";"
+		<< mrMeasurement.mpYTempGpu->getLast() << ";"
+		<< mrMeasurement.mpYTempFpgaM->getLast() << ";"
+		<< mrMeasurement.mpYTempFpgaI->getLast() << ";"
+		<< mrMeasurement.mpYTempMicDie->getLast() << ";"
+		<< mrMeasurement.mpYTempSystem->getLast() << ";"
 		
-		<< mrMeasurement.mpYClockCpu0[i] << ";"
-		<< mrMeasurement.mpYClockCpu1[i] << ";"
-		<< mrMeasurement.mpYClockGpuCore[i] << ";"
-		<< mrMeasurement.mpYClockGpuMem[i] << ";"
-		<< mrMeasurement.mpYClockMicCore[i] << ";"
-		<< mrMeasurement.mpYClockMicMem[i] << ";"
+		<< mrMeasurement.mpYClockCpu0->getLast() << ";"
+		<< mrMeasurement.mpYClockCpu1->getLast() << ";"
+		<< mrMeasurement.mpYClockGpuCore->getLast() << ";"
+		<< mrMeasurement.mpYClockGpuMem->getLast() << ";"
+		<< mrMeasurement.mpYClockMicCore->getLast() << ";"
+		<< mrMeasurement.mpYClockMicMem->getLast() << ";"
 		
-		<< mrMeasurement.mpYUtilCpu[i] << ";"
-		<< mrMeasurement.mpYUtilGpuCore[i] << ";"
-		<< mrMeasurement.mpYUtilGpuMem[i] << ";"
-		<< mrMeasurement.mpYUtilFpga[i] << ";"
-		<< mrMeasurement.mpYUtilMic[i] << ";"
+		<< mrMeasurement.mpYUtilCpu->getLast() << ";"
+		<< mrMeasurement.mpYUtilGpuCore->getLast() << ";"
+		<< mrMeasurement.mpYUtilGpuMem->getLast() << ";"
+		<< mrMeasurement.mpYUtilFpga->getLast() << ";"
+		<< mrMeasurement.mpYUtilMic->getLast() << ";"
 		
-		<< mrMeasurement.mpYMemoryCpu[i] << ";"
-		<< mrMeasurement.mpYSwapCpu[i] << ";"
-		<< mrMeasurement.mpYMemoryGpu[i] << ";"
-		<< mrMeasurement.mpYMemoryMic[i] << ";"
+		<< mrMeasurement.mpYMemoryCpu->getLast() << ";"
+		<< mrMeasurement.mpYSwapCpu->getLast() << ";"
+		<< mrMeasurement.mpYMemoryGpu->getLast() << ";"
+		<< mrMeasurement.mpYMemoryMic->getLast() << ";"
 		
 		<< std::endl;
 	}

@@ -15,6 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.4.1 - add MIC support to msmonitor
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  */
 
 #ifndef __QMSMFORMCLOCK_HPP__
@@ -49,7 +50,7 @@ namespace Ui {
 			static QMSMFormClock* construct(QWidget *pParent, NData::CDataHandler *pDataHandler);
 			
 		protected:
-			void setupCurves(uint32_t currentTick);
+			void setupCurves();
 			double getMiddleOfYAxis(void);
 	};
 }

@@ -14,7 +14,7 @@
  * created: 1/26/14
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.4.1 - add MIC support to msmonitor
- *          0.5.11 - add option to msmonitor settings to control the output to csv file
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  */
 
 #include "QMSMFormSettings.hpp"

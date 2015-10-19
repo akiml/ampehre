@@ -15,6 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.4.1 - add MIC support to msmonitor
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  */
 
 #include "QMSMFormClock.hpp"
@@ -45,7 +46,7 @@ namespace Ui {
 		mpCurveClockMicCore->setPen(mColorMic);
 		mpCurveClockMicMemory->setPen(mColorMicAlternative);
 		
-		setupCurves(mpDataHandler->getSettings().mNumberOfTicks);
+		setupCurves();
 		
 		mpCurveClockCpu0->attach(qwtPlot);
 		mpCurveClockCpu1->attach(qwtPlot);
@@ -76,16 +77,16 @@ namespace Ui {
 		return spFormClock;
 	}
 	
-	void QMSMFormClock::setupCurves(uint32_t currentTick) {
+	void QMSMFormClock::setupCurves() {
 		uint32_t ticks				= mpDataHandler->getSettings().mNumberOfTicks-1;
 		
-		double *x					= mpDataHandler->getMeasurement().mpX+currentTick;
-		double *y_clock_cpu_0		= mpDataHandler->getMeasurement().mpYClockCpu0+currentTick;
-		double *y_clock_cpu_1		= mpDataHandler->getMeasurement().mpYClockCpu1+currentTick;
-		double *y_clock_gpu_core	= mpDataHandler->getMeasurement().mpYClockGpuCore+currentTick;
-		double *y_clock_gpu_mem		= mpDataHandler->getMeasurement().mpYClockGpuMem+currentTick;
-		double *y_clock_mic_core	= mpDataHandler->getMeasurement().mpYClockMicCore+currentTick;
-		double *y_clock_mic_mem		= mpDataHandler->getMeasurement().mpYClockMicMem+currentTick;
+		double *x					= mpDataHandler->getMeasurement().mpX->getDataPtr();
+		double *y_clock_cpu_0		= mpDataHandler->getMeasurement().mpYClockCpu0->getDataPtr();
+		double *y_clock_cpu_1		= mpDataHandler->getMeasurement().mpYClockCpu1->getDataPtr();
+		double *y_clock_gpu_core	= mpDataHandler->getMeasurement().mpYClockGpuCore->getDataPtr();
+		double *y_clock_gpu_mem		= mpDataHandler->getMeasurement().mpYClockGpuMem->getDataPtr();
+		double *y_clock_mic_core	= mpDataHandler->getMeasurement().mpYClockMicCore->getDataPtr();
+		double *y_clock_mic_mem		= mpDataHandler->getMeasurement().mpYClockMicMem->getDataPtr();
 		
 		mpCurveClockCpu0->setRawData(x, y_clock_cpu_0, ticks);
 		mpCurveClockCpu1->setRawData(x, y_clock_cpu_1, ticks);

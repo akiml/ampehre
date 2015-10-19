@@ -15,6 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.4.1 - add MIC support to msmonitor
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  */
 
 #include "QMSMFormPower.hpp"
@@ -45,7 +46,7 @@ namespace Ui {
 		mpCurvePowerMic->setPen(mColorMic);
 		mpCurvePowerSystem->setPen(mColorSystem);
 		
-		setupCurves(mpDataHandler->getSettings().mNumberOfTicks);
+		setupCurves();
 		
 		mpCurvePowerCpu0->attach(qwtPlot);
 		mpCurvePowerCpu1->attach(qwtPlot);
@@ -76,16 +77,16 @@ namespace Ui {
 		return spFormPower;
 	}
 	
-	void QMSMFormPower::setupCurves(uint32_t currentTick) {
+	void QMSMFormPower::setupCurves() {
 		uint32_t ticks			= mpDataHandler->getSettings().mNumberOfTicks-1;
 		
-		double *x				= mpDataHandler->getMeasurement().mpX+currentTick;
-		double *y_power_cpu_0	= mpDataHandler->getMeasurement().mpYPowerCpu0+currentTick;
-		double *y_power_cpu_1	= mpDataHandler->getMeasurement().mpYPowerCpu1+currentTick;
-		double *y_power_gpu		= mpDataHandler->getMeasurement().mpYPowerGpu+currentTick;
-		double *y_power_fpga	= mpDataHandler->getMeasurement().mpYPowerFpga+currentTick;
-		double *y_power_mic		= mpDataHandler->getMeasurement().mpYPowerMic+currentTick;
-		double *y_power_system	= mpDataHandler->getMeasurement().mpYPowerSystem+currentTick;
+		double *x				= mpDataHandler->getMeasurement().mpX->getDataPtr();
+		double *y_power_cpu_0	= mpDataHandler->getMeasurement().mpYPowerCpu0->getDataPtr();
+		double *y_power_cpu_1	= mpDataHandler->getMeasurement().mpYPowerCpu1->getDataPtr();
+		double *y_power_gpu		= mpDataHandler->getMeasurement().mpYPowerGpu->getDataPtr();
+		double *y_power_fpga	= mpDataHandler->getMeasurement().mpYPowerFpga->getDataPtr();
+		double *y_power_mic		= mpDataHandler->getMeasurement().mpYPowerMic->getDataPtr();
+		double *y_power_system	= mpDataHandler->getMeasurement().mpYPowerSystem->getDataPtr();
 		
 		mpCurvePowerCpu0->setRawData(x, y_power_cpu_0, ticks);
 		mpCurvePowerCpu1->setRawData(x, y_power_cpu_1, ticks);

@@ -16,6 +16,7 @@
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.0 - add cpu, gpu and mic memory information
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  */
 
 #include "CDataMeasurement.hpp"
@@ -25,152 +26,135 @@
 namespace NData {
 	CDataMeasurement::CDataMeasurement(CDataSettings& rSettings) :
 		mrSettings(rSettings),
-		mNumberOfTicks(mrSettings.mNumberOfTicks),
-		mTick(0)
+		mNumberOfTicks(mrSettings.mNumberOfTicks)
 		{
 		
-		allocArrays();
+		allocRingBuffers();
 		
 		reset();
 	}
 	
 	CDataMeasurement::~CDataMeasurement(void) {
-		freeArrays();
+		freeRingBuffers();
 	}
 	
-	void CDataMeasurement::allocArrays(void) {
-		mpX				= new double[mNumberOfTicks*2];
+	void CDataMeasurement::allocRingBuffers(void) {
+		mpX				= new NCommon::CRingBuffer<double>(mNumberOfTicks);
 		
-		mpYPowerCpu0	= new double[mNumberOfTicks*2];
-		mpYPowerCpu1	= new double[mNumberOfTicks*2];
-		mpYPowerGpu		= new double[mNumberOfTicks*2];
-		mpYPowerFpga	= new double[mNumberOfTicks*2];
-		mpYPowerMic		= new double[mNumberOfTicks*2];
-		mpYPowerSystem	= new double[mNumberOfTicks*2];
+		mpYPowerCpu0	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYPowerCpu1	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYPowerGpu		= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYPowerFpga	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYPowerMic		= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYPowerSystem	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
 		
-		mpYTempCpu0		= new double[mNumberOfTicks*2];
-		mpYTempCpu1		= new double[mNumberOfTicks*2];
-		mpYTempGpu		= new double[mNumberOfTicks*2];
-		mpYTempFpgaM	= new double[mNumberOfTicks*2];
-		mpYTempFpgaI	= new double[mNumberOfTicks*2];
-		mpYTempMicDie	= new double[mNumberOfTicks*2];
-		mpYTempSystem	= new double[mNumberOfTicks*2];
+		mpYTempCpu0		= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYTempCpu1		= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYTempGpu		= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYTempFpgaM	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYTempFpgaI	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYTempMicDie	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYTempSystem	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
 		
-		mpYClockCpu0	= new double[mNumberOfTicks*2];
-		mpYClockCpu1	= new double[mNumberOfTicks*2];
-		mpYClockGpuCore	= new double[mNumberOfTicks*2];
-		mpYClockGpuMem	= new double[mNumberOfTicks*2];
-		mpYClockMicCore	= new double[mNumberOfTicks*2];
-		mpYClockMicMem	= new double[mNumberOfTicks*2];
+		mpYClockCpu0	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYClockCpu1	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYClockGpuCore	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYClockGpuMem	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYClockMicCore	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYClockMicMem	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
 		
-		mpYUtilCpu		= new double[mNumberOfTicks*2];
-		mpYUtilGpuCore	= new double[mNumberOfTicks*2];
-		mpYUtilGpuMem	= new double[mNumberOfTicks*2];
-		mpYUtilFpga		= new double[mNumberOfTicks*2];
-		mpYUtilMic		= new double[mNumberOfTicks*2];
+		mpYUtilCpu		= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYUtilGpuCore	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYUtilGpuMem	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYUtilFpga		= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYUtilMic		= new NCommon::CRingBuffer<double>(mNumberOfTicks);
 		
-		mpYMemoryCpu	= new double[mNumberOfTicks*2];
-		mpYSwapCpu		= new double[mNumberOfTicks*2];
-		mpYMemoryGpu	= new double[mNumberOfTicks*2];
-		mpYMemoryMic	= new double[mNumberOfTicks*2];
+		mpYMemoryCpu	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYSwapCpu		= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYMemoryGpu	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
+		mpYMemoryMic	= new NCommon::CRingBuffer<double>(mNumberOfTicks);
 	}
 	
-	void CDataMeasurement::freeArrays(void) {
-		delete[] mpX;
+	void CDataMeasurement::freeRingBuffers(void) {
+		delete mpX;
 		
-		delete[] mpYPowerCpu0;
-		delete[] mpYPowerCpu1;
-		delete[] mpYPowerGpu;
-		delete[] mpYPowerFpga;
-		delete[] mpYPowerMic;
-		delete[] mpYPowerSystem;
+		delete mpYPowerCpu0;
+		delete mpYPowerCpu1;
+		delete mpYPowerGpu;
+		delete mpYPowerFpga;
+		delete mpYPowerMic;
+		delete mpYPowerSystem;
 		
-		delete[] mpYTempCpu0;
-		delete[] mpYTempCpu1;
-		delete[] mpYTempGpu;
-		delete[] mpYTempFpgaM;
-		delete[] mpYTempFpgaI;
-		delete[] mpYTempMicDie;
-		delete[] mpYTempSystem;
+		delete mpYTempCpu0;
+		delete mpYTempCpu1;
+		delete mpYTempGpu;
+		delete mpYTempFpgaM;
+		delete mpYTempFpgaI;
+		delete mpYTempMicDie;
+		delete mpYTempSystem;
 		
-		delete[] mpYClockCpu0;
-		delete[] mpYClockCpu1;
-		delete[] mpYClockGpuCore;
-		delete[] mpYClockGpuMem;
-		delete[] mpYClockMicCore;
-		delete[] mpYClockMicMem;
+		delete mpYClockCpu0;
+		delete mpYClockCpu1;
+		delete mpYClockGpuCore;
+		delete mpYClockGpuMem;
+		delete mpYClockMicCore;
+		delete mpYClockMicMem;
 		
-		delete[] mpYUtilCpu;
-		delete[] mpYUtilGpuCore;
-		delete[] mpYUtilGpuMem;
-		delete[] mpYUtilFpga;
-		delete[] mpYUtilMic;
+		delete mpYUtilCpu;
+		delete mpYUtilGpuCore;
+		delete mpYUtilGpuMem;
+		delete mpYUtilFpga;
+		delete mpYUtilMic;
 		
-		delete[] mpYMemoryCpu;
-		delete[] mpYSwapCpu;
-		delete[] mpYMemoryGpu;
-		delete[] mpYMemoryMic;
+		delete mpYMemoryCpu;
+		delete mpYSwapCpu;
+		delete mpYMemoryGpu;
+		delete mpYMemoryMic;
 	}
 	
 	void CDataMeasurement::reset(void) {
-		mTick			= 0;
 		mNumberOfTicks	= mrSettings.mNumberOfTicks;
 		
-		freeArrays();
-		allocArrays();
+		freeRingBuffers();
+		allocRingBuffers();
 		
-		uint32_t i;
-		for (i=0; i<mNumberOfTicks*2; ++i) {
-			mpX[i]				= 0.0;
-			
-			mpYPowerCpu0[i]		= 0.0;
-			mpYPowerCpu1[i]		= 0.0;
-			mpYPowerGpu[i]		= 0.0;
-			mpYPowerFpga[i]		= 0.0;
-			mpYPowerMic[i]		= 0.0;
-			mpYPowerSystem[i]	= 0.0;
-			
-			mpYTempCpu0[i]		= 0.0;
-			mpYTempCpu1[i]		= 0.0;
-			mpYTempGpu[i]		= 0.0;
-			mpYTempFpgaM[i]		= 0.0;
-			mpYTempFpgaI[i]		= 0.0;
-			mpYTempMicDie[i]	= 0.0;
-			mpYTempSystem[i]	= 0.0;
-			
-			mpYClockCpu0[i]		= 0.0;
-			mpYClockCpu1[i]		= 0.0;
-			mpYClockGpuCore[i]	= 0.0;
-			mpYClockGpuMem[i]	= 0.0;
-			mpYClockMicCore[i]	= 0.0;
-			mpYClockMicMem[i]	= 0.0;
-			
-			mpYUtilCpu[i]		= 0.0;
-			mpYUtilGpuCore[i]	= 0.0;
-			mpYUtilGpuMem[i]	= 0.0;
-			mpYUtilFpga[i]		= 0.0;
-			mpYUtilMic[i]		= 0.0;
-			
-			mpYMemoryCpu[i]		= 0.0;
-			mpYSwapCpu[i]		= 0.0;
-			mpYMemoryGpu[i]		= 0.0;
-			mpYMemoryMic[i]		= 0.0;
-		}
+		mpX->reset();
+		
+		mpYPowerCpu0->reset();
+		mpYPowerCpu1->reset();
+		mpYPowerGpu->reset();
+		mpYPowerFpga->reset();
+		mpYPowerMic->reset();
+		mpYPowerSystem->reset();
+		
+		mpYTempCpu0->reset();
+		mpYTempCpu1->reset();
+		mpYTempGpu->reset();
+		mpYTempFpgaM->reset();
+		mpYTempFpgaI->reset();
+		mpYTempMicDie->reset();
+		mpYTempSystem->reset();
+		
+		mpYClockCpu0->reset();
+		mpYClockCpu1->reset();
+		mpYClockGpuCore->reset();
+		mpYClockGpuMem->reset();
+		mpYClockMicCore->reset();
+		mpYClockMicMem->reset();
+		
+		mpYUtilCpu->reset();
+		mpYUtilGpuCore->reset();
+		mpYUtilGpuMem->reset();
+		mpYUtilFpga->reset();
+		mpYUtilMic->reset();
+		
+		mpYMemoryCpu->reset();
+		mpYSwapCpu->reset();
+		mpYMemoryGpu->reset();
+		mpYMemoryMic->reset();
 	}
-	
-	uint32_t CDataMeasurement::getTick(void) {
-		return mTick;
-	}
-
-	void CDataMeasurement::incTick(void) {
-		mTick = (mTick+1 == mNumberOfTicks) ? 0 : mTick+1;
-	}
-	
+		
 	double CDataMeasurement::getTime(void) {
-		if (mTick == 0) {
-			return mpX[mNumberOfTicks-1];
-		}
-		
-		return mpX[mTick-1];
+		return mpX->getLast();
 	}
 }

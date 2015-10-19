@@ -15,6 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.4.1 - add MIC support to msmonitor
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  */
 
 #include "QMSMFormUtilization.hpp"
@@ -45,7 +46,7 @@ namespace Ui {
 		mpCurveUtilFpga->setPen(mColorFpga);
 		mpCurveUtilMic->setPen(mColorMic);
 		
-		setupCurves(mpDataHandler->getSettings().mNumberOfTicks);
+		setupCurves();
 		
 		mpCurveUtilCpu->attach(qwtPlot);
 		mpCurveUtilGpuCore->attach(qwtPlot);
@@ -74,15 +75,15 @@ namespace Ui {
 		return spFormUtil;
 	}
 	
-	void QMSMFormUtilization::setupCurves(uint32_t currentTick) {
+	void QMSMFormUtilization::setupCurves() {
 		uint32_t ticks			= mpDataHandler->getSettings().mNumberOfTicks-1;
 		
-		double *x				= mpDataHandler->getMeasurement().mpX+currentTick;
-		double *y_util_cpu		= mpDataHandler->getMeasurement().mpYUtilCpu+currentTick;
-		double *y_util_gpu_core	= mpDataHandler->getMeasurement().mpYUtilGpuCore+currentTick;
-		double *y_util_gpu_mem	= mpDataHandler->getMeasurement().mpYUtilGpuMem+currentTick;
-		double *y_util_fpga		= mpDataHandler->getMeasurement().mpYUtilFpga+currentTick;
-		double *y_util_mic		= mpDataHandler->getMeasurement().mpYUtilMic+currentTick;
+		double *x				= mpDataHandler->getMeasurement().mpX->getDataPtr();
+		double *y_util_cpu		= mpDataHandler->getMeasurement().mpYUtilCpu->getDataPtr();
+		double *y_util_gpu_core	= mpDataHandler->getMeasurement().mpYUtilGpuCore->getDataPtr();
+		double *y_util_gpu_mem	= mpDataHandler->getMeasurement().mpYUtilGpuMem->getDataPtr();
+		double *y_util_fpga		= mpDataHandler->getMeasurement().mpYUtilFpga->getDataPtr();
+		double *y_util_mic		= mpDataHandler->getMeasurement().mpYUtilMic->getDataPtr();
 		
 		mpCurveUtilCpu->setRawData(x, y_util_cpu, ticks);
 		mpCurveUtilGpuCore->setRawData(x, y_util_gpu_core, ticks);
