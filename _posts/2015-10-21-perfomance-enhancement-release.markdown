@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Performance Enhancement Release!"
+title:  "Performance Enhancement Release"
 date:   2015-10-21
 categories: ampehre update
-brief: Ampehre v0.5.11 with better performance is now available!
+brief: Ampehre v0.5.11 with better performance is now available.
 --- 
 ---
 
@@ -14,7 +14,7 @@ The latest version of Ampehre, v0.5.11, is now available at our github repositor
 ---
 
 ####Bugfixes:
-- Fix unnecessary mutex in measuring threads.
+- Remove unnecessary mutex in measuring threads.
 
 ####Feature improvements:
 - Adjust parameters of the IPMI requests in the measure driver for more stability.

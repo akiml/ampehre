@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Bugfix Release!"
+title:  "Bugfix Release"
 date:   2015-09-08
 categories: ampehre update
-brief: Ampehre v0.5.10 is now available!
+brief: Ampehre v0.5.10 is now available.
 --- 
 ---
 
