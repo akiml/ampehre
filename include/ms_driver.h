@@ -16,6 +16,7 @@
  *          0.2.0 - add support for msr registers to the measure driver
  *          0.2.1 - add support for IPMI to the measure driver
  *          0.3.3 - add cpu memory info to measure driver
+ *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
  */
 
 #ifndef __MS_DRIVER_H__
@@ -132,5 +133,15 @@
 #else /* NOT KERNEL_CENTOS65 */
 #define CPUSTATS			10
 #endif /* KERNEL_CENTOS65 */
+
+/*supported ioctl request codes*/
+#define IOC_GET_IPMI_TIMEOUT _IOR('i', 0, unsigned long*)
+#define IOC_SET_IPMI_TIMEOUT _IOW('i', 1, unsigned long*)
+#define IOC_SET_AND_LOCK_IPMI_TIMEOUT _IOW('i', 2, unsigned long*)
+
+#define ERROR_IPMI_TIMEOUT_LOCKED	1
+#define ERROR_IPMI_TIMEOUT_MAX		2
+
+
 
 #endif /* __MS_DRIVER_H__ */

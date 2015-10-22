@@ -18,6 +18,7 @@
  *          0.2.1 - add support for IPMI to the measure driver
  *          0.2.4 - add version check functionality to library, wrappers, and tools
  *          0.3.3 - add cpu memory info to measure driver
+ *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
  */
 
 #include <fcntl.h>
@@ -28,6 +29,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <sys/ioctl.h>
 
 #include "../../../include/ms_driver.h"
 #include "../../../include/ms_ipmiwrapper.h"
@@ -483,6 +485,53 @@ void cpu_meminfo_test(int fildes, size_t size){
 	printf("Used Swap: \t %8lu MiB\n", meminfo[CPU_MEM_SWAP_USED] >> 10);	
 }
 
+void ipmi_timeout_test(int fildes){
+	unsigned long ipmi_timeout;
+	int rv;
+	printf("==IPMI SET/GET TIMEOUT TEST==\n");
+	
+	rv = ioctl(fildes, IOC_GET_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		printf("Error couldn't get IPMI timeout.");
+	}
+	printf("Current IPMI timeout: %lu\n", ipmi_timeout);
+	
+	ipmi_timeout = 100;
+	rv = ioctl(fildes, IOC_SET_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		printf("Set IPMI timeout error code: %d \n", rv);
+	}
+	rv = ioctl(fildes, IOC_GET_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		printf("Error couldn't get IPMI timeout.");
+	}
+	printf("Current IPMI timeout: %lu\n", ipmi_timeout);
+	
+	ipmi_timeout = 150;
+	rv = ioctl(fildes, IOC_SET_AND_LOCK_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		printf("Set and lock IPMI timeout error code: %d \n", rv);
+	}
+	
+	rv = ioctl(fildes, IOC_GET_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		printf("Error couldn't get IPMI timeout.");
+	}
+	printf("Current IPMI timeout: %lu\n", ipmi_timeout);
+	
+	ipmi_timeout = 100;
+	rv = ioctl(fildes, IOC_SET_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		printf("Set IPMI timeout error code: %d \n", rv);
+	}
+	
+	rv = ioctl(fildes, IOC_GET_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		printf("Error couldn't get IPMI timeout.");
+	}
+	printf("Current IPMI timeout: %lu\n", ipmi_timeout);
+}
+
 int main(int argc, char **argv) {
 	char *driver = "/dev/measure";
 	
@@ -506,6 +555,8 @@ int main(int argc, char **argv) {
 	ipmi_wrapper_test();
 	
 	cpu_meminfo_test(fildes, 8192);
+	
+	ipmi_timeout_test(fildes);
 	
 	close(fildes);		
 	return EXIT_SUCCESS;

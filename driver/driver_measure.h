@@ -18,6 +18,7 @@
  *          0.2.1 - add support for IPMI to the measure driver
  *          0.3.3 - add cpu memory info to measure driver
  *          0.5.7 - add automatic detection of ipmi device to measure driver
+ *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
  */
 
 #ifndef __DRIVER_MEASURE_H__
@@ -64,7 +65,7 @@
 #include <asm/system.h>
 #endif /* KERNEL_CENTOS65 */
 
-#define IPMI_TIMEOUT 200
+#define IPMI_MAX_TIMEOUT 200
 
 #define CPU_STAT 0x0000000000000000
 #define MSR 0x0100000000000000
@@ -115,6 +116,14 @@ static ssize_t driver_write(struct file *fileptr, const char __user *user_buffer
 static loff_t driver_lseek(struct file *fileptr, loff_t offset, int whence);
 static int driver_open(struct inode *device, struct file *fileptr);
 static int driver_close(struct inode *device, struct file *fileptr);
+
+// ioctl syntax has been changed after Kernel 2.6.35.
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35))
+static int driver_ioctl(struct inode *inode, struct file *file, unsigned int request, unsigned long arg);
+#else
+static long driver_ioctl(struct file *f, unsigned int request, unsigned long arg);
+#endif
+
 
 static int read_cpu_stats(u64* cpustat, int cpu);
 static int read_msr_reg(int cpu, u32 reg, u32* data);
