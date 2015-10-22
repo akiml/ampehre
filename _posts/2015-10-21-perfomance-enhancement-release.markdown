@@ -15,13 +15,13 @@ The latest version of Ampehre, v0.5.11, is now available at our github repositor
 
 ####Bugfixes:
 - Remove unnecessary mutex in measuring threads.
+- Fix a couple of memory leaks.
 
 ####Feature improvements:
-- Adjust parameters of the IPMI requests in the measure driver for more stability.
-- Adjust default refresh rate in msmonitor for less CPU utilization.
+- Adjust timeout parameter of the IPMI requests in the measure driver for more stability (needed since iDRAC7 update 2.20.20).
+- Adjust default refresh rate in msmonitor to decrease CPU utilization.
 - New ringbuffer datastructure in msmonitor.
-- Control the output of msmonitor to a csv file via the GUI. You can find this option in the menu under File - Settings or Ctrl-S. Per default no csv-file will be created.
-- Checked hettime and msmonitor for memory leaks.
+- Writing measurements plotted in msmonitor to a CSV file is an optional feature now. You can turn this feature on/off in the settings window.
 
 ---
 
