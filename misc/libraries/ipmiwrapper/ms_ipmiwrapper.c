@@ -14,6 +14,7 @@
  * created: 10/28/14
  * version: 0.2.1 - add support for IPMI to the measure driver
  *          0.2.4 - add version check functionality to library, wrappers, and tools
+ *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
  */
 
 #include "ms_ipmiwrapper_internal.h"
@@ -218,6 +219,43 @@ double getPower(int record_id){
 	power = (M * power + B*pow(10, Bexp))*pow(10,Rexp);
 	free(sdr);
 	return power;
+}
+
+int getIPMITimeout(){
+	int rv;
+	unsigned long ipmi_timeout;
+	
+	rv = ioctl(fd, IOC_GET_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		fprintf(stderr, "Error in IPMI wrapper couldn't get IPMI timeout.\n");
+		return -1;
+	}
+	
+	return ipmi_timeout;
+}
+
+int setIPMITimeout(uint32_t ipmi_timeout){
+	int rv;
+	unsigned long timeout = ipmi_timeout;
+	
+	rv = ioctl(fd, IOC_SET_IPMI_TIMEOUT, &timeout);
+	if(rv < 0){
+		fprintf(stderr, "Error in IPMI wrapper couldn't set IPMI timeout.\n");
+	}
+	
+	return rv;
+}
+
+int setAndLockIPMITimeout(uint32_t ipmi_timeout){
+	int rv;
+	unsigned long timeout = ipmi_timeout;
+	
+	rv = ioctl(fd, IOC_SET_AND_LOCK_IPMI_TIMEOUT, &timeout);
+	if(rv < 0){
+		fprintf(stderr, "Error in IPMI wrapper couldn't set and lock IPMI timeout.\n");
+	}
+	
+	return rv;
 }
 
 int getSDR(int record_id, unsigned char* datarc, int size){

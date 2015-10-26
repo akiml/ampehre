@@ -142,6 +142,4 @@
 #define ERROR_IPMI_TIMEOUT_LOCKED	1
 #define ERROR_IPMI_TIMEOUT_MAX		2
 
-
-
 #endif /* __MS_DRIVER_H__ */

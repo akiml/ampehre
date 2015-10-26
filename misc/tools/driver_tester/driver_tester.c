@@ -406,9 +406,56 @@ void ipmi_wrapper_test(){
 	clock_gettime(CLOCK_REALTIME, &ts_end);
 	printf("Dell Cumulative Energy: %u Time: %u Error Code: %d\n",time, energy, rv);
 	printf("Needed %.2f ms for ipmi request. \n", (double)(ts_end.tv_nsec - ts_start.tv_nsec)/1000000);
-
-	close_ipmi_wrapper();
 	
+	rv = getIPMITimeout();
+	if(rv < 0){
+		printf("Error in getIPMITImeout!\n");
+	}
+	printf("Current IPMI timeout: %d.\n", rv);
+	
+	uint32_t new_timeout=100;
+	rv = setIPMITimeout(new_timeout);
+	if(rv == ERROR_IPMI_TIMEOUT_LOCKED){
+		printf("Error IPMI timeout is locked!\n");
+	} else if(rv == ERROR_IPMI_TIMEOUT_MAX){
+		printf("Error IPMI timeout is to large. Set timeout to default!\n");
+	} else if(rv){
+		printf("Error couldn't set IPMI timeout!\n");
+	} else {
+		printf("Set IPMI timeout: %d.\n", new_timeout);
+	}
+	
+	new_timeout = 150;
+	rv = setAndLockIPMITimeout(new_timeout);
+	if(rv == ERROR_IPMI_TIMEOUT_LOCKED){
+		printf("Error IPMI timeout is locked!\n");
+	} else if(rv == ERROR_IPMI_TIMEOUT_MAX){
+		printf("Error IPMI timeout is to large. Set timeout to default!\n");
+	} else if(rv){
+		printf("Error couldn't set IPMI timeout!\n");
+	} else {
+		printf("Set and locked IPMI timeout to: %d.\n", new_timeout);
+	}
+	
+	new_timeout=100;
+	rv = setIPMITimeout(new_timeout);
+	if(rv == ERROR_IPMI_TIMEOUT_LOCKED){
+		printf("Error IPMI timeout is locked!\n");
+	} else if(rv == ERROR_IPMI_TIMEOUT_MAX){
+		printf("Error IPMI timeout is to large. Set timeout to default!\n");
+	} else if(rv){
+		printf("Error couldn't set IPMI timeout!\n");
+	} else {
+		printf("Set IPMI timeout: %d.\n", new_timeout);
+	}
+	
+	rv = getIPMITimeout();
+	if(rv < 0){
+		printf("Error in getIPMITImeout!\n");
+	}
+	printf("Current IPMI timeout: %d.\n", rv);
+	
+	close_ipmi_wrapper();
 }
 
 void cpu_meminfo_test(int fildes, size_t size){

@@ -124,7 +124,6 @@ static int driver_ioctl(struct inode *inode, struct file *file, unsigned int req
 static long driver_ioctl(struct file *f, unsigned int request, unsigned long arg);
 #endif
 
-
 static int read_cpu_stats(u64* cpustat, int cpu);
 static int read_msr_reg(int cpu, u32 reg, u32* data);
 static int read_meminfo(u64* meminfo);

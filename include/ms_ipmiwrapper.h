@@ -14,6 +14,7 @@
  * created: 10/28/14
  * version: 0.2.1 - add support for IPMI to the measure driver
  *          0.2.4 - add version check functionality to library, wrappers, and tools
+ *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
  */
 
 #ifndef __MS_IPMIWRAPPER_H__
@@ -34,5 +35,11 @@ int dellCurrentPower(uint16_t* current_power);
 int getTemperature(int record_id);
 /*Returns the power from the SDR with the given record id.*/
 double getPower(int record_id);
+/*Returns the timeout for ipmi requests*/
+int getIPMITimeout();
+/*Set the timeout for ipmi requests. Returns 0 if successful*/
+int setIPMITimeout(uint32_t ipmi_timeout);
+/*Set the timeout for ipmi requests and lock the value*/
+int setAndLockIPMITimeout(uint32_t ipmi_timeout);
 
 #endif /* __MS_IPMIWRAPPER_H__*/

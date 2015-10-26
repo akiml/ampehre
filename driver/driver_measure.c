@@ -563,8 +563,8 @@ static long driver_ioctl(struct file *f, unsigned int request, unsigned long arg
 	switch(request){
 		case IOC_GET_IPMI_TIMEOUT:
 			if (copy_to_user((unsigned long*)arg, &ipmi_timeout, sizeof(unsigned long))){
-                return -EACCES;
-            }
+				return -EACCES;
+			}
 			break;
 		case IOC_SET_IPMI_TIMEOUT:
 			if(ipmi_timeout_locked){
@@ -573,9 +573,9 @@ static long driver_ioctl(struct file *f, unsigned int request, unsigned long arg
 			mutex_lock(&ioctl_mutex);
 			if (copy_from_user(&new_timeout, (unsigned long *)arg, sizeof(unsigned long))) {
 				mutex_unlock(&ioctl_mutex);
-                return -EACCES;
-            }
-            if(new_timeout > IPMI_MAX_TIMEOUT){
+				return -EACCES;
+			}
+			if(new_timeout > IPMI_MAX_TIMEOUT){
 				ipmi_timeout = IPMI_MAX_TIMEOUT;
 				return ERROR_IPMI_TIMEOUT_MAX;
 				mutex_unlock(&ioctl_mutex);

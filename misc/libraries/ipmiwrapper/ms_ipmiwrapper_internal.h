@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 10/28/14
  * version: 0.2.1 - add support for IPMI to the measure driver
+ *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
  */
 
 #ifndef __MS_IPMIWRAPPER_INTERNAL_H__
@@ -27,6 +28,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
+#include <sys/ioctl.h>
 
 #define SDR_SENSOR_ID 10
 #define SDR_M_LS_BITS 27
