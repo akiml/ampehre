@@ -20,6 +20,7 @@
 #ifndef __MS_IPMIWRAPPER_H__
 #define __MS_IPMIWRAPPER_H__
 #include <stdint.h>
+#include <sys/ioctl.h>
 #include "ms_version.h"
 
 void init_ipmi_wrapper(MS_VERSION *version);

@@ -22,6 +22,7 @@
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.5.4 - add dynamic loading of resource specific libraries
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+ *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
  */
 
 #ifndef __CMGMT_HPP__
@@ -54,7 +55,7 @@ class CMgmt {
 		struct sigaction *mpActionStop;
 		
 	public:
-		CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency);
+		CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency, uint64_t ipmi_timeout_setting);
 		~CMgmt();
 		
 		void initMaxelerForceIdle(void);

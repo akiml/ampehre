@@ -22,6 +22,7 @@
  *          0.4.0 - MIC integration into libmeasure
  *          0.5.1 - modularised libmeasure
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+ *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
  */
 
 #include "../../include/measurement.h"
@@ -36,14 +37,14 @@
 
 #define UINT64_MAX (0xffffffffffffffff)
 
-MSYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max, gpu_frequency gpu_freq) {
+MSYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max, gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting) {
 	
 	if((version->major != MS_MAJOR_VERSION) || (version->minor != MS_MINOR_VERSION) || (version->revision != MS_REVISION_VERSION)){
 		std::cout << "!!! 'mgmt' (thread main): Error: Wrong version number! libmeasure version " << MS_MAJOR_VERSION << "." << MS_MINOR_VERSION << "." << MS_REVISION_VERSION  << " is called from tool with version" << version->major << "." << version->minor << "." << version->revision  << " (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	
-	CMgmt *mgmt = new CMgmt(cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq);
+	CMgmt *mgmt = new CMgmt(cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq, ipmi_timeout_setting);
 	
 	return (MSYSTEM *)mgmt;
 }

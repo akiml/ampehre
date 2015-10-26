@@ -15,6 +15,7 @@
  * version: 0.1.0 - initial implementation
  *          0.2.1 - add support for IPMI to the measure driver
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
  */
 
 #ifndef __CMEASUREIPMI_HPP__
@@ -25,8 +26,10 @@
 
 namespace NLibMeasure {
 	class CMeasureIPMI : public CMeasureAbstractResource{
+		private: 
+			uint64_t mTimeoutSetting;
 		public:
-			CMeasureIPMI(CLogger& rLogger);
+			CMeasureIPMI(CLogger& rLogger, uint64_t ipmi_timeout_setting);
 			~CMeasureIPMI();
 			
 		private:

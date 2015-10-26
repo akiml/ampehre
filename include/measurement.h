@@ -28,6 +28,7 @@
  *          0.4.0 - MIC integration into libmeasure
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+ *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
  */
 
 #ifndef __MEASUREMENT_H__
@@ -506,7 +507,7 @@ double server_energy_total(MEASUREMENT *measurement);
 double server_power_avg(MEASUREMENT *measurement);
 
 // Library management functions
-MSYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max, enum gpu_frequency gpu_freq);
+MSYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max, enum gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting);
 void ms_init_fpga_force_idle(MSYSTEM *mgmt);
 void ms_fini(MSYSTEM *mgmt);
 

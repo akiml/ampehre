@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/29/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
+ *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -22,7 +23,7 @@
 
 extern "C" {
 	void* init_resource(void* pLogger, uint64_t* pParams){
-		NLibMeasure::CMeasureIPMI* pIPMI =  new NLibMeasure::CMeasureIPMI(*((NLibMeasure::CLogger*)pLogger));
+		NLibMeasure::CMeasureIPMI* pIPMI =  new NLibMeasure::CMeasureIPMI(*((NLibMeasure::CLogger*)pLogger), pParams[0]);
 		
 		return  (void*) pIPMI;
 	}

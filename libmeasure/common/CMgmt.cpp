@@ -22,6 +22,7 @@
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.5.4 - add dynamic loading of resource specific libraries
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+ *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
  */
 
 #include "CMgmt.hpp"
@@ -38,18 +39,19 @@ void emptySighandler(int signal) {
 }
 #endif /* __cplusplus */
 
-CMgmt::CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency) :
+CMgmt::CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency, uint64_t ipmi_timeout_setting) :
 	mLogger(),
 	mResources(),
 	mStartSem()
 	{
 	uint64_t params_cpu[] = {cpuGovernor, cpuFrequencyMin, cpuFrequencyMax};
 	uint64_t params_gpu[] = {gpuFrequency};
+	uint64_t params_sys[] = {ipmi_timeout_setting};
 	
 	mResources[CPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, CPU_LIB_NAME, params_cpu);
 	mResources[GPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, GPU_LIB_NAME, params_gpu);
 	mResources[FPGA] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, FPGA_LIB_NAME, NULL);
-	mResources[SYSTEM]	= new NLibMeasure::CResourceLibraryHandler(mLogger, SYS_LIB_NAME, NULL);
+	mResources[SYSTEM]	= new NLibMeasure::CResourceLibraryHandler(mLogger, SYS_LIB_NAME, params_sys);
 	mResources[MIC] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, MIC_LIB_NAME, NULL);
 	
 	mpActionStart	= NULL;
