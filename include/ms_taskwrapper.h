@@ -71,7 +71,7 @@ typedef struct __mtask {
  * Init measuring system. Call the function like this (if you want to measure CPU, GPU and FPGA)
  * mstw_init(CPU | GPU | FPGA, CPU_GOVERNOR_ONDEMAND, 2000, 2500, GPU_FREQUENCY_CUR);
  */
-void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max, enum gpu_frequency gpu_freq);
+void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max, enum gpu_frequency gpu_freq,  uint64_t ipmi_timeout_setting);
 // Start measuring system
 void mstw_start(void);
 // Stop measuring system

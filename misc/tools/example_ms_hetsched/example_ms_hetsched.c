@@ -38,7 +38,7 @@ void pseudo_task(TASK_CONTEXT *ctxt);
 int main(int argc, char **argv) {
 	// Init measuring system
 	MS_VERSION version = { .major = MS_MAJOR_VERSION, .minor = MS_MINOR_VERSION, .revision = MS_REVISION_VERSION };
-	mshetsched_init(&version, CPU_GOVERNOR_ONDEMAND, 2000000, 2500000, GPU_FREQUENCY_CUR, NULL, NULL);
+	mshetsched_init(&version, CPU_GOVERNOR_ONDEMAND, 2000000, 2500000, GPU_FREQUENCY_CUR, IOC_SET_IPMI_TIMEOUT, NULL, NULL);
 	
 	// Task data container
 	TASK_CONTEXT ctxt;

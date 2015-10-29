@@ -21,6 +21,7 @@
 #define __MS_IPMIWRAPPER_H__
 #include <stdint.h>
 #include <sys/ioctl.h>
+#include <errno.h>
 #include "ms_version.h"
 
 void init_ipmi_wrapper(MS_VERSION *version);
@@ -38,9 +39,9 @@ int getTemperature(int record_id);
 double getPower(int record_id);
 /*Returns the timeout for ipmi requests*/
 int getIPMITimeout();
-/*Set the timeout for ipmi requests. Returns 0 if successful*/
-int setIPMITimeout(uint32_t ipmi_timeout);
-/*Set the timeout for ipmi requests and lock the value*/
-int setAndLockIPMITimeout(uint32_t ipmi_timeout);
+/*Set the timeout for ipmi requests.
+ * Mode defines whether to set or set and lock the timeout.
+ * Returns 0 if successful*/
+int setIPMITimeoutIOCTL(uint64_t mode, uint32_t ipmi_timeout);
 
 #endif /* __MS_IPMIWRAPPER_H__*/

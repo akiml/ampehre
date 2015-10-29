@@ -17,6 +17,7 @@
  *          0.2.2 - add semaphore to synchronize the start of the measurements
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
  */
 
 #include "CMeasureIPMIThread.hpp"
@@ -31,6 +32,7 @@ namespace NLibMeasure {
 		mTimer.setThreadName("ipmi timer");
 		mTimer.setTimer(&(pMeasurement->ipmi_time_wait));
 		mTimer.shareMutex(&mMutexTimer);
+		
 	}
 	
 	CMeasureIPMIThread::~CMeasureIPMIThread() {
@@ -57,6 +59,8 @@ namespace NLibMeasure {
 		}
 		
 		mpMeasurement->ipmi_energy_server_acc			= 0;
+		
+		static_cast<NLibMeasure::CMeasureIPMI&>(mrMeasureResource).setIPMITimeout((mpMeasurement->ipmi_time_wait.tv_nsec/1000000) + (mpMeasurement->ipmi_time_wait.tv_sec * 1000) - 10, mThreadNum);
 		
 		mpMutexStart->unlock();
 		

@@ -84,42 +84,66 @@ namespace NLibMeasure {
 		
 #ifndef LIGHT
 		value = getTemperature(18);
-		if(value < 0){
+		if(value < 0 && value != -ETIMEDOUT){
 			mrLog.lock();
-			mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: in getTemperature record id 18 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+			mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: "<< errno << "  in getTemperature record id 18 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			mrLog.unlock();
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->ipmi_temperature_sysboard_cur = value;
+		if(value == -ETIMEDOUT) {
+			mrLog.lock();
+			mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout in getTemperature record id 18 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+			mrLog.unlock();
+		} else {
+			pMeasurement->ipmi_temperature_sysboard_cur = value;
+		}
 #endif /* LIGHT */
 		
 		value = getPower(90);
-		if(value < 0){
+		if(value < 0 && value != -ETIMEDOUT){
 			mrLog.lock();
 			mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: in getPower record id 90 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			mrLog.unlock();
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->ipmi_power_sysboard_cur = value;
+		if(value == -ETIMEDOUT) {
+			mrLog.lock();
+			mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout getPower record id 90 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+			mrLog.unlock();
+		} else {
+			pMeasurement->ipmi_power_sysboard_cur = value;
+		}
 		
 #ifndef LIGHT
 		value = getTemperature(153);
-		if(value < 0){
+		if(value < 0 && value != -ETIMEDOUT){
 			mrLog.lock();
 			mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: in getTemperature record id 153 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			mrLog.unlock();
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->ipmi_temperature_cur[0] = value;
+		if(value == -ETIMEDOUT) {
+			mrLog.lock();
+			mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout in getTemperature record id 153 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+			mrLog.unlock();
+		} else {
+			pMeasurement->ipmi_temperature_cur[0] = value;
+		}
 		
 		value = getTemperature(154);
-		if(value < 0){
+		if(value < 0 && value != -ETIMEDOUT){
 			mrLog.lock();
 			mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: in getTemperature record id 154 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			mrLog.unlock();
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->ipmi_temperature_cur[1] = value;
+		if(value == -ETIMEDOUT) {
+			mrLog.lock();
+			mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout in getTemperature record id 154 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+			mrLog.unlock();
+		} else {
+			pMeasurement->ipmi_temperature_cur[1] = value;
+		}
 #endif /* LIGHT */
 	}
 	
@@ -159,6 +183,12 @@ namespace NLibMeasure {
 		
 		result_energy_cur_time	= (uint32_t)time(NULL);
 		
+		if(completion_code == -ETIMEDOUT) {
+			mrLog.lock();
+			mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout in measureRawMsgDellCumulativeEnergy (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+			mrLog.unlock();
+			return;
+		}
 		if (completion_code) {
 			mrLog.lock();
 			mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: cannot get cumulative energy, completion code: " << std::hex << completion_code << ") (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
@@ -174,11 +204,17 @@ namespace NLibMeasure {
 	}
 	
 	void CMeasureIPMI::measureRawMsgDellCurrentPower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {	
-		uint8_t completion_code;		
+		int32_t completion_code;		
 		uint16_t result_power_current;
 		
 		completion_code = dellCurrentPower(&result_power_current);
 		
+		if(completion_code == -ETIMEDOUT) {
+			mrLog.lock();
+			mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout in measureRawMsgDellCurrentPower (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+			mrLog.unlock();
+			return;
+		}
 		if (completion_code) {
 			mrLog.lock();
 			mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: cannot get current power, completion code: " << std::hex << completion_code << ") (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
@@ -187,5 +223,36 @@ namespace NLibMeasure {
 		}
 		
 		pMeasurement->ipmi_power_server_cur = (uint32_t)result_power_current;
+	}
+	
+    void CMeasureIPMI::setIPMITimeout(uint32_t timeout, int32_t& rThreadNum) {
+		int rv;
+		rv = setIPMITimeoutIOCTL(mTimeoutSetting, timeout);
+		
+		if(rv == ERROR_IPMI_TIMEOUT_LOCKED){
+			mrLog.lock();
+			mrLog() << ">>> 'ipmi thread' (thread #" << rThreadNum << "): Warning: IPMI timeout is locked." << std::endl;
+			mrLog.unlock();
+		} else if(rv == ERROR_IPMI_TIMEOUT_MAX){
+			mrLog.lock();
+			mrLog() << ">>> 'ipmi thread' (thread #" << rThreadNum << "): Warning: IPMI timeout is too large. Set timeout to default." << std::endl;
+			mrLog.unlock();
+		} else if(rv){
+			mrLog.lock();
+			mrLog(CLogger::scErr) << ">>> 'ipmi thread' (thread #" << rThreadNum << "): Error: couldn't set IPMI timeout." << std::endl;
+			mrLog.unlock();
+			exit(EXIT_FAILURE);
+		}
+		
+		rv = getIPMITimeout();
+		if(rv < 0){
+			mrLog.lock();
+			mrLog(CLogger::scErr) << ">>> 'ipmi thread' (thread #" << rThreadNum << "): Error: in getIPMITImeout, (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+			mrLog.unlock();
+			exit(EXIT_FAILURE);
+		}
+		mrLog.lock();
+		mrLog()<<  ">>> 'ipmi thread' (thread #" << rThreadNum << "): Current IPMI timeout: " << rv << " ms." << std::endl;
+		mrLog.unlock();
 	}
 }

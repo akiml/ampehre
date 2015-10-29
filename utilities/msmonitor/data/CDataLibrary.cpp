@@ -62,7 +62,8 @@ namespace NData {
 										  mrSettings.mCpuGovernor,
 										  mrSettings.mCpuFrequencyMaximum,
 										  mrSettings.mCpuFrequencyMaximum,
-										  mrSettings.mGpuFrequency);
+										  mrSettings.mGpuFrequency,
+										  IOC_SET_AND_LOCK_IPMI_TIMEOUT);
 		
 		mpMSMeasurement			= ms_alloc_measurement();
 		

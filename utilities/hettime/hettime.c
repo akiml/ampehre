@@ -335,22 +335,23 @@ static void init_settings(ARGUMENTS **std_settings, ARGUMENTS **cur_settings) {
 	}
 	
 	// Please, set the default settings here
-	(*std_settings)->child_filename		= NULL;
-	(*std_settings)->child_args			= NULL;
-	(*std_settings)->child_num_of_args	= 0;
-	(*std_settings)->csv_filename		= NULL;
-	(*std_settings)->ostream_filename	= NULL;
-	(*std_settings)->force_idle_fpga	= 0;
-	(*std_settings)->sample_rate_cpu	= 100;
-	(*std_settings)->sample_rate_gpu	= 100;
-	(*std_settings)->sample_rate_fpga	= 100;
-	(*std_settings)->sample_rate_mic	= 100;
-	(*std_settings)->sample_rate_sys	= 100;
-	(*std_settings)->gpu_freq			= GPU_FREQUENCY_CUR;
-	(*std_settings)->cpu_gov			= CPU_GOVERNOR_ONDEMAND;
-	(*std_settings)->cpu_freq_min		= 0;
-	(*std_settings)->cpu_freq_max		= 0;
-	(*std_settings)->ush_client			= 0;
+	(*std_settings)->child_filename			= NULL;
+	(*std_settings)->child_args				= NULL;
+	(*std_settings)->child_num_of_args		= 0;
+	(*std_settings)->csv_filename			= NULL;
+	(*std_settings)->ostream_filename		= NULL;
+	(*std_settings)->force_idle_fpga		= 0;
+	(*std_settings)->sample_rate_cpu		= 100;
+	(*std_settings)->sample_rate_gpu		= 100;
+	(*std_settings)->sample_rate_fpga		= 100;
+	(*std_settings)->sample_rate_mic		= 100;
+	(*std_settings)->sample_rate_sys		= 100;
+	(*std_settings)->gpu_freq				= GPU_FREQUENCY_CUR;
+	(*std_settings)->cpu_gov				= CPU_GOVERNOR_ONDEMAND;
+	(*std_settings)->cpu_freq_min			= 0;
+	(*std_settings)->cpu_freq_max			= 0;
+	(*std_settings)->ush_client				= 0;
+	(*std_settings)->ipmi_timeout_setting	= IOC_SET_IPMI_TIMEOUT;
 	
 	memcpy(*cur_settings, *std_settings, sizeof(ARGUMENTS));
 }

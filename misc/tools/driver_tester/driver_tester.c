@@ -414,7 +414,7 @@ void ipmi_wrapper_test(){
 	printf("Current IPMI timeout: %d.\n", rv);
 	
 	uint32_t new_timeout=100;
-	rv = setIPMITimeout(new_timeout);
+	rv = setIPMITimeoutIOCTL(IOC_SET_IPMI_TIMEOUT, new_timeout);
 	if(rv == ERROR_IPMI_TIMEOUT_LOCKED){
 		printf("Error IPMI timeout is locked!\n");
 	} else if(rv == ERROR_IPMI_TIMEOUT_MAX){
@@ -426,7 +426,7 @@ void ipmi_wrapper_test(){
 	}
 	
 	new_timeout = 150;
-	rv = setAndLockIPMITimeout(new_timeout);
+	rv = setIPMITimeoutIOCTL(IOC_SET_AND_LOCK_IPMI_TIMEOUT, new_timeout);
 	if(rv == ERROR_IPMI_TIMEOUT_MAX){
 		printf("Error IPMI timeout is to large. Set timeout to default!\n");
 	} else if(rv){
@@ -436,7 +436,7 @@ void ipmi_wrapper_test(){
 	}
 	
 	new_timeout=100;
-	rv = setIPMITimeout(new_timeout);
+	rv = setIPMITimeoutIOCTL(IOC_SET_IPMI_TIMEOUT, new_timeout);
 	if(rv == ERROR_IPMI_TIMEOUT_LOCKED){
 		printf("Error IPMI timeout is locked!\n");
 	} else if(rv == ERROR_IPMI_TIMEOUT_MAX){
@@ -454,7 +454,7 @@ void ipmi_wrapper_test(){
 	printf("Current IPMI timeout: %d.\n", rv);
 	
 	new_timeout = 200;
-	rv = setAndLockIPMITimeout(new_timeout);
+	rv = setIPMITimeoutIOCTL(IOC_SET_AND_LOCK_IPMI_TIMEOUT, new_timeout);
 	if(rv == ERROR_IPMI_TIMEOUT_MAX){
 		printf("Error IPMI timeout is to large. Set timeout to default!\n");
 	} else if(rv){

@@ -59,6 +59,7 @@ typedef struct __arguments {
 	uint64_t cpu_freq_min;
 	uint64_t cpu_freq_max;
 	int ush_client;
+	uint64_t ipmi_timeout_setting;
 } ARGUMENTS;
 
 int run(ARGUMENTS *settings);

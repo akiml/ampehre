@@ -47,6 +47,7 @@ typedef struct __arguments {
 	uint32_t sample_rate_sys;
 	enum gpu_frequency gpu_freq;
 	enum cpu_governor cpu_gov;
+	uint64_t ipmi_timeout_setting;
 	uint32_t cpu_freq_min;
 	uint32_t cpu_freq_max;
 	char *hostname;

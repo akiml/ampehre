@@ -44,6 +44,7 @@ namespace NLibMeasure {
 		public:
 			void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
 			void resetEnergyCounter(int32_t& rThreadNum);
+			void setIPMITimeout(uint32_t timeout, int32_t& rThreadNum);
 	};
 }
 

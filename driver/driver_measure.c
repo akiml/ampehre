@@ -374,6 +374,7 @@ static int ipmi_request(int netfn, int cmd, unsigned char * msgdata, int size){
 	rv = wait_for_completion_timeout(&ipmi_data->read_complete, msecs_to_jiffies(ipmi_timeout));
 	if(rv == 0){
 		printk("Measure: IPMI request time out.\n");
+		ipmi_data->msgid = 0;
 		mutex_unlock(&ipmi_mutex);
 		return -ETIMEDOUT;
 	}
@@ -470,7 +471,7 @@ static ssize_t driver_read(struct file *fileptr, char __user *user_buffer, size_
 		err = ipmi_request(ipmi_netfn, ipmi_cmd, ipmi_msg_data, msg_data_size);
 		if(err){
 			printk("Measure: Error in IPMI Request: %d\n", err);
-			return -EIO;
+			return err;
 		}
 		err = ipmi_data->datarc_length;
 				
