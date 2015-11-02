@@ -86,7 +86,7 @@ namespace NLibMeasure {
 		value = getTemperature(18);
 		if(value < 0 && value != -ETIMEDOUT){
 			mrLog.lock();
-			mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: "<< errno << "  in getTemperature record id 18 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+			mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: in getTemperature record id 18 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			mrLog.unlock();
 			exit(EXIT_FAILURE);
 		}

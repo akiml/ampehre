@@ -374,7 +374,7 @@ static int ipmi_request(int netfn, int cmd, unsigned char * msgdata, int size){
 	rv = wait_for_completion_timeout(&ipmi_data->read_complete, msecs_to_jiffies(ipmi_timeout));
 	if(rv == 0){
 		printk("Measure: IPMI request time out.\n");
-		ipmi_data->msgid = 0;
+		ipmi_data->msgid++;
 		mutex_unlock(&ipmi_mutex);
 		return -ETIMEDOUT;
 	}
