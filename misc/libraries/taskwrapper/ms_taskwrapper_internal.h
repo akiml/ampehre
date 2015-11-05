@@ -36,6 +36,11 @@ typedef struct __minternal {
 	uint32_t sample_rate_fpga;
 	uint32_t sample_rate_mic;
 	uint32_t sample_rate_sys;
+	uint32_t skip_ms_rate_cpu;
+	uint32_t skip_ms_rate_gpu;
+	uint32_t skip_ms_rate_fpga;
+	uint32_t skip_ms_rate_sys;
+	uint32_t skip_ms_rate_mic;
 } MINTERNAL;
 
 void mstw_init_rel_measurement(MREL_MEASUREMENT *m);

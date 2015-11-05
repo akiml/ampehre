@@ -32,6 +32,8 @@
 
 #include "../../include/measurement.h"
 
+#define UINT64_MAX (0xffffffffffffffff)
+
 namespace NLibMeasure {
 	class CMeasureAbstractThread : protected CThread {
 		protected:

@@ -16,7 +16,7 @@
  *          0.2.0 - add support for msr registers to the measure driver
  *          0.2.1 - add support for IPMI to the measure driver
  *          0.3.3 - add cpu memory info to measure driver
- *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #ifndef __MS_DRIVER_H__

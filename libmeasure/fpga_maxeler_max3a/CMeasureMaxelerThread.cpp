@@ -18,6 +18,7 @@
  *          0.2.2 - add semaphore to synchronize the start of the measurements
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #include "CMeasureMaxelerThread.hpp"
@@ -42,9 +43,13 @@ namespace NLibMeasure {
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
+		uint64_t skip_ms_cnt = 0;
+		
 		mrLog.lock();
 		mThreadNum = CThread::sNumOfThreads++;
-		mrLog() << ">>> 'maxeler thread' (thread #" << mThreadNum << "): init" << std::endl;
+		mrLog() << ">>> 'maxeler thread' (thread #" << mThreadNum << "): init" << std::endl
+				<< "     effective sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->maxeler_skip_ms_rate << " Hz / "
+				<< mTimer.getTimerMillisecond() * mpMeasurement->maxeler_skip_ms_rate << " ms" << std::endl;
 		mrLog.unlock();
 		
 		mMutexTimer.lock();
@@ -72,7 +77,15 @@ namespace NLibMeasure {
 		while (!mThreadStateStop) {
 			mMutexTimer.lock();
 			
-			mrMeasureResource.measure(mpMeasurement, mThreadNum);
+			if(skip_ms_cnt == UINT64_MAX){
+				skip_ms_cnt = 1;
+			} else {
+				skip_ms_cnt++;
+			}
+			
+			if(!(skip_ms_cnt % mpMeasurement->maxeler_skip_ms_rate)){
+				mrMeasureResource.measure(mpMeasurement, mThreadNum);
+			}
 			
 			// calculated diff time
 			calcTimeDiff(&(mpMeasurement->internal.maxeler_time_cur), &(mpMeasurement->internal.maxeler_time_temp), &(mpMeasurement->internal.maxeler_time_diff), &(mpMeasurement->internal.maxeler_time_diff_double));

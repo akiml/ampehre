@@ -17,6 +17,7 @@
  *          0.1.15 - make CPU frequency settable
  *          0.2.4 - add version check functionality to library, wrappers, and tools
  *          0.4.0 - MIC integration into libmeasure
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #include <stdio.h>
@@ -33,12 +34,12 @@ int main(int argc, char **argv) {
 	// Allocate measurement structs
 	MEASUREMENT *m1 = ms_alloc_measurement();
 	
-	// Set timer for m1. Measurements perform every 10ms/30ms.
-	ms_set_timer(m1, CPU , 0, 10000000);
-	ms_set_timer(m1, GPU , 0, 30000000);
-	ms_set_timer(m1, FPGA , 0, 30000000);
-	ms_set_timer(m1, SYSTEM , 0, 100000000);
-	ms_set_timer(m1, MIC , 0, 30000000);
+	// Set timer for m1. Measurements perform every (10ms/30ms)*10 = 100ms/300ms.
+	ms_set_timer(m1, CPU , 0, 10000000, 10);
+	ms_set_timer(m1, GPU , 0, 30000000, 10);
+	ms_set_timer(m1, FPGA , 0, 30000000, 10);
+	ms_set_timer(m1, SYSTEM , 0, 100000000, 10);
+	ms_set_timer(m1, MIC , 0, 30000000, 10);
 	ms_init_measurement(ms, m1, ALL);
 	
 	// Start measurements

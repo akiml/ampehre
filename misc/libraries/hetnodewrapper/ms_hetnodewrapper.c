@@ -81,10 +81,10 @@ void mshnw_init(MS_VERSION *version, HN_MEASUREMENT *measurements, int measureme
 	}
 
 	// Set timer for  global measurement
-	ms_set_timer(mintern->global_m, CPU   , mintern->sample_rate_cpu / 1000, (mintern->sample_rate_cpu % 1000) * 1000000);
-	ms_set_timer(mintern->global_m, GPU   , mintern->sample_rate_gpu / 1000, (mintern->sample_rate_gpu % 1000) * 1000000);
-	ms_set_timer(mintern->global_m, FPGA  , mintern->sample_rate_fpga / 1000, (mintern->sample_rate_fpga % 1000) * 1000000);
-	ms_set_timer(mintern->global_m, SYSTEM, mintern->sample_rate_sys / 1000, (mintern->sample_rate_sys % 1000) * 1000000);
+	ms_set_timer(mintern->global_m, CPU   , mintern->sample_rate_cpu / 1000, (mintern->sample_rate_cpu % 1000) * 1000000, 1);
+	ms_set_timer(mintern->global_m, GPU   , mintern->sample_rate_gpu / 1000, (mintern->sample_rate_gpu % 1000) * 1000000, 1);
+	ms_set_timer(mintern->global_m, FPGA  , mintern->sample_rate_fpga / 1000, (mintern->sample_rate_fpga % 1000) * 1000000, 1);
+	ms_set_timer(mintern->global_m, SYSTEM, mintern->sample_rate_sys / 1000, (mintern->sample_rate_sys % 1000) * 1000000, 1);
 	
 	ms_init_measurement(mintern->global_ms, mintern->global_m, mintern->resources);
 }

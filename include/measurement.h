@@ -28,7 +28,7 @@
  *          0.4.0 - MIC integration into libmeasure
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
- *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #ifndef __MEASUREMENT_H__
@@ -259,6 +259,7 @@ typedef struct __measurement {
 	
 	// NVML
 	struct timespec nvml_time_wait;
+	uint32_t nvml_skip_ms_rate;
 	
 	double nvml_time_runtime;
 	
@@ -293,6 +294,7 @@ typedef struct __measurement {
 	
 	// Maxeler
 	struct timespec maxeler_time_wait;
+	uint32_t maxeler_skip_ms_rate;
 	
 	double maxeler_time_runtime;
 	
@@ -309,6 +311,7 @@ typedef struct __measurement {
 	
 	// IPMI
 	struct timespec ipmi_time_wait;
+	uint32_t ipmi_skip_ms_rate;
 	
 	double ipmi_time_runtime;
 	
@@ -329,6 +332,7 @@ typedef struct __measurement {
 	
 	// MSR
 	struct timespec msr_time_wait;
+	uint32_t msr_skip_ms_rate;
 	
 	double msr_time_runtime;
 	
@@ -368,6 +372,7 @@ typedef struct __measurement {
 	
 	// MIC
 	struct timespec mic_time_wait;
+	uint32_t mic_skip_ms_rate;
 	
 	double mic_time_runtime;
 	
@@ -514,7 +519,7 @@ void ms_fini(MSYSTEM *mgmt);
 MEASUREMENT *ms_alloc_measurement(void);
 void ms_free_measurement(MEASUREMENT *measurement);
 
-void ms_set_timer(MEASUREMENT *measurement, int flag, uint64_t sec, uint64_t nsec);
+void ms_set_timer(MEASUREMENT *measurement, int flag, uint64_t sec, uint64_t nsec, uint32_t skip_ms_rate);
 
 void ms_init_measurement(MSYSTEM *msystem, MEASUREMENT *measurement, int flags);
 void ms_fini_measurement(MSYSTEM *msystem, MEASUREMENT* measurement);

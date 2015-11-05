@@ -17,6 +17,7 @@
  *          0.1.15 - make CPU frequency settable
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.4.0 - MIC integration into libmeasure
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #include <stdlib.h>
@@ -25,6 +26,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <ctype.h>
+#include <regex.h>
 
 #include "hettime.h"
 
@@ -36,6 +38,7 @@ static void copy_str_to_newstr(char **target, char *source, int size);
 static void copy_str_to_newarr(ARGUMENTS *settings, char *source);
 static int check_string_args(char *argument, const char **valid_arguments, int size);
 static int check_string_is_number(char *argument);
+static int parse_sampling_rates(char* argument, uint32_t *sampple_rate, uint32_t *skip_ms_rate);
 
 int main(int argc, char **argv) {
 	int status_child		= 1;
@@ -78,49 +81,44 @@ int main(int argc, char **argv) {
 				file_flag = 1;
 				break;
 			case 'c':
-				if (!check_string_is_number(optarg)) {
-					LOG_ERROR("The argument of option 'c' is not a number.");
+				if (parse_sampling_rates(optarg, &(cur_settings->sample_rate_cpu), &(cur_settings->skip_ms_rate_cpu))) {
+					LOG_ERROR("Wrong argument of option 'c'.");
 					print_help(argv, std_settings);
 					free_settings(&std_settings, &cur_settings);
 					return EXIT_FAILURE;
 				}
-				cur_settings->sample_rate_cpu = atoi(optarg);
 				break;
 			case 'g':
-				if (!check_string_is_number(optarg)) {
-					LOG_ERROR("The argument of option 'g' is not a number.");
+				if (parse_sampling_rates(optarg, &(cur_settings->sample_rate_gpu), &(cur_settings->skip_ms_rate_gpu))) {
+					LOG_ERROR("Wrong argument of option 'g'.");
 					print_help(argv, std_settings);
 					free_settings(&std_settings, &cur_settings);
 					return EXIT_FAILURE;
 				}
-				cur_settings->sample_rate_gpu = atoi(optarg);
 				break;
 			case 'f':
-				if (!check_string_is_number(optarg)) {
-					LOG_ERROR("The argument of option 'f' is not a number.");
+				if (parse_sampling_rates(optarg, &(cur_settings->sample_rate_fpga), &(cur_settings->skip_ms_rate_fpga))) {
+					LOG_ERROR("Wrong argument of option 'f'.");
 					print_help(argv, std_settings);
 					free_settings(&std_settings, &cur_settings);
 					return EXIT_FAILURE;
 				}
-				cur_settings->sample_rate_fpga = atoi(optarg);
 				break;
 			case 'm':
-				if (!check_string_is_number(optarg)) {
-					LOG_ERROR("The argument of option 'm' is not a number.");
+				if (parse_sampling_rates(optarg, &(cur_settings->sample_rate_mic), &(cur_settings->skip_ms_rate_mic))) {
+					LOG_ERROR("Wrong argument of option 'm'.");
 					print_help(argv, std_settings);
 					free_settings(&std_settings, &cur_settings);
 					return EXIT_FAILURE;
 				}
-				cur_settings->sample_rate_mic = atoi(optarg);
 				break;	
 			case 's':
-				if (!check_string_is_number(optarg)) {
-					LOG_ERROR("The argument of option 's' is not a number.");
+				if (parse_sampling_rates(optarg, &(cur_settings->sample_rate_sys), &(cur_settings->skip_ms_rate_sys))) {
+					LOG_ERROR("Wrong argument of option 's'.");
 					print_help(argv, std_settings);
 					free_settings(&std_settings, &cur_settings);
 					return EXIT_FAILURE;
 				}
-				cur_settings->sample_rate_sys = atoi(optarg);
 				break;
 			case 'G':
 				if (check_string_args(optarg, gpu_freqs[GPU_FREQUENCY_MIN], 4)) {
@@ -266,60 +264,72 @@ static void print_help(char **argv, ARGUMENTS *std_settings) {
 	
 	fprintf(stderr,
 			"Usage:\n"
-			"%s [-h|-?|-i|-c SAMPLE_CPU|-g SAMPLE_GPU|-f SAMPLE_FPGA|-s SAMPLE_SYS|-G FREQUENCY|-C GOVERNOR|-L FREQUENCY|-H FREQUENCY|-o RESULT_FILE|-v CSV_FILE|-u] -e EXECUTABLE [-a \"ARGS\"]\n\n"
-			"-c SAMPLE_CPU  | Sampling rate for CPU power/temp measurements in ms.\n"
-			"               | Default: %ums. Recommended minimum: 20ms.\n"
-			"-g SAMPLE_GPU  | Sampling rate for GPU power/temp measurements in ms.\n"
-			"               | Default: %ums. Recommended minimum: 30ms.\n"
-			"-f SAMPLE_FPGA | Sampling rate for FPGA power/temp measurements in ms.\n"
-			"               | Default: %ums. Recommended minimum: 50ms.\n"
-			"-m SAMPLE_MIC  | Sampling rate for MIC power/temp measurements in ms.\n"
-			"               | Default: %ums. Recommended minimum: 20ms.\n"
-			"-s SAMPLE_SYS  | Sampling rate for system-wide power/temp measurements in ms.\n"
-			"               | Default: %ums. Recommended minimum: 100ms.\n"
-			"-e EXECUTABLE  | Name of the executable. This option is mandatory.\n"
-			"-a \"ARGS\"      | Specify the arguments for executable EXECUTABLE with this option.\n"
-			"               | Note that the arguments have to be seperated by spaces.\n"
-			"               | The arguments must be surrounded by quotation marks!\n"
-			"               | Note that the ARGS option has to be the last in the argument list!\n"
-			"-G FREQUENCY   | Set a GPU frequency before the child application get started.\n"
-			"               | Possible frequency settings are:\n"
-			"               | min, MIN, minimum, MINIMUM\n"
-			"               |    Set GPU frequency to its minimum value.\n"
-			"               | max, MAX, maximum, MAXIMUM\n"
-			"               |    Set GPU frequency to its maximum value.\n"
-			"               | cur, CUR, current, CURRENT\n"
-			"               |    Don't set GPU frequency. Leave the current setting untouched.\n"
-			"               | Default: %s.\n"
-			"-C GOVERNOR    | Set a CPU frequency scaling governor for the 'acpi-cpufreq' driver.\n"
-			"               | Possible governors are:\n"
-			"               | save, SAVE, powersave, POWERSAVE\n"
-			"               |    Force CPU to use the lowest possible frequency.\n"
-			"               | dmnd, DMND, ondemand, ONDEMAND\n"
-			"               |    Dynamic frequency scaling. Aggresive strategy.\n"
-			"               | cons, CONS, conservative, CONSERVATIVE\n"
-			"               |    Dynamic frequency scaling. Conservative strategy.\n"
-			"               | perf, PERF, performance, PERFORMANCE\n"
-			"               |    Force CPU to use the highest possible frequency.\n"
-			"               | Default: %s.\n"
-			"-L FREQUENCY   | Set the lowest permitted CPU frequency in MHz.\n"
-			"-H FREQUENCY   | Set the highest permitted CPU frequency in MHz.\n"
-			"-o RESULT_FILE | Save results in a file instead of printing to stdout.\n"
-			"-v CSV_FILE    | Save results in a CSV table file.\n"
-			"-u             | Use UNIX socket handler library to communicate with msmonitor.\n"
-			"-i             | Forcing FPGA to idle after measuring system initialization.\n"
-			"-h             | Print this help message.\n"
-			"-?             | Print this help message.\n"
+			"%s [-h|-?|-i|-c \"SAMPLE_CPU, SAMPLE_SKIP_CPU\"|-g \"SAMPLE_GPU, SAMPLE_SKIP_GPU\"|-f \"SAMPLE_FPGA, SAMPLE_SKIP_FPGA\"|\n"
+			"         -m \"SAMPLE_MIC, SAMPLE_SKIP_MIC\"|-s \"SAMPLE_SYS, SAMPLE_SKIP_SYS\"|-G FREQUENCY|-C GOVERNOR|-L FREQUENCY|\n"
+			"         -H FREQUENCY|-o RESULT_FILE|-v CSV_FILE|-u] -e EXECUTABLE [-a \"ARGS\"]\n"
+			"-c \"SAMPLE_CPU,       | Sampling rate for CPU power/temp measurements in ms.\n"
+			"    SAMPLE_SKIP_CPU\"  | Skip rate defines how many measurement points are skipped.\n"
+			"                      | Default: %ums, %u. Recommended minimum: 20ms.\n"
+			"-g \"SAMPLE_GPU,       | Sampling rate for GPU power/temp measurements in ms.\n"
+			"    SAMPLE_SKIP_GPU\"  | Skip rate defines how many measurement points are skipped.\n"
+			"                      | Default: %ums, %u. Recommended minimum: 30ms.\n"
+			"-f \"SAMPLE_FPGA,      | Sampling rate for FPGA power/temp measurements in ms.\n"
+			"    SAMPLE_SKIP_FPGA\" | Skip rate defines how many measurement points are skipped.\n"
+			"                      | Default: %ums, %u. Recommended minimum: 50ms.\n"
+			"-m \"SAMPLE_MIC,\"      | Sampling rate for MIC power/temp measurements in ms.\n"
+			"    SAMPLE_SKIP_MIC\"  | Skip rate defines how many measurement points are skipped.\n"
+			"                      | Default: %ums, %u. Recommended minimum: 20ms.\n"
+			"-s \"SAMPLE_SYS        | Sampling rate for system-wide power/temp measurements in ms.\n"
+			"    SAMPLE_SKIP_SYS\"  |  Skip rate defines how many measurement points are skipped.\n"
+			"                      | Default: %ums, %u. Recommended minimum: 100ms.\n"
+			"-e EXECUTABLE         | Name of the executable. This option is mandatory.\n"
+			"-a \"ARGS\"             | Specify the arguments for executable EXECUTABLE with this option.\n"
+			"                      | Note that the arguments have to be seperated by spaces.\n"
+			"                      | The arguments must be surrounded by quotation marks!\n"
+			"                      | Note that the ARGS option has to be the last in the argument list!\n"
+			"-G FREQUENCY          | Set a GPU frequency before the child application get started.\n"
+			"                      | Possible frequency settings are:\n"
+			"                      | min, MIN, minimum, MINIMUM\n"
+			"                      |    Set GPU frequency to its minimum value.\n"
+			"                      | max, MAX, maximum, MAXIMUM\n"
+			"                      |    Set GPU frequency to its maximum value.\n"
+			"                      | cur, CUR, current, CURRENT\n"
+			"                      |    Don't set GPU frequency. Leave the current setting untouched.\n"
+			"                      | Default: %s.\n"
+			"-C GOVERNOR           | Set a CPU frequency scaling governor for the 'acpi-cpufreq' driver.\n"
+			"                      | Possible governors are:\n"
+			"                      | save, SAVE, powersave, POWERSAVE\n"
+			"                      |    Force CPU to use the lowest possible frequency.\n"
+			"                      | dmnd, DMND, ondemand, ONDEMAND\n"
+			"                      |    Dynamic frequency scaling. Aggresive strategy.\n"
+			"                      | cons, CONS, conservative, CONSERVATIVE\n"
+			"                      |    Dynamic frequency scaling. Conservative strategy.\n"
+			"                      | perf, PERF, performance, PERFORMANCE\n"
+			"                      |    Force CPU to use the highest possible frequency.\n"
+			"                      | Default: %s.\n"
+			"-L FREQUENCY          | Set the lowest permitted CPU frequency in MHz.\n"
+			"-H FREQUENCY          | Set the highest permitted CPU frequency in MHz.\n"
+			"-o RESULT_FILE        | Save results in a file instead of printing to stdout.\n"
+			"-v CSV_FILE           | Save results in a CSV table file.\n"
+			"-u                    | Use UNIX socket handler library to communicate with msmonitor.\n"
+			"-i                    | Forcing FPGA to idle after measuring system initialization.\n"
+			"-h                    | Print this help message.\n"
+			"-?                    | Print this help message.\n"
 			"\n"
 			"Example:\n"
-			"%s -c 90 -i -G min -C conservative -e /usr/bin/find -a \"/usr -iname lib*\"\n"
+			"%s -c \"90, 10\" -i -G min -C conservative -e /usr/bin/find -a \"/usr -iname lib*\"\n"
 			"\n",
 			argv[0],
 			std_settings->sample_rate_cpu,
+			std_settings->skip_ms_rate_cpu,
 			std_settings->sample_rate_gpu,
+			std_settings->skip_ms_rate_gpu,
 			std_settings->sample_rate_fpga,
+			std_settings->skip_ms_rate_fpga,
 			std_settings->sample_rate_mic,
+			std_settings->skip_ms_rate_mic,
 			std_settings->sample_rate_sys,
+			std_settings->skip_ms_rate_sys,
 			gpu_freq_string,
 			cpu_gov_string,
 			argv[0]
@@ -346,6 +356,11 @@ static void init_settings(ARGUMENTS **std_settings, ARGUMENTS **cur_settings) {
 	(*std_settings)->sample_rate_fpga		= 100;
 	(*std_settings)->sample_rate_mic		= 100;
 	(*std_settings)->sample_rate_sys		= 100;
+	(*std_settings)->skip_ms_rate_cpu		= 1;
+	(*std_settings)->skip_ms_rate_gpu		= 1;
+	(*std_settings)->skip_ms_rate_fpga		= 1;
+	(*std_settings)->skip_ms_rate_mic		= 1;
+	(*std_settings)->skip_ms_rate_sys		= 1;
 	(*std_settings)->gpu_freq				= GPU_FREQUENCY_CUR;
 	(*std_settings)->cpu_gov				= CPU_GOVERNOR_ONDEMAND;
 	(*std_settings)->cpu_freq_min			= 0;
@@ -469,4 +484,48 @@ static int check_string_is_number(char *argument) {
 	}
 	
 	return 1;
+}
+
+static int parse_sampling_rates(char* argument, uint32_t *sample_rate, uint32_t *skip_ms_rate) {
+	regex_t regex;
+	regmatch_t rm;
+	char buffer[100];
+	int rv;
+	char *regex_2_digits_string	= "^[[:digit:]]+[[:space:]]*,[[:space:]]*[[:digit:]]+$";
+	char *regex_1_digit_string	= "^[[:space:]]*[[:digit:]]+[[:space:]]*$";
+	memset(buffer, 0, 100);
+	
+	rv = regcomp(&regex, regex_2_digits_string, REG_EXTENDED);
+	if (rv) {
+		LOG_ERROR("Could not compile regex.\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	if(!regexec(&regex, argument, 1, &rm, 0)){
+		strncpy(buffer, &argument[rm.rm_so], (rm.rm_eo - rm.rm_so));
+		sscanf(buffer, "%d , %d", sample_rate, skip_ms_rate);
+		regfree(&regex);
+	} else {
+		rv = regcomp(&regex, regex_1_digit_string, REG_EXTENDED);
+		if (rv) {
+			LOG_ERROR("Could not compile regex.");
+			exit(EXIT_FAILURE);
+		}
+		
+		if(!regexec(&regex, argument, 1, &rm, 0)){
+			strncpy(buffer, &argument[rm.rm_so], (rm.rm_eo - rm.rm_so));
+			sscanf(buffer, "%d", sample_rate);
+			*skip_ms_rate = 1;
+			regfree(&regex);
+		} else {
+			return -1;
+		}
+	}
+	
+	if(*skip_ms_rate < 1){
+		LOG_WARN("Set skip_ms_rate to default. skip_ms_rate must be greater than 0.");
+		*skip_ms_rate = 1;
+	}
+	
+	return 0;
 }

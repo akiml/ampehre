@@ -16,6 +16,7 @@
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #include "CMeasureMICThread.hpp"
@@ -38,9 +39,15 @@ namespace NLibMeasure {
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
+#ifndef LIGHT		
+		uint64_t skip_ms_cnt = 0;
+#endif
+		
 		mrLog.lock();
 		mThreadNum = CThread::sNumOfThreads++;
-		mrLog() << ">>> 'mic thread' (thread #" << mThreadNum << "): init" << std::endl;
+		mrLog() << ">>> 'mic thread' (thread #" << mThreadNum << "): init" << std::endl
+				<< "     effective sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->mic_skip_ms_rate << " Hz / "
+				<< mTimer.getTimerMillisecond() * mpMeasurement->mic_skip_ms_rate << " ms" << std::endl;
 		mrLog.unlock();
 		
 		mMutexTimer.lock();
@@ -85,7 +92,15 @@ namespace NLibMeasure {
 			mMutexTimer.lock();
 			
 #ifndef LIGHT
-			mrMeasureResource.measure(mpMeasurement, mThreadNum);
+			if(skip_ms_cnt == UINT64_MAX){
+				skip_ms_cnt = 1;
+			} else {
+				skip_ms_cnt++;
+			}
+			
+			if(!(skip_ms_cnt % mpMeasurement->mic_skip_ms_rate)){
+				mrMeasureResource.measure(mpMeasurement, mThreadNum);
+			}
 			
 			// calculated diff time
 			calcTimeDiff(&(mpMeasurement->internal.mic_time_cur), &(mpMeasurement->internal.mic_time_temp), &(mpMeasurement->internal.mic_time_diff), &(mpMeasurement->internal.mic_time_diff_double));

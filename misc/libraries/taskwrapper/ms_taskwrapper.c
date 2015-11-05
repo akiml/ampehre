@@ -51,6 +51,13 @@ void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, ui
 	minternal->sample_rate_mic	= 100;
 	minternal->sample_rate_sys	= 100;
 	
+	// Please set the default number of skipped measurement points
+	minternal->skip_ms_rate_cpu		= 1;
+	minternal->skip_ms_rate_gpu		= 1;
+	minternal->skip_ms_rate_fpga	= 1;
+	minternal->skip_ms_rate_mic		= 1;
+	minternal->skip_ms_rate_sys		= 1;
+	
 	minternal->resources		= resources;
 	
 	// Initialize library and measuring system
@@ -65,11 +72,11 @@ void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, ui
 	minternal->global_m		= ms_alloc_measurement();
 	
 	// Set timer for measurement m
-	ms_set_timer(minternal->global_m, CPU   , minternal->sample_rate_cpu /1000, (minternal->sample_rate_cpu %1000) * 1000000);
-	ms_set_timer(minternal->global_m, GPU   , minternal->sample_rate_gpu /1000, (minternal->sample_rate_gpu %1000) * 1000000);
-	ms_set_timer(minternal->global_m, FPGA  , minternal->sample_rate_fpga/1000, (minternal->sample_rate_fpga%1000) * 1000000);
-	ms_set_timer(minternal->global_m, MIC   , minternal->sample_rate_mic /1000, (minternal->sample_rate_mic %1000) * 1000000);
-	ms_set_timer(minternal->global_m, SYSTEM, minternal->sample_rate_sys /1000, (minternal->sample_rate_sys %1000) * 1000000);
+	ms_set_timer(minternal->global_m, CPU   , minternal->sample_rate_cpu /1000, (minternal->sample_rate_cpu %1000) * 1000000, minternal->skip_ms_rate_cpu);
+	ms_set_timer(minternal->global_m, GPU   , minternal->sample_rate_gpu /1000, (minternal->sample_rate_gpu %1000) * 1000000, minternal->skip_ms_rate_gpu);
+	ms_set_timer(minternal->global_m, FPGA  , minternal->sample_rate_fpga/1000, (minternal->sample_rate_fpga%1000) * 1000000, minternal->skip_ms_rate_fpga);
+	ms_set_timer(minternal->global_m, MIC   , minternal->sample_rate_mic /1000, (minternal->sample_rate_mic %1000) * 1000000, minternal->skip_ms_rate_mic);
+	ms_set_timer(minternal->global_m, SYSTEM, minternal->sample_rate_sys /1000, (minternal->sample_rate_sys %1000) * 1000000, minternal->skip_ms_rate_sys);
 	ms_init_measurement(minternal->global_ms, minternal->global_m, resources);
 }
 

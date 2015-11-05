@@ -148,6 +148,11 @@ static void init_settings(ARGUMENTS **settings) {
 	(*settings)->sample_rate_fpga		= 50;
 	(*settings)->sample_rate_mic		= 100;
 	(*settings)->sample_rate_sys		= 100;
+	(*settings)->skip_ms_rate_cpu		= 1;
+	(*settings)->skip_ms_rate_gpu		= 1;
+	(*settings)->skip_ms_rate_fpga		= 1;
+	(*settings)->skip_ms_rate_mic		= 1;
+	(*settings)->skip_ms_rate_sys		= 1;
 	(*settings)->gpu_freq				= GPU_FREQUENCY_CUR;
 	(*settings)->cpu_gov				= CPU_GOVERNOR_ONDEMAND;
 	(*settings)->ipmi_timeout_setting 	= IOC_SET_IPMI_TIMEOUT;

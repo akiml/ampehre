@@ -15,7 +15,8 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.0 - add cpu, gpu and mic memory information
- *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor 
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #ifndef __CDATASETTINGS_HPP__
@@ -36,6 +37,12 @@ namespace NData {
 			uint32_t mFPGASamplingRate;
 			uint32_t mMICSamplingRate;
 			uint32_t mSystemSamplingRate;
+			
+			uint32_t mCPUSkipMsRate;
+			uint32_t mGPUSkipMsRate;
+			uint32_t mFPGASkipMsRate;
+			uint32_t mMICSkipMsRate;
+			uint32_t mSystemSkipMsRate;
 			
 			uint32_t mDataSamplingRate;
 			uint32_t mGUIRefreshRate;

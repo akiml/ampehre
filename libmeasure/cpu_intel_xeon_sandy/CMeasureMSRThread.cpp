@@ -21,6 +21,7 @@
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #include "CMeasureMSRThread.hpp"
@@ -48,9 +49,13 @@ namespace NLibMeasure {
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
+		uint64_t skip_ms_cnt = 0;
+		
 		mrLog.lock();
 		mThreadNum = CThread::sNumOfThreads++;
-		mrLog() << ">>> 'msr thread' (thread #" << mThreadNum << "): init" << std::endl;
+		mrLog() << ">>> 'msr thread' (thread #" << mThreadNum << "): init" << std::endl
+				<< "     effective sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->msr_skip_ms_rate << " Hz / "
+				<< mTimer.getTimerMillisecond() * mpMeasurement->msr_skip_ms_rate << " ms" << std::endl;
 		mrLog.unlock();
 		
 		mMutexTimer.lock();
@@ -109,7 +114,15 @@ namespace NLibMeasure {
 		while (!mThreadStateStop) {
 			mMutexTimer.lock();
 			
-			mrMeasureResource.measure(mpMeasurement, mThreadNum);
+			if(skip_ms_cnt == UINT64_MAX){
+				skip_ms_cnt = 1;
+			} else {
+				skip_ms_cnt++;
+			}
+			
+			if(!(skip_ms_cnt % mpMeasurement->msr_skip_ms_rate)){
+				mrMeasureResource.measure(mpMeasurement, mThreadNum);
+			}
 			
 			// calculated diff time (use internal struct for that)
 			calcTimeDiff(&(mpMeasurement->internal.msr_time_cur), &(mpMeasurement->internal.msr_time_temp), &(mpMeasurement->internal.msr_time_diff), &(mpMeasurement->internal.msr_time_diff_double));

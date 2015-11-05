@@ -17,6 +17,7 @@
  *          0.5.1 - modularised libmeasure
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #ifndef __CMEASURETHREADTIMER_HPP__
@@ -67,6 +68,8 @@ namespace NLibMeasure {
 			void shareMutex(CMutex *pMutexTimer);
 			void setTimer(struct timespec *mpTimer);
 			void setThreadName(std::string threadName);
+			double getTimerHertz();
+			double getTimerMillisecond();
 	};
 }
 

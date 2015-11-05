@@ -45,6 +45,11 @@ typedef struct __arguments {
 	uint32_t sample_rate_fpga;
 	uint32_t sample_rate_mic;
 	uint32_t sample_rate_sys;
+	uint32_t skip_ms_rate_cpu;
+	uint32_t skip_ms_rate_gpu;
+	uint32_t skip_ms_rate_fpga;
+	uint32_t skip_ms_rate_sys;
+	uint32_t skip_ms_rate_mic;
 	enum gpu_frequency gpu_freq;
 	enum cpu_governor cpu_gov;
 	uint64_t ipmi_timeout_setting;

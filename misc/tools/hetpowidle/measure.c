@@ -80,23 +80,23 @@ static void init_measuring_system(ARGUMENTS *settings, MSYSTEM **ms, MEASUREMENT
 	
 	// Set timer for measurement m
 	if (settings->idle_measurements & MEASURE_IDLE_CPU) {
-		ms_set_timer(*m, CPU   , settings->sample_rate_cpu /1000, (settings->sample_rate_cpu %1000) * 1000000);
+		ms_set_timer(*m, CPU   , settings->sample_rate_cpu /1000, (settings->sample_rate_cpu %1000) * 1000000, settings->skip_ms_rate_cpu);
 		active_measures |= CPU;
 	}
 	if (settings->idle_measurements & MEASURE_IDLE_GPU) {
-		ms_set_timer(*m, GPU   , settings->sample_rate_gpu /1000, (settings->sample_rate_gpu %1000) * 1000000);
+		ms_set_timer(*m, GPU   , settings->sample_rate_gpu /1000, (settings->sample_rate_gpu %1000) * 1000000, settings->skip_ms_rate_gpu);
 		active_measures |= GPU;
 	}
 	if (settings->idle_measurements & MEASURE_IDLE_FPGA) {
-		ms_set_timer(*m, FPGA  , settings->sample_rate_fpga/1000, (settings->sample_rate_fpga%1000) * 1000000);
+		ms_set_timer(*m, FPGA  , settings->sample_rate_fpga/1000, (settings->sample_rate_fpga%1000) * 1000000, settings->skip_ms_rate_fpga);
 		active_measures |= FPGA;
 	}
 	if (settings->idle_measurements & MEASURE_IDLE_MIC) {
-		ms_set_timer(*m, MIC   , settings->sample_rate_mic /1000, (settings->sample_rate_mic %1000) * 1000000);
+		ms_set_timer(*m, MIC   , settings->sample_rate_mic /1000, (settings->sample_rate_mic %1000) * 1000000, settings->skip_ms_rate_mic);
 		active_measures |= MIC;
 	}
 	if (settings->idle_measurements & MEASURE_IDLE_SYS) {
-		ms_set_timer(*m, SYSTEM, settings->sample_rate_sys /1000, (settings->sample_rate_sys %1000) * 1000000);
+		ms_set_timer(*m, SYSTEM, settings->sample_rate_sys /1000, (settings->sample_rate_sys %1000) * 1000000, settings->skip_ms_rate_sys);
 		active_measures |= SYSTEM;
 	}
 	

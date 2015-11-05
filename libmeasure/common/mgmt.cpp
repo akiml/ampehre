@@ -22,7 +22,7 @@
  *          0.4.0 - MIC integration into libmeasure
  *          0.5.1 - modularised libmeasure
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
- *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #include "../../include/measurement.h"
@@ -75,6 +75,12 @@ MEASUREMENT* ms_alloc_measurement(void) {
 	measurement->mic_time_wait.tv_sec		= UINT64_MAX;
 	measurement->mic_time_wait.tv_nsec		= UINT64_MAX;
 	
+	measurement->msr_skip_ms_rate		= 1;
+	measurement->nvml_skip_ms_rate		= 1;
+	measurement->maxeler_skip_ms_rate	= 1;
+	measurement->ipmi_skip_ms_rate		= 1;
+	measurement->mic_skip_ms_rate		= 1;
+	
 	return measurement;
 }
 
@@ -82,27 +88,36 @@ void ms_free_measurement(MEASUREMENT* measurement) {
 	delete measurement;
 }
 
-void ms_set_timer(MEASUREMENT* measurement, int flag, uint64_t sec, uint64_t nsec) {
+void ms_set_timer(MEASUREMENT* measurement, int flag, uint64_t sec, uint64_t nsec, uint32_t skip_ms_rate) {
+	if(skip_ms_rate <= 0){
+		skip_ms_rate = 1;
+	}
+	
 	switch (flag) {
 		case CPU:
 			measurement->msr_time_wait.tv_sec		= sec;
 			measurement->msr_time_wait.tv_nsec		= nsec;
+			measurement->msr_skip_ms_rate			= skip_ms_rate;
 			break;
 		case GPU:
 			measurement->nvml_time_wait.tv_sec		= sec;
 			measurement->nvml_time_wait.tv_nsec		= nsec;
+			measurement->nvml_skip_ms_rate			= skip_ms_rate;
 			break;
 		case FPGA:
 			measurement->maxeler_time_wait.tv_sec	= sec;
 			measurement->maxeler_time_wait.tv_nsec	= nsec;
+			measurement->maxeler_skip_ms_rate		= skip_ms_rate;
 			break;
 		case SYSTEM:
 			measurement->ipmi_time_wait.tv_sec		= sec;
 			measurement->ipmi_time_wait.tv_nsec		= nsec;
+			measurement->ipmi_skip_ms_rate			= skip_ms_rate;
 			break;
 		case MIC:
 			measurement->mic_time_wait.tv_sec		= sec;
 			measurement->mic_time_wait.tv_nsec		= nsec;
+			measurement->mic_skip_ms_rate			= skip_ms_rate;
 			break;
 		default:
 			std::cout << "!!! 'mgmt' (thread main): Error: cannot set measurement timer. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;

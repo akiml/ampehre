@@ -16,6 +16,7 @@
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #include "CDataLibrary.hpp"
@@ -68,15 +69,15 @@ namespace NData {
 		mpMSMeasurement			= ms_alloc_measurement();
 		
 		ms_set_timer(mpMSMeasurement, CPU   , mrSettings.mCPUSamplingRate   /1000,
-					 (mrSettings.mCPUSamplingRate   %1000) * 1000000);
+					 (mrSettings.mCPUSamplingRate   %1000) * 1000000, mrSettings.mCPUSkipMsRate);
 		ms_set_timer(mpMSMeasurement, GPU   , mrSettings.mGPUSamplingRate   /1000,
-					 (mrSettings.mGPUSamplingRate   %1000) * 1000000);
+					 (mrSettings.mGPUSamplingRate   %1000) * 1000000, mrSettings.mGPUSkipMsRate);
 		ms_set_timer(mpMSMeasurement, FPGA  , mrSettings.mFPGASamplingRate  /1000,
-					 (mrSettings.mFPGASamplingRate  %1000) * 1000000);
+					 (mrSettings.mFPGASamplingRate  %1000) * 1000000, mrSettings.mFPGASkipMsRate);
 		ms_set_timer(mpMSMeasurement, MIC , mrSettings.mMICSamplingRate     /1000,
-					 (mrSettings.mMICSamplingRate   %1000) * 1000000);
+					 (mrSettings.mMICSamplingRate   %1000) * 1000000, mrSettings.mMICSkipMsRate);
 		ms_set_timer(mpMSMeasurement, SYSTEM, mrSettings.mSystemSamplingRate/1000,
-					 (mrSettings.mSystemSamplingRate%1000) * 1000000);
+					 (mrSettings.mSystemSamplingRate%1000) * 1000000, mrSettings.mSystemSkipMsRate);
 		
 		ms_init_measurement(mpMSSystem, mpMSMeasurement, ALL);
 	}

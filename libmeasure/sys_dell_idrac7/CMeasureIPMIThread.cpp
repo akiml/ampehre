@@ -17,7 +17,7 @@
  *          0.2.2 - add semaphore to synchronize the start of the measurements
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #include "CMeasureIPMIThread.hpp"
@@ -42,10 +42,16 @@ namespace NLibMeasure {
 	void CMeasureIPMIThread::run(void) {
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
+
+#ifndef LIGHT		
+		uint64_t skip_ms_cnt = 0;
+#endif
 		
 		mrLog.lock();
 		mThreadNum = CThread::sNumOfThreads++;
-		mrLog() << ">>> 'ipmi thread' (thread #" << mThreadNum << "): init" << std::endl;
+		mrLog() << ">>> 'ipmi thread' (thread #" << mThreadNum << "): init" << std::endl
+				<< "     effective sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->ipmi_skip_ms_rate << " Hz / "
+				<< mTimer.getTimerMillisecond() * mpMeasurement->ipmi_skip_ms_rate << " ms" << std::endl;
 		mrLog.unlock();
 		
 		mMutexTimer.lock();
@@ -76,7 +82,15 @@ namespace NLibMeasure {
 			mMutexTimer.lock();
 			
 #ifndef LIGHT
-			mrMeasureResource.measure(mpMeasurement, mThreadNum);
+			if(skip_ms_cnt == UINT64_MAX){
+				skip_ms_cnt = 1;
+			} else {
+				skip_ms_cnt++;
+			}
+			
+			if(!(skip_ms_cnt % mpMeasurement->ipmi_skip_ms_rate)){
+				mrMeasureResource.measure(mpMeasurement, mThreadNum);
+			}
 			
 			// calculated diff time (use internal struct for that)
 			calcTimeDiff(&(mpMeasurement->internal.ipmi_time_cur), &(mpMeasurement->internal.ipmi_time_temp), &(mpMeasurement->internal.ipmi_time_diff), &(mpMeasurement->internal.ipmi_time_diff_double));

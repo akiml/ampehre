@@ -16,7 +16,7 @@
  *          0.2.1 - add support for IPMI to the measure driver
  *          0.2.4 - add version check functionality to library, wrappers, and tools
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl call to driver to configure the ipmi timeout
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #include "CMeasureIPMI.hpp"
@@ -252,7 +252,7 @@ namespace NLibMeasure {
 			exit(EXIT_FAILURE);
 		}
 		mrLog.lock();
-		mrLog()<<  ">>> 'ipmi thread' (thread #" << rThreadNum << "): Current IPMI timeout: " << rv << " ms." << std::endl;
+		mrLog()<<  ">>> 'ipmi thread' (thread #" << rThreadNum << "): Current IPMI timeout: " << rv << " ms" << std::endl;
 		mrLog.unlock();
 	}
 }
