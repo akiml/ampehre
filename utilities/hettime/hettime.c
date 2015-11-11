@@ -518,6 +518,7 @@ static int parse_sampling_rates(char* argument, uint32_t *sample_rate, uint32_t 
 			*skip_ms_rate = 1;
 			regfree(&regex);
 		} else {
+			regfree(&regex);
 			return -1;
 		}
 	}

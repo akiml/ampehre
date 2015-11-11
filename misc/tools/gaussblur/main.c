@@ -128,17 +128,22 @@ static void init_settings(ARGUMENTS **settings) {
 	}
 	
 	// Please, set the default settings here
-	(*settings)->sample_rate_cpu	= 30;
-	(*settings)->sample_rate_gpu	= 50;
-	(*settings)->sample_rate_fpga	= 60;
-	(*settings)->sample_rate_sys	= 100;
-	(*settings)->gpu_freq			= GPU_FREQUENCY_MAX;
-	(*settings)->cpu_gov			= CPU_GOVERNOR_ONDEMAND;
-	(*settings)->cpu_freq_min		= 0;
-	(*settings)->cpu_freq_max		= 0;
-	(*settings)->checkpoints		= GAUSS_T;
-	(*settings)->size				= GAUSS_N;
-	(*settings)->energy_loops		= GAUSS_T_ENERGY_LOOPS;
+	(*settings)->sample_rate_cpu		= 30;
+	(*settings)->sample_rate_gpu		= 50;
+	(*settings)->sample_rate_fpga		= 60;
+	(*settings)->sample_rate_sys		= 100;
+	(*settings)->skip_ms_rate_cpu		= 1;
+	(*settings)->skip_ms_rate_gpu		= 1;
+	(*settings)->skip_ms_rate_fpga		= 1;
+	(*settings)->skip_ms_rate_sys		= 1;
+	(*settings)->gpu_freq				= GPU_FREQUENCY_MAX;
+	(*settings)->cpu_gov				= CPU_GOVERNOR_ONDEMAND;
+	(*settings)->cpu_freq_min			= 0;
+	(*settings)->cpu_freq_max			= 0;
+	(*settings)->checkpoints			= GAUSS_T;
+	(*settings)->size					= GAUSS_N;
+	(*settings)->energy_loops			= GAUSS_T_ENERGY_LOOPS;
+	(*settings)->ipmi_timeout_setting	= IOC_SET_IPMI_TIMEOUT;
 }
 
 static void free_settings(ARGUMENTS **settings) {
