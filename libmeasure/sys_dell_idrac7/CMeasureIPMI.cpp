@@ -24,28 +24,28 @@
 #include <ctime>
 
 namespace NLibMeasure {
-	template <int SkipMs>
-	CMeasureIPMI<SkipMs>::CMeasureIPMI(CLogger& rLogger, uint64_t ipmi_timeout_setting) :
+	template <int SkipMs, int Version>
+	CMeasureIPMI<SkipMs, Version>::CMeasureIPMI(CLogger& rLogger, uint64_t ipmi_timeout_setting) :
 		CMeasureAbstractResource(rLogger),
 		mTimeoutSetting(ipmi_timeout_setting)
 		{
 		init();
 	}
 	
-	template <int SkipMs>
-	CMeasureIPMI<SkipMs>::~CMeasureIPMI() {
+	template <int SkipMs, int Version>
+	CMeasureIPMI<SkipMs, Version>::~CMeasureIPMI() {
 		destroy();
 	}
 	
-	template <int SkipMs>
-	void CMeasureIPMI<SkipMs>::init(void) {
-#ifdef LIGHT
-		mrLog()
-		<< ">>> 'ipmi' (light version)" << std::endl;
-#else
-		mrLog()
-		<< ">>> 'ipmi' (full version)" << std::endl;
-#endif
+	template <int SkipMs, int Version>
+	void CMeasureIPMI<SkipMs, Version>::init(void) {
+		if (Version == FULL) {
+			mrLog()
+			<< ">>> 'ipmi' (full version)" << std::endl;
+		} else {
+			mrLog()
+			<< ">>> 'ipmi' (light version)" << std::endl;
+		}
 		
 		MS_VERSION version;
 		version.major = MS_MAJOR_VERSION;
@@ -69,18 +69,18 @@ namespace NLibMeasure {
 		<< std::endl;
 	}
 	
-	template <int SkipMs>
-	void CMeasureIPMI<SkipMs>::destroy(void) {
+	template <int SkipMs, int Version>
+	void CMeasureIPMI<SkipMs, Version>::destroy(void) {
 		close_ipmi_wrapper();
 	}
 	
-	template <int SkipMs>
-	void CMeasureIPMI<SkipMs>::resetEnergyCounter(int32_t& rThreadNum) {
+	template <int SkipMs, int Version>
+	void CMeasureIPMI<SkipMs, Version>::resetEnergyCounter(int32_t& rThreadNum) {
 		measureRawMsgDellResetEnergy(rThreadNum);
 	}
 	
-	template <int SkipMs>
-	void CMeasureIPMI<SkipMs>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Version>
+	void CMeasureIPMI<SkipMs, Version>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		measureRecordIDs(pMeasurement, rThreadNum);
 		measureRawMsgs(pMeasurement, rThreadNum);
 		
@@ -91,28 +91,28 @@ namespace NLibMeasure {
 		}
 	}
 	
-	template <int SkipMs>
-	void CMeasureIPMI<SkipMs>::measureRecordIDs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Version>
+	void CMeasureIPMI<SkipMs, Version>::measureRecordIDs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		double value = 0;
 		
-#ifndef LIGHT
-		if(!(mMeasureCounter%SkipMs)) {
-			value = getTemperature(18);
-			if(value < 0 && value != -ETIMEDOUT){
-				mrLog.lock();
-				mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: in getTemperature record id 18 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-				mrLog.unlock();
-				exit(EXIT_FAILURE);
-			}
-			if(value == -ETIMEDOUT) {
-				mrLog.lock();
-				mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout in getTemperature record id 18 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-				mrLog.unlock();
-			} else {
-				pMeasurement->ipmi_temperature_sysboard_cur = value;
+		if (Version == FULL) {
+			if(!(mMeasureCounter%SkipMs)) {
+				value = getTemperature(18);
+				if(value < 0 && value != -ETIMEDOUT){
+					mrLog.lock();
+					mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: in getTemperature record id 18 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+					mrLog.unlock();
+					exit(EXIT_FAILURE);
+				}
+				if(value == -ETIMEDOUT) {
+					mrLog.lock();
+					mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout in getTemperature record id 18 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+					mrLog.unlock();
+				} else {
+					pMeasurement->ipmi_temperature_sysboard_cur = value;
+				}
 			}
 		}
-#endif /* LIGHT */
 		
 		value = getPower(90);
 		if(value < 0 && value != -ETIMEDOUT){
@@ -129,49 +129,49 @@ namespace NLibMeasure {
 			pMeasurement->ipmi_power_sysboard_cur = value;
 		}
 		
-#ifndef LIGHT
-		if(!(mMeasureCounter%SkipMs)) {
-			value = getTemperature(153);
-			if(value < 0 && value != -ETIMEDOUT){
-				mrLog.lock();
-				mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: in getTemperature record id 153 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-				mrLog.unlock();
-				exit(EXIT_FAILURE);
-			}
-			if(value == -ETIMEDOUT) {
-				mrLog.lock();
-				mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout in getTemperature record id 153 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-				mrLog.unlock();
-			} else {
-				pMeasurement->ipmi_temperature_cur[0] = value;
-			}
-		
-			value = getTemperature(154);
-			if(value < 0 && value != -ETIMEDOUT){
-				mrLog.lock();
-				mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: in getTemperature record id 154 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-				mrLog.unlock();
-				exit(EXIT_FAILURE);
-			}
-			if(value == -ETIMEDOUT) {
-				mrLog.lock();
-				mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout in getTemperature record id 154 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-				mrLog.unlock();
-			} else {
-				pMeasurement->ipmi_temperature_cur[1] = value;
+		if (Version == FULL) {
+			if(!(mMeasureCounter%SkipMs)) {
+				value = getTemperature(153);
+				if(value < 0 && value != -ETIMEDOUT){
+					mrLog.lock();
+					mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: in getTemperature record id 153 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+					mrLog.unlock();
+					exit(EXIT_FAILURE);
+				}
+				if(value == -ETIMEDOUT) {
+					mrLog.lock();
+					mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout in getTemperature record id 153 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+					mrLog.unlock();
+				} else {
+					pMeasurement->ipmi_temperature_cur[0] = value;
+				}
+			
+				value = getTemperature(154);
+				if(value < 0 && value != -ETIMEDOUT){
+					mrLog.lock();
+					mrLog(CLogger::scErr) << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Error: in getTemperature record id 154 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+					mrLog.unlock();
+					exit(EXIT_FAILURE);
+				}
+				if(value == -ETIMEDOUT) {
+					mrLog.lock();
+					mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout in getTemperature record id 154 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+					mrLog.unlock();
+				} else {
+					pMeasurement->ipmi_temperature_cur[1] = value;
+				}
 			}
 		}
-#endif /* LIGHT */
 	}
 	
-	template <int SkipMs>
-	void CMeasureIPMI<SkipMs>::measureRawMsgs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Version>
+	void CMeasureIPMI<SkipMs, Version>::measureRawMsgs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		measureRawMsgDellCumulativeEnergy(pMeasurement, rThreadNum);
 		measureRawMsgDellCurrentPower(pMeasurement, rThreadNum);
 	}
 	
-	template <int SkipMs>
-	void CMeasureIPMI<SkipMs>::measureRawMsgDellResetEnergy(int32_t& rThreadNum) {
+	template <int SkipMs, int Version>
+	void CMeasureIPMI<SkipMs, Version>::measureRawMsgDellResetEnergy(int32_t& rThreadNum) {
 		int32_t completion_code;
 		
 		completion_code = dellResetEnergyCounter();
@@ -188,8 +188,8 @@ namespace NLibMeasure {
 		}
 	}
 	
-	template <int SkipMs>
-	void CMeasureIPMI<SkipMs>::measureRawMsgDellCumulativeEnergy(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Version>
+	void CMeasureIPMI<SkipMs, Version>::measureRawMsgDellCumulativeEnergy(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		int32_t completion_code;
 		
 		uint32_t result_energy;
@@ -223,8 +223,8 @@ namespace NLibMeasure {
 		pMeasurement->ipmi_power_server_avg_since_reset		= result_power;
 	}
 	
-	template <int SkipMs>
-	void CMeasureIPMI<SkipMs>::measureRawMsgDellCurrentPower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {	
+	template <int SkipMs, int Version>
+	void CMeasureIPMI<SkipMs, Version>::measureRawMsgDellCurrentPower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {	
 		int32_t completion_code;		
 		uint16_t result_power_current;
 		
@@ -246,8 +246,8 @@ namespace NLibMeasure {
 		pMeasurement->ipmi_power_server_cur = (uint32_t)result_power_current;
 	}
 	
-	template <int SkipMs>
-    void CMeasureIPMI<SkipMs>::setIPMITimeout(uint32_t& timeout, uint32_t& rThreadNum) {
+	template <int SkipMs, int Version>
+    void CMeasureIPMI<SkipMs, Version>::setIPMITimeout(uint32_t& timeout, uint32_t& rThreadNum) {
 		int rv;
 		rv = setIPMITimeoutIOCTL(mTimeoutSetting, timeout);
 		
@@ -278,8 +278,8 @@ namespace NLibMeasure {
 		mrLog.unlock();
 	}
 	
-	template <int SkipMs>
-	void CMeasureIPMI<SkipMs>::trigger_resource_custom(void* pParams) {
+	template <int SkipMs, int Version>
+	void CMeasureIPMI<SkipMs, Version>::trigger_resource_custom(void* pParams) {
 		uint32_t* pArgs = (uint32_t*) pParams;
 		setIPMITimeout(pArgs[0], pArgs[1]);
 	}

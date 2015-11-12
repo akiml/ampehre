@@ -31,7 +31,7 @@
 #include <nvml.h>
 
 namespace NLibMeasure {
-	template <int SkipMs>
+	template <int SkipMs, int Version>
 	class CMeasureNVML : public CMeasureAbstractResource {
 		private:
 			nvmlDevice_t mDevice;

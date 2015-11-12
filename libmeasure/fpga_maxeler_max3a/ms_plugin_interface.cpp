@@ -23,17 +23,32 @@
 
 extern "C" {
 	void* init_resource(void* pLogger, void* pParams){
-	NLibMeasure::CMeasureAbstractResource* pMaxeler;
-		skip_ms_freq skip_ms = *((skip_ms_freq*) pParams);
-		switch(skip_ms){
-			case LOW:
-				pMaxeler =  new NLibMeasure::CMeasureMaxeler<1>(*((NLibMeasure::CLogger*)pLogger));
-				break;
-			case HIGH:
-				pMaxeler =  new NLibMeasure::CMeasureMaxeler<10>(*((NLibMeasure::CLogger*)pLogger));
-				break;
-			default:
-				pMaxeler =  new NLibMeasure::CMeasureMaxeler<1>(*((NLibMeasure::CLogger*)pLogger));
+		NLibMeasure::CMeasureAbstractResource* pMaxeler;
+		lib_version version = *((lib_version*) pParams);
+		skip_ms_freq skip_ms = *((skip_ms_freq*) pParams + 1);
+		
+		if(version == FULL) {
+			switch(skip_ms){
+				case LOW:
+					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, FULL>(*((NLibMeasure::CLogger*)pLogger));
+					break;
+				case HIGH:
+					pMaxeler =  new NLibMeasure::CMeasureMaxeler<10, FULL>(*((NLibMeasure::CLogger*)pLogger));
+					break;
+				default:
+					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, FULL>(*((NLibMeasure::CLogger*)pLogger));
+			}
+		} else {
+			switch(skip_ms){
+				case LOW:
+					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger));
+					break;
+				case HIGH:
+					pMaxeler =  new NLibMeasure::CMeasureMaxeler<10, LIGHT2>(*((NLibMeasure::CLogger*)pLogger));
+					break;
+				default:
+					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger));
+			}
 		}
 		return  (void*) pMaxeler;
 	}

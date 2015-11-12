@@ -26,7 +26,7 @@
 #include <miclib.h>
 
 namespace NLibMeasure {
-	template <int SkipMs>
+	template <int SkipMs, int Version>
 	class CMeasureMIC : public CMeasureAbstractResource {
 		private:
 			struct mic_device *mpMicDevice;

@@ -24,17 +24,32 @@
 extern "C" {
 	void* init_resource(void* pLogger, void* pParams){
 		NLibMeasure::CMeasureAbstractResource* pMSR;
-		skip_ms_freq skip_ms = *((skip_ms_freq*) pParams);
-		pParams = (uint64_t*) pParams + 1; 
-		switch(skip_ms){
-			case LOW:
-				pMSR =  new NLibMeasure::CMeasureMSR<1>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
-				break;
-			case HIGH:
-				pMSR =  new NLibMeasure::CMeasureMSR<10>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
-				break;
-			default:
-				pMSR = new NLibMeasure::CMeasureMSR<1>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+		lib_version version = *((lib_version*) pParams);
+		skip_ms_freq skip_ms = *((skip_ms_freq*) pParams + 1);
+		pParams = (uint64_t*) pParams + 2; 
+		
+		if(version == FULL) {
+			switch(skip_ms){
+				case LOW:
+					pMSR =  new NLibMeasure::CMeasureMSR<1, FULL>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+					break;
+				case HIGH:
+					pMSR =  new NLibMeasure::CMeasureMSR<10, FULL>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+					break;
+				default:
+					pMSR = new NLibMeasure::CMeasureMSR<1, FULL>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+			}
+		} else {
+			switch(skip_ms){
+				case LOW:
+					pMSR =  new NLibMeasure::CMeasureMSR<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+					break;
+				case HIGH:
+					pMSR =  new NLibMeasure::CMeasureMSR<10, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+					break;
+				default:
+					pMSR = new NLibMeasure::CMeasureMSR<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+			}
 		}
 		return  (void*) pMSR;
 	}

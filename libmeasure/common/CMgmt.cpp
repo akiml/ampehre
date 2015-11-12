@@ -44,11 +44,11 @@ CMgmt::CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFre
 	mResources(),
 	mStartSem()
 	{
-	uint64_t params_cpu[]	= {HIGH, cpuGovernor, cpuFrequencyMin, cpuFrequencyMax};
-	uint64_t params_gpu[]	= {HIGH, gpuFrequency};
-	uint64_t params_fpga[]	= {HIGH};
-	uint64_t params_mic[]	= {LOW};
-	uint64_t params_sys[]	= {HIGH, ipmi_timeout_setting};
+	uint64_t params_cpu[]	= {FULL, HIGH, cpuGovernor, cpuFrequencyMin, cpuFrequencyMax};
+	uint64_t params_gpu[]	= {FULL, HIGH, gpuFrequency};
+	uint64_t params_fpga[]	= {FULL, HIGH};
+	uint64_t params_mic[]	= {FULL, HIGH};
+	uint64_t params_sys[]	= {FULL, HIGH, ipmi_timeout_setting};
 	
 	mResources[CPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, CPU_LIB_NAME, (void*) params_cpu);
 	mResources[GPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, GPU_LIB_NAME, (void*) params_gpu);

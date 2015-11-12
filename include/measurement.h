@@ -145,6 +145,11 @@ enum skip_ms_freq {
 	LOW
 };
 
+enum lib_version {
+	LIGHT2,
+	FULL
+};
+
 enum maxeler_power {
 	VCC10,
 	VCC15,

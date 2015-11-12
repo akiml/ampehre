@@ -24,17 +24,32 @@
 extern "C" {
 	void* init_resource(void* pLogger, void* pParams){
 		NLibMeasure::CMeasureAbstractResource* pIPMI;
-		skip_ms_freq skip_ms = *((skip_ms_freq*) pParams);
-		pParams = (uint64_t*) pParams + 1; 
-		switch(skip_ms){
-			case LOW:
-				pIPMI =  new NLibMeasure::CMeasureIPMI<1>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
-				break;
-			case HIGH:
-				pIPMI =  new NLibMeasure::CMeasureIPMI<10>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
-				break;
-			default:
-				pIPMI =  new NLibMeasure::CMeasureIPMI<1>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+		lib_version version = *((lib_version*) pParams);
+		skip_ms_freq skip_ms = *((skip_ms_freq*) pParams + 1);
+		pParams = (uint64_t*) pParams + 2; 
+		
+		if(version == FULL) {
+			switch(skip_ms){
+				case LOW:
+					pIPMI =  new NLibMeasure::CMeasureIPMI<1, FULL>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+					break;
+				case HIGH:
+					pIPMI =  new NLibMeasure::CMeasureIPMI<10, FULL>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+					break;
+				default:
+					pIPMI =  new NLibMeasure::CMeasureIPMI<1, FULL>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+			}
+		} else {
+			switch(skip_ms){
+				case LOW:
+					pIPMI =  new NLibMeasure::CMeasureIPMI<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+					break;
+				case HIGH:
+					pIPMI =  new NLibMeasure::CMeasureIPMI<10, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+					break;
+				default:
+					pIPMI =  new NLibMeasure::CMeasureIPMI<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+			}
 		}
 		return  (void*) pIPMI;
 	}

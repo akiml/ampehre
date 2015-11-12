@@ -29,7 +29,7 @@
 #include "../common/CMeasureAbstractResource.hpp"
 
 namespace NLibMeasure {
-	template <int SkipMs>
+	template <int SkipMs, int Version>
 	class CMeasureMaxeler : public CMeasureAbstractResource {
 		private:
 			int mMaxDaemonFildes;

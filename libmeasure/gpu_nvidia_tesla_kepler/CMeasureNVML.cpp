@@ -23,8 +23,8 @@
  */
 
 namespace NLibMeasure {
-	template <int SkipMs>
-	CMeasureNVML<SkipMs>::CMeasureNVML(CLogger& rLogger, gpu_frequency gpuFrequency) :
+	template <int SkipMs, int Version>
+	CMeasureNVML<SkipMs, Version>::CMeasureNVML(CLogger& rLogger, gpu_frequency gpuFrequency) :
 		CMeasureAbstractResource(rLogger),
 		mGpuFrequency(gpuFrequency)
 		{
@@ -32,20 +32,20 @@ namespace NLibMeasure {
 		init();
 	}
 	
-	template <int SkipMs>
-	CMeasureNVML<SkipMs>::~CMeasureNVML() {
+	template <int SkipMs, int Version>
+	CMeasureNVML<SkipMs, Version>::~CMeasureNVML() {
 		destroy();
 	}
 	
-	template <int SkipMs>
-	void CMeasureNVML<SkipMs>::init(void) {
-#ifdef LIGHT
-		mrLog()
-		<< ">>> 'nvml' (light version)" << std::endl;
-#else
-		mrLog()
-		<< ">>> 'nvml' (full version)" << std::endl;
-#endif
+	template <int SkipMs, int Version>
+	void CMeasureNVML<SkipMs, Version>::init(void) {
+		if(Version == FULL) {
+			mrLog()
+			<< ">>> 'nvml' (full version)" << std::endl;
+		} else {
+			mrLog()
+			<< ">>> 'nvml' (light version)" << std::endl;
+		}
 		
 		nvmlReturn_t result;
 		int32_t rv;
@@ -280,8 +280,8 @@ namespace NLibMeasure {
 		<< std::endl;
 	}
 	
-	template <int SkipMs>
-	void CMeasureNVML<SkipMs>::destroy(void) {
+	template <int SkipMs, int Version>
+	void CMeasureNVML<SkipMs, Version>::destroy(void) {
 		nvmlReturn_t result;
 		int rv;
 		char const* args_dis_pm[] = {"gpu_management", "-p 0", "-r", NULL};
@@ -300,8 +300,8 @@ namespace NLibMeasure {
 		}
 	}
 	
-	template <int SkipMs>
-	void CMeasureNVML<SkipMs>::read_memory_total(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Version>
+	void CMeasureNVML<SkipMs, Version>::read_memory_total(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		nvmlReturn_t result;
 		nvmlMemory_t memory;
 		
@@ -315,8 +315,8 @@ namespace NLibMeasure {
 		pMeasurement->nvml_memory_total = (uint32_t)(memory.total >> 10);
 	}
 	
-	template <int SkipMs>
-	void CMeasureNVML<SkipMs>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Version>
+	void CMeasureNVML<SkipMs, Version>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		nvmlReturn_t result;
 		
 		result = nvmlDeviceGetPowerUsage(mDevice, &(pMeasurement->nvml_power_cur));
@@ -327,85 +327,84 @@ namespace NLibMeasure {
 			exit(EXIT_FAILURE);
 		}
 		
-#ifndef LIGHT
-		nvmlMemory_t memory;
-		result = nvmlDeviceGetMemoryInfo(mDevice, &memory);
-		if (NVML_SUCCESS != result) {
-			mrLog.lock();
-			mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: cannot obtain memory informations. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-			mrLog.unlock();
-			exit(EXIT_FAILURE);
-		}
-		pMeasurement->nvml_memory_free_cur = (uint32_t)(memory.free >> 10);
-		pMeasurement->nvml_memory_used_cur = (uint32_t)(memory.used >> 10);
-		
-		if(!(mMeasureCounter%SkipMs)) {
-			result = nvmlDeviceGetPerformanceState(mDevice, (nvmlPstates_t*)&(pMeasurement->internal.nvml_power_state));
-			if (NVML_SUCCESS != result) {
-				mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: no performance state reading possible. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-				exit(EXIT_FAILURE);
-			}
-		
-			nvmlTemperatureSensors_t sensorType = NVML_TEMPERATURE_GPU;
-		
-			result = nvmlDeviceGetTemperature(mDevice, sensorType, &(pMeasurement->nvml_temperature_cur));
+		if(Version == FULL) {
+			nvmlMemory_t memory;
+			result = nvmlDeviceGetMemoryInfo(mDevice, &memory);
 			if (NVML_SUCCESS != result) {
 				mrLog.lock();
-				mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: cannot read temperature. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+				mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: cannot obtain memory informations. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 				mrLog.unlock();
 				exit(EXIT_FAILURE);
 			}
-		
-			result = nvmlDeviceGetClockInfo(mDevice, NVML_CLOCK_SM, &(pMeasurement->nvml_clock_sm_cur));
+			pMeasurement->nvml_memory_free_cur = (uint32_t)(memory.free >> 10);
+			pMeasurement->nvml_memory_used_cur = (uint32_t)(memory.used >> 10);
+			
+			if(!(mMeasureCounter%SkipMs)) {
+				result = nvmlDeviceGetPerformanceState(mDevice, (nvmlPstates_t*)&(pMeasurement->internal.nvml_power_state));
+				if (NVML_SUCCESS != result) {
+					mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: no performance state reading possible. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+					exit(EXIT_FAILURE);
+				}
+			
+				nvmlTemperatureSensors_t sensorType = NVML_TEMPERATURE_GPU;
+			
+				result = nvmlDeviceGetTemperature(mDevice, sensorType, &(pMeasurement->nvml_temperature_cur));
+				if (NVML_SUCCESS != result) {
+					mrLog.lock();
+					mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: cannot read temperature. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+					mrLog.unlock();
+					exit(EXIT_FAILURE);
+				}
+			
+				result = nvmlDeviceGetClockInfo(mDevice, NVML_CLOCK_SM, &(pMeasurement->nvml_clock_sm_cur));
+				if (NVML_SUCCESS != result) {
+					mrLog.lock();
+					mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: cannot read frequency. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+					mrLog.unlock();
+					exit(EXIT_FAILURE);
+				}
+			
+				result = nvmlDeviceGetClockInfo(mDevice, NVML_CLOCK_MEM, &(pMeasurement->nvml_clock_mem_cur));
+				if (NVML_SUCCESS != result) {
+					mrLog.lock();
+					mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: cannot read frequency. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+					mrLog.unlock();
+					exit(EXIT_FAILURE);
+				}
+			}
+			
+			result = nvmlDeviceGetClockInfo(mDevice, NVML_CLOCK_GRAPHICS, &(pMeasurement->nvml_clock_graphics_cur));
 			if (NVML_SUCCESS != result) {
 				mrLog.lock();
 				mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: cannot read frequency. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 				mrLog.unlock();
 				exit(EXIT_FAILURE);
 			}
-		
-			result = nvmlDeviceGetClockInfo(mDevice, NVML_CLOCK_MEM, &(pMeasurement->nvml_clock_mem_cur));
+			
+			nvmlUtilization_t utilization;
+			
+			result = nvmlDeviceGetUtilizationRates(mDevice, &utilization);
 			if (NVML_SUCCESS != result) {
 				mrLog.lock();
-				mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: cannot read frequency. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+				mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: cannot obtain utilization rates. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 				mrLog.unlock();
 				exit(EXIT_FAILURE);
 			}
+			
+			pMeasurement->nvml_util_gpu_cur	= utilization.gpu;
+			pMeasurement->nvml_util_mem_cur	= utilization.memory;
+			
+			if(mMeasureCounter == UINT64_MAX){
+				mMeasureCounter = 0;
+			} else {
+				mMeasureCounter++;
+			}
 		}
-		
-		result = nvmlDeviceGetClockInfo(mDevice, NVML_CLOCK_GRAPHICS, &(pMeasurement->nvml_clock_graphics_cur));
-		if (NVML_SUCCESS != result) {
-			mrLog.lock();
-			mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: cannot read frequency. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-			mrLog.unlock();
-			exit(EXIT_FAILURE);
-		}
-		
-		nvmlUtilization_t utilization;
-		
-		result = nvmlDeviceGetUtilizationRates(mDevice, &utilization);
-		if (NVML_SUCCESS != result) {
-			mrLog.lock();
-			mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: cannot obtain utilization rates. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-			mrLog.unlock();
-			exit(EXIT_FAILURE);
-		}
-		
-		pMeasurement->nvml_util_gpu_cur	= utilization.gpu;
-		pMeasurement->nvml_util_mem_cur	= utilization.memory;
-		
-		if(mMeasureCounter == UINT64_MAX){
-			mMeasureCounter = 0;
-		} else {
-			mMeasureCounter++;
-		}
-		
-#endif /* LIGHT */
 		
 	}
 	
-	template <int SkipMs>
-	int CMeasureNVML<SkipMs>::exec_gpu_mgmt(char* args[]){
+	template <int SkipMs, int Version>
+	int CMeasureNVML<SkipMs, Version>::exec_gpu_mgmt(char* args[]){
 		pid_t new_pid = 0;
 		int status_child = 1;
 

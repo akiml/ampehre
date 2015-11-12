@@ -32,7 +32,7 @@
 #define NUM_OF_CORES CPUS*CORES
 
 namespace NLibMeasure {
-	template <int SkipMs>
+	template <int SkipMs, int Version>
 	class CMeasureMSR : public CMeasureAbstractResource {
 		private:
 			int32_t mFildesMeasure;
