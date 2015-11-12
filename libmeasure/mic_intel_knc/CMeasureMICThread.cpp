@@ -72,7 +72,7 @@ namespace NLibMeasure {
 		mpMeasurement->mic_memory_free_max = 	0;
 		mpMeasurement->mic_memory_used_max =	0;
 		
-		(static_cast<NLibMeasure::CMeasureMIC&>(mrMeasureResource)).read_memory_total(mpMeasurement, mThreadNum);
+		mrMeasureResource.read_memory_total(mpMeasurement, mThreadNum);
 		
 		mpMutexStart->unlock();
 		
@@ -91,15 +91,15 @@ namespace NLibMeasure {
 		while(!mThreadStateStop) {
 			mMutexTimer.lock();
 			
-#ifndef LIGHT
-			if(skip_ms_cnt == UINT64_MAX){
-				skip_ms_cnt = 1;
-			} else {
-				skip_ms_cnt++;
-			}
-			
+#ifndef LIGHT			
 			if(!(skip_ms_cnt % mpMeasurement->mic_skip_ms_rate)){
 				mrMeasureResource.measure(mpMeasurement, mThreadNum);
+			}
+			
+			if(skip_ms_cnt == UINT64_MAX){
+				skip_ms_cnt = 0;
+			} else {
+				skip_ms_cnt++;
 			}
 			
 			// calculated diff time

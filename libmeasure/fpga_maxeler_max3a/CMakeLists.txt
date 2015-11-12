@@ -14,13 +14,14 @@
 # created: 5/12/15
 # version: 0.5.1 - modularised libmeasure
 #          0.5.4 - add dynamic loading of resource specific libraries
+#          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
 #
 
 find_library(MAX_LIBRARY libmaxeleros.so PATHS /opt/maxeler/maxeleros/lib)
 include_directories(/upb/departments/agce/modules/software/maxeler/compiler/Maxcompiler-2013.3_vectis/lib/maxeleros-sim/include)
 
 set(SRC_FPGA_LIBRARY
-	ms_plugin_interface.cpp CMeasureMaxeler.cpp CMeasureMaxelerThread.cpp
+	ms_plugin_interface.cpp CMeasureMaxelerThread.cpp
 )
 
 # Full library

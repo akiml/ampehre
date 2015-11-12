@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/27/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #ifndef __MS_PLUGIN_INTERFACE_H__
@@ -24,13 +25,13 @@
 extern "C" {
 #endif /* __cplusplus */
 
-void* init_resource(void* pLogger, uint64_t* pParams);
+void* init_resource(void* pLogger, void* pParams);
 void  fini_resource(void* pMeasureRes);
 
 void* init_resource_thread(void* pLogger, void* pStartSem, MEASUREMENT* pMeasurement, void* pMeasureRes);
 void  fini_resource_thread(void* pMeasureResThread);
 
-void  trigger_resource_custom(void* pMeasureRes);
+void  trigger_resource_custom(void* pMeasureRes, void* pParams);
 
 #ifdef __cplusplus
 }

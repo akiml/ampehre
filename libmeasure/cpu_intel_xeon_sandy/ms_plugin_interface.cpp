@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/27/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -21,14 +22,25 @@
 #include "CMeasureMSRThread.hpp"
 
 extern "C" {
-	void* init_resource(void* pLogger, uint64_t* pParams){
-		NLibMeasure::CMeasureMSR* pMSR =  new NLibMeasure::CMeasureMSR(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)pParams[0], pParams[1], pParams[2]);
-		
+	void* init_resource(void* pLogger, void* pParams){
+		NLibMeasure::CMeasureAbstractResource* pMSR;
+		skip_ms_freq skip_ms = *((skip_ms_freq*) pParams);
+		pParams = (uint64_t*) pParams + 1; 
+		switch(skip_ms){
+			case LOW:
+				pMSR =  new NLibMeasure::CMeasureMSR<1>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+				break;
+			case HIGH:
+				pMSR =  new NLibMeasure::CMeasureMSR<10>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+				break;
+			default:
+				pMSR = new NLibMeasure::CMeasureMSR<1>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+		}
 		return  (void*) pMSR;
 	}
 	
 	void fini_resource(void* pMeasureRes){
-		NLibMeasure::CMeasureMSR* pMSR = (NLibMeasure::CMeasureMSR*) pMeasureRes;
+		NLibMeasure::CMeasureAbstractResource* pMSR = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
 		
 		delete pMSR;
 	}
@@ -45,7 +57,7 @@ extern "C" {
 		delete pMSRThread;
 	}
 	
-	void trigger_resource_custom(void* pMeasureRes){
+	void trigger_resource_custom(void* pMeasureRes, void* pParams) {
 		// No additional custom function for this resource.
 	}
 }

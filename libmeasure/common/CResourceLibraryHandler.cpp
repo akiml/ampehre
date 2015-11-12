@@ -17,14 +17,14 @@
 
 #include "CResourceLibraryHandler.hpp"
 
-typedef void* (*init_res_t)(void*, uint64_t*);
+typedef void* (*init_res_t)(void*, void*);
 typedef void (*fini_res_t)(void*);
 
 typedef void* (*init_measure_thread_t)(void*, void*, MEASUREMENT*, void* pMeasureRes);
 typedef void (*fini_measure_thread_t)(void*);
 
 namespace NLibMeasure{
-	CResourceLibraryHandler::CResourceLibraryHandler(CLogger& rLogger,const std::string& rLibname, uint64_t* pParams):
+	CResourceLibraryHandler::CResourceLibraryHandler(CLogger& rLogger,const std::string& rLibname, void* pParams):
 		mpLibhandler(0),
 		mpResource(0),
 		mpResourceThread(0),
@@ -52,7 +52,7 @@ namespace NLibMeasure{
 		return mpResource;
 	}
 	
-	void CResourceLibraryHandler::initResource(uint64_t* pParams) {
+	void CResourceLibraryHandler::initResource(void* pParams) {
 		init_res_t init_resource = (init_res_t) loadFunction("init_resource");
 		
 		mpResource = (NLibMeasure::CMeasureAbstractResource*) init_resource((void*)(&mrLog), pParams);

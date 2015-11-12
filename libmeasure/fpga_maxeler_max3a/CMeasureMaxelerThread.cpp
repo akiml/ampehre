@@ -77,14 +77,14 @@ namespace NLibMeasure {
 		while (!mThreadStateStop) {
 			mMutexTimer.lock();
 			
-			if(skip_ms_cnt == UINT64_MAX){
-				skip_ms_cnt = 1;
-			} else {
-				skip_ms_cnt++;
-			}
-			
 			if(!(skip_ms_cnt % mpMeasurement->maxeler_skip_ms_rate)){
 				mrMeasureResource.measure(mpMeasurement, mThreadNum);
+			}
+			
+			if(skip_ms_cnt == UINT64_MAX){
+				skip_ms_cnt = 0;
+			} else {
+				skip_ms_cnt++;
 			}
 			
 			// calculated diff time
@@ -128,23 +128,26 @@ namespace NLibMeasure {
 #endif /* LIGHT */
 		
 #ifdef DEBUG
+		 const char* const powerName[] = {"vcc1v0_core", "vcc1v5_ddr", "vcc2v5_aux", "imgt_1v0", "imgt_1v2", "mgt_1v0", "mgt_1v2", "power_usage"};
+		 const char* const tempName[] = {"main_fpga_temp", "ifce_fpga_temp"}; 
+
 		mrLog.lock();
 		mrLog()
 		<< "ooo 'maxeler thread' (thread #" << mThreadNum << "):" << std::endl
 		<< "     time period                     : " << mpMeasurement->maxeler_time_runtime << " s" << std::endl;
 		for (int i=0; i<MAX_NUM_POWER; ++i) {
 			mrLog()
-			<< "     consumed energy (" << std::setw(14) << mrMeasureMaxeler.getPowerName((enum maxeler_power)i) << "): "
+			<< "     consumed energy (" << powerName[i] << "): "
 				<< mpMeasurement->maxeler_energy_acc[i] << " mWs" << std::endl;
 		}
 		for (int i=0; i<MAX_NUM_POWER; ++i) {
 			mrLog()
-			<< "     average power   (" << std::setw(14) << mrMeasureMaxeler.getPowerName((enum maxeler_power)i) << "): "
+			<< "     average power   (" << powerName[i] << "): "
 				<< mpMeasurement->maxeler_power_avg[i] << " mW" << std::endl;
 		}
 		for (int i=0; i<MAX_NUM_TEMPERATURE; ++i) {
 			mrLog()
-			<< "     temperature max (" << std::setw(14) << mrMeasureMaxeler.getTemperatureName((enum maxeler_temperature)i) << "): "
+			<< "     temperature max (" << tempName[i] << "): "
 				<< mpMeasurement->maxeler_temperature_max[i] << " \u00b0C" << std::endl;
 		}
 		mrLog()

@@ -25,6 +25,7 @@
 #include "../../include/ms_ipmiwrapper.h"
 
 namespace NLibMeasure {
+	template <int SkipMs>
 	class CMeasureIPMI : public CMeasureAbstractResource{
 		private: 
 			uint64_t mTimeoutSetting;
@@ -40,12 +41,15 @@ namespace NLibMeasure {
 			void measureRawMsgDellResetEnergy(int32_t& rThreadNum);
 			void measureRawMsgDellCumulativeEnergy(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
 			void measureRawMsgDellCurrentPower(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
+			void resetEnergyCounter(int32_t& rThreadNum);
+			void setIPMITimeout(uint32_t& timeout, uint32_t& rThreadNum);
 			
 		public:
 			void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
-			void resetEnergyCounter(int32_t& rThreadNum);
-			void setIPMITimeout(uint32_t timeout, int32_t& rThreadNum);
+			void trigger_resource_custom(void* pParams);
 	};
 }
+
+#include "CMeasureIPMI.cpp"
 
 #endif /* __CMEASUREIPMI_HPP__ */

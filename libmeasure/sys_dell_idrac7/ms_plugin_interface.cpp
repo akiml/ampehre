@@ -22,14 +22,25 @@
 #include "CMeasureIPMIThread.hpp"
 
 extern "C" {
-	void* init_resource(void* pLogger, uint64_t* pParams){
-		NLibMeasure::CMeasureIPMI* pIPMI =  new NLibMeasure::CMeasureIPMI(*((NLibMeasure::CLogger*)pLogger), pParams[0]);
-		
+	void* init_resource(void* pLogger, void* pParams){
+		NLibMeasure::CMeasureAbstractResource* pIPMI;
+		skip_ms_freq skip_ms = *((skip_ms_freq*) pParams);
+		pParams = (uint64_t*) pParams + 1; 
+		switch(skip_ms){
+			case LOW:
+				pIPMI =  new NLibMeasure::CMeasureIPMI<1>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+				break;
+			case HIGH:
+				pIPMI =  new NLibMeasure::CMeasureIPMI<10>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+				break;
+			default:
+				pIPMI =  new NLibMeasure::CMeasureIPMI<1>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+		}
 		return  (void*) pIPMI;
 	}
 	
 	void fini_resource(void* pMeasureRes){
-		NLibMeasure::CMeasureIPMI* pIPMI = (NLibMeasure::CMeasureIPMI*) pMeasureRes;
+		NLibMeasure::CMeasureAbstractResource* pIPMI = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
 		
 		delete pIPMI;
 	}
@@ -46,7 +57,8 @@ extern "C" {
 		delete pIPMIThread;
 	}
 	
-	void trigger_resource_custom(void* pMeasureRes){
-		// No additional custom function for this resource.
+	void trigger_resource_custom(void* pMeasureRes, void* pParams) {
+		NLibMeasure::CMeasureAbstractResource* pIPMI = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
+		pIPMI->trigger_resource_custom(pParams);
 	}
 }

@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/29/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -21,14 +22,24 @@
 #include "CMeasureMICThread.hpp"
 
 extern "C" {
-	void* init_resource(void* pLogger, uint64_t* pParams){
-		NLibMeasure::CMeasureMIC* pMIC =  new NLibMeasure::CMeasureMIC(*((NLibMeasure::CLogger*)pLogger));
-		
+	void* init_resource(void* pLogger, void* pParams){
+		NLibMeasure::CMeasureAbstractResource* pMIC;
+		skip_ms_freq skip_ms = *((skip_ms_freq*) pParams);
+		switch(skip_ms){
+			case LOW:
+				pMIC =  new NLibMeasure::CMeasureMIC<1>(*((NLibMeasure::CLogger*)pLogger));
+				break;
+			case HIGH:
+				pMIC =  new NLibMeasure::CMeasureMIC<10>(*((NLibMeasure::CLogger*)pLogger));
+				break;
+			default:
+				pMIC =  new NLibMeasure::CMeasureMIC<1>(*((NLibMeasure::CLogger*)pLogger));
+		}
 		return  (void*) pMIC;
 	}
 	
 	void fini_resource(void* pMeasureRes){
-		NLibMeasure::CMeasureMIC* pMIC = (NLibMeasure::CMeasureMIC*) pMeasureRes;
+		NLibMeasure::CMeasureAbstractResource* pMIC = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
 		
 		delete pMIC;
 	}
@@ -45,7 +56,7 @@ extern "C" {
 		delete pMICThread;
 	}
 	
-	void trigger_resource_custom(void* pMeasureRes){
+	void trigger_resource_custom(void* pMeasureRes, void* pParams) {
 		// No additional custom function for this resource.
 	}
 }

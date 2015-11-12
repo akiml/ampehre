@@ -15,12 +15,12 @@
  * version: 0.4.0 - MIC integration into libmeasure
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
-#include "CMeasureMIC.hpp"
-
 namespace NLibMeasure {
-	CMeasureMIC::CMeasureMIC(CLogger& rLogger):
+	template <int SkipMs>
+	CMeasureMIC<SkipMs>::CMeasureMIC(CLogger& rLogger):
 		CMeasureAbstractResource(rLogger),
 		mpMicDevice(0),
 		mpMicUtilization(0)
@@ -29,11 +29,13 @@ namespace NLibMeasure {
 		init();
 	}
 	
-	CMeasureMIC::~CMeasureMIC() {
+	template <int SkipMs>
+	CMeasureMIC<SkipMs>::~CMeasureMIC() {
 		destroy();
 	}
 	
-	void CMeasureMIC::init(void) {	
+	template <int SkipMs>
+	void CMeasureMIC<SkipMs>::init(void) {	
 #ifdef LIGHT
 		mrLog()
 		<< ">>> 'mic' (light version)" << std::endl;
@@ -316,7 +318,8 @@ namespace NLibMeasure {
 		
 	}
 	
-	void CMeasureMIC::destroy(void) {
+	template <int SkipMs>
+	void CMeasureMIC<SkipMs>::destroy(void) {
 		int32_t status	= E_MIC_SUCCESS;
 		
 		// Close MIC device.
@@ -338,7 +341,8 @@ namespace NLibMeasure {
 		
 	}
 	
-	void CMeasureMIC::read_memory_total(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs>
+	void CMeasureMIC<SkipMs>::read_memory_total(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		int32_t status								= E_MIC_SUCCESS;
 		struct mic_memory_util_info *memory_info	= NULL;
 				
@@ -365,20 +369,29 @@ namespace NLibMeasure {
 		
 	}
 	
-	void CMeasureMIC::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
-
+	template <int SkipMs>
+	void CMeasureMIC<SkipMs>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		micGetPower(pMeasurement, rThreadNum);
 		micGetUtil(pMeasurement, rThreadNum);
 		
 #ifndef LIGHT
 		micGetMemory(pMeasurement, rThreadNum);
 		micGetFrequency(pMeasurement, rThreadNum);
-		micGetTemperature(pMeasurement, rThreadNum);
+		if(!(mMeasureCounter%SkipMs)) {
+			micGetTemperature(pMeasurement, rThreadNum);
+		}
+		
+		if(mMeasureCounter == UINT64_MAX){
+			mMeasureCounter = 0;
+		} else {
+			mMeasureCounter++;
+		}
 #endif /* LIGHT */
 		
 	}
 	
-	void CMeasureMIC::micGetFrequency(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs>
+	void CMeasureMIC<SkipMs>::micGetFrequency(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		int32_t status						= E_MIC_SUCCESS;
 		uint32_t temp						= 0;
 		struct mic_cores_info *cores_info	= NULL;
@@ -391,13 +404,6 @@ namespace NLibMeasure {
 			exit(EXIT_FAILURE);
 		}
 		
-		// Get information about the MIC memory.
-		status = mic_get_memory_info(mpMicDevice, &memory_info);
-		if (E_MIC_SUCCESS != status) {
-			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC memory information structure. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-			exit(EXIT_FAILURE);
-		}
-		
 		// Get current frequency of the MIC cores.
 		status = mic_get_cores_frequency(cores_info, &temp);
 		if (E_MIC_SUCCESS != status) {
@@ -406,14 +412,6 @@ namespace NLibMeasure {
 		}
 		pMeasurement->mic_freq_core_cur = temp / 1000;
 		
-		// Get current frequency of the MIC memory.
-		status = mic_get_memory_frequency(memory_info, &temp);
-		if (E_MIC_SUCCESS != status) {
-			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC memory frequency. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-			exit(EXIT_FAILURE);
-		}
-		pMeasurement->mic_freq_mem_cur = temp / 1000;
-		
 		// Free struct storing the MIC on-die core info.
 		status = mic_free_cores_info(cores_info);
 		if (E_MIC_SUCCESS != status) {
@@ -421,15 +419,33 @@ namespace NLibMeasure {
 			exit(EXIT_FAILURE);
 		}
 		
-		// Free struct storing the MIC memory info.
-		status = mic_free_memory_info(memory_info);
-		if (E_MIC_SUCCESS != status) {
-			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot free MIC memory information structure. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-			exit(EXIT_FAILURE);
+		if(!(mMeasureCounter%SkipMs)) {
+			// Get information about the MIC memory.
+			status = mic_get_memory_info(mpMicDevice, &memory_info);
+			if (E_MIC_SUCCESS != status) {
+				mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC memory information structure. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+				exit(EXIT_FAILURE);
+			}
+			
+			// Get current frequency of the MIC memory.
+			status = mic_get_memory_frequency(memory_info, &temp);
+			if (E_MIC_SUCCESS != status) {
+				mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC memory frequency. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+				exit(EXIT_FAILURE);
+			}
+			pMeasurement->mic_freq_mem_cur = temp / 1000;
+			
+			// Free struct storing the MIC memory info.
+			status = mic_free_memory_info(memory_info);
+			if (E_MIC_SUCCESS != status) {
+				mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot free MIC memory information structure. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+				exit(EXIT_FAILURE);
+			}
 		}
 	}
 	
-	void CMeasureMIC::micGetPower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs>
+	void CMeasureMIC<SkipMs>::micGetPower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		int32_t status						= E_MIC_SUCCESS;
 		uint32_t temp						= 0;
 		struct mic_power_util_info *power	= NULL;
@@ -500,7 +516,8 @@ namespace NLibMeasure {
 		}
 	}
 	
-	void CMeasureMIC::micGetTemperature(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs>
+	void CMeasureMIC<SkipMs>::micGetTemperature(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		int32_t status						= E_MIC_SUCCESS;
 		struct mic_thermal_info *thermal	= NULL;
 		uint16_t temp						= 0;
@@ -575,7 +592,8 @@ namespace NLibMeasure {
 		}
 	}	
 	
-	void CMeasureMIC::micGetUtil(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {  
+	template <int SkipMs>
+	void CMeasureMIC<SkipMs>::micGetUtil(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {  
 		int32_t status					= E_MIC_SUCCESS;
 		
 		// Update core utilization struct.
@@ -614,7 +632,8 @@ namespace NLibMeasure {
 		}
 	}
 	
-	void CMeasureMIC::micGetMemory(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs>
+	void CMeasureMIC<SkipMs>::micGetMemory(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		int32_t status								= E_MIC_SUCCESS;
 		struct mic_memory_util_info *memory_info	= NULL;
 		

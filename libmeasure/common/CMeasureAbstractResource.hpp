@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/22/15
  * version: 0.5.3 - add abstract measure and abstract measure thread
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #ifndef __CMEASUREABSTRACTRESOURCE_HPP__
@@ -35,14 +36,17 @@
 
 #include "../../include/measurement.h"
 
+#define UINT64_MAX (0xffffffffffffffff)
+
 namespace NLibMeasure {
 	class CMeasureAbstractResource {
 		protected:
 			CLogger& mrLog;
+			uint64_t mMeasureCounter;
 			
-		protected:
+		public:
 			CMeasureAbstractResource(CLogger& rLogger);
-			~CMeasureAbstractResource();
+			virtual ~CMeasureAbstractResource();
 			
 		private:
 			virtual void init(void) = 0;
@@ -50,6 +54,8 @@ namespace NLibMeasure {
 			
 		public:
 			virtual void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum) = 0;
+			virtual void read_memory_total(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
+			virtual void trigger_resource_custom(void* pParams);
 	};
 }
 

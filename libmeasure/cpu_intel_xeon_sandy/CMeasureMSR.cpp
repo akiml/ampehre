@@ -20,9 +20,8 @@
  *          0.2.0 - add support for msr registers to the measure driver
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
-
-#include "CMeasureMSR.hpp"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -35,7 +34,8 @@
 #define UINT32_MAX (0xffffffff)
 
 namespace NLibMeasure {
-	CMeasureMSR::CMeasureMSR(CLogger& rLogger, cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax) :
+	template <int SkipMs>
+	CMeasureMSR<SkipMs>::CMeasureMSR(CLogger& rLogger, cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax) :
 		CMeasureAbstractResource(rLogger),
 		mMinTccActivationTemp(0),
 		mEnergyUnit(0.0),
@@ -49,11 +49,13 @@ namespace NLibMeasure {
 		init();
 	}
 	
-	CMeasureMSR::~CMeasureMSR() {
+	template <int SkipMs>
+	CMeasureMSR<SkipMs>::~CMeasureMSR() {
 		destroy();
 	}
 	
-	void CMeasureMSR::init(void) {
+	template <int SkipMs>
+	void CMeasureMSR<SkipMs>::init(void) {
 #ifdef LIGHT
 		mrLog()
 		<< ">>> 'msr' (light version)" << std::endl;
@@ -209,11 +211,13 @@ namespace NLibMeasure {
 		<< std::endl;
 	}
 	
-	void CMeasureMSR::destroy(void) {
+	template <int SkipMs>
+	void CMeasureMSR<SkipMs>::destroy(void) {
 		closeMeasureDevice();
 	}
 	
-	void CMeasureMSR::showCurrentCpuFreqSettings (void) {
+	template <int SkipMs>
+	void CMeasureMSR<SkipMs>::showCurrentCpuFreqSettings (void) {
 		mrLog()
 		<< ">>> 'msr' (thread main): current cpufreq settings and hardware limits" << std::endl
 		<< "     | core | hw minimum | gov minimum |  current  | gov maximum | hw maximum |   governor   |" << std::endl
@@ -245,7 +249,8 @@ namespace NLibMeasure {
 		}
 	}
 	
-	void CMeasureMSR::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs>
+	void CMeasureMSR<SkipMs>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		mEnergyUnit				= msrGetEnergyUnit(rThreadNum);
 		mEnergyMax				= msrGetEnergyMax();
 #ifndef LIGHT
@@ -257,15 +262,19 @@ namespace NLibMeasure {
 			pMeasurement->msr_energy_cur[i][PP0]		= msrGetEnergy(rThreadNum, i, MSR_PP0_ENERGY_STATUS)*1000.0;
 			pMeasurement->msr_energy_cur[i][DRAM]		= msrGetEnergy(rThreadNum, i, MSR_DRAM_ENERGY_STATUS)*1000.0;
 #ifndef LIGHT
-			pMeasurement->msr_temperature_pkg_cur[i]	= msrGetTemperature(rThreadNum, i, IA32_PACKAGE_THERM_STATUS);
+			if(!(mMeasureCounter%SkipMs)) {
+				pMeasurement->msr_temperature_pkg_cur[i]	= msrGetTemperature(rThreadNum, i, IA32_PACKAGE_THERM_STATUS);
+			}
 			
 			for (int j=0; j<CORES; ++j) {
-				pMeasurement->msr_temperature_core_cur[i][j]		= msrGetTemperature(rThreadNum, j*CPUS+i, IA32_THERM_STATUS);
+				if(!(mMeasureCounter%SkipMs)) {
+					pMeasurement->msr_temperature_core_cur[i][j]		= msrGetTemperature(rThreadNum, j*CPUS+i, IA32_THERM_STATUS);
+				}
 				pMeasurement->internal.msr_timestamp_core_cur[i][j]	= msrGetTimeStamp(rThreadNum, j*CPUS+i, IA32_TIME_STAMP_COUNTER);
 				msrGetPerfCounter(rThreadNum, j*CPUS+i,
-								  IA32_APERF, &(pMeasurement->internal.msr_aperf_core_cur[i][j]),
-								  IA32_MPERF, &(pMeasurement->internal.msr_mperf_core_cur[i][j]));
-			}
+								IA32_APERF, &(pMeasurement->internal.msr_aperf_core_cur[i][j]),
+								IA32_MPERF, &(pMeasurement->internal.msr_mperf_core_cur[i][j]));
+			}	
 #endif /* LIGHT */
 		}
 		
@@ -275,10 +284,17 @@ namespace NLibMeasure {
 		
 #ifndef LIGHT
 		measureGetMemInfo(rThreadNum, pMeasurement->measure_memory_cur);
+		
+		if(mMeasureCounter == UINT64_MAX){
+			mMeasureCounter = 0;
+		} else {
+			mMeasureCounter++;
+		}
 #endif /* LIGHT */
 	}
-		
-	void CMeasureMSR::readMeasureDevice(int32_t& rThreadNum, int32_t dev, int32_t coreNumber, uint64_t address, uint64_t *pValues, int32_t size) {
+	
+	template <int SkipMs>
+	void CMeasureMSR<SkipMs>::readMeasureDevice(int32_t& rThreadNum, int32_t dev, int32_t coreNumber, uint64_t address, uint64_t *pValues, int32_t size) {
 		lseek(mFildesMeasure, ((uint64_t)coreNumber << CPU_NO_POS) | address, dev);
 		
 		if (read(mFildesMeasure, pValues, size) < 0) {
@@ -290,7 +306,8 @@ namespace NLibMeasure {
 		
 	}
 	
-	void CMeasureMSR::writeMeasureDevice(int32_t& rThreadNum, int32_t dev, int32_t coreNumber, uint64_t address, uint64_t valueToWrite) {
+	template <int SkipMs>
+	void CMeasureMSR<SkipMs>::writeMeasureDevice(int32_t& rThreadNum, int32_t dev, int32_t coreNumber, uint64_t address, uint64_t valueToWrite) {
 		lseek(mFildesMeasure, ((uint64_t)coreNumber << CPU_NO_POS)| address, dev);
 		
 		if (write(mFildesMeasure, &valueToWrite, sizeof(valueToWrite))<0) {
@@ -305,7 +322,8 @@ namespace NLibMeasure {
 		}
 	}
 	
-	void CMeasureMSR::openMeasureDevice(void) {
+	template <int SkipMs>
+	void CMeasureMSR<SkipMs>::openMeasureDevice(void) {
 		std::ostringstream strstream;
 		strstream << "/dev/measure";
 		
@@ -316,11 +334,13 @@ namespace NLibMeasure {
 		}
 	}
 	
-	void CMeasureMSR::closeMeasureDevice(void) {
+	template <int SkipMs>
+	void CMeasureMSR<SkipMs>::closeMeasureDevice(void) {
 		close(mFildesMeasure);
 	}
 	
-	double CMeasureMSR::msrGetEnergyUnit(int32_t& rThreadNum) {
+	template <int SkipMs>
+	double CMeasureMSR<SkipMs>::msrGetEnergyUnit(int32_t& rThreadNum) {
 		uint64_t	result0;
 		uint64_t	result1;
 		double		energy_unit;
@@ -344,7 +364,8 @@ namespace NLibMeasure {
 		return energy_unit;
 	}
 	
-	double CMeasureMSR::msrGetEnergyMax(void) {
+	template <int SkipMs>
+	double CMeasureMSR<SkipMs>::msrGetEnergyMax(void) {
 		double energy_max;
 		
 		energy_max = UINT32_MAX * mEnergyUnit;
@@ -352,7 +373,8 @@ namespace NLibMeasure {
 		return energy_max;
 	}
 	
-	void CMeasureMSR::resetMsrPerfCounters(void) {
+	template <int SkipMs>
+	void CMeasureMSR<SkipMs>::resetMsrPerfCounters(void) {
 		int32_t threadNum = -1;
 		
 		for (int i=0; i<NUM_OF_CORES; ++i) {
@@ -361,7 +383,8 @@ namespace NLibMeasure {
 		}
 	}
 	
-	uint64_t CMeasureMSR::msrGetMinumimTccActivation(int32_t& rThreadNum) {
+	template <int SkipMs>
+	uint64_t CMeasureMSR<SkipMs>::msrGetMinumimTccActivation(int32_t& rThreadNum) {
 		uint64_t	result0;
 		uint64_t	result1;
 		uint64_t	min_tcc;
@@ -384,7 +407,8 @@ namespace NLibMeasure {
 		return min_tcc;
 	}
 	
-	uint32_t CMeasureMSR::msrGetTemperature(int32_t& rThreadNum, int32_t coreNumber, int32_t msrRegisterAddr) {
+	template <int SkipMs>
+	uint32_t CMeasureMSR<SkipMs>::msrGetTemperature(int32_t& rThreadNum, int32_t coreNumber, int32_t msrRegisterAddr) {
 		uint64_t result;
 		uint32_t temperature;
 		
@@ -394,7 +418,8 @@ namespace NLibMeasure {
 		return temperature;
 	}
 	
-	double CMeasureMSR::msrGetEnergy(int32_t& rThreadNum, int32_t coreNumber, int32_t msrRegisterAddr) {
+	template <int SkipMs>
+	double CMeasureMSR<SkipMs>::msrGetEnergy(int32_t& rThreadNum, int32_t coreNumber, int32_t msrRegisterAddr) {
 		uint64_t result;
 		double energy;
 		
@@ -404,7 +429,8 @@ namespace NLibMeasure {
 		return energy;
 	}
 	
-	uint64_t CMeasureMSR::msrGetTimeStamp(int32_t &rThreadNum, int32_t coreNumber, int32_t msrRegisterAddr) {
+	template <int SkipMs>
+	uint64_t CMeasureMSR<SkipMs>::msrGetTimeStamp(int32_t &rThreadNum, int32_t coreNumber, int32_t msrRegisterAddr) {
 		uint64_t result;
 		
 		readMeasureDevice(rThreadNum, cpu_msr, coreNumber, (uint64_t)msrRegisterAddr, &result, sizeof(result));
@@ -412,18 +438,21 @@ namespace NLibMeasure {
 		return result;
 	}
 	
-	void CMeasureMSR::msrGetPerfCounter(int32_t& rThreadNum, int32_t coreNumber,
+	template <int SkipMs>
+	void CMeasureMSR<SkipMs>::msrGetPerfCounter(int32_t& rThreadNum, int32_t coreNumber,
 										int32_t msrRegisterAddrAPerf, uint64_t* pResultAPerf,
 										int32_t msrRegisterAddrMPerf, uint64_t* pResultMPerf) {
 		readMeasureDevice(rThreadNum, cpu_msr, coreNumber, (uint64_t)msrRegisterAddrAPerf, pResultAPerf, sizeof(*pResultAPerf));
 		readMeasureDevice(rThreadNum, cpu_msr, coreNumber, (uint64_t)msrRegisterAddrMPerf, pResultMPerf, sizeof(*pResultMPerf));
 	}
 	
-	void CMeasureMSR::measureGetUtilization(int32_t& rThreadNum, uint64_t* pMeasureUtilization) {
+	template <int SkipMs>
+	void CMeasureMSR<SkipMs>::measureGetUtilization(int32_t& rThreadNum, uint64_t* pMeasureUtilization) {
 		readMeasureDevice(rThreadNum, cpu_stats, NUM_OF_CORES, 0, pMeasureUtilization, sizeof(uint64_t)*CPUSTATS);
 	}
 	
-	void CMeasureMSR::measureGetMemInfo(int32_t& rThreadNum, uint64_t* pMeasureMemInfo) {
+	template <int SkipMs>
+	void CMeasureMSR<SkipMs>::measureGetMemInfo(int32_t& rThreadNum, uint64_t* pMeasureMemInfo) {
 #ifndef LSEEK_MAX_2
 		readMeasureDevice(rThreadNum, cpu_meminfo, 0, 0, pMeasureMemInfo, sizeof(uint64_t)*MEMINFO_SIZE);
 #else

@@ -137,10 +137,13 @@
 #endif
 		
 #endif
-		
-	
 
 typedef void MSYSTEM;
+
+enum skip_ms_freq {
+	HIGH,
+	LOW
+};
 
 enum maxeler_power {
 	VCC10,

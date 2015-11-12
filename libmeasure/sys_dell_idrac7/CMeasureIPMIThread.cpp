@@ -66,7 +66,12 @@ namespace NLibMeasure {
 		
 		mpMeasurement->ipmi_energy_server_acc			= 0;
 		
-		static_cast<NLibMeasure::CMeasureIPMI&>(mrMeasureResource).setIPMITimeout((mpMeasurement->ipmi_time_wait.tv_nsec/1000000) + (mpMeasurement->ipmi_time_wait.tv_sec * 1000) - 10, mThreadNum);
+		//static_cast<NLibMeasure::CMeasureIPMI&>(mrMeasureResource).setIPMITimeout((mpMeasurement->ipmi_time_wait.tv_nsec/1000000) + (mpMeasurement->ipmi_time_wait.tv_sec * 1000) - 10, mThreadNum);
+		uint32_t params[2];
+		params[0] = (mpMeasurement->ipmi_time_wait.tv_nsec/1000000) + (mpMeasurement->ipmi_time_wait.tv_sec * 1000) - 10;
+		params[1] = mThreadNum;
+		
+		mrMeasureResource.trigger_resource_custom((void*)params);
 		
 		mpMutexStart->unlock();
 		
@@ -82,14 +87,14 @@ namespace NLibMeasure {
 			mMutexTimer.lock();
 			
 #ifndef LIGHT
-			if(skip_ms_cnt == UINT64_MAX){
-				skip_ms_cnt = 1;
-			} else {
-				skip_ms_cnt++;
-			}
-			
 			if(!(skip_ms_cnt % mpMeasurement->ipmi_skip_ms_rate)){
 				mrMeasureResource.measure(mpMeasurement, mThreadNum);
+			}
+			
+			if(skip_ms_cnt == UINT64_MAX){
+				skip_ms_cnt = 0;
+			} else {
+				skip_ms_cnt++;
 			}
 			
 			// calculated diff time (use internal struct for that)

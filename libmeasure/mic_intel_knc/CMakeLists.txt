@@ -14,10 +14,11 @@
 # created: 5/12/15
 # version: 0.5.1 - modularised libmeasure
 #          0.5.4 - add dynamic loading of resource specific libraries
+#          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
 #
 
 set(SRC_MIC_LIBRARY
-	ms_plugin_interface.cpp CMeasureMIC.cpp CMeasureMICThread.cpp
+	ms_plugin_interface.cpp CMeasureMICThread.cpp
 )
 
 # Full library

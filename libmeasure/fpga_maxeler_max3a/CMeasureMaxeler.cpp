@@ -16,26 +16,28 @@
  *          0.1.1 - add functionality to force FPGA to idle
  *          0.1.9 - add FPGA utilization measurements
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
-
-#include "CMeasureMaxeler.hpp"
 
 #include "maxdsd.h"
 #include "../../cjson/cJSON.h"
 
 namespace NLibMeasure {
-	CMeasureMaxeler::CMeasureMaxeler(CLogger& rLogger) :
+	template <int SkipMs>
+	CMeasureMaxeler<SkipMs>::CMeasureMaxeler(CLogger& rLogger) :
 		CMeasureAbstractResource(rLogger)
 		{
 		
 		init();
 	}
 	
-	CMeasureMaxeler::~CMeasureMaxeler() {
+	template <int SkipMs>
+	CMeasureMaxeler<SkipMs>::~CMeasureMaxeler() {
 		destroy();
 	}
 	
-	void CMeasureMaxeler::init(void) {
+	template <int SkipMs>
+	void CMeasureMaxeler<SkipMs>::init(void) {
 #ifdef LIGHT
 		mrLog()
 		<< ">>> 'maxeler' (light version)" << std::endl;
@@ -67,19 +69,13 @@ namespace NLibMeasure {
 		<< std::endl;
 	}
 	
-	void CMeasureMaxeler::destroy(void) {
+	template <int SkipMs>
+	void CMeasureMaxeler<SkipMs>::destroy(void) {
 		max_daemon_disconnect(mMaxDaemonFildes);
 	}
 	
-	const std::string& CMeasureMaxeler::getPowerName(enum maxeler_power name) const {
-		return mMaxPower[name].first;
-	}
-	
-	const std::string& CMeasureMaxeler::getTemperatureName(enum maxeler_temperature name) const {
-		return mMaxTemperature[name].first;
-	}
-	
-	void CMeasureMaxeler::forceIdle (void) {
+	template <int SkipMs>
+	void CMeasureMaxeler<SkipMs>::trigger_resource_custom (void* pParams) {
 		mrLog()
 		<< ">>> 'maxeler' (thread main): forcing fpga to idle." << std::endl
 		<< std::endl;
@@ -87,15 +83,25 @@ namespace NLibMeasure {
 		max_daemon_force_idle(mMaxDaemonFildes, 0);
 	}
 	
-	void CMeasureMaxeler::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs>
+	void CMeasureMaxeler<SkipMs>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		measurePower(pMeasurement, rThreadNum);
 #ifndef LIGHT
-		measureTemperature(pMeasurement, rThreadNum);
+		if(!(mMeasureCounter%SkipMs)) {
+			measureTemperature(pMeasurement, rThreadNum);
+		}
 		measureUtilization(pMeasurement, rThreadNum);
+		
+		if(mMeasureCounter == UINT64_MAX){
+			mMeasureCounter = 0;
+		} else {
+			mMeasureCounter++;
+		}
 #endif /* LIGHT */
 	}
 	
-	void CMeasureMaxeler::measurePower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs>
+	void CMeasureMaxeler<SkipMs>::measurePower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		cJSON *json_response		= NULL;
 		cJSON *json_measurements	= NULL;
 		cJSON *json_single			= NULL;
@@ -152,7 +158,8 @@ namespace NLibMeasure {
 		free(jstr_response);
 	}
 	
-	void CMeasureMaxeler::measureTemperature(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs>
+	void CMeasureMaxeler<SkipMs>::measureTemperature(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		char *response;
 		max_daemon_device_hw_monitor(mMaxDaemonFildes, 0, &response);
 		
@@ -179,7 +186,8 @@ namespace NLibMeasure {
 		free(response);
 	}
 	
-	void CMeasureMaxeler::measureUtilization(MEASUREMENT *pMeasurement, int32_t &rThreadNum) {
+	template <int SkipMs>
+	void CMeasureMaxeler<SkipMs>::measureUtilization(MEASUREMENT *pMeasurement, int32_t &rThreadNum) {
 		cJSON *json_response		= NULL;
 		cJSON *json_measurements	= NULL;
 		

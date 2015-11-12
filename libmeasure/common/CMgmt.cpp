@@ -27,7 +27,7 @@
 
 #include "CMgmt.hpp"
 
-typedef void (*trigger_resource_custom_t)(void*);
+typedef void (*trigger_resource_custom_t)(void*, void*);
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,15 +44,17 @@ CMgmt::CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFre
 	mResources(),
 	mStartSem()
 	{
-	uint64_t params_cpu[] = {cpuGovernor, cpuFrequencyMin, cpuFrequencyMax};
-	uint64_t params_gpu[] = {gpuFrequency};
-	uint64_t params_sys[] = {ipmi_timeout_setting};
+	uint64_t params_cpu[]	= {HIGH, cpuGovernor, cpuFrequencyMin, cpuFrequencyMax};
+	uint64_t params_gpu[]	= {HIGH, gpuFrequency};
+	uint64_t params_fpga[]	= {HIGH};
+	uint64_t params_mic[]	= {LOW};
+	uint64_t params_sys[]	= {HIGH, ipmi_timeout_setting};
 	
-	mResources[CPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, CPU_LIB_NAME, params_cpu);
-	mResources[GPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, GPU_LIB_NAME, params_gpu);
-	mResources[FPGA] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, FPGA_LIB_NAME, NULL);
-	mResources[SYSTEM]	= new NLibMeasure::CResourceLibraryHandler(mLogger, SYS_LIB_NAME, params_sys);
-	mResources[MIC] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, MIC_LIB_NAME, NULL);
+	mResources[CPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, CPU_LIB_NAME, (void*) params_cpu);
+	mResources[GPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, GPU_LIB_NAME, (void*) params_gpu);
+	mResources[FPGA] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, FPGA_LIB_NAME, (void*) params_fpga);
+	mResources[SYSTEM]	= new NLibMeasure::CResourceLibraryHandler(mLogger, SYS_LIB_NAME, (void*) params_sys);
+	mResources[MIC] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, MIC_LIB_NAME, (void*) params_mic);
 	
 	mpActionStart	= NULL;
 	mpActionStop	= NULL;
@@ -88,7 +90,7 @@ CMgmt::~CMgmt() {
 void CMgmt::initMaxelerForceIdle (void) {
 	trigger_resource_custom_t maxeler_force_idle = (trigger_resource_custom_t)mResources[FPGA]->loadFunction("trigger_resource_custom");
 	
-	maxeler_force_idle(mResources[FPGA]->getResource());
+	maxeler_force_idle(mResources[FPGA]->getResource(), NULL);
 }
 
 void CMgmt::regSighandlerStart(void(*signal_handler)(int)) {

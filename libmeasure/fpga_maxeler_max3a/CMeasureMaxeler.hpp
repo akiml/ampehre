@@ -16,14 +16,20 @@
  *          0.1.1 - add functionality to force FPGA to idle
  *          0.1.9 - add FPGA utilization measurements
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #ifndef __CMEASUREMAXELER_HPP__
 #define __CMEASUREMAXELER_HPP__
 
+#define FORCE_IDLE 1
+#define POWER_NAME 2
+#define TEMP_NAME 3
+
 #include "../common/CMeasureAbstractResource.hpp"
 
 namespace NLibMeasure {
+	template <int SkipMs>
 	class CMeasureMaxeler : public CMeasureAbstractResource {
 		private:
 			int mMaxDaemonFildes;
@@ -44,10 +50,10 @@ namespace NLibMeasure {
 			
 		public:
 			void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
-			const std::string& getPowerName(enum maxeler_power name) const;
-			const std::string& getTemperatureName(enum maxeler_temperature name) const;
-			void forceIdle(void);
+			void trigger_resource_custom(void* pParams);
 	};
 }
+
+#include "CMeasureMaxeler.cpp"
 
 #endif /* __CMEASUREMAXELER_HPP__ */

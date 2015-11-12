@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/29/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -21,14 +22,24 @@
 #include "CMeasureMaxelerThread.hpp"
 
 extern "C" {
-	void* init_resource(void* pLogger, uint64_t* pParams){
-		NLibMeasure::CMeasureMaxeler* pMaxeler =  new NLibMeasure::CMeasureMaxeler(*((NLibMeasure::CLogger*)pLogger));
-		
+	void* init_resource(void* pLogger, void* pParams){
+	NLibMeasure::CMeasureAbstractResource* pMaxeler;
+		skip_ms_freq skip_ms = *((skip_ms_freq*) pParams);
+		switch(skip_ms){
+			case LOW:
+				pMaxeler =  new NLibMeasure::CMeasureMaxeler<1>(*((NLibMeasure::CLogger*)pLogger));
+				break;
+			case HIGH:
+				pMaxeler =  new NLibMeasure::CMeasureMaxeler<10>(*((NLibMeasure::CLogger*)pLogger));
+				break;
+			default:
+				pMaxeler =  new NLibMeasure::CMeasureMaxeler<1>(*((NLibMeasure::CLogger*)pLogger));
+		}
 		return  (void*) pMaxeler;
 	}
 	
 	void fini_resource(void* pMeasureRes){
-		NLibMeasure::CMeasureMaxeler* pMaxeler = (NLibMeasure::CMeasureMaxeler*) pMeasureRes;
+		NLibMeasure::CMeasureAbstractResource* pMaxeler = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
 		
 		delete pMaxeler;
 	}
@@ -45,8 +56,8 @@ extern "C" {
 		delete pMaxelerThread;
 	}
 	
-	void trigger_resource_custom(void* pMeasureRes){
-		NLibMeasure::CMeasureMaxeler* pMaxeler = (NLibMeasure::CMeasureMaxeler*) pMeasureRes;
-		pMaxeler->forceIdle();
+	void trigger_resource_custom(void* pMeasureRes, void* pParams) {
+		NLibMeasure::CMeasureAbstractResource* pMaxeler = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
+		pMaxeler->trigger_resource_custom(pParams);
 	}
 }

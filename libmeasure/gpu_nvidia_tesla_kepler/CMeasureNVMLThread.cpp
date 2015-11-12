@@ -69,7 +69,7 @@ namespace NLibMeasure {
 		mpMeasurement->nvml_memory_used_max		= 0.0;
 		mpMeasurement->nvml_memory_free_max		= 0.0;
 		
-		static_cast<NLibMeasure::CMeasureNVML&>(mrMeasureResource).read_memory_total(mpMeasurement, mThreadNum);
+		mrMeasureResource.read_memory_total(mpMeasurement, mThreadNum);
 		
 		mpMutexStart->unlock();
 		
@@ -84,14 +84,14 @@ namespace NLibMeasure {
 		while (!mThreadStateStop) {
 			mMutexTimer.lock();
 			
-			if(skip_ms_cnt == UINT64_MAX){
-				skip_ms_cnt = 1;
-			} else {
-				skip_ms_cnt++;
-			}
-			
 			if(!(skip_ms_cnt % mpMeasurement->nvml_skip_ms_rate)){
 				mrMeasureResource.measure(mpMeasurement, mThreadNum);
+			}
+			
+			if(skip_ms_cnt == UINT64_MAX){
+				skip_ms_cnt = 0;
+			} else {
+				skip_ms_cnt++;
 			}
 			
 			// calculated diff time

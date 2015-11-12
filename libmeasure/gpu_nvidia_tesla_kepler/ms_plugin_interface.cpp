@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/29/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
+ *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -21,14 +22,25 @@
 #include "CMeasureNVMLThread.hpp"
 
 extern "C" {
-	void* init_resource(void* pLogger, uint64_t* pParams){
-		NLibMeasure::CMeasureNVML* pNVML =  new NLibMeasure::CMeasureNVML(*((NLibMeasure::CLogger*)pLogger), (gpu_frequency)pParams[0]);
-		
+	void* init_resource(void* pLogger, void* pParams){
+		NLibMeasure::CMeasureAbstractResource* pNVML;
+		skip_ms_freq skip_ms = *((skip_ms_freq*) pParams);
+		pParams = (uint64_t*) pParams + 1; 
+		switch(skip_ms){
+			case LOW:
+				pNVML =  new NLibMeasure::CMeasureNVML<1>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
+				break;
+			case HIGH:
+				pNVML =  new NLibMeasure::CMeasureNVML<10>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
+				break;
+			default:
+				pNVML =  new NLibMeasure::CMeasureNVML<1>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
+		}
 		return  (void*) pNVML;
 	}
 	
 	void fini_resource(void* pMeasureRes){
-		NLibMeasure::CMeasureNVML* pNVML = (NLibMeasure::CMeasureNVML*) pMeasureRes;
+		NLibMeasure::CMeasureAbstractResource* pNVML = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
 		
 		delete pNVML;
 	}
@@ -45,7 +57,7 @@ extern "C" {
 		delete pNVMLThread;
 	}
 	
-	void trigger_resource_custom(void* pMeasureRes){
+	void trigger_resource_custom(void* pMeasureRes, void* pParams) {
 		// No additional custom function for this resource.
 	}
 }
