@@ -29,23 +29,19 @@ extern "C" {
 		
 		if(version == FULL) {
 			switch(skip_ms){
-				case LOW:
-					pMIC =  new NLibMeasure::CMeasureMIC<1, FULL>(*((NLibMeasure::CLogger*)pLogger));
-					break;
 				case HIGH:
 					pMIC =  new NLibMeasure::CMeasureMIC<10, FULL>(*((NLibMeasure::CLogger*)pLogger));
 					break;
+				case LOW:
 				default:
 					pMIC =  new NLibMeasure::CMeasureMIC<1, FULL>(*((NLibMeasure::CLogger*)pLogger));
 			}
 		} else {
 			switch(skip_ms){
-				case LOW:
-					pMIC =  new NLibMeasure::CMeasureMIC<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger));
-					break;
 				case HIGH:
 					pMIC =  new NLibMeasure::CMeasureMIC<10, LIGHT2>(*((NLibMeasure::CLogger*)pLogger));
 					break;
+				case LOW:
 				default:
 					pMIC =  new NLibMeasure::CMeasureMIC<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger));
 			}

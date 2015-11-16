@@ -29,23 +29,19 @@ extern "C" {
 		
 		if(version == FULL) {
 			switch(skip_ms){
-				case LOW:
-					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, FULL>(*((NLibMeasure::CLogger*)pLogger));
-					break;
 				case HIGH:
 					pMaxeler =  new NLibMeasure::CMeasureMaxeler<10, FULL>(*((NLibMeasure::CLogger*)pLogger));
 					break;
+				case LOW:
 				default:
 					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, FULL>(*((NLibMeasure::CLogger*)pLogger));
 			}
 		} else {
 			switch(skip_ms){
-				case LOW:
-					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger));
-					break;
 				case HIGH:
 					pMaxeler =  new NLibMeasure::CMeasureMaxeler<10, LIGHT2>(*((NLibMeasure::CLogger*)pLogger));
 					break;
+				case LOW:
 				default:
 					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger));
 			}

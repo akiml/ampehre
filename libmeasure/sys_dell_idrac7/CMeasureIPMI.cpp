@@ -24,22 +24,22 @@
 #include <ctime>
 
 namespace NLibMeasure {
-	template <int SkipMs, int Version>
-	CMeasureIPMI<SkipMs, Version>::CMeasureIPMI(CLogger& rLogger, uint64_t ipmi_timeout_setting) :
+	template <int SkipMs, int Variant>
+	CMeasureIPMI<SkipMs, Variant>::CMeasureIPMI(CLogger& rLogger, uint64_t ipmi_timeout_setting) :
 		CMeasureAbstractResource(rLogger),
 		mTimeoutSetting(ipmi_timeout_setting)
 		{
 		init();
 	}
 	
-	template <int SkipMs, int Version>
-	CMeasureIPMI<SkipMs, Version>::~CMeasureIPMI() {
+	template <int SkipMs, int Variant>
+	CMeasureIPMI<SkipMs, Variant>::~CMeasureIPMI() {
 		destroy();
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureIPMI<SkipMs, Version>::init(void) {
-		if (Version == FULL) {
+	template <int SkipMs, int Variant>
+	void CMeasureIPMI<SkipMs, Variant>::init(void) {
+		if (Variant == FULL) {
 			mrLog()
 			<< ">>> 'ipmi' (full version)" << std::endl;
 		} else {
@@ -69,33 +69,27 @@ namespace NLibMeasure {
 		<< std::endl;
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureIPMI<SkipMs, Version>::destroy(void) {
+	template <int SkipMs, int Variant>
+	void CMeasureIPMI<SkipMs, Variant>::destroy(void) {
 		close_ipmi_wrapper();
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureIPMI<SkipMs, Version>::resetEnergyCounter(int32_t& rThreadNum) {
+	template <int SkipMs, int Variant>
+	void CMeasureIPMI<SkipMs, Variant>::resetEnergyCounter(int32_t& rThreadNum) {
 		measureRawMsgDellResetEnergy(rThreadNum);
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureIPMI<SkipMs, Version>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Variant>
+	void CMeasureIPMI<SkipMs, Variant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		measureRecordIDs(pMeasurement, rThreadNum);
 		measureRawMsgs(pMeasurement, rThreadNum);
-		
-		if(mMeasureCounter == UINT64_MAX){
-			mMeasureCounter = 0;
-		} else {
-			mMeasureCounter++;
-		}
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureIPMI<SkipMs, Version>::measureRecordIDs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Variant>
+	void CMeasureIPMI<SkipMs, Variant>::measureRecordIDs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		double value = 0;
 		
-		if (Version == FULL) {
+		if (Variant == FULL) {
 			if(!(mMeasureCounter%SkipMs)) {
 				value = getTemperature(18);
 				if(value < 0 && value != -ETIMEDOUT){
@@ -129,8 +123,8 @@ namespace NLibMeasure {
 			pMeasurement->ipmi_power_sysboard_cur = value;
 		}
 		
-		if (Version == FULL) {
-			if(!(mMeasureCounter%SkipMs)) {
+		if (Variant == FULL) {
+			if(!(mMeasureCounter++%SkipMs)) {
 				value = getTemperature(153);
 				if(value < 0 && value != -ETIMEDOUT){
 					mrLog.lock();
@@ -164,14 +158,14 @@ namespace NLibMeasure {
 		}
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureIPMI<SkipMs, Version>::measureRawMsgs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Variant>
+	void CMeasureIPMI<SkipMs, Variant>::measureRawMsgs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		measureRawMsgDellCumulativeEnergy(pMeasurement, rThreadNum);
 		measureRawMsgDellCurrentPower(pMeasurement, rThreadNum);
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureIPMI<SkipMs, Version>::measureRawMsgDellResetEnergy(int32_t& rThreadNum) {
+	template <int SkipMs, int Variant>
+	void CMeasureIPMI<SkipMs, Variant>::measureRawMsgDellResetEnergy(int32_t& rThreadNum) {
 		int32_t completion_code;
 		
 		completion_code = dellResetEnergyCounter();
@@ -188,8 +182,8 @@ namespace NLibMeasure {
 		}
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureIPMI<SkipMs, Version>::measureRawMsgDellCumulativeEnergy(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Variant>
+	void CMeasureIPMI<SkipMs, Variant>::measureRawMsgDellCumulativeEnergy(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		int32_t completion_code;
 		
 		uint32_t result_energy;
@@ -223,8 +217,8 @@ namespace NLibMeasure {
 		pMeasurement->ipmi_power_server_avg_since_reset		= result_power;
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureIPMI<SkipMs, Version>::measureRawMsgDellCurrentPower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {	
+	template <int SkipMs, int Variant>
+	void CMeasureIPMI<SkipMs, Variant>::measureRawMsgDellCurrentPower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {	
 		int32_t completion_code;		
 		uint16_t result_power_current;
 		
@@ -246,8 +240,8 @@ namespace NLibMeasure {
 		pMeasurement->ipmi_power_server_cur = (uint32_t)result_power_current;
 	}
 	
-	template <int SkipMs, int Version>
-    void CMeasureIPMI<SkipMs, Version>::setIPMITimeout(uint32_t& timeout, uint32_t& rThreadNum) {
+	template <int SkipMs, int Variant>
+    void CMeasureIPMI<SkipMs, Variant>::setIPMITimeout(uint32_t& timeout, uint32_t& rThreadNum) {
 		int rv;
 		rv = setIPMITimeoutIOCTL(mTimeoutSetting, timeout);
 		
@@ -278,8 +272,8 @@ namespace NLibMeasure {
 		mrLog.unlock();
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureIPMI<SkipMs, Version>::trigger_resource_custom(void* pParams) {
+	template <int SkipMs, int Variant>
+	void CMeasureIPMI<SkipMs, Variant>::trigger_resource_custom(void* pParams) {
 		uint32_t* pArgs = (uint32_t*) pParams;
 		setIPMITimeout(pArgs[0], pArgs[1]);
 	}

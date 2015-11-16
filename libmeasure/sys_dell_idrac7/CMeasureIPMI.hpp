@@ -25,7 +25,7 @@
 #include "../../include/ms_ipmiwrapper.h"
 
 namespace NLibMeasure {
-	template <int SkipMs, int Version>
+	template <int SkipMs, int Variant>
 	class CMeasureIPMI : public CMeasureAbstractResource{
 		private: 
 			uint64_t mTimeoutSetting;

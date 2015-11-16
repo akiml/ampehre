@@ -23,22 +23,22 @@
 #include "../../cjson/cJSON.h"
 
 namespace NLibMeasure {
-	template <int SkipMs, int Version>
-	CMeasureMaxeler<SkipMs, Version>::CMeasureMaxeler(CLogger& rLogger) :
+	template <int SkipMs, int Variant>
+	CMeasureMaxeler<SkipMs, Variant>::CMeasureMaxeler(CLogger& rLogger) :
 		CMeasureAbstractResource(rLogger)
 		{
 		
 		init();
 	}
 	
-	template <int SkipMs, int Version>
-	CMeasureMaxeler<SkipMs, Version>::~CMeasureMaxeler() {
+	template <int SkipMs, int Variant>
+	CMeasureMaxeler<SkipMs, Variant>::~CMeasureMaxeler() {
 		destroy();
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureMaxeler<SkipMs, Version>::init(void) {
-		if(Version==FULL) {
+	template <int SkipMs, int Variant>
+	void CMeasureMaxeler<SkipMs, Variant>::init(void) {
+		if(Variant==FULL) {
 			mrLog()
 			<< ">>> 'maxeler' (full version)" << std::endl;
 		} else {
@@ -69,13 +69,13 @@ namespace NLibMeasure {
 		<< std::endl;
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureMaxeler<SkipMs, Version>::destroy(void) {
+	template <int SkipMs, int Variant>
+	void CMeasureMaxeler<SkipMs, Variant>::destroy(void) {
 		max_daemon_disconnect(mMaxDaemonFildes);
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureMaxeler<SkipMs, Version>::trigger_resource_custom (void* pParams) {
+	template <int SkipMs, int Variant>
+	void CMeasureMaxeler<SkipMs, Variant>::trigger_resource_custom (void* pParams) {
 		mrLog()
 		<< ">>> 'maxeler' (thread main): forcing fpga to idle." << std::endl
 		<< std::endl;
@@ -83,25 +83,19 @@ namespace NLibMeasure {
 		max_daemon_force_idle(mMaxDaemonFildes, 0);
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureMaxeler<SkipMs, Version>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Variant>
+	void CMeasureMaxeler<SkipMs, Variant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		measurePower(pMeasurement, rThreadNum);
-		if(Version==FULL) {
-			if(!(mMeasureCounter%SkipMs)) {
+		if(Variant==FULL) {
+			if(!(mMeasureCounter++%SkipMs)) {
 				measureTemperature(pMeasurement, rThreadNum);
 			}
 			measureUtilization(pMeasurement, rThreadNum);
-			
-			if(mMeasureCounter == UINT64_MAX){
-				mMeasureCounter = 0;
-			} else {
-				mMeasureCounter++;
-			}
 		}
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureMaxeler<SkipMs, Version>::measurePower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Variant>
+	void CMeasureMaxeler<SkipMs, Variant>::measurePower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		cJSON *json_response		= NULL;
 		cJSON *json_measurements	= NULL;
 		cJSON *json_single			= NULL;
@@ -158,8 +152,8 @@ namespace NLibMeasure {
 		free(jstr_response);
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureMaxeler<SkipMs, Version>::measureTemperature(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Variant>
+	void CMeasureMaxeler<SkipMs, Variant>::measureTemperature(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		char *response;
 		max_daemon_device_hw_monitor(mMaxDaemonFildes, 0, &response);
 		
@@ -186,8 +180,8 @@ namespace NLibMeasure {
 		free(response);
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureMaxeler<SkipMs, Version>::measureUtilization(MEASUREMENT *pMeasurement, int32_t &rThreadNum) {
+	template <int SkipMs, int Variant>
+	void CMeasureMaxeler<SkipMs, Variant>::measureUtilization(MEASUREMENT *pMeasurement, int32_t &rThreadNum) {
 		cJSON *json_response		= NULL;
 		cJSON *json_measurements	= NULL;
 		

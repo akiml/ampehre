@@ -30,23 +30,19 @@ extern "C" {
 		
 		if(version == FULL) {
 			switch(skip_ms){
-				case LOW:
-					pMSR =  new NLibMeasure::CMeasureMSR<1, FULL>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
-					break;
 				case HIGH:
 					pMSR =  new NLibMeasure::CMeasureMSR<10, FULL>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
 					break;
+				case LOW:
 				default:
 					pMSR = new NLibMeasure::CMeasureMSR<1, FULL>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
 			}
 		} else {
 			switch(skip_ms){
-				case LOW:
-					pMSR =  new NLibMeasure::CMeasureMSR<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
-					break;
 				case HIGH:
 					pMSR =  new NLibMeasure::CMeasureMSR<10, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
 					break;
+				case LOW:
 				default:
 					pMSR = new NLibMeasure::CMeasureMSR<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
 			}

@@ -30,23 +30,19 @@ extern "C" {
 		
 		if(version == FULL) {
 			switch(skip_ms){
-				case LOW:
-					pIPMI =  new NLibMeasure::CMeasureIPMI<1, FULL>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
-					break;
 				case HIGH:
 					pIPMI =  new NLibMeasure::CMeasureIPMI<10, FULL>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
 					break;
+				case LOW:
 				default:
 					pIPMI =  new NLibMeasure::CMeasureIPMI<1, FULL>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
 			}
 		} else {
 			switch(skip_ms){
-				case LOW:
-					pIPMI =  new NLibMeasure::CMeasureIPMI<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
-					break;
 				case HIGH:
 					pIPMI =  new NLibMeasure::CMeasureIPMI<10, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
 					break;
+				case LOW:
 				default:
 					pIPMI =  new NLibMeasure::CMeasureIPMI<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
 			}

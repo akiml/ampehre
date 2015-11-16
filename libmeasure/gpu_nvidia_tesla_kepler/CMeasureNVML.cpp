@@ -23,8 +23,8 @@
  */
 
 namespace NLibMeasure {
-	template <int SkipMs, int Version>
-	CMeasureNVML<SkipMs, Version>::CMeasureNVML(CLogger& rLogger, gpu_frequency gpuFrequency) :
+	template <int SkipMs, int Variant>
+	CMeasureNVML<SkipMs, Variant>::CMeasureNVML(CLogger& rLogger, gpu_frequency gpuFrequency) :
 		CMeasureAbstractResource(rLogger),
 		mGpuFrequency(gpuFrequency)
 		{
@@ -32,14 +32,14 @@ namespace NLibMeasure {
 		init();
 	}
 	
-	template <int SkipMs, int Version>
-	CMeasureNVML<SkipMs, Version>::~CMeasureNVML() {
+	template <int SkipMs, int Variant>
+	CMeasureNVML<SkipMs, Variant>::~CMeasureNVML() {
 		destroy();
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureNVML<SkipMs, Version>::init(void) {
-		if(Version == FULL) {
+	template <int SkipMs, int Variant>
+	void CMeasureNVML<SkipMs, Variant>::init(void) {
+		if(Variant == FULL) {
 			mrLog()
 			<< ">>> 'nvml' (full version)" << std::endl;
 		} else {
@@ -280,8 +280,8 @@ namespace NLibMeasure {
 		<< std::endl;
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureNVML<SkipMs, Version>::destroy(void) {
+	template <int SkipMs, int Variant>
+	void CMeasureNVML<SkipMs, Variant>::destroy(void) {
 		nvmlReturn_t result;
 		int rv;
 		char const* args_dis_pm[] = {"gpu_management", "-p 0", "-r", NULL};
@@ -300,8 +300,8 @@ namespace NLibMeasure {
 		}
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureNVML<SkipMs, Version>::read_memory_total(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Variant>
+	void CMeasureNVML<SkipMs, Variant>::read_memory_total(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		nvmlReturn_t result;
 		nvmlMemory_t memory;
 		
@@ -315,8 +315,8 @@ namespace NLibMeasure {
 		pMeasurement->nvml_memory_total = (uint32_t)(memory.total >> 10);
 	}
 	
-	template <int SkipMs, int Version>
-	void CMeasureNVML<SkipMs, Version>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int SkipMs, int Variant>
+	void CMeasureNVML<SkipMs, Variant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		nvmlReturn_t result;
 		
 		result = nvmlDeviceGetPowerUsage(mDevice, &(pMeasurement->nvml_power_cur));
@@ -327,19 +327,19 @@ namespace NLibMeasure {
 			exit(EXIT_FAILURE);
 		}
 		
-		if(Version == FULL) {
+		if(Variant == FULL) {
 			nvmlMemory_t memory;
-			result = nvmlDeviceGetMemoryInfo(mDevice, &memory);
-			if (NVML_SUCCESS != result) {
-				mrLog.lock();
-				mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: cannot obtain memory informations. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-				mrLog.unlock();
-				exit(EXIT_FAILURE);
-			}
-			pMeasurement->nvml_memory_free_cur = (uint32_t)(memory.free >> 10);
-			pMeasurement->nvml_memory_used_cur = (uint32_t)(memory.used >> 10);
-			
-			if(!(mMeasureCounter%SkipMs)) {
+			if(!(mMeasureCounter++%SkipMs)) {
+				result = nvmlDeviceGetMemoryInfo(mDevice, &memory);
+				if (NVML_SUCCESS != result) {
+					mrLog.lock();
+					mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: cannot obtain memory informations. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+					mrLog.unlock();
+					exit(EXIT_FAILURE);
+				}
+				pMeasurement->nvml_memory_free_cur = (uint32_t)(memory.free >> 10);
+				pMeasurement->nvml_memory_used_cur = (uint32_t)(memory.used >> 10);
+				
 				result = nvmlDeviceGetPerformanceState(mDevice, (nvmlPstates_t*)&(pMeasurement->internal.nvml_power_state));
 				if (NVML_SUCCESS != result) {
 					mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: no performance state reading possible. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
@@ -393,18 +393,12 @@ namespace NLibMeasure {
 			
 			pMeasurement->nvml_util_gpu_cur	= utilization.gpu;
 			pMeasurement->nvml_util_mem_cur	= utilization.memory;
-			
-			if(mMeasureCounter == UINT64_MAX){
-				mMeasureCounter = 0;
-			} else {
-				mMeasureCounter++;
-			}
 		}
 		
 	}
 	
-	template <int SkipMs, int Version>
-	int CMeasureNVML<SkipMs, Version>::exec_gpu_mgmt(char* args[]){
+	template <int SkipMs, int Variant>
+	int CMeasureNVML<SkipMs, Variant>::exec_gpu_mgmt(char* args[]){
 		pid_t new_pid = 0;
 		int status_child = 1;
 

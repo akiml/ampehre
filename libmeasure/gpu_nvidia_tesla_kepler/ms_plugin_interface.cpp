@@ -30,23 +30,19 @@ extern "C" {
 		
 		if(version == FULL) {
 			switch(skip_ms){
-				case LOW:
-					pNVML =  new NLibMeasure::CMeasureNVML<1, FULL>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
-					break;
 				case HIGH:
 					pNVML =  new NLibMeasure::CMeasureNVML<10, FULL>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
 					break;
+				case LOW:
 				default:
 					pNVML =  new NLibMeasure::CMeasureNVML<1, FULL>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
 			}
 		}else {
 			switch(skip_ms){
-				case LOW:
-					pNVML =  new NLibMeasure::CMeasureNVML<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
-					break;
 				case HIGH:
 					pNVML =  new NLibMeasure::CMeasureNVML<10, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
 					break;
+				case LOW:
 				default:
 					pNVML =  new NLibMeasure::CMeasureNVML<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
 			}
