@@ -329,7 +329,7 @@ namespace NLibMeasure {
 		
 		if(Variant == FULL) {
 			nvmlMemory_t memory;
-			if(!(mMeasureCounter++%SkipMs)) {
+			if(!(mMeasureCounter++ % SkipMs)) {
 				result = nvmlDeviceGetMemoryInfo(mDevice, &memory);
 				if (NVML_SUCCESS != result) {
 					mrLog.lock();

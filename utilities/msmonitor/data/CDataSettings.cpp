@@ -37,6 +37,8 @@ namespace NData {
 		mMICSkipMsRate(1),
 		mSystemSkipMsRate(1),
 		
+		mSkipMsFreq(LOW),
+		
 		mDataSamplingRate(30),
 		mGUIRefreshRate(500),
 		
@@ -63,7 +65,9 @@ namespace NData {
 		mCpuGovernor(CPU_GOVERNOR_ONDEMAND),
 		mCpuFrequencyMinimum(0),
 		mCpuFrequencyMaximum(0),
-		mGpuFrequency(GPU_FREQUENCY_CUR)
+		mGpuFrequency(GPU_FREQUENCY_CUR),
+		
+		mLibVariant(FULL)
 		{
 		
 		// nothing todo

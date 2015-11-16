@@ -24,11 +24,11 @@
 extern "C" {
 	void* init_resource(void* pLogger, void* pParams){
 		NLibMeasure::CMeasureAbstractResource* pIPMI;
-		lib_version version = *((lib_version*) pParams);
-		skip_ms_freq skip_ms = *((skip_ms_freq*) pParams + 1);
+		lib_variant variant = *((lib_variant*) pParams);
+		skip_ms_freq skip_ms = *(skip_ms_freq*)((uint64_t*) pParams + 1);
 		pParams = (uint64_t*) pParams + 2; 
 		
-		if(version == FULL) {
+		if(variant == FULL) {
 			switch(skip_ms){
 				case HIGH:
 					pIPMI =  new NLibMeasure::CMeasureIPMI<10, FULL>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));

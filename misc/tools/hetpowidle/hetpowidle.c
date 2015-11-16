@@ -158,6 +158,8 @@ static void init_settings(ARGUMENTS **settings) {
 	(*settings)->ipmi_timeout_setting 	= IOC_SET_IPMI_TIMEOUT;
 	(*settings)->cpu_freq_min			= 0;
 	(*settings)->cpu_freq_max			= 0;
+	(*settings)->skip_ms				= LOW;
+	(*settings)->variant				= LIGHT2;
 	(*settings)->hostname				= NULL;
 	(*settings)->hostname_size			= 127;
 	(*settings)->jsonfile				= NULL;

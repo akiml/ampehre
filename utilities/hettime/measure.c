@@ -66,7 +66,7 @@ int run(ARGUMENTS *settings) {
 static void init_measuring_system(ARGUMENTS *settings, MSYSTEM **ms, MEASUREMENT **m) {
 	// Initialize library and measuring system
 	MS_VERSION version = { .major = MS_MAJOR_VERSION, .minor = MS_MINOR_VERSION, .revision = MS_REVISION_VERSION };
-	*ms	= ms_init(&version, settings->cpu_gov, settings->cpu_freq_min, settings->cpu_freq_max, settings->gpu_freq, settings->ipmi_timeout_setting);
+	*ms	= ms_init(&version, settings->cpu_gov, settings->cpu_freq_min, settings->cpu_freq_max, settings->gpu_freq, settings->ipmi_timeout_setting, settings->skip_ms, settings->variant);
 	
 	// Forcing FPGA to idle if desired
 	if (settings->force_idle_fpga) {

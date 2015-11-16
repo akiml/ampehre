@@ -142,12 +142,14 @@ typedef void MSYSTEM;
 
 enum skip_ms_freq {
 	HIGH,
-	LOW
+	LOW,
+	SKIP_MS_FREQUENCIES
 };
 
-enum lib_version {
+enum lib_variant {
 	LIGHT2,
-	FULL
+	FULL,
+	VARIANTS
 };
 
 enum maxeler_power {
@@ -520,7 +522,8 @@ double server_energy_total(MEASUREMENT *measurement);
 double server_power_avg(MEASUREMENT *measurement);
 
 // Library management functions
-MSYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max, enum gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting);
+MSYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max,
+				 enum gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting, enum skip_ms_freq skip_ms, enum lib_variant variant);
 void ms_init_fpga_force_idle(MSYSTEM *mgmt);
 void ms_fini(MSYSTEM *mgmt);
 

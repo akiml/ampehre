@@ -376,7 +376,7 @@ namespace NLibMeasure {
 		
 		if(Variant == FULL) {
 			micGetFrequency(pMeasurement, rThreadNum);
-			if(!(mMeasureCounter++%SkipMs)) {
+			if(!(mMeasureCounter++ % SkipMs)) {
 				micGetMemory(pMeasurement, rThreadNum);
 				micGetTemperature(pMeasurement, rThreadNum);
 			}
@@ -413,7 +413,7 @@ namespace NLibMeasure {
 			exit(EXIT_FAILURE);
 		}
 		
-		if(!(mMeasureCounter%SkipMs)) {
+		if(!(mMeasureCounter % SkipMs)) {
 			// Get information about the MIC memory.
 			status = mic_get_memory_info(mpMicDevice, &memory_info);
 			if (E_MIC_SUCCESS != status) {

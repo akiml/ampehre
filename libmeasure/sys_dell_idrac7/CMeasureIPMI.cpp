@@ -90,7 +90,7 @@ namespace NLibMeasure {
 		double value = 0;
 		
 		if (Variant == FULL) {
-			if(!(mMeasureCounter%SkipMs)) {
+			if(!(mMeasureCounter % SkipMs)) {
 				value = getTemperature(18);
 				if(value < 0 && value != -ETIMEDOUT){
 					mrLog.lock();
@@ -124,7 +124,7 @@ namespace NLibMeasure {
 		}
 		
 		if (Variant == FULL) {
-			if(!(mMeasureCounter++%SkipMs)) {
+			if(!(mMeasureCounter++ % SkipMs)) {
 				value = getTemperature(153);
 				if(value < 0 && value != -ETIMEDOUT){
 					mrLog.lock();

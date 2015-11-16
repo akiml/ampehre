@@ -59,12 +59,22 @@ int main(int argc, char **argv) {
 		{"perf", "PERF", "performance" , "PERFORMANCE"}
 	};
 	
+	const char *ms_freq[SKIP_MS_FREQUENCIES][3] = {
+		{"high", "HIGH", "High"},
+		{"low", "LOW", "Low"}
+	};
+	
+	const char *lib_var[VARIANTS][3] = {
+		{"light", "LIGHT", "Light"},
+		{"full", "FULL", "Full"}
+	};
+	
 	int32_t opt;
 	
 	int32_t file_flag = 0;
 	int32_t args_flag = 0;
 	
-	while ((opt = getopt(argc, argv, "h?c:g:f:m:s:e:a:G:C:L:H:o:v:ui")) != -1) {
+	while ((opt = getopt(argc, argv, "h?c:g:f:m:s:S:e:a:G:C:L:H:V:o:v:ui")) != -1) {
 		switch (opt) {
 			case 'a':
 				if (file_flag == 0) {
@@ -120,6 +130,18 @@ int main(int argc, char **argv) {
 					return EXIT_FAILURE;
 				}
 				break;
+			case 'S':
+				if (check_string_args(optarg, ms_freq[LOW], 3)) {
+					cur_settings->skip_ms = LOW;
+				} else if (check_string_args(optarg, ms_freq[HIGH], 3)) {
+					cur_settings->skip_ms = HIGH;
+				} else {
+					LOG_ERROR("Encounter wrong argument with option 'G'.");
+					print_help(argv, std_settings);
+					free_settings(&std_settings, &cur_settings);
+					return EXIT_FAILURE;
+				}
+				break;
 			case 'G':
 				if (check_string_args(optarg, gpu_freqs[GPU_FREQUENCY_MIN], 4)) {
 					cur_settings->gpu_freq = GPU_FREQUENCY_MIN;
@@ -133,7 +155,6 @@ int main(int argc, char **argv) {
 					free_settings(&std_settings, &cur_settings);
 					return EXIT_FAILURE;
 				}
-				
 				break;
 			case 'C':
 				if (check_string_args(optarg, cpu_govs[CPU_GOVERNOR_POWERSAVE], 4)) {
@@ -168,6 +189,18 @@ int main(int argc, char **argv) {
 					return EXIT_FAILURE;
 				}
 				cur_settings->cpu_freq_max = atoi(optarg)*1000;
+				break;
+			case 'V':
+				if (check_string_args(optarg, lib_var[LIGHT2], 3)) {
+					cur_settings->variant = LIGHT2;
+				} else if (check_string_args(optarg, lib_var[FULL], 3)) {
+					cur_settings->variant = FULL;
+				} else {
+					LOG_ERROR("Encounter wrong argument with option 'V'.");
+					print_help(argv, std_settings);
+					free_settings(&std_settings, &cur_settings);
+					return EXIT_FAILURE;
+				}
 				break;
 			case 'o':
 				copy_str_to_newstr(&(cur_settings->ostream_filename), optarg, strlen(optarg));
@@ -367,6 +400,8 @@ static void init_settings(ARGUMENTS **std_settings, ARGUMENTS **cur_settings) {
 	(*std_settings)->cpu_freq_max			= 0;
 	(*std_settings)->ush_client				= 0;
 	(*std_settings)->ipmi_timeout_setting	= IOC_SET_IPMI_TIMEOUT;
+	(*std_settings)->skip_ms				= LOW;
+	(*std_settings)->variant				= FULL;
 	
 	memcpy(*cur_settings, *std_settings, sizeof(ARGUMENTS));
 }

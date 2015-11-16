@@ -87,7 +87,7 @@ namespace NLibMeasure {
 	void CMeasureMaxeler<SkipMs, Variant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		measurePower(pMeasurement, rThreadNum);
 		if(Variant==FULL) {
-			if(!(mMeasureCounter++%SkipMs)) {
+			if(!(mMeasureCounter++ % SkipMs)) {
 				measureTemperature(pMeasurement, rThreadNum);
 			}
 			measureUtilization(pMeasurement, rThreadNum);

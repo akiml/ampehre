@@ -26,7 +26,8 @@
 
 static MINTERNAL *minternal = NULL;
 
-void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max, enum gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting) {
+void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max,
+			   enum gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting, enum skip_ms_freq skip_ms, enum lib_variant variant) {
 	
 	if((version->major != MS_MAJOR_VERSION) || (version->minor != MS_MINOR_VERSION) || (version->revision != MS_REVISION_VERSION)){
 		printf("Error in taskwrapper: Wrong version number! taskwrapper version %d.%d.%d is called from tool with version %d.%d.%d.\n", MS_MAJOR_VERSION, MS_MINOR_VERSION, MS_REVISION_VERSION, version->major, version->minor, version->revision);
@@ -61,7 +62,7 @@ void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, ui
 	minternal->resources		= resources;
 	
 	// Initialize library and measuring system
-	minternal->global_ms		= ms_init(version, cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq, ipmi_timeout_setting);
+	minternal->global_ms		= ms_init(version, cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq, ipmi_timeout_setting, skip_ms, variant);
 	
 	// Forcing FPGA to idle if desired
 #ifndef LIGHT

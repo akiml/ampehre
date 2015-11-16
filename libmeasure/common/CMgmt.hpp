@@ -55,7 +55,7 @@ class CMgmt {
 		struct sigaction *mpActionStop;
 		
 	public:
-		CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency, uint64_t ipmi_timeout_setting);
+		CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency, uint64_t ipmi_timeout_setting, skip_ms_freq skip_ms,  lib_variant variant);
 		~CMgmt();
 		
 		void initMaxelerForceIdle(void);

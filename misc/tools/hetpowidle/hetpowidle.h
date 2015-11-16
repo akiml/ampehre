@@ -55,6 +55,8 @@ typedef struct __arguments {
 	uint64_t ipmi_timeout_setting;
 	uint32_t cpu_freq_min;
 	uint32_t cpu_freq_max;
+	enum skip_ms_freq skip_ms;
+	enum lib_variant variant;
 	char *hostname;
 	size_t hostname_size;
 	char *jsonfile;

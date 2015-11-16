@@ -44,6 +44,8 @@ namespace NData {
 			uint32_t mMICSkipMsRate;
 			uint32_t mSystemSkipMsRate;
 			
+			skip_ms_freq mSkipMsFreq;
+			
 			uint32_t mDataSamplingRate;
 			uint32_t mGUIRefreshRate;
 			
@@ -71,6 +73,8 @@ namespace NData {
 			uint64_t mCpuFrequencyMinimum;
 			uint64_t mCpuFrequencyMaximum;
 			enum gpu_frequency mGpuFrequency;
+			
+			lib_variant mLibVariant;
 			
 		public:
 			CDataSettings(void);

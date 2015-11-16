@@ -46,6 +46,8 @@ typedef struct __arguments {
 	uint32_t cpu_freq_max;
 	uint32_t runtime;
 	uint64_t ipmi_timeout_setting;
+	enum skip_ms_freq skip_ms;
+	enum lib_variant variant;
 } ARGUMENTS;
 
 void run(ARGUMENTS *settings);

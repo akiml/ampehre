@@ -114,14 +114,8 @@ namespace NLibMeasure {
 		while (!mThreadStateStop) {
 			mMutexTimer.lock();
 			
-			if(!(skip_ms_cnt % mpMeasurement->msr_skip_ms_rate)){
+			if(!(skip_ms_cnt++ % mpMeasurement->msr_skip_ms_rate)){
 				mrMeasureResource.measure(mpMeasurement, mThreadNum);
-			}
-			
-			if(skip_ms_cnt == UINT64_MAX){
-				skip_ms_cnt = 0;
-			} else {
-				skip_ms_cnt++;
 			}
 			
 			// calculated diff time (use internal struct for that)

@@ -39,16 +39,16 @@ void emptySighandler(int signal) {
 }
 #endif /* __cplusplus */
 
-CMgmt::CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency, uint64_t ipmi_timeout_setting) :
+CMgmt::CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency, uint64_t ipmi_timeout_setting, skip_ms_freq skip_ms,  lib_variant variant) :
 	mLogger(),
 	mResources(),
 	mStartSem()
 	{
-	uint64_t params_cpu[]	= {FULL, LOW, cpuGovernor, cpuFrequencyMin, cpuFrequencyMax};
-	uint64_t params_gpu[]	= {FULL, LOW, gpuFrequency};
-	uint64_t params_fpga[]	= {FULL, LOW};
-	uint64_t params_mic[]	= {FULL, LOW};
-	uint64_t params_sys[]	= {FULL, LOW, ipmi_timeout_setting};
+	uint64_t params_cpu[]	= {variant, skip_ms, cpuGovernor, cpuFrequencyMin, cpuFrequencyMax};
+	uint64_t params_gpu[]	= {variant, skip_ms, gpuFrequency};
+	uint64_t params_fpga[]	= {variant, skip_ms};
+	uint64_t params_mic[]	= {variant, skip_ms};
+	uint64_t params_sys[]	= {variant, skip_ms, ipmi_timeout_setting};
 	
 	mResources[CPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, CPU_LIB_NAME, (void*) params_cpu);
 	mResources[GPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, GPU_LIB_NAME, (void*) params_gpu);

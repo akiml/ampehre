@@ -262,12 +262,12 @@ namespace NLibMeasure {
 			pMeasurement->msr_energy_cur[i][PP0]		= msrGetEnergy(rThreadNum, i, MSR_PP0_ENERGY_STATUS)*1000.0;
 			pMeasurement->msr_energy_cur[i][DRAM]		= msrGetEnergy(rThreadNum, i, MSR_DRAM_ENERGY_STATUS)*1000.0;
 			if(Variant == FULL) {
-				if(!(mMeasureCounter%SkipMs)) {
+				if(!(mMeasureCounter % SkipMs)) {
 					pMeasurement->msr_temperature_pkg_cur[i]	= msrGetTemperature(rThreadNum, i, IA32_PACKAGE_THERM_STATUS);
 				}
 				
 				for (int j=0; j<CORES; ++j) {
-					if(!(mMeasureCounter%SkipMs)) {
+					if(!(mMeasureCounter % SkipMs)) {
 						pMeasurement->msr_temperature_core_cur[i][j]		= msrGetTemperature(rThreadNum, j*CPUS+i, IA32_THERM_STATUS);
 					}
 					pMeasurement->internal.msr_timestamp_core_cur[i][j]	= msrGetTimeStamp(rThreadNum, j*CPUS+i, IA32_TIME_STAMP_COUNTER);
@@ -283,7 +283,7 @@ namespace NLibMeasure {
 		measureGetUtilization(rThreadNum, pMeasurement->internal.measure_util_cur);
 		
 		if(Variant == FULL) {
-			if(!(mMeasureCounter++%SkipMs)) {
+			if(!(mMeasureCounter++ % SkipMs)) {
 				measureGetMemInfo(rThreadNum, pMeasurement->measure_memory_cur);
 			}
 		}
