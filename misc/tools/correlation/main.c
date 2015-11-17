@@ -112,6 +112,8 @@ static void init_settings(ARGUMENTS **settings) {
 	(*settings)->cpu_freq_max			= 0;
 	(*settings)->granularity			= 1;
 	(*settings)->ipmi_timeout_setting	= IOC_SET_IPMI_TIMEOUT;
+	(*settings)->skip_ms				= LOW;
+	(*settings)->variant				= LIGHT2;
 }
 
 static void free_settings(ARGUMENTS **settings) {

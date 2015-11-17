@@ -293,6 +293,34 @@ static void print_help(char **argv, ARGUMENTS *std_settings) {
 		default:
 			strncpy(cpu_gov_string, "dmnd", 4);
 			break;
+	}	
+	
+	size_t skip_ms_freq_string_size = 4;
+	char skip_ms_freq_string[skip_ms_freq_string_size+1];
+	memset(skip_ms_freq_string, 0, skip_ms_freq_string_size+1);
+	
+	switch (std_settings->skip_ms) {
+		case HIGH:
+			strncpy(skip_ms_freq_string, "high", 4);
+			break;
+		case LOW:
+		default:
+			strncpy(skip_ms_freq_string, "low", 3);
+			break;
+	}
+	
+	size_t lib_variant_string_size = 5;
+	char lib_variant_string[lib_variant_string_size+1];
+	memset(lib_variant_string, 0, lib_variant_string_size+1);
+	
+	switch (std_settings->variant) {
+		case LIGHT2:
+			strncpy(lib_variant_string, "light", 5);
+			break;
+		case FULL:
+		default:
+			strncpy(lib_variant_string, "full", 4);
+			break;
 	}
 	
 	fprintf(stderr,
@@ -315,6 +343,14 @@ static void print_help(char **argv, ARGUMENTS *std_settings) {
 			"-s \"SAMPLE_SYS        | Sampling rate for system-wide power/temp measurements in ms.\n"
 			"    SAMPLE_SKIP_SYS\"  |  Skip rate defines how many measurement points are skipped.\n"
 			"                      | Default: %ums, %u. Recommended minimum: 100ms.\n"
+			"-S SKIP_MS_FREQ       | Skip measurement frequency defines how often certain measurements\n"
+			"                      | are performed.\n"
+			"                      | Possible settings are:\n"
+			"                      | high, HIGH, High\n"
+			"                      |    Temperature and memory information are measured only at every 10th measuring point.\n"
+			"                      | low, LOW, Low\n"
+			"                      |    Temperature and memory information are measured at every measuring point.\n"
+			"                      | Default: %s.\n"
 			"-e EXECUTABLE         | Name of the executable. This option is mandatory.\n"
 			"-a \"ARGS\"             | Specify the arguments for executable EXECUTABLE with this option.\n"
 			"                      | Note that the arguments have to be seperated by spaces.\n"
@@ -342,6 +378,13 @@ static void print_help(char **argv, ARGUMENTS *std_settings) {
 			"                      | Default: %s.\n"
 			"-L FREQUENCY          | Set the lowest permitted CPU frequency in MHz.\n"
 			"-H FREQUENCY          | Set the highest permitted CPU frequency in MHz.\n"
+			"-V LIB_VARIANT        | Defines the variant of the measuring library which is used.\n"
+			"                      | Possible variants are:\n"
+			"                      | light, LIGHT, Light\n"
+			"                      |    Not all possible values are measured and therefore the CPU utilization is lower.\n"
+			"                      | high, HIGH, High\n"
+			"                      |    All values are measured.\n"
+			"                      | Default: %s.\n"
 			"-o RESULT_FILE        | Save results in a file instead of printing to stdout.\n"
 			"-v CSV_FILE           | Save results in a CSV table file.\n"
 			"-u                    | Use UNIX socket handler library to communicate with msmonitor.\n"
@@ -363,8 +406,10 @@ static void print_help(char **argv, ARGUMENTS *std_settings) {
 			std_settings->skip_ms_rate_mic,
 			std_settings->sample_rate_sys,
 			std_settings->skip_ms_rate_sys,
+			skip_ms_freq_string,
 			gpu_freq_string,
 			cpu_gov_string,
+			lib_variant_string,
 			argv[0]
 	);
 }

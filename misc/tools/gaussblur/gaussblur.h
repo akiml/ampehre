@@ -51,6 +51,8 @@ typedef struct __arguments {
 	uint32_t size;
 	uint32_t energy_loops;
 	uint64_t ipmi_timeout_setting;
+	enum skip_ms_freq skip_ms;
+	enum lib_variant variant;
 } ARGUMENTS;
 
 #define PIXEL_CHANNELS 4
