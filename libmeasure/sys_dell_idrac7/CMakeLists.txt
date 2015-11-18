@@ -14,11 +14,12 @@
 # created: 5/12/15
 # version: 0.5.1 - modularised libmeasure
 #          0.5.4 - add dynamic loading of resource specific libraries
-#          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+#          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+#                   and to select between the full or light library.
 #
 
 set(SRC_SYS_LIBRARY
-	ms_plugin_interface.cpp CMeasureIPMIThread.cpp
+	ms_plugin_interface.cpp
 )
 
 # Full library
@@ -26,10 +27,3 @@ add_library(ms_sys_dell_idrac7 SHARED ${SRC_SYS_LIBRARY})
 target_link_libraries(ms_sys_dell_idrac7 ms_common ipmimeasure)
 
 install(TARGETS ms_sys_dell_idrac7 LIBRARY DESTINATION lib)
-
-# Light library
-add_library(ms_sys_dell_idrac7_light SHARED ${SRC_SYS_LIBRARY})
-target_link_libraries(ms_sys_dell_idrac7_light ms_common ipmimeasure)
-set_target_properties(ms_sys_dell_idrac7_light PROPERTIES COMPILE_DEFINITIONS "LIGHT")
-
-install(TARGETS ms_sys_dell_idrac7_light LIBRARY DESTINATION lib)

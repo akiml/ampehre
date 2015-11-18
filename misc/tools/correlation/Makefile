@@ -48,7 +48,7 @@ OBJECTS_GPU=$(SOURCES_GPU:.cu=.o)
 all: msg build
 
 build: $(OBJECTS_CPU) $(OBJECTS_GPU)
-	$(NVCC) $(NVCCFLAGS) $? -L$(BASE_DIR)/lib -lms_common_light -lrt -lcjson -o correlation_original
+	$(NVCC) $(NVCCFLAGS) $? -L$(BASE_DIR)/lib -lms_common -lrt -lcjson -o correlation_original
 
 msg:
 	@echo "Build environment:"

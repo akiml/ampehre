@@ -15,6 +15,8 @@
  * version: 0.4.0 - MIC integration into libmeasure
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library.
  */
 
 #ifndef __CMEASUREMICTHREAD_HPP__
@@ -27,6 +29,7 @@
 #include <miclib.h>
 
 namespace NLibMeasure {
+	template <int Variant>
 	class CMeasureMICThread : public CMeasureAbstractThread {
 		public:
 			CMeasureMICThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes);
@@ -36,5 +39,7 @@ namespace NLibMeasure {
 			void run(void);
 	};
 }
+
+#include "CMeasureMICThread.cpp"
 
 #endif /* __CMEASUREMICTHREAD_HPP__ */

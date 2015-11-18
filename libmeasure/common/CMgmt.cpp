@@ -22,7 +22,8 @@
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.5.4 - add dynamic loading of resource specific libraries
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
 
 #include "CMgmt.hpp"
@@ -42,13 +43,14 @@ void emptySighandler(int signal) {
 CMgmt::CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency, uint64_t ipmi_timeout_setting, skip_ms_freq skip_ms,  lib_variant variant) :
 	mLogger(),
 	mResources(),
-	mStartSem()
+	mStartSem(),
+	mLibVariant(variant)
 	{
-	uint64_t params_cpu[]	= {variant, skip_ms, cpuGovernor, cpuFrequencyMin, cpuFrequencyMax};
-	uint64_t params_gpu[]	= {variant, skip_ms, gpuFrequency};
-	uint64_t params_fpga[]	= {variant, skip_ms};
-	uint64_t params_mic[]	= {variant, skip_ms};
-	uint64_t params_sys[]	= {variant, skip_ms, ipmi_timeout_setting};
+	uint64_t params_cpu[]	= {mLibVariant, skip_ms, cpuGovernor, cpuFrequencyMin, cpuFrequencyMax};
+	uint64_t params_gpu[]	= {mLibVariant, skip_ms, gpuFrequency};
+	uint64_t params_fpga[]	= {mLibVariant, skip_ms};
+	uint64_t params_mic[]	= {mLibVariant, skip_ms};
+	uint64_t params_sys[]	= {mLibVariant, skip_ms, ipmi_timeout_setting};
 	
 	mResources[CPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, CPU_LIB_NAME, (void*) params_cpu);
 	mResources[GPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, GPU_LIB_NAME, (void*) params_gpu);
@@ -71,19 +73,18 @@ CMgmt::~CMgmt() {
 		delete i.second;
 	}
 	
-	
-#ifndef LIGHT
 #ifdef SIGNALS
-	if (mpActionStart) {
-		sigaction(SIGUSR1, 0, 0);
-		delete mpActionStart;
-	}
-	if (mpActionStop) {
-		sigaction(SIGUSR2, 0, 0);
-		delete mpActionStop;
+	if(mLibVariant == FULL){
+		if (mpActionStart) {
+			sigaction(SIGUSR1, 0, 0);
+			delete mpActionStart;
+		}
+		if (mpActionStop) {
+			sigaction(SIGUSR2, 0, 0);
+			delete mpActionStop;
+		}
 	}
 #endif /* SIGNALS */
-#endif /* LIGHT */
 
 }
 

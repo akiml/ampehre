@@ -18,15 +18,13 @@
  *          0.2.2 - add semaphore to synchronize the start of the measurements
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
 
-#include "CMeasureMaxelerThread.hpp"
-
-#include <iomanip>
-
 namespace NLibMeasure {
-	CMeasureMaxelerThread::CMeasureMaxelerThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
+	template <int Variant>
+	CMeasureMaxelerThread<Variant>::CMeasureMaxelerThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
 		CMeasureAbstractThread(rLogger, rStartSem, pMeasurement, rMeasureRes)
 		{
 		mThreadType = "maxeler";
@@ -35,11 +33,13 @@ namespace NLibMeasure {
 		mTimer.shareMutex(&mMutexTimer);
 	}
 	
-	CMeasureMaxelerThread::~CMeasureMaxelerThread() {
+	template <int Variant>
+	CMeasureMaxelerThread<Variant>::~CMeasureMaxelerThread() {
 		// nothing todo
 	}
 	
-	void CMeasureMaxelerThread::run(void) {
+	template <int Variant>
+	void CMeasureMaxelerThread<Variant>::run(void) {
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
@@ -91,17 +91,17 @@ namespace NLibMeasure {
 			for (int i=0; i<MAX_NUM_POWER; ++i) {
 				mpMeasurement->maxeler_energy_acc[i] += mpMeasurement->maxeler_power_cur[i] * mpMeasurement->internal.maxeler_time_diff_double;
 			}
-#ifndef LIGHT
-			// result: maximum temperatures
-			for (int i=0; i<MAX_NUM_TEMPERATURE; ++i) {
-				if (mpMeasurement->maxeler_temperature_cur[i] > mpMeasurement->maxeler_temperature_max[i]) {
-					mpMeasurement->maxeler_temperature_max[i] = mpMeasurement->maxeler_temperature_cur[i];
+			if(Variant == FULL) {
+				// result: maximum temperatures
+				for (int i=0; i<MAX_NUM_TEMPERATURE; ++i) {
+					if (mpMeasurement->maxeler_temperature_cur[i] > mpMeasurement->maxeler_temperature_max[i]) {
+						mpMeasurement->maxeler_temperature_max[i] = mpMeasurement->maxeler_temperature_cur[i];
+					}
 				}
+				
+				// result: utlization
+				mpMeasurement->maxeler_util_comp_acc	+= mpMeasurement->maxeler_util_comp_cur * mpMeasurement->internal.maxeler_time_diff_double;
 			}
-			
-			// result: utlization
-			mpMeasurement->maxeler_util_comp_acc	+= mpMeasurement->maxeler_util_comp_cur * mpMeasurement->internal.maxeler_time_diff_double;
-#endif /* LIGHT */
 			
 #if 0
 			for (int i=0; i<8; ++i)
@@ -117,9 +117,9 @@ namespace NLibMeasure {
 			mpMeasurement->maxeler_power_avg[i] = (mpMeasurement->maxeler_energy_acc[i]) / mpMeasurement->maxeler_time_runtime;
 		}
 		
-#ifndef LIGHT
-		mpMeasurement->maxeler_util_comp_avg = mpMeasurement->maxeler_util_comp_acc / mpMeasurement->maxeler_time_runtime;
-#endif /* LIGHT */
+		if(Variant == FULL) {
+			mpMeasurement->maxeler_util_comp_avg = mpMeasurement->maxeler_util_comp_acc / mpMeasurement->maxeler_time_runtime;
+		}
 		
 #ifdef DEBUG
 		 const char* const powerName[] = {"vcc1v0_core", "vcc1v5_ddr", "vcc2v5_aux", "imgt_1v0", "imgt_1v2", "mgt_1v0", "mgt_1v2", "power_usage"};

@@ -20,12 +20,11 @@
 
 /*
  * The version number defined here is valid for all tools and libraries.
- * Only the driver version number has to be changed seperately in driver_measure.c.
  */
 #define MS_MAJOR_VERSION	0
 #define MS_MINOR_VERSION	5
-#define MS_REVISION_VERSION	11
-#define MS_VERSION_STRING	"0.5.11"
+#define MS_REVISION_VERSION	12
+#define MS_VERSION_STRING	"0.5.12"
 
 #ifndef BUILD_DRIVER
 #include <stdint.h>

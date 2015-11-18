@@ -28,7 +28,8 @@
  *          0.4.0 - MIC integration into libmeasure
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library.
  */
 
 #ifndef __MEASUREMENT_H__
@@ -71,9 +72,6 @@
 #define MIC 	0x10
 #define ALL		(CPU | GPU | GPU | FPGA | SYSTEM | MIC)
 		
-		
-#ifndef LIGHT
-		
 #ifdef CPU_LIB
 	#define CPU_LIB_NAME "libms_cpu_intel_xeon_sandy.so"
 #else
@@ -103,40 +101,6 @@
 #else
 	#define MIC_LIB_NAME "libms_stub.so"
 #endif
-		
-#else
-		
-#ifdef CPU_LIB
-	#define CPU_LIB_NAME "libms_cpu_intel_xeon_sandy_light.so"
-#else
-	#define CPU_LIB_NAME "libms_stub.so"
-#endif
-
-#ifdef GPU_LIB
-	#define GPU_LIB_NAME "libms_gpu_nvidia_tesla_kepler_light.so"
-#else
-	#define GPU_LIB_NAME "libms_stub.so"
-#endif
-		
-#ifdef FPGA_LIB
-	#define FPGA_LIB_NAME "libms_fpga_maxeler_max3a_light.so"
-#else
-	#define FPGA_LIB_NAME "libms_stub.so"
-#endif
-		
-#ifdef SYS_LIB
-	#define SYS_LIB_NAME "libms_sys_dell_idrac7_light.so"
-#else
-	#define SYS_LIB_NAME "libms_stub.so"
-#endif
-		
-#ifdef MIC_LIB
-	#define MIC_LIB_NAME "libms_mic_intel_knc_light.so"
-#else
-	#define MIC_LIB_NAME "libms_stub.so"
-#endif
-		
-#endif
 
 typedef void MSYSTEM;
 
@@ -147,7 +111,7 @@ enum skip_ms_freq {
 };
 
 enum lib_variant {
-	LIGHT2,
+	LIGHT,
 	FULL,
 	VARIANTS
 };

@@ -19,7 +19,8 @@
  *          0.2.4 - add version check functionality to library, wrappers, and tools
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.4.0 - MIC integration into libmeasure
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library.
  */
 
 #include <stdlib.h>

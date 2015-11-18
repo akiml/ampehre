@@ -13,6 +13,8 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/22/15
  * version: 0.5.3 - add abstract measure and abstract measure thread
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library.
  */
 
 #ifndef __CMEASUREABSTRACTTHREAD_HPP__
@@ -55,9 +57,9 @@ namespace NLibMeasure {
 			
 			std::string mThreadType;
 			
-		protected:
+		public:
 			CMeasureAbstractThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureResource);
-			~CMeasureAbstractThread();
+			virtual ~CMeasureAbstractThread();
 			
 		private:
 			virtual void run(void) = 0;

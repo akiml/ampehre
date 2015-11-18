@@ -20,16 +20,13 @@
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
 
-#include "CMeasureNVMLThread.hpp"
-
-#include <iostream>
-#include <ctime>
-
 namespace NLibMeasure {
-	CMeasureNVMLThread::CMeasureNVMLThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
+	template <int Variant>
+	CMeasureNVMLThread<Variant>::CMeasureNVMLThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
 		CMeasureAbstractThread(rLogger, rStartSem, pMeasurement, rMeasureRes)
 		{
 		mThreadType = "nvml";
@@ -38,11 +35,13 @@ namespace NLibMeasure {
 		mTimer.shareMutex(&mMutexTimer);
 	}
 	
-	CMeasureNVMLThread::~CMeasureNVMLThread() {
+	template <int Variant>
+	CMeasureNVMLThread<Variant>::~CMeasureNVMLThread() {
 		// nothing todo
 	}
-		
-	void CMeasureNVMLThread::run(void) {
+	
+	template <int Variant>
+	void CMeasureNVMLThread<Variant>::run(void) {
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
@@ -97,39 +96,40 @@ namespace NLibMeasure {
 			// result: energy consumption
 			mpMeasurement->nvml_energy_acc			+= mpMeasurement->nvml_power_cur * mpMeasurement->internal.nvml_time_diff_double;
 			
-#ifndef LIGHT
-			// result: memory usage
-			mpMeasurement->nvml_memory_used_max		=
-				(mpMeasurement->nvml_memory_used_cur>mpMeasurement->nvml_memory_used_max) ?
-				mpMeasurement->nvml_memory_used_cur : mpMeasurement->nvml_memory_used_max;
+			if(Variant == FULL) {
+				// result: memory usage
+				mpMeasurement->nvml_memory_used_max		=
+					(mpMeasurement->nvml_memory_used_cur>mpMeasurement->nvml_memory_used_max) ?
+					mpMeasurement->nvml_memory_used_cur : mpMeasurement->nvml_memory_used_max;
+					
+				mpMeasurement->nvml_memory_free_max		=
+					(mpMeasurement->nvml_memory_free_cur>mpMeasurement->nvml_memory_free_max) ?
+					mpMeasurement->nvml_memory_free_cur : mpMeasurement->nvml_memory_free_max;
 				
-			mpMeasurement->nvml_memory_free_max		=
-				(mpMeasurement->nvml_memory_free_cur>mpMeasurement->nvml_memory_free_max) ?
-				mpMeasurement->nvml_memory_free_cur : mpMeasurement->nvml_memory_free_max;
+				// result: maximum temperature
+				mpMeasurement->nvml_temperature_max		=
+					(mpMeasurement->nvml_temperature_cur>mpMeasurement->nvml_temperature_max) ?
+					mpMeasurement->nvml_temperature_cur : mpMeasurement->nvml_temperature_max;
+				
+				// result: "accumulated frequencies"
+				mpMeasurement->nvml_clock_graphics_acc	+= mpMeasurement->nvml_clock_graphics_cur * mpMeasurement->internal.nvml_time_diff_double;
+				mpMeasurement->nvml_clock_sm_acc		+= mpMeasurement->nvml_clock_sm_cur * mpMeasurement->internal.nvml_time_diff_double;
+				mpMeasurement->nvml_clock_mem_acc		+= mpMeasurement->nvml_clock_mem_cur * mpMeasurement->internal.nvml_time_diff_double;
+				
+				// result: average clock speeds
+				mpMeasurement->nvml_clock_graphics_avg	= (mpMeasurement->nvml_clock_graphics_acc)/mpMeasurement->nvml_time_runtime;
+				mpMeasurement->nvml_clock_sm_avg		= (mpMeasurement->nvml_clock_sm_acc)/mpMeasurement->nvml_time_runtime;
+				mpMeasurement->nvml_clock_mem_avg		= (mpMeasurement->nvml_clock_mem_acc)/mpMeasurement->nvml_time_runtime;
+				
+				// result: "accumulated utilization"
+				mpMeasurement->nvml_util_gpu_acc		+= mpMeasurement->nvml_util_gpu_cur * mpMeasurement->internal.nvml_time_diff_double;
+				mpMeasurement->nvml_util_mem_acc		+= mpMeasurement->nvml_util_mem_cur * mpMeasurement->internal.nvml_time_diff_double;
+				
+				// result: average utilization
+				mpMeasurement->nvml_util_gpu_avg		= (mpMeasurement->nvml_util_gpu_acc)/mpMeasurement->nvml_time_runtime;
+				mpMeasurement->nvml_util_mem_avg		= (mpMeasurement->nvml_util_mem_acc)/mpMeasurement->nvml_time_runtime;
+			}
 			
-			// result: maximum temperature
-			mpMeasurement->nvml_temperature_max		=
-				(mpMeasurement->nvml_temperature_cur>mpMeasurement->nvml_temperature_max) ?
-				mpMeasurement->nvml_temperature_cur : mpMeasurement->nvml_temperature_max;
-			
-			// result: "accumulated frequencies"
-			mpMeasurement->nvml_clock_graphics_acc	+= mpMeasurement->nvml_clock_graphics_cur * mpMeasurement->internal.nvml_time_diff_double;
-			mpMeasurement->nvml_clock_sm_acc		+= mpMeasurement->nvml_clock_sm_cur * mpMeasurement->internal.nvml_time_diff_double;
-			mpMeasurement->nvml_clock_mem_acc		+= mpMeasurement->nvml_clock_mem_cur * mpMeasurement->internal.nvml_time_diff_double;
-			
-			// result: average clock speeds
-			mpMeasurement->nvml_clock_graphics_avg	= (mpMeasurement->nvml_clock_graphics_acc)/mpMeasurement->nvml_time_runtime;
-			mpMeasurement->nvml_clock_sm_avg		= (mpMeasurement->nvml_clock_sm_acc)/mpMeasurement->nvml_time_runtime;
-			mpMeasurement->nvml_clock_mem_avg		= (mpMeasurement->nvml_clock_mem_acc)/mpMeasurement->nvml_time_runtime;
-			
-			// result: "accumulated utilization"
-			mpMeasurement->nvml_util_gpu_acc		+= mpMeasurement->nvml_util_gpu_cur * mpMeasurement->internal.nvml_time_diff_double;
-			mpMeasurement->nvml_util_mem_acc		+= mpMeasurement->nvml_util_mem_cur * mpMeasurement->internal.nvml_time_diff_double;
-			
-			// result: average utilization
-			mpMeasurement->nvml_util_gpu_avg		= (mpMeasurement->nvml_util_gpu_acc)/mpMeasurement->nvml_time_runtime;
-			mpMeasurement->nvml_util_mem_avg		= (mpMeasurement->nvml_util_mem_acc)/mpMeasurement->nvml_time_runtime;
-#endif /* LIGHT */
 #if 0
 			mrLog() << "t: " << mpMeasurement->internal.nvml_time_diff_double << ", P: " << mpMeasurement->nvml_power_cur << ", S: " << mpMeasurement->internal.nvml_power_state << std::endl;
 #endif

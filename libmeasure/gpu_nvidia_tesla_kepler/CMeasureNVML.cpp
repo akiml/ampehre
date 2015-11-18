@@ -19,7 +19,8 @@
  *          0.2.3 - add gpu_management tool and use the tool in the libmeasure
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
 
 namespace NLibMeasure {
@@ -298,6 +299,11 @@ namespace NLibMeasure {
 			mrLog(CLogger::scErr) << "!!! 'nvml' (thread main): Error: Failed to destroy library environment. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
+	}
+	
+	template <int SkipMs, int Variant>
+	int CMeasureNVML<SkipMs, Variant>::getVariant() {
+		return Variant;
 	}
 	
 	template <int SkipMs, int Variant>

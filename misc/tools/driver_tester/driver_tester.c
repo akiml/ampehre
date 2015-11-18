@@ -18,7 +18,8 @@
  *          0.2.1 - add support for IPMI to the measure driver
  *          0.2.4 - add version check functionality to library, wrappers, and tools
  *          0.3.3 - add cpu memory info to measure driver
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library.
  */
 
 #include <fcntl.h>

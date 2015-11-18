@@ -17,7 +17,8 @@
  *          0.1.15 - make CPU frequency settable
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.4.0 - MIC integration into libmeasure
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library.
  */
 
 #include <stdlib.h>
@@ -191,8 +192,8 @@ int main(int argc, char **argv) {
 				cur_settings->cpu_freq_max = atoi(optarg)*1000;
 				break;
 			case 'V':
-				if (check_string_args(optarg, lib_var[LIGHT2], 3)) {
-					cur_settings->variant = LIGHT2;
+				if (check_string_args(optarg, lib_var[LIGHT], 3)) {
+					cur_settings->variant = LIGHT;
 				} else if (check_string_args(optarg, lib_var[FULL], 3)) {
 					cur_settings->variant = FULL;
 				} else {
@@ -314,7 +315,7 @@ static void print_help(char **argv, ARGUMENTS *std_settings) {
 	memset(lib_variant_string, 0, lib_variant_string_size+1);
 	
 	switch (std_settings->variant) {
-		case LIGHT2:
+		case LIGHT:
 			strncpy(lib_variant_string, "light", 5);
 			break;
 		case FULL:

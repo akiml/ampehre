@@ -65,9 +65,10 @@ void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, ui
 	minternal->global_ms		= ms_init(version, cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq, ipmi_timeout_setting, skip_ms, variant);
 	
 	// Forcing FPGA to idle if desired
-#ifndef LIGHT
-	ms_init_fpga_force_idle(minternal->global_ms);
-#endif /* LIGHT */
+	
+	if(variant == FULL){
+		ms_init_fpga_force_idle(minternal->global_ms);
+	}
 	
 	// Allocate and initialize measurement structs
 	minternal->global_m		= ms_alloc_measurement();

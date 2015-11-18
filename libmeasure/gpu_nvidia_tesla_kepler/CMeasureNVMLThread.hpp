@@ -18,18 +18,22 @@
  *          0.5.1 - modularised libmeasure
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library.
  */
 
 #ifndef __CMEASURENVMLTHREAD_HPP__
 #define __CMEASURENVMLTHREAD_HPP__
 
-#include "../common/CMeasureAbstractThread.hpp"
-
-#include "CMeasureNVML.hpp"
-
+#include <iostream>
+#include <ctime>
 #include <nvml.h>
 
+#include "../common/CMeasureAbstractThread.hpp"
+#include "CMeasureNVML.hpp"
+
 namespace NLibMeasure {
+	template <int Variant>
 	class CMeasureNVMLThread : public CMeasureAbstractThread {
 		public:
 			CMeasureNVMLThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes);
@@ -39,5 +43,7 @@ namespace NLibMeasure {
 			void run(void);
 	};
 }
+
+#include "CMeasureNVMLThread.cpp"
 
 #endif /* __CMEASURENVMLTHREAD_HPP__ */

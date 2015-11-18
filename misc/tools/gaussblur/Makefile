@@ -39,7 +39,7 @@ OBJECTS_GPU=$(SOURCES_GPU:.c=.o)
 .PHONY=all build clean cleanall install
 
 build: $(OBJECTS_CPU) $(OBJECTS_GPU)
-	$(PGCC) $(CFLAGS) $(PGFLAGS) $? -L$(BASE_DIR)/lib -lms_common_light -lrt -lcjson -o gaussblur_original
+	$(PGCC) $(CFLAGS) $(PGFLAGS) $? -L$(BASE_DIR)/lib -lms_common -lrt -lcjson -o gaussblur_original
 
 $(OBJECTS_CPU): %.o : %.c
 	$(CC) $(CFLAGS) $< -c -I../../include -o $@

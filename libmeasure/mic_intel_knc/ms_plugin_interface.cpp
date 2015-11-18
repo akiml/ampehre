@@ -13,7 +13,8 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/29/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -39,11 +40,11 @@ extern "C" {
 		} else {
 			switch(skip_ms){
 				case HIGH:
-					pMIC =  new NLibMeasure::CMeasureMIC<10, LIGHT2>(*((NLibMeasure::CLogger*)pLogger));
+					pMIC =  new NLibMeasure::CMeasureMIC<10, LIGHT>(*((NLibMeasure::CLogger*)pLogger));
 					break;
 				case LOW:
 				default:
-					pMIC =  new NLibMeasure::CMeasureMIC<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger));
+					pMIC =  new NLibMeasure::CMeasureMIC<1, LIGHT>(*((NLibMeasure::CLogger*)pLogger));
 			}
 		}
 		return  (void*) pMIC;
@@ -56,13 +57,20 @@ extern "C" {
 	}
 	
 	void* init_resource_thread(void* pLogger, void* pStartSem, MEASUREMENT* pMeasurement, void* pMeasureRes){
-		NLibMeasure::CMeasureMICThread* pMICThread =  new NLibMeasure::CMeasureMICThread(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *((NLibMeasure::CMeasureAbstractResource*)pMeasureRes));
+		NLibMeasure::CMeasureAbstractThread* pMICThread;
+		NLibMeasure::CMeasureAbstractResource* pMIC = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
+		
+		if(pMIC->getVariant() == FULL) {
+			pMICThread =  new NLibMeasure::CMeasureMICThread<FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMIC);
+		} else {
+			pMICThread =  new NLibMeasure::CMeasureMICThread<LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMIC);
+		}
 		
 		return (void*) pMICThread;
 	}
 	
 	void fini_resource_thread(void* pMeasureResThread) {
-		NLibMeasure::CMeasureMICThread* pMICThread = (NLibMeasure::CMeasureMICThread*) pMeasureResThread;
+		NLibMeasure::CMeasureAbstractThread* pMICThread = (NLibMeasure::CMeasureAbstractThread*) pMeasureResThread;
 		
 		delete pMICThread;
 	}

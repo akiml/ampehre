@@ -15,6 +15,8 @@
 # version: 0.5.1 - modularised libmeasure
 #          0.5.3 - add abstract measure and abstract measure thread
 #          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+#          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+#                   and to select between the full or light library.
 #
 
 find_package(Threads)
@@ -36,10 +38,3 @@ add_library(ms_common SHARED ${SRC_COMMON_LIBRARY})
 target_link_libraries(ms_common ${CMAKE_THREAD_LIBS_INIT} -lrt -lm -ldl)
 
 install(TARGETS ms_common LIBRARY DESTINATION lib)
-
-# Light library
-add_library(ms_common_light SHARED ${SRC_COMMON_LIBRARY})
-target_link_libraries(ms_common_light ${CMAKE_THREAD_LIBS_INIT} -lrt -lm -ldl)
-set_target_properties(ms_common_light PROPERTIES COMPILE_DEFINITIONS "LIGHT")
-
-install(TARGETS ms_common_light LIBRARY DESTINATION lib)

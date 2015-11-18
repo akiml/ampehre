@@ -13,7 +13,8 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/22/15
  * version: 0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library.
  */
 
 #ifndef __CMEASUREABSTRACTRESOURCE_HPP__
@@ -54,6 +55,7 @@ namespace NLibMeasure {
 			
 		public:
 			virtual void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum) = 0;
+			virtual int getVariant() = 0;
 			virtual void read_memory_total(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
 			virtual void trigger_resource_custom(void* pParams);
 	};

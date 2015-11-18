@@ -40,4 +40,9 @@ namespace NLibMeasure {
 	void CMeasureStub::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		//nothing todo
 	}
+	
+	int CMeasureStub::getVariant() {
+		//nothing todo
+		return 0;
+	}
 }

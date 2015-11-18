@@ -14,11 +14,12 @@
 # created: 5/12/15
 # version: 0.5.1 - modularised libmeasure
 #          0.5.4 - add dynamic loading of resource specific libraries
-#          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+#          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+#                   and to select between the full or light library.
 #
 
 set(SRC_CPU_LIBRARY
-	ms_plugin_interface.cpp CMeasureMSRThread.cpp
+	ms_plugin_interface.cpp
 )
 
 # Full library
@@ -26,10 +27,3 @@ add_library(ms_cpu_intel_xeon_sandy SHARED ${SRC_CPU_LIBRARY})
 target_link_libraries(ms_cpu_intel_xeon_sandy ms_common -lcpufreq)
 
 install(TARGETS ms_cpu_intel_xeon_sandy LIBRARY DESTINATION lib)
-
-# Light library
-add_library(ms_cpu_intel_xeon_sandy_light SHARED ${SRC_CPU_LIBRARY})
-target_link_libraries(ms_cpu_intel_xeon_sandy_light ms_common_light -lcpufreq)
-set_target_properties(ms_cpu_intel_xeon_sandy_light PROPERTIES COMPILE_DEFINITIONS "LIGHT")
-
-install(TARGETS ms_cpu_intel_xeon_sandy_light LIBRARY DESTINATION lib)

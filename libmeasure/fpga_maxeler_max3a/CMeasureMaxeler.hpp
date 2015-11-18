@@ -16,7 +16,8 @@
  *          0.1.1 - add functionality to force FPGA to idle
  *          0.1.9 - add FPGA utilization measurements
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library.
  */
 
 #ifndef __CMEASUREMAXELER_HPP__
@@ -26,6 +27,9 @@
 #define POWER_NAME 2
 #define TEMP_NAME 3
 
+#include "maxdsd.h"
+
+#include "../../cjson/cJSON.h"
 #include "../common/CMeasureAbstractResource.hpp"
 
 namespace NLibMeasure {
@@ -51,6 +55,7 @@ namespace NLibMeasure {
 		public:
 			void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
 			void trigger_resource_custom(void* pParams);
+			int getVariant();
 	};
 }
 

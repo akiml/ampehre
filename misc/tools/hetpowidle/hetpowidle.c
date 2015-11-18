@@ -159,7 +159,7 @@ static void init_settings(ARGUMENTS **settings) {
 	(*settings)->cpu_freq_min			= 0;
 	(*settings)->cpu_freq_max			= 0;
 	(*settings)->skip_ms				= LOW;
-	(*settings)->variant				= LIGHT2;
+	(*settings)->variant				= LIGHT;
 	(*settings)->hostname				= NULL;
 	(*settings)->hostname_size			= 127;
 	(*settings)->jsonfile				= NULL;

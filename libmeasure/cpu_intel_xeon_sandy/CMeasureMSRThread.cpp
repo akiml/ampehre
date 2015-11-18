@@ -21,10 +21,9 @@
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
-
-#include "CMeasureMSRThread.hpp"
 
 #include <iomanip>
 #include "../../include/ms_driver.h"
@@ -32,7 +31,8 @@
 #define UINT64_MAX (0xffffffffffffffff)
 
 namespace NLibMeasure {
-	CMeasureMSRThread::CMeasureMSRThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
+	template <int Variant>
+	CMeasureMSRThread<Variant>::CMeasureMSRThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
 		CMeasureAbstractThread(rLogger, rStartSem, pMeasurement, rMeasureRes)
 		{
 		mThreadType = "msr";
@@ -41,11 +41,13 @@ namespace NLibMeasure {
 		mTimer.shareMutex(&mMutexTimer);
 	}
 	
-	CMeasureMSRThread::~CMeasureMSRThread() {
+	template <int Variant>
+	CMeasureMSRThread<Variant>::~CMeasureMSRThread() {
 		// nothing todo
 	}
-		
-	void CMeasureMSRThread::run(void) {
+	
+	template <int Variant>
+	void CMeasureMSRThread<Variant>::run(void) {
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
@@ -124,49 +126,49 @@ namespace NLibMeasure {
 			// result: runtime
 			mpMeasurement->msr_time_runtime += mpMeasurement->internal.msr_time_diff_double;
 			
-#ifndef LIGHT
-			// result: frequency
-			for (int i=0; i<CPUS; ++i) {
-				for (int j=0; j<CORES; ++j) {
-					// Divide by 1000000 -> frequency in MHz (instead of Hz)
-					mpMeasurement->msr_freq_core_cur[i][j]	=
-						(mpMeasurement->internal.msr_timestamp_core_cur[i][j] - mpMeasurement->internal.msr_timestamp_core_temp[i][j]) /
-						(mpMeasurement->internal.msr_time_diff_double * 1000000);
-					
-					mpMeasurement->msr_freq_core_acc[i][j]	+=
-						mpMeasurement->msr_freq_core_cur[i][j] * mpMeasurement->internal.msr_time_diff_double;
-					
-					mpMeasurement->internal.msr_timestamp_core_temp[i][j]	= mpMeasurement->internal.msr_timestamp_core_cur[i][j];
+			if(Variant == FULL) {
+				// result: frequency
+				for (int i=0; i<CPUS; ++i) {
+					for (int j=0; j<CORES; ++j) {
+						// Divide by 1000000 -> frequency in MHz (instead of Hz)
+						mpMeasurement->msr_freq_core_cur[i][j]	=
+							(mpMeasurement->internal.msr_timestamp_core_cur[i][j] - mpMeasurement->internal.msr_timestamp_core_temp[i][j]) /
+							(mpMeasurement->internal.msr_time_diff_double * 1000000);
+						
+						mpMeasurement->msr_freq_core_acc[i][j]	+=
+							mpMeasurement->msr_freq_core_cur[i][j] * mpMeasurement->internal.msr_time_diff_double;
+						
+						mpMeasurement->internal.msr_timestamp_core_temp[i][j]	= mpMeasurement->internal.msr_timestamp_core_cur[i][j];
+					}
+				}
+				
+				// result: performance
+				for (int i=0; i<CPUS; ++i) {
+					for (int j=0; j<CORES; ++j) {
+						uint64_t diff_aperf = 0;
+						uint64_t diff_mperf = 0;
+						
+						if (mpMeasurement->internal.msr_aperf_core_cur[i][j] > mpMeasurement->internal.msr_aperf_core_temp[i][j]) {
+							diff_aperf	= mpMeasurement->internal.msr_aperf_core_cur[i][j] - mpMeasurement->internal.msr_aperf_core_temp[i][j];
+						} else {
+							diff_aperf	= UINT64_MAX - (mpMeasurement->internal.msr_aperf_core_temp[i][j] - mpMeasurement->internal.msr_aperf_core_cur[i][j]);
+						}
+						
+						if (mpMeasurement->internal.msr_mperf_core_cur[i][j] > mpMeasurement->internal.msr_mperf_core_temp[i][j]) {
+							diff_mperf	= mpMeasurement->internal.msr_mperf_core_cur[i][j] - mpMeasurement->internal.msr_mperf_core_temp[i][j];
+						} else {
+							diff_mperf	= UINT64_MAX - (mpMeasurement->internal.msr_mperf_core_temp[i][j] - mpMeasurement->internal.msr_mperf_core_cur[i][j]);
+						}
+						
+						mpMeasurement->msr_freq_core_eff_cur[i][j]	= mpMeasurement->msr_freq_core_cur[i][j] * diff_aperf / diff_mperf;
+						mpMeasurement->msr_freq_core_eff_acc[i][j]	+=
+							mpMeasurement->msr_freq_core_eff_cur[i][j] * mpMeasurement->internal.msr_time_diff_double;
+						
+						mpMeasurement->internal.msr_aperf_core_temp[i][j]	= mpMeasurement->internal.msr_aperf_core_cur[i][j];
+						mpMeasurement->internal.msr_mperf_core_temp[i][j]	= mpMeasurement->internal.msr_mperf_core_cur[i][j];
+					}
 				}
 			}
-			
-			// result: performance
-			for (int i=0; i<CPUS; ++i) {
-				for (int j=0; j<CORES; ++j) {
-					uint64_t diff_aperf = 0;
-					uint64_t diff_mperf = 0;
-					
-					if (mpMeasurement->internal.msr_aperf_core_cur[i][j] > mpMeasurement->internal.msr_aperf_core_temp[i][j]) {
-						diff_aperf	= mpMeasurement->internal.msr_aperf_core_cur[i][j] - mpMeasurement->internal.msr_aperf_core_temp[i][j];
-					} else {
-						diff_aperf	= UINT64_MAX - (mpMeasurement->internal.msr_aperf_core_temp[i][j] - mpMeasurement->internal.msr_aperf_core_cur[i][j]);
-					}
-					
-					if (mpMeasurement->internal.msr_mperf_core_cur[i][j] > mpMeasurement->internal.msr_mperf_core_temp[i][j]) {
-						diff_mperf	= mpMeasurement->internal.msr_mperf_core_cur[i][j] - mpMeasurement->internal.msr_mperf_core_temp[i][j];
-					} else {
-						diff_mperf	= UINT64_MAX - (mpMeasurement->internal.msr_mperf_core_temp[i][j] - mpMeasurement->internal.msr_mperf_core_cur[i][j]);
-					}
-					
-					mpMeasurement->msr_freq_core_eff_cur[i][j]	= mpMeasurement->msr_freq_core_cur[i][j] * diff_aperf / diff_mperf;
-					mpMeasurement->msr_freq_core_eff_acc[i][j]	+=
-						mpMeasurement->msr_freq_core_eff_cur[i][j] * mpMeasurement->internal.msr_time_diff_double;
-					
-					mpMeasurement->internal.msr_aperf_core_temp[i][j]	= mpMeasurement->internal.msr_aperf_core_cur[i][j];
-					mpMeasurement->internal.msr_mperf_core_temp[i][j]	= mpMeasurement->internal.msr_mperf_core_cur[i][j];
-				}
-			}
-#endif /* LIGHT */
 			
 			// result: energy consumption
 			for (int i=0; i<CPUS; ++i) {
@@ -187,19 +189,19 @@ namespace NLibMeasure {
 				}
 			}
 			
-#ifndef LIGHT
-			// result: maximum temperatures
-			for (int i=0; i<CPUS; ++i) {
-				mpMeasurement->msr_temperature_pkg_max[i]	=
-					(mpMeasurement->msr_temperature_pkg_cur[i] > mpMeasurement->msr_temperature_pkg_max[i]) ?
-					mpMeasurement->msr_temperature_pkg_cur[i] : mpMeasurement->msr_temperature_pkg_max[i];
-				for (int j=0; j<CORES; ++j) {
-					mpMeasurement->msr_temperature_core_max[i][j]	=
-						(mpMeasurement->msr_temperature_core_cur[i][j] > mpMeasurement->msr_temperature_core_max[i][j]) ?
-						mpMeasurement->msr_temperature_core_cur[i][j] : mpMeasurement->msr_temperature_core_max[i][j];
+			if(Variant == FULL) {
+				// result: maximum temperatures
+				for (int i=0; i<CPUS; ++i) {
+					mpMeasurement->msr_temperature_pkg_max[i]	=
+						(mpMeasurement->msr_temperature_pkg_cur[i] > mpMeasurement->msr_temperature_pkg_max[i]) ?
+						mpMeasurement->msr_temperature_pkg_cur[i] : mpMeasurement->msr_temperature_pkg_max[i];
+					for (int j=0; j<CORES; ++j) {
+						mpMeasurement->msr_temperature_core_max[i][j]	=
+							(mpMeasurement->msr_temperature_core_cur[i][j] > mpMeasurement->msr_temperature_core_max[i][j]) ?
+							mpMeasurement->msr_temperature_core_cur[i][j] : mpMeasurement->msr_temperature_core_max[i][j];
+					}
 				}
 			}
-#endif /* LIGHT */
 			
 			// result: utilization
 			for (int i=0; i<CPUSTATS; ++i) {
@@ -229,26 +231,25 @@ namespace NLibMeasure {
 					(mpMeasurement->measure_util_active_cur + mpMeasurement->measure_util_idle_cur);
 			}
 			
-#ifndef LIGHT
-			// result: memory usage
-			mpMeasurement->measure_memory_used_max	=
-				(mpMeasurement->measure_memory_cur[CPU_MEM_RAM_USED]>mpMeasurement->measure_memory_used_max) ?
-				mpMeasurement->measure_memory_cur[CPU_MEM_RAM_USED] : mpMeasurement->measure_memory_used_max;
-				
-			mpMeasurement->measure_memory_free_max	=
-				(mpMeasurement->measure_memory_cur[CPU_MEM_RAM_FREE]>mpMeasurement->measure_memory_free_max) ?
-				mpMeasurement->measure_memory_cur[CPU_MEM_RAM_FREE] : mpMeasurement->measure_memory_free_max;
-				
-			// result: swap usage
-			mpMeasurement->measure_swap_used_max	=
-				(mpMeasurement->measure_memory_cur[CPU_MEM_SWAP_USED]>mpMeasurement->measure_swap_used_max) ?
-				mpMeasurement->measure_memory_cur[CPU_MEM_SWAP_USED] : mpMeasurement->measure_swap_used_max;
-				
-			mpMeasurement->measure_swap_free_max	=
-				(mpMeasurement->measure_memory_cur[CPU_MEM_SWAP_FREE]>mpMeasurement->measure_swap_free_max) ?
-				mpMeasurement->measure_memory_cur[CPU_MEM_SWAP_FREE] : mpMeasurement->measure_swap_free_max;
-				
-#endif /* LIGHT */
+			if(Variant == FULL) {
+				// result: memory usage
+				mpMeasurement->measure_memory_used_max	=
+					(mpMeasurement->measure_memory_cur[CPU_MEM_RAM_USED]>mpMeasurement->measure_memory_used_max) ?
+					mpMeasurement->measure_memory_cur[CPU_MEM_RAM_USED] : mpMeasurement->measure_memory_used_max;
+					
+				mpMeasurement->measure_memory_free_max	=
+					(mpMeasurement->measure_memory_cur[CPU_MEM_RAM_FREE]>mpMeasurement->measure_memory_free_max) ?
+					mpMeasurement->measure_memory_cur[CPU_MEM_RAM_FREE] : mpMeasurement->measure_memory_free_max;
+					
+				// result: swap usage
+				mpMeasurement->measure_swap_used_max	=
+					(mpMeasurement->measure_memory_cur[CPU_MEM_SWAP_USED]>mpMeasurement->measure_swap_used_max) ?
+					mpMeasurement->measure_memory_cur[CPU_MEM_SWAP_USED] : mpMeasurement->measure_swap_used_max;
+					
+				mpMeasurement->measure_swap_free_max	=
+					(mpMeasurement->measure_memory_cur[CPU_MEM_SWAP_FREE]>mpMeasurement->measure_swap_free_max) ?
+					mpMeasurement->measure_memory_cur[CPU_MEM_SWAP_FREE] : mpMeasurement->measure_swap_free_max;
+			}
 			
 #if 0
 			mrLog.lock();
@@ -267,23 +268,23 @@ namespace NLibMeasure {
 			}
 		}
 		
-#ifndef LIGHT
-		// result: average frequency
-		for (int i=0; i<CPUS; ++i) {
-			for (int k=0; k<CORES; ++k) {
-				mpMeasurement->msr_freq_core_avg[i][k]	=
-					mpMeasurement->msr_freq_core_acc[i][k] / mpMeasurement->msr_time_runtime;
+		if(Variant == FULL) {
+			// result: average frequency
+			for (int i=0; i<CPUS; ++i) {
+				for (int k=0; k<CORES; ++k) {
+					mpMeasurement->msr_freq_core_avg[i][k]	=
+						mpMeasurement->msr_freq_core_acc[i][k] / mpMeasurement->msr_time_runtime;
+				}
+			}
+			
+			// result: effective frequency
+			for (int i=0; i<CPUS; ++i) {
+				for (int k=0; k<CORES; ++k) {
+					mpMeasurement->msr_freq_core_eff_avg[i][k]	=
+						mpMeasurement->msr_freq_core_eff_acc[i][k] / mpMeasurement->msr_time_runtime;
+				}
 			}
 		}
-		
-		// result: effective frequency
-		for (int i=0; i<CPUS; ++i) {
-			for (int k=0; k<CORES; ++k) {
-				mpMeasurement->msr_freq_core_eff_avg[i][k]	=
-					mpMeasurement->msr_freq_core_eff_acc[i][k] / mpMeasurement->msr_time_runtime;
-			}
-		}
-#endif /* LIGHT */
 		
 		// result average utilization
 		mpMeasurement->measure_util_active_total =

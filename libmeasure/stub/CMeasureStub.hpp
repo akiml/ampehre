@@ -32,6 +32,7 @@ namespace NLibMeasure {
 			
 		public:
 			void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
+			int getVariant();
 	};
 }
 

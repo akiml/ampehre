@@ -22,7 +22,8 @@
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.5.4 - add dynamic loading of resource specific libraries
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library.
  */
 
 #ifndef __CMGMT_HPP__
@@ -53,6 +54,8 @@ class CMgmt {
 		
 		struct sigaction *mpActionStart;
 		struct sigaction *mpActionStop;
+		
+		lib_variant mLibVariant;
 		
 	public:
 		CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency, uint64_t ipmi_timeout_setting, skip_ms_freq skip_ms,  lib_variant variant);

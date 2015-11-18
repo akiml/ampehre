@@ -16,13 +16,13 @@
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
 
-#include "CMeasureMICThread.hpp"
-
 namespace NLibMeasure {
-	CMeasureMICThread::CMeasureMICThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes):
+	template <int Variant>
+	CMeasureMICThread<Variant>::CMeasureMICThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes):
 		CMeasureAbstractThread(rLogger, rStartSem, pMeasurement, rMeasureRes)
 		{
 		mThreadType = "mic";
@@ -31,17 +31,17 @@ namespace NLibMeasure {
 		mTimer.shareMutex(&mMutexTimer);
 	}
 	
-	CMeasureMICThread::~CMeasureMICThread() {
+	template <int Variant>
+	CMeasureMICThread<Variant>::~CMeasureMICThread() {
 		// nothing todo
 	}
 	
-	void CMeasureMICThread::run(void) {
+	template <int Variant>
+	void CMeasureMICThread<Variant>::run(void) {
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
-#ifndef LIGHT		
 		uint64_t skip_ms_cnt = 0;
-#endif
 		
 		mrLog.lock();
 		mThreadNum = CThread::sNumOfThreads++;
@@ -91,85 +91,85 @@ namespace NLibMeasure {
 		while(!mThreadStateStop) {
 			mMutexTimer.lock();
 			
-#ifndef LIGHT			
-			if(!(skip_ms_cnt++ % mpMeasurement->mic_skip_ms_rate)){
-				mrMeasureResource.measure(mpMeasurement, mThreadNum);
-			}
-			
-			// calculated diff time
-			calcTimeDiff(&(mpMeasurement->internal.mic_time_cur), &(mpMeasurement->internal.mic_time_temp), &(mpMeasurement->internal.mic_time_diff), &(mpMeasurement->internal.mic_time_diff_double));
-			
-			// result: runtime
-			mpMeasurement->mic_time_runtime += mpMeasurement->internal.mic_time_diff_double;
-			
-			// result: "accumulated frequencies"
-			mpMeasurement->mic_freq_core_acc += mpMeasurement->mic_freq_core_cur * mpMeasurement->internal.mic_time_diff_double;
-			mpMeasurement->mic_freq_mem_acc += mpMeasurement->mic_freq_mem_cur * mpMeasurement->internal.mic_time_diff_double;
-			
-			// result: energy consumption
-			for (int i=0; i<MIC_NUM_POWER; i++) {
-				mpMeasurement->mic_energy_acc[i] += (double)mpMeasurement->mic_power_cur[i] * mpMeasurement->internal.mic_time_diff_double;
-			}
-			
-			// result: maximum temperatures
-			for (int i=0; i<MIC_NUM_TEMPERATURE; i++) {
-				if (mpMeasurement->mic_temperature_cur[i] > mpMeasurement->mic_temperature_max[i]) {
-					mpMeasurement->mic_temperature_max[i] = mpMeasurement->mic_temperature_cur[i];
+			if(Variant == FULL) {			
+				if(!(skip_ms_cnt++ % mpMeasurement->mic_skip_ms_rate)){
+					mrMeasureResource.measure(mpMeasurement, mThreadNum);
 				}
+				
+				// calculated diff time
+				calcTimeDiff(&(mpMeasurement->internal.mic_time_cur), &(mpMeasurement->internal.mic_time_temp), &(mpMeasurement->internal.mic_time_diff), &(mpMeasurement->internal.mic_time_diff_double));
+				
+				// result: runtime
+				mpMeasurement->mic_time_runtime += mpMeasurement->internal.mic_time_diff_double;
+				
+				// result: "accumulated frequencies"
+				mpMeasurement->mic_freq_core_acc += mpMeasurement->mic_freq_core_cur * mpMeasurement->internal.mic_time_diff_double;
+				mpMeasurement->mic_freq_mem_acc += mpMeasurement->mic_freq_mem_cur * mpMeasurement->internal.mic_time_diff_double;
+				
+				// result: energy consumption
+				for (int i=0; i<MIC_NUM_POWER; i++) {
+					mpMeasurement->mic_energy_acc[i] += (double)mpMeasurement->mic_power_cur[i] * mpMeasurement->internal.mic_time_diff_double;
+				}
+				
+				// result: maximum temperatures
+				for (int i=0; i<MIC_NUM_TEMPERATURE; i++) {
+					if (mpMeasurement->mic_temperature_cur[i] > mpMeasurement->mic_temperature_max[i]) {
+						mpMeasurement->mic_temperature_max[i] = mpMeasurement->mic_temperature_cur[i];
+					}
+				}
+				
+				// result: utilization
+				for (int i=0; i<MIC_NUM_UTIL; i++){
+					mpMeasurement->mic_util_cur[i] = mpMeasurement->internal.mic_util_cur[i] - mpMeasurement->internal.mic_util_temp[i];
+					mpMeasurement->mic_util_acc[i] += mpMeasurement->mic_util_cur[i];
+					
+					mpMeasurement->internal.mic_util_temp[i] = mpMeasurement->internal.mic_util_cur[i];
+				}
+				
+				mpMeasurement->mic_util_active_cur = (double)(
+					mpMeasurement->mic_util_cur[SYS_SUM] +
+					mpMeasurement->mic_util_cur[NICE_SUM] +
+					mpMeasurement->mic_util_cur[USER_SUM]);
+				mpMeasurement->mic_util_idle_cur = ((double)
+					mpMeasurement->mic_util_cur[IDLE_SUM]);
+				mpMeasurement->mic_util_avg_cur =
+					(mpMeasurement->mic_util_active_cur * 100.0) /
+					(mpMeasurement->mic_util_active_cur + mpMeasurement->mic_util_idle_cur);
+					
+				// result: memory usage
+				mpMeasurement->mic_memory_used_max		=
+					(mpMeasurement->mic_memory_used_cur>mpMeasurement->mic_memory_used_max) ?
+					mpMeasurement->mic_memory_used_cur : mpMeasurement->mic_memory_used_max;
+					
+				mpMeasurement->mic_memory_free_max		=
+					(mpMeasurement->mic_memory_free_cur>mpMeasurement->mic_memory_free_max) ?
+					mpMeasurement->mic_memory_free_cur : mpMeasurement->mic_memory_free_max;
 			}
-			
-			// result: utilization
-			for (int i=0; i<MIC_NUM_UTIL; i++){
-				mpMeasurement->mic_util_cur[i] = mpMeasurement->internal.mic_util_cur[i] - mpMeasurement->internal.mic_util_temp[i];
-				mpMeasurement->mic_util_acc[i] += mpMeasurement->mic_util_cur[i];
-				
-				mpMeasurement->internal.mic_util_temp[i] = mpMeasurement->internal.mic_util_cur[i];
-			}
-			
-			mpMeasurement->mic_util_active_cur = (double)(
-				mpMeasurement->mic_util_cur[SYS_SUM] +
-				mpMeasurement->mic_util_cur[NICE_SUM] +
-				mpMeasurement->mic_util_cur[USER_SUM]);
-			mpMeasurement->mic_util_idle_cur = ((double)
-				mpMeasurement->mic_util_cur[IDLE_SUM]);
-			mpMeasurement->mic_util_avg_cur =
-				(mpMeasurement->mic_util_active_cur * 100.0) /
-				(mpMeasurement->mic_util_active_cur + mpMeasurement->mic_util_idle_cur);
-				
-			// result: memory usage
-			mpMeasurement->mic_memory_used_max		=
-				(mpMeasurement->mic_memory_used_cur>mpMeasurement->mic_memory_used_max) ?
-				mpMeasurement->mic_memory_used_cur : mpMeasurement->mic_memory_used_max;
-				
-			mpMeasurement->mic_memory_free_max		=
-				(mpMeasurement->mic_memory_free_cur>mpMeasurement->mic_memory_free_max) ?
-				mpMeasurement->mic_memory_free_cur : mpMeasurement->mic_memory_free_max;
-#endif /* LIGHT */
 		}
 		
-#ifndef LIGHT
-		// result: average power consumption
-		for (int i=0; i<MIC_NUM_POWER; i++) {
-			mpMeasurement->mic_power_avg[i] = (double) mpMeasurement->mic_energy_acc[i] / mpMeasurement->mic_time_runtime;
+		if(Variant == FULL) {
+			// result: average power consumption
+			for (int i=0; i<MIC_NUM_POWER; i++) {
+				mpMeasurement->mic_power_avg[i] = (double) mpMeasurement->mic_energy_acc[i] / mpMeasurement->mic_time_runtime;
+			}
+			
+			//result: average frequencies
+			mpMeasurement->mic_freq_core_avg = mpMeasurement->mic_freq_core_acc / mpMeasurement->mic_time_runtime;
+			mpMeasurement->mic_freq_mem_avg = mpMeasurement->mic_freq_mem_acc / mpMeasurement->mic_time_runtime;
+			
+			// result average utilization
+			mpMeasurement->mic_util_active_total =
+				mpMeasurement->mic_util_acc[SYS_SUM] +
+				mpMeasurement->mic_util_acc[NICE_SUM] +
+				mpMeasurement->mic_util_acc[USER_SUM];
+			mpMeasurement->mic_util_idle_total = mpMeasurement->mic_util_acc[IDLE_SUM];
+			
+			mpMeasurement->mic_util_active_avg = ((double)mpMeasurement->mic_util_active_total) * S_PER_JIFFY / MIC_CORES / MIC_THREADS;
+			mpMeasurement->mic_util_idle_avg = ((double)mpMeasurement->mic_util_idle_total)* S_PER_JIFFY / MIC_CORES / MIC_THREADS;
+			
+			mpMeasurement->mic_util_avg = (mpMeasurement->mic_util_active_total * 100.0) / 
+				(mpMeasurement->mic_util_active_total + mpMeasurement->mic_util_idle_total);
 		}
-		
-		//result: average frequencies
-		mpMeasurement->mic_freq_core_avg = mpMeasurement->mic_freq_core_acc / mpMeasurement->mic_time_runtime;
-		mpMeasurement->mic_freq_mem_avg = mpMeasurement->mic_freq_mem_acc / mpMeasurement->mic_time_runtime;
-		
-		// result average utilization
-		mpMeasurement->mic_util_active_total =
-			mpMeasurement->mic_util_acc[SYS_SUM] +
-			mpMeasurement->mic_util_acc[NICE_SUM] +
-			mpMeasurement->mic_util_acc[USER_SUM];
-		mpMeasurement->mic_util_idle_total = mpMeasurement->mic_util_acc[IDLE_SUM];
-		
-		mpMeasurement->mic_util_active_avg = ((double)mpMeasurement->mic_util_active_total) * S_PER_JIFFY / MIC_CORES / MIC_THREADS;
-		mpMeasurement->mic_util_idle_avg = ((double)mpMeasurement->mic_util_idle_total)* S_PER_JIFFY / MIC_CORES / MIC_THREADS;
-		
-		mpMeasurement->mic_util_avg = (mpMeasurement->mic_util_active_total * 100.0) / 
-			(mpMeasurement->mic_util_active_total + mpMeasurement->mic_util_idle_total);
-#endif /* LIGHT */
 		
 #ifdef DEBUG
 		mrLog.lock();

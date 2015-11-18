@@ -15,7 +15,8 @@
  * version: 0.4.0 - MIC integration into libmeasure
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
 
 namespace NLibMeasure {
@@ -339,6 +340,11 @@ namespace NLibMeasure {
 		mpMicDevice			= NULL;
 		mpMicUtilization	= NULL;
 		
+	}
+	
+	template <int SkipMs, int Variant>
+	int CMeasureMIC<SkipMs, Variant>::getVariant() {
+		return Variant;
 	}
 	
 	template <int SkipMs, int Variant>

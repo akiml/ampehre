@@ -22,7 +22,8 @@
  *          0.4.0 - MIC integration into libmeasure
  *          0.5.1 - modularised libmeasure
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
 
 #include "../../include/measurement.h"

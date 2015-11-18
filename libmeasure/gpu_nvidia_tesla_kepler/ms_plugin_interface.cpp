@@ -13,7 +13,8 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/29/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -40,11 +41,11 @@ extern "C" {
 		}else {
 			switch(skip_ms){
 				case HIGH:
-					pNVML =  new NLibMeasure::CMeasureNVML<10, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
+					pNVML =  new NLibMeasure::CMeasureNVML<10, LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
 					break;
 				case LOW:
 				default:
-					pNVML =  new NLibMeasure::CMeasureNVML<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
+					pNVML =  new NLibMeasure::CMeasureNVML<1, LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
 			}
 		}
 		return  (void*) pNVML;
@@ -57,13 +58,20 @@ extern "C" {
 	}
 	
 	void* init_resource_thread(void* pLogger, void* pStartSem, MEASUREMENT* pMeasurement, void* pMeasureRes){
-		NLibMeasure::CMeasureNVMLThread* pNVMLThread =  new NLibMeasure::CMeasureNVMLThread(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *((NLibMeasure::CMeasureAbstractResource*)pMeasureRes));
+		NLibMeasure::CMeasureAbstractThread* pNVMLThread;
+		NLibMeasure::CMeasureAbstractResource* pNVML = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
+		
+		if(pNVML->getVariant() == FULL) {
+			pNVMLThread =  new NLibMeasure::CMeasureNVMLThread<FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pNVML);
+		} else {
+			pNVMLThread =  new NLibMeasure::CMeasureNVMLThread<LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pNVML);
+		}
 		
 		return (void*) pNVMLThread;
 	}
 	
 	void fini_resource_thread(void* pMeasureResThread) {
-		NLibMeasure::CMeasureNVMLThread* pNVMLThread = (NLibMeasure::CMeasureNVMLThread*) pMeasureResThread;
+		NLibMeasure::CMeasureAbstractThread* pNVMLThread = (NLibMeasure::CMeasureAbstractThread*) pMeasureResThread;
 		
 		delete pNVMLThread;
 	}

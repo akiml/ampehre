@@ -16,11 +16,9 @@
  *          0.1.1 - add functionality to force FPGA to idle
  *          0.1.9 - add FPGA utilization measurements
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
-
-#include "maxdsd.h"
-#include "../../cjson/cJSON.h"
 
 namespace NLibMeasure {
 	template <int SkipMs, int Variant>
@@ -72,6 +70,11 @@ namespace NLibMeasure {
 	template <int SkipMs, int Variant>
 	void CMeasureMaxeler<SkipMs, Variant>::destroy(void) {
 		max_daemon_disconnect(mMaxDaemonFildes);
+	}
+	
+	template <int SkipMs, int Variant>
+	int CMeasureMaxeler<SkipMs, Variant>::getVariant() {
+		return Variant;
 	}
 	
 	template <int SkipMs, int Variant>

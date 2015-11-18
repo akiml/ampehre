@@ -16,12 +16,9 @@
  *          0.2.1 - add support for IPMI to the measure driver
  *          0.2.4 - add version check functionality to library, wrappers, and tools
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
-
-#include "CMeasureIPMI.hpp"
-
-#include <ctime>
 
 namespace NLibMeasure {
 	template <int SkipMs, int Variant>
@@ -72,6 +69,11 @@ namespace NLibMeasure {
 	template <int SkipMs, int Variant>
 	void CMeasureIPMI<SkipMs, Variant>::destroy(void) {
 		close_ipmi_wrapper();
+	}
+	
+	template <int SkipMs, int Variant>
+	int CMeasureIPMI<SkipMs, Variant>::getVariant() {
+		return Variant;
 	}
 	
 	template <int SkipMs, int Variant>

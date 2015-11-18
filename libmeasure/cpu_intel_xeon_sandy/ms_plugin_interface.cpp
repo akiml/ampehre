@@ -13,7 +13,8 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/27/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -40,11 +41,11 @@ extern "C" {
 		} else {
 			switch(skip_ms){
 				case HIGH:
-					pMSR =  new NLibMeasure::CMeasureMSR<10, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+					pMSR =  new NLibMeasure::CMeasureMSR<10, LIGHT>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
 					break;
 				case LOW:
 				default:
-					pMSR = new NLibMeasure::CMeasureMSR<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+					pMSR = new NLibMeasure::CMeasureMSR<1, LIGHT>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
 			}
 		}
 		return  (void*) pMSR;
@@ -57,13 +58,20 @@ extern "C" {
 	}
 	
 	void* init_resource_thread(void* pLogger, void* pStartSem, MEASUREMENT* pMeasurement, void* pMeasureRes){
-		NLibMeasure::CMeasureMSRThread* pMSRThread =  new NLibMeasure::CMeasureMSRThread(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *((NLibMeasure::CMeasureAbstractResource*)pMeasureRes));
+		NLibMeasure::CMeasureAbstractThread* pMSRThread;
+		NLibMeasure::CMeasureAbstractResource* pMSR = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
+		
+		if(pMSR->getVariant() == FULL) {
+			pMSRThread =  new NLibMeasure::CMeasureMSRThread<FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMSR);
+		} else {
+			pMSRThread =  new NLibMeasure::CMeasureMSRThread<LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMSR);
+		}
 		
 		return (void*) pMSRThread;
 	}
 	
 	void fini_resource_thread(void* pMeasureResThread) {
-		NLibMeasure::CMeasureMSRThread* pMSRThread = (NLibMeasure::CMeasureMSRThread*) pMeasureResThread;
+		NLibMeasure::CMeasureAbstractThread* pMSRThread = (NLibMeasure::CMeasureAbstractThread*) pMeasureResThread;
 		
 		delete pMSRThread;
 	}

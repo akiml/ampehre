@@ -13,7 +13,8 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/29/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -39,11 +40,11 @@ extern "C" {
 		} else {
 			switch(skip_ms){
 				case HIGH:
-					pMaxeler =  new NLibMeasure::CMeasureMaxeler<10, LIGHT2>(*((NLibMeasure::CLogger*)pLogger));
+					pMaxeler =  new NLibMeasure::CMeasureMaxeler<10, LIGHT>(*((NLibMeasure::CLogger*)pLogger));
 					break;
 				case LOW:
 				default:
-					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, LIGHT2>(*((NLibMeasure::CLogger*)pLogger));
+					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, LIGHT>(*((NLibMeasure::CLogger*)pLogger));
 			}
 		}
 		return  (void*) pMaxeler;
@@ -56,13 +57,20 @@ extern "C" {
 	}
 	
 	void* init_resource_thread(void* pLogger, void* pStartSem, MEASUREMENT* pMeasurement, void* pMeasureRes){
-		NLibMeasure::CMeasureMaxelerThread* pMaxelerThread =  new NLibMeasure::CMeasureMaxelerThread(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *((NLibMeasure::CMeasureAbstractResource*)pMeasureRes));
+		NLibMeasure::CMeasureAbstractThread* pMaxelerThread;
+		NLibMeasure::CMeasureAbstractResource* pMaxeler = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
 		
+		if(pMaxeler->getVariant() == FULL) {
+			pMaxelerThread =  new NLibMeasure::CMeasureMaxelerThread<FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMaxeler);
+		} else {
+			pMaxelerThread =  new NLibMeasure::CMeasureMaxelerThread<LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMaxeler);
+		}
+			
 		return (void*) pMaxelerThread;
 	}
 	
 	void fini_resource_thread(void* pMeasureResThread){
-		NLibMeasure::CMeasureMaxelerThread* pMaxelerThread = (NLibMeasure::CMeasureMaxelerThread*) pMeasureResThread;
+		NLibMeasure::CMeasureAbstractThread* pMaxelerThread = (NLibMeasure::CMeasureAbstractThread*) pMeasureResThread;
 		
 		delete pMaxelerThread;
 	}

@@ -14,13 +14,14 @@
 # created: 5/12/15
 # version: 0.5.1 - modularised libmeasure
 #          0.5.4 - add dynamic loading of resource specific libraries
-#          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+#          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+#                   and to select between the full or light library.
 #
 
 find_library(NVML_LIBRARY libnvidia-ml.so PATHS /usr/lib64)
 
 set(SRC_GPU_LIBRARY
-	ms_plugin_interface.cpp CMeasureNVMLThread.cpp
+	ms_plugin_interface.cpp
 )
 
 # Full library
@@ -28,10 +29,3 @@ add_library(ms_gpu_nvidia_tesla_kepler SHARED ${SRC_GPU_LIBRARY})
 target_link_libraries(ms_gpu_nvidia_tesla_kepler ms_common ${NVML_LIBRARY})
 
 install(TARGETS ms_gpu_nvidia_tesla_kepler LIBRARY DESTINATION lib)
-
-# Light library
-add_library(ms_gpu_nvidia_tesla_kepler_light SHARED ${SRC_GPU_LIBRARY})
-target_link_libraries(ms_gpu_nvidia_tesla_kepler_light ms_common_light ${NVML_LIBRARY})
-set_target_properties(ms_gpu_nvidia_tesla_kepler_light PROPERTIES COMPILE_DEFINITIONS "LIGHT")
-
-install(TARGETS ms_gpu_nvidia_tesla_kepler_light LIBRARY DESTINATION lib)

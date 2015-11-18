@@ -17,15 +17,13 @@
  *          0.2.2 - add semaphore to synchronize the start of the measurements
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl call to configure the ipmi timeout and possibility to skip every i-th measurement point
+ *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                   and to select between the full or light library. 
  */
 
-#include "CMeasureIPMIThread.hpp"
-
-#include <iomanip>
-
 namespace NLibMeasure {
-	CMeasureIPMIThread::CMeasureIPMIThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
+	template <int Variant>
+	CMeasureIPMIThread<Variant>::CMeasureIPMIThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
 		CMeasureAbstractThread(rLogger, rStartSem, pMeasurement, rMeasureRes)
 		{
 		mThreadType = "ipmi";
@@ -35,21 +33,21 @@ namespace NLibMeasure {
 		
 	}
 	
-	CMeasureIPMIThread::~CMeasureIPMIThread() {
+	template <int Variant>
+	CMeasureIPMIThread<Variant>::~CMeasureIPMIThread() {
 		// nothing todo
 	}
 	
-	void CMeasureIPMIThread::run(void) {
+	template <int Variant>
+	void CMeasureIPMIThread<Variant>::run(void) {
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
-
-#ifndef LIGHT		
+		
 		uint64_t skip_ms_cnt = 0;
-#endif
 		
 		mrLog.lock();
 		mThreadNum = CThread::sNumOfThreads++;
-		mrLog() << ">>> 'ipmi thread' (thread #" << mThreadNum << "): init" << std::endl
+		mrLog() << ">>> 'ipmi thread' (thread #" << mThreadNum << "): init" << Variant << std::endl
 				<< "     effective sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->ipmi_skip_ms_rate << " Hz / "
 				<< mTimer.getTimerMillisecond() * mpMeasurement->ipmi_skip_ms_rate << " ms" << std::endl;
 		mrLog.unlock();
@@ -86,33 +84,33 @@ namespace NLibMeasure {
 		while (!mThreadStateStop) {
 			mMutexTimer.lock();
 			
-#ifndef LIGHT
-			if(!(skip_ms_cnt++ % mpMeasurement->ipmi_skip_ms_rate)){
-				mrMeasureResource.measure(mpMeasurement, mThreadNum);
+			if(Variant == FULL) {
+				if(!(skip_ms_cnt++ % mpMeasurement->ipmi_skip_ms_rate)){
+					mrMeasureResource.measure(mpMeasurement, mThreadNum);
+				}
+				
+				// calculated diff time (use internal struct for that)
+				calcTimeDiff(&(mpMeasurement->internal.ipmi_time_cur), &(mpMeasurement->internal.ipmi_time_temp), &(mpMeasurement->internal.ipmi_time_diff), &(mpMeasurement->internal.ipmi_time_diff_double));
+				
+				// result: runtime
+				mpMeasurement->ipmi_time_runtime += mpMeasurement->internal.ipmi_time_diff_double;
+				
+				// result: energy consumption
+				mpMeasurement->ipmi_energy_sysboard_acc	+=
+					mpMeasurement->ipmi_power_sysboard_cur * mpMeasurement->internal.ipmi_time_diff_double;
+				mpMeasurement->ipmi_energy_server_acc	+=
+					mpMeasurement->ipmi_power_server_cur * mpMeasurement->internal.ipmi_time_diff_double;
+				
+				// result: maximum temperatures
+				mpMeasurement->ipmi_temperature_sysboard_max =
+					(mpMeasurement->ipmi_temperature_sysboard_cur > mpMeasurement->ipmi_temperature_sysboard_max) ?
+					mpMeasurement->ipmi_temperature_sysboard_cur : mpMeasurement->ipmi_temperature_sysboard_max;
+				for (int i=0; i<CPUS; ++i) {
+					mpMeasurement->ipmi_temperature_max[i] =
+						(mpMeasurement->ipmi_temperature_cur[i] > mpMeasurement->ipmi_temperature_max[i]) ?
+						mpMeasurement->ipmi_temperature_cur[i] : mpMeasurement->ipmi_temperature_max[i];
+				}
 			}
-			
-			// calculated diff time (use internal struct for that)
-			calcTimeDiff(&(mpMeasurement->internal.ipmi_time_cur), &(mpMeasurement->internal.ipmi_time_temp), &(mpMeasurement->internal.ipmi_time_diff), &(mpMeasurement->internal.ipmi_time_diff_double));
-			
-			// result: runtime
-			mpMeasurement->ipmi_time_runtime += mpMeasurement->internal.ipmi_time_diff_double;
-			
-			// result: energy consumption
-			mpMeasurement->ipmi_energy_sysboard_acc	+=
-				mpMeasurement->ipmi_power_sysboard_cur * mpMeasurement->internal.ipmi_time_diff_double;
-			mpMeasurement->ipmi_energy_server_acc	+=
-				mpMeasurement->ipmi_power_server_cur * mpMeasurement->internal.ipmi_time_diff_double;
-			
-			// result: maximum temperatures
-			mpMeasurement->ipmi_temperature_sysboard_max =
-				(mpMeasurement->ipmi_temperature_sysboard_cur > mpMeasurement->ipmi_temperature_sysboard_max) ?
-				mpMeasurement->ipmi_temperature_sysboard_cur : mpMeasurement->ipmi_temperature_sysboard_max;
-			for (int i=0; i<CPUS; ++i) {
-				mpMeasurement->ipmi_temperature_max[i] =
-					(mpMeasurement->ipmi_temperature_cur[i] > mpMeasurement->ipmi_temperature_max[i]) ?
-					mpMeasurement->ipmi_temperature_cur[i] : mpMeasurement->ipmi_temperature_max[i];
-			}
-#endif /* LIGHT */
 			
 #if 0
 			mrLog.lock();
@@ -123,11 +121,11 @@ namespace NLibMeasure {
 #endif
 		}
 		
-#ifndef LIGHT
-		// result: average power consumption
-		mpMeasurement->ipmi_power_sysboard_avg	= mpMeasurement->ipmi_energy_sysboard_acc/mpMeasurement->ipmi_time_runtime;
-		mpMeasurement->ipmi_power_server_avg	= mpMeasurement->ipmi_energy_server_acc/mpMeasurement->ipmi_time_runtime;
-#endif /* LIGHT */
+		if(Variant == FULL) {
+			// result: average power consumption
+			mpMeasurement->ipmi_power_sysboard_avg	= mpMeasurement->ipmi_energy_sysboard_acc/mpMeasurement->ipmi_time_runtime;
+			mpMeasurement->ipmi_power_server_avg	= mpMeasurement->ipmi_energy_server_acc/mpMeasurement->ipmi_time_runtime;
+		}
 		
 #ifdef DEBUG
 		mrLog.lock();

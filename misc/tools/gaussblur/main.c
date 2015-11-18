@@ -145,7 +145,7 @@ static void init_settings(ARGUMENTS **settings) {
 	(*settings)->energy_loops			= GAUSS_T_ENERGY_LOOPS;
 	(*settings)->ipmi_timeout_setting	= IOC_SET_IPMI_TIMEOUT;
 	(*settings)->skip_ms				= LOW;
-	(*settings)->variant				= LIGHT2;
+	(*settings)->variant				= LIGHT;
 }
 
 static void free_settings(ARGUMENTS **settings) {

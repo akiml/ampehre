@@ -13,6 +13,8 @@
 # author: Achim Lösch (achim.loesch@upb.de)
 # created: 8/05/14
 # version: 0.1.0 - initial cmake file
+#          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+#                   and to select between the full or light library.
 #
 
 # Full library
@@ -22,11 +24,3 @@ add_library(hetschedmeasure SHARED
 target_link_libraries(hetschedmeasure twmeasure)
 
 install(TARGETS hetschedmeasure LIBRARY DESTINATION lib)
-
-# Light library
-add_library(hetschedmeasurelight SHARED
-	ms_hetschedwrapper.c
-)
-target_link_libraries(hetschedmeasurelight twmeasurelight)
-
-install(TARGETS hetschedmeasurelight LIBRARY DESTINATION lib)
