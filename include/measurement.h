@@ -70,7 +70,7 @@
 #define FPGA	0x04
 #define SYSTEM	0x08
 #define MIC 	0x10
-#define ALL		(CPU | GPU | GPU | FPGA | SYSTEM | MIC)
+#define ALL		(CPU | GPU | FPGA | SYSTEM | MIC)
 		
 #ifdef CPU_LIB
 	#define CPU_LIB_NAME "libms_cpu_intel_xeon_sandy.so"

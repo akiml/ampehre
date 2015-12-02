@@ -20,6 +20,7 @@
  *          0.4.0 - MIC integration into libmeasure
  *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                   and to select between the full or light library.
+ *          0.6.1 - add json printer to hettime
  */
 
 #ifndef __HETTIME_H__
@@ -49,6 +50,7 @@ typedef struct __arguments {
 	uint32_t child_num_of_args;
 	char **child_args;
 	char *csv_filename;
+	char *json_filename;
 	char *ostream_filename;
 	int force_idle_fpga;
 	uint32_t sample_rate_cpu;

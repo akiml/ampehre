@@ -19,6 +19,7 @@
  *          0.4.0 - MIC integration into libmeasure
  *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                   and to select between the full or light library.
+ *          0.6.1 - add json printer to hettime
  */
 
 #include <stdlib.h>
@@ -75,7 +76,7 @@ int main(int argc, char **argv) {
 	int32_t file_flag = 0;
 	int32_t args_flag = 0;
 	
-	while ((opt = getopt(argc, argv, "h?c:g:f:m:s:S:e:a:G:C:L:H:V:o:v:ui")) != -1) {
+	while ((opt = getopt(argc, argv, "h?c:g:f:m:s:S:e:a:G:C:L:H:V:o:v:j:ui")) != -1) {
 		switch (opt) {
 			case 'a':
 				if (file_flag == 0) {
@@ -208,6 +209,9 @@ int main(int argc, char **argv) {
 				break;
 			case 'v':
 				copy_str_to_newstr(&(cur_settings->csv_filename), optarg, strlen(optarg));
+				break;
+			case 'j':
+				copy_str_to_newstr(&(cur_settings->json_filename), optarg, strlen(optarg));
 				break;
 			case 'i':
 				cur_settings->force_idle_fpga = 1;
@@ -388,6 +392,7 @@ static void print_help(char **argv, ARGUMENTS *std_settings) {
 			"                      | Default: %s.\n"
 			"-o RESULT_FILE        | Save results in a file instead of printing to stdout.\n"
 			"-v CSV_FILE           | Save results in a CSV table file.\n"
+			"-j JSON_FILE          | Save results in a JSON file.\n"
 			"-u                    | Use UNIX socket handler library to communicate with msmonitor.\n"
 			"-i                    | Forcing FPGA to idle after measuring system initialization.\n"
 			"-h                    | Print this help message.\n"
@@ -428,6 +433,7 @@ static void init_settings(ARGUMENTS **std_settings, ARGUMENTS **cur_settings) {
 	(*std_settings)->child_args				= NULL;
 	(*std_settings)->child_num_of_args		= 0;
 	(*std_settings)->csv_filename			= NULL;
+	(*std_settings)->json_filename			= NULL;
 	(*std_settings)->ostream_filename		= NULL;
 	(*std_settings)->force_idle_fpga		= 0;
 	(*std_settings)->sample_rate_cpu		= 100;
