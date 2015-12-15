@@ -90,6 +90,7 @@ $ make correlation_install
 \end{lstlisting}
 
 It is possible to build and install the project with a subset of supported resources. Therefore you can set the options shown in Listing \ref{lst:CMakeListsResourceSupport} in the CMakeLists.txt of the root directory. This allows you to build and install the project if your system is not deployed with all resources for which we provide measuring functionality. Only the modules enabled in the CMakeLists.txt will be built. By default all options are on.
+
 \begin{lstlisting}[caption={CMakeLists.txt options.}, label=lst:CMakeListsResourceSupport]
 option(DELL_IDRAC7_SUPPORT
 		"build library with dell idrac7 support" ON)
@@ -103,10 +104,13 @@ option(CPU_INTEL_SANDY_SUPPORT
 		"build library with cpu intel xeon sandy support" ON)
 \end{lstlisting}
 
-\subsubsection{Measuring library usage}\label{sec:libmeasureUsage}
+\subsubsection{Measuring library usage}
+\label{sec:libmeasureUsage}
+
 The libmeasure can be called from other C or C++ projects by including the header file \texttt{/include/measurement.h} and linking against the \texttt{libms\_common.so}. The complete user interface to the libmeasure is defined in the \texttt{measurement.h}.
 The first steps needed to perfom measurements are shown in the next Listing.
-\begin{lstlisting}[caption={\added[id=ck]{Listing aktualisiert.}Initialization of our measuring library \texttt{libmeasure}. Each function name has a \texttt{ms\_} prefix.},label=lst:InitMS]
+
+\begin{lstlisting}[caption={Initialization of our measuring library \texttt{libmeasure}. Each function name has a \texttt{ms\_} prefix.},label=lst:InitMS]
 MS_VERSION version = { .major = MS_MAJOR_VERSION,
 					   .minor = MS_MINOR_VERSION,
 					   .revision = MS_REVISION_VERSION };
@@ -127,9 +131,11 @@ ms_set_timer(m1, MIC,    0, 30000000, 10);
 
 ms_init_measurement(ms, m, CPU | GPU | FPGA | SYSTEM | MIC);
 \end{lstlisting}
-At the beginning the libmeasure has to be initialized. Therefore the \texttt{ms\_init} function is called. \added[id=ck]{The \texttt{ms\_init} function has several parameters which are described in the following paragraph.} The first parameter is a \texttt{MS\_VERSION} struct as defined in the \texttt{ms\_version.h} header, to make sure that the correct version of the libmeasure is installed and used. \added[id=ck]{The next four parameters are used to set the CPU governor as available in the Linux kernel, CPU maximum and minimum frequencies and the GPU frequency. The next parameter defines the timeout settings for the IPMI request in our kernel module. Both possible settings \texttt{IOC\_SET\_IPMI\_TIMEOUT} and  \texttt{IOC\_SET\_AND\_LOCK\_IPMI\_TIMEOUT} set the timeout for an IPMI request via an ioctl call to the system sampling rate minus 10ms or if this value is larger than 200ms to the maximum value of 200ms. The difference is that \texttt{IOC\_SET\_AND\_LOCK\_IPMI\_TIMEOUT} sets the new IPMI timeout and afterwards locks the timeout for calls to \texttt{IOC\_SET\_IPMI\_TIMEOUT}. Only further calls to \texttt{IOC\_SET\_AND\_LOCK\_IPMI\_TIMEOUT} or after the kernel module is closed by every application can change the timeout. Therefore this parameter is used to make sure that the hettime tool is not allowed to change the IPMI timeout while msmonitor is running. Usually it is sufficient to use \texttt{IOC\_SET\_IPMI\_TIMEOUT}, only in the case you are planning to run multiple applications which use the libmeasure in parallel, it should be defined via \texttt{IOC\_SET\_AND\_LOCK\_IPMI\_TIMEOUT} which application sets the IPMI timeout.\\
-The second last parameter specifies whether certain measurements should be skipped and only sampled every 10th measurement to reduce the CPU utilization. We have performed extensive profiling to select the measurements which need to be skipped to reduce the CPU utilization. We assume that in most cases e.g. temperature measurements are not as important as for example the power consumption and that it is unlikely that the temperature changes rapidly. Because of that it is not always necessary to perform temperature and power measurements with the same sampling rate. Instead it might be more critical to reduce the influence of the measuring library on the system. The parameter can be set to \texttt{LOW} to perform every measurement at every sampling point or to \texttt{HIGH} to skip some measurements which are shown in detail in the following table.}
-\begin{center}
+
+\added[id=al]{The first step is to initliaize libmeasure. Therefore, the \texttt{ms\_init} function is called. The \texttt{ms\_init} function has several parameters which are described in the following paragraph. The first parameter is a \texttt{MS\_VERSION} struct as defined in the \texttt{ms\_version.h} header file. The \texttt{ms\_init} function compares the version information to ensure that the correct version of the libmeasure is installed and loaded. The next four parameters are used to set the CPU governor policy as defined in the Linux kernel, the maximum and minimum CPU frequencies, as well as the GPU frequency. The next parameter defines the timeout for IPMI requests in our kernel module. Both available values \texttt{IOC\_SET\_IPMI\_TIMEOUT} and  \texttt{IOC\_SET\_AND\_LOCK\_IPMI\_TIMEOUT} set the timeout for an IPMI request via an \texttt{ioctl} call to the user-defined system sampling rate minus 10ms or, if this value is larger than 200ms, to the maximum valid value of 200ms. The difference between \texttt{IOC\_SET\_IPMI\_TIMEOUT} and  \texttt{IOC\_SET\_AND\_LOCK\_IPMI\_TIMEOUT} is that \texttt{IOC\_SET\_AND\_LOCK\_IPMI\_TIMEOUT} sets and fixates the IPMI timeout. Hence, subsequent \texttt{ms\_init} calls with \texttt{IOC\_SET\_IPMI\_TIMEOUT} cannot modify the timeout value. Only further \texttt{ms\_init} calls with \texttt{IOC\_SET\_AND\_LOCK\_IPMI\_TIMEOUT} given or reloading the kernel module can change the timeout. For instance, the different parameters are used to ensure that multiple instances of the hettime tool using the driver simultaneously are not able to modify the IPMI timeout while msmonitor is running. In general, it is sufficient to use \texttt{IOC\_SET\_IPMI\_TIMEOUT} if a single application uses libmeasure. If multiple applications access libmeasure and the kernel driver respectively, the process executed first should call \texttt{ms\_init} with \texttt{IOC\_SET\_AND\_LOCK\_IPMI\_TIMEOUT} to ensure that all following processes are not able to modify the IPMI timeout value during the library initializations.\\
+The next parameter specifies whether certain measurements should be sampled just every 10th iteration of the measurement procedure in order to reduce the CPU utilization. We have profiled libmeasure to select the measurements with high CPU utilization. We assume that temperatures changes less frequent than power. Therefore, we can reduce the frequence of temperature measurements with a minor loss in accuracy. Please, set the parameter to \texttt{LOW} in order to perform each measurement at every sampling point or to \texttt{HIGH} in order to reduce the sampling frequency for the measurements listed in Table \ref{tab:reduce_cpu_util}.} \added[id=al]{LOW und HIGH wirken vertauscht.}
+
+\begin{table}
 \begin{tabularx}{\textwidth}{|l|l|l|l|l|l|l|X|}
 \hline
 \multicolumn{8}{|l|}{\textbf{Skipped measurements} (\checkmark: skipped, x: not skipped, --: not available) :} \\ \hline
@@ -146,11 +152,15 @@ MIC & x & x & x & \checkmark& \checkmark & \checkmark & Only Mem. clock \\
 SYSTEM & x & x & -- & -- & -- & \checkmark & \\
 \hline 
 \end{tabularx}
-\end{center}
-\added[id=ck]{If any of these measurement values are needed with the maximum accuracy the \texttt{LOW} option should be used. Otherwise the \texttt{HIGH} option can be used to reduce the CPU utilization caused by the measuring system itself.\\
-The last parameter of the \texttt{ms\_init} function specifies which variant of the measuring library is used. There are two variants \texttt{LIGHT} and \texttt{FULL} available. The \texttt{FULL} variant provides the full functionality of the measuring library where all measurements are performed. The \texttt{LIGHT} variant performs not all measurements to reduce the CPU utilization. In comparison to the \texttt{HIGH} option which only skips certain measurements but still performs every measurement periodically, in the \texttt{LIGHT} variant some measurements are not performed at all and thus for this measurements no values can be obtained. The following table shows the difference between the \texttt{LIGHT} and \texttt{FULL} variant, "\checkmark/\checkmark" means available in both variants, "\checkmark/x" only in the \texttt{FULL} variant and "x/x" not available for this resource in both variants.  }
-\begin{center}
-\begin{tabularx}{0.9\textwidth}{|l|c|c|c|c|c|c|}
+\caption{\added[id=al]{Caption? Reduced (sampled rate reduced by 90\%) and Default in Tabelle? Was heißt x, --, \checkmark?} \added[id=ck]{If any of these measurement values are needed with the maximum accuracy, the \texttt{LOW} option should be used. Otherwise, the \texttt{HIGH} option can be used to reduce the CPU utilization caused by the measuring system.}}
+\label{tab:reduce_cpu_util}
+\end{table}
+
+\added[id=al]{The last parameter of the \texttt{ms\_init} function specifies which variant of the measuring library is used. There are two variants available: \texttt{LIGHT} and \texttt{FULL}. The \texttt{FULL} variant provides the full functionality of the measuring library, i.e., all measurements available for the compiled resource-specific libraries are performed. The \texttt{LIGHT} variant omits some measurements to reduce the CPU utilization. Note, in comparison to the \texttt{HIGH} option which skips certain measurements but still performs all measurements periodically, the \texttt{LIGHT} variant turns some measurements off. Table \ref{tab:light_vs_full} shows the unabled measurements of the \texttt{LIGHT} variant. "\checkmark" means the the measurement is performed, while an "x" marked measurement is only available in the \texttt{FULL} variant of libmeasure.}
+
+\begin{table}
+\centering
+\begin{tabularx}{0.9\textwidth}{|X|c|c|c|c|c|c|}
 \hline
 \multicolumn{7}{|l|}{\textbf{Difference between \texttt{FULL/LIGHT}} (\checkmark: available, x: not available) :} \\ \hline
 Resource & Power & Energy & Util. & Clocks & Mem. & Temp.\\
@@ -166,7 +176,10 @@ MIC & \checkmark/x & \checkmark/x & \checkmark/x & \checkmark/x& \checkmark/x & 
 SYSTEM & \checkmark/x & \checkmark/x & x/x & x/x & x/x & \checkmark/x \\
 \hline 
 \end{tabularx}
-\end{center}
+\caption{\added[id=al]{Caption?, Einfacher: 1 Tabelle für LIGHT. \checkmark green, x red?}}
+\label{tab:light_vs_full}
+\end{table}
+
 The next step in the initialization phase is to allocate memory for the measurement results and all values related to a single measurement. This is done with a call to \texttt{ms\_alloc\_measurement} which returns a pointer to a so called \texttt{MEASUREMENT} struct. This struct contains variables for CPU, GPU, FPGA, MIC and System measurements such as the average power consumption of a resource, or the maximum temperature of a device retrieved during a concrete measuring.
 Before the measurement can be started, the sampling rate for each resource need to be set. This defines how often the actual measurements are executed and thus how often the current values are sampled from the resources. The sampling rates are set by the function \texttt{ms\_set\_timer}. The first parameter is the pointer to the \texttt{MEASUREMENT} struct which is used to hold the measured values as well as some temporary data. The second parameter is the resource for which the sampling rate is set. The third parameter is the number of seconds and the fourth parameter is the number of nanoseconds which are combined internally to a \texttt{struct timespec} to memorize the sampling rate. \added[id=ck]{The last parameter \texttt{skip\_ms\_rate} defines how many measurements should be skipped before the next measurement is performed. The effective sampling rate is the \texttt{skip\_ms\_rate} times the time specified in the 3rd and 4th parameter. For example if the sampling rate defined by the 3rd and 4th parameter, is 10ms and the \texttt{skip\_ms\_rate} is 10, the effective sampling rate is 100ms. This is useful if the precision of the measurement runtime needs to be higher then the effective sampling rate. In the aforementioned example we can stop the measurements with a precision of 10ms while only every 100 ms the actual measurements are performed.} For further details on the sampling rates have a look at Appendix \ref{app:A}. Note that you can set the sampling rates independently for each resource. This could be helpful, if you need precise measured data from a resource A, but only imprecise data from a resource B, while the total CPU load induced by the libmeasure should be limited somehow. The final step in the initialization phase is the call to \texttt{ms\_init\_measurement} which initializes the threads for the measurements. The last parameter specifies for which reso6urces the measurement should be performed.\\
 
