@@ -22,6 +22,7 @@
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                   and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __CMEASUREMSR_HPP__
@@ -77,7 +78,7 @@ namespace NLibMeasure {
 			void measureGetMemInfo(int32_t& rThreadNum, uint64_t* pMeasureMemInfo);
 			
 		public:
-			void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
+			void measure(void *pMsMeasurement, int32_t& rThreadNum);
 			int getVariant();
 	};
 }

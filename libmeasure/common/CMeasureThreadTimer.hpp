@@ -28,7 +28,6 @@
 #include "CLogger.hpp"
 #include "CMutex.hpp"
 #include "CSemaphore.hpp"
-#include "../../include/measurement.h"
 
 namespace NLibMeasure {
 	class CMeasureThreadTimer : public CThread {

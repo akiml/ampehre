@@ -18,17 +18,18 @@
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *                   and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct
  */
 
 namespace NLibMeasure {
 	template <int Variant>
-	CMeasureIPMIThread<Variant>::CMeasureIPMIThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
-		CMeasureAbstractThread(rLogger, rStartSem, pMeasurement, rMeasureRes)
+	CMeasureIPMIThread<Variant>::CMeasureIPMIThread(CLogger& rLogger, CSemaphore& rStartSem, void* pMsMeasurement, CMeasureAbstractResource& rMeasureRes) :
+		CMeasureAbstractThread(rLogger, rStartSem, pMsMeasurement, rMeasureRes)
 		{
 		mThreadType = "ipmi";
 		mTimer.setThreadName("ipmi timer");
-		mTimer.setTimer(&(pMeasurement->ipmi_time_wait));
+		mTimer.setTimer(&(((MS_MEASUREMENT_SYS *)pMsMeasurement)->ipmi_time_wait));
 		mTimer.shareMutex(&mMutexTimer);
 		
 	}
@@ -40,6 +41,7 @@ namespace NLibMeasure {
 	
 	template <int Variant>
 	void CMeasureIPMIThread<Variant>::run(void) {
+		MS_MEASUREMENT_SYS *pMsMeasurementSys = (MS_MEASUREMENT_SYS *) mpMsMeasurement;
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
@@ -47,26 +49,26 @@ namespace NLibMeasure {
 		
 		mrLog.lock();
 		mThreadNum = CThread::sNumOfThreads++;
-		mrLog() << ">>> 'ipmi thread' (thread #" << mThreadNum << "): init" << Variant << std::endl
-				<< "     effective sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->ipmi_skip_ms_rate << " Hz / "
-				<< mTimer.getTimerMillisecond() * mpMeasurement->ipmi_skip_ms_rate << " ms" << std::endl;
+		mrLog() << ">>> 'ipmi thread' (thread #" << mThreadNum << "): init" << std::endl
+				<< "     effective sampling rate: " << mTimer.getTimerHertz() / pMsMeasurementSys->ipmi_skip_ms_rate << " Hz / "
+				<< mTimer.getTimerMillisecond() * pMsMeasurementSys->ipmi_skip_ms_rate << " ms" << std::endl;
 		mrLog.unlock();
 		
 		mMutexTimer.lock();
 		
 		// initialize some values
-		mpMeasurement->maxeler_time_runtime				= 0.0;
-		mpMeasurement->ipmi_temperature_sysboard_max	= 0.0;
-		mpMeasurement->ipmi_energy_sysboard_acc			= 0.0;
+		pMsMeasurementSys->ipmi_time_runtime				= 0.0;
+		pMsMeasurementSys->ipmi_temperature_sysboard_max	= 0.0;
+		pMsMeasurementSys->ipmi_energy_sysboard_acc			= 0.0;
 		for (int i=0; i<CPUS; ++i) {
-			mpMeasurement->ipmi_temperature_max[i]		= 0.0;
+			pMsMeasurementSys->ipmi_temperature_max[i]		= 0.0;
 		}
 		
-		mpMeasurement->ipmi_energy_server_acc			= 0;
+		pMsMeasurementSys->ipmi_energy_server_acc			= 0;
 		
-		//static_cast<NLibMeasure::CMeasureIPMI&>(mrMeasureResource).setIPMITimeout((mpMeasurement->ipmi_time_wait.tv_nsec/1000000) + (mpMeasurement->ipmi_time_wait.tv_sec * 1000) - 10, mThreadNum);
+		//static_cast<NLibMeasure::CMeasureIPMI&>(mrMeasureResource).setIPMITimeout((pMsMeasurementSys->ipmi_time_wait.tv_nsec/1000000) + (pMsMeasurementSys->ipmi_time_wait.tv_sec * 1000) - 10, mThreadNum);
 		uint32_t params[2];
-		params[0] = (mpMeasurement->ipmi_time_wait.tv_nsec/1000000) + (mpMeasurement->ipmi_time_wait.tv_sec * 1000) - 10;
+		params[0] = (pMsMeasurementSys->ipmi_time_wait.tv_nsec/1000000) + (pMsMeasurementSys->ipmi_time_wait.tv_sec * 1000) - 10;
 		params[1] = mThreadNum;
 		
 		mrMeasureResource.trigger_resource_custom((void*)params);
@@ -76,72 +78,72 @@ namespace NLibMeasure {
 		mrStartSem.wait();
 		
 		// first initial measurement (no energy consumption calculated, store current time stamp)
-		mrMeasureResource.measure(mpMeasurement, mThreadNum);
-		clock_gettime(CLOCK_REALTIME, &(mpMeasurement->internal.ipmi_time_cur));
-		mpMeasurement->internal.ipmi_time_temp.tv_sec	= mpMeasurement->internal.ipmi_time_cur.tv_sec;
-		mpMeasurement->internal.ipmi_time_temp.tv_nsec	= mpMeasurement->internal.ipmi_time_cur.tv_nsec;
+		mrMeasureResource.measure(mpMsMeasurement, mThreadNum);
+		clock_gettime(CLOCK_REALTIME, &(pMsMeasurementSys->internal.ipmi_time_cur));
+		pMsMeasurementSys->internal.ipmi_time_temp.tv_sec	= pMsMeasurementSys->internal.ipmi_time_cur.tv_sec;
+		pMsMeasurementSys->internal.ipmi_time_temp.tv_nsec	= pMsMeasurementSys->internal.ipmi_time_cur.tv_nsec;
 		
 		while (!mThreadStateStop) {
 			mMutexTimer.lock();
 			
 			if(Variant == FULL) {
-				if(!(skip_ms_cnt++ % mpMeasurement->ipmi_skip_ms_rate)){
-					mrMeasureResource.measure(mpMeasurement, mThreadNum);
+				if(!(skip_ms_cnt++ % pMsMeasurementSys->ipmi_skip_ms_rate)){
+					mrMeasureResource.measure(mpMsMeasurement, mThreadNum);
 				}
 				
 				// calculated diff time (use internal struct for that)
-				calcTimeDiff(&(mpMeasurement->internal.ipmi_time_cur), &(mpMeasurement->internal.ipmi_time_temp), &(mpMeasurement->internal.ipmi_time_diff), &(mpMeasurement->internal.ipmi_time_diff_double));
+				calcTimeDiff(&(pMsMeasurementSys->internal.ipmi_time_cur), &(pMsMeasurementSys->internal.ipmi_time_temp), &(pMsMeasurementSys->internal.ipmi_time_diff), &(pMsMeasurementSys->internal.ipmi_time_diff_double));
 				
 				// result: runtime
-				mpMeasurement->ipmi_time_runtime += mpMeasurement->internal.ipmi_time_diff_double;
+				pMsMeasurementSys->ipmi_time_runtime += pMsMeasurementSys->internal.ipmi_time_diff_double;
 				
 				// result: energy consumption
-				mpMeasurement->ipmi_energy_sysboard_acc	+=
-					mpMeasurement->ipmi_power_sysboard_cur * mpMeasurement->internal.ipmi_time_diff_double;
-				mpMeasurement->ipmi_energy_server_acc	+=
-					mpMeasurement->ipmi_power_server_cur * mpMeasurement->internal.ipmi_time_diff_double;
+				pMsMeasurementSys->ipmi_energy_sysboard_acc	+=
+					pMsMeasurementSys->ipmi_power_sysboard_cur * pMsMeasurementSys->internal.ipmi_time_diff_double;
+				pMsMeasurementSys->ipmi_energy_server_acc	+=
+					pMsMeasurementSys->ipmi_power_server_cur * pMsMeasurementSys->internal.ipmi_time_diff_double;
 				
 				// result: maximum temperatures
-				mpMeasurement->ipmi_temperature_sysboard_max =
-					(mpMeasurement->ipmi_temperature_sysboard_cur > mpMeasurement->ipmi_temperature_sysboard_max) ?
-					mpMeasurement->ipmi_temperature_sysboard_cur : mpMeasurement->ipmi_temperature_sysboard_max;
+				pMsMeasurementSys->ipmi_temperature_sysboard_max =
+					(pMsMeasurementSys->ipmi_temperature_sysboard_cur > pMsMeasurementSys->ipmi_temperature_sysboard_max) ?
+					pMsMeasurementSys->ipmi_temperature_sysboard_cur : pMsMeasurementSys->ipmi_temperature_sysboard_max;
 				for (int i=0; i<CPUS; ++i) {
-					mpMeasurement->ipmi_temperature_max[i] =
-						(mpMeasurement->ipmi_temperature_cur[i] > mpMeasurement->ipmi_temperature_max[i]) ?
-						mpMeasurement->ipmi_temperature_cur[i] : mpMeasurement->ipmi_temperature_max[i];
+					pMsMeasurementSys->ipmi_temperature_max[i] =
+						(pMsMeasurementSys->ipmi_temperature_cur[i] > pMsMeasurementSys->ipmi_temperature_max[i]) ?
+						pMsMeasurementSys->ipmi_temperature_cur[i] : pMsMeasurementSys->ipmi_temperature_max[i];
 				}
 			}
 			
 #if 0
 			mrLog.lock();
-			mrLog() << "t_board: " << mpMeasurement->ipmi_temperature_sysboard_cur << ", t_cpu0: " << mpMeasurement->ipmi_temperature_cur[0] << ", t_cpu1: " << mpMeasurement->ipmi_temperature_cur[1] << std::endl;
-			mrLog() << "p_board: " << mpMeasurement->ipmi_power_sysboard_cur << ", p_server: " << mpMeasurement->ipmi_power_server_cur << std::endl;
-			mrLog() << "e_server_since_reset: " << mpMeasurement->ipmi_energy_server_acc_since_reset << std::endl;
+			mrLog() << "t_board: " << pMsMeasurementSys->ipmi_temperature_sysboard_cur << ", t_cpu0: " << pMsMeasurementSys->ipmi_temperature_cur[0] << ", t_cpu1: " << pMsMeasurementSys->ipmi_temperature_cur[1] << std::endl;
+			mrLog() << "p_board: " << pMsMeasurementSys->ipmi_power_sysboard_cur << ", p_server: " << pMsMeasurementSys->ipmi_power_server_cur << std::endl;
+			mrLog() << "e_server_since_reset: " << pMsMeasurementSys->ipmi_energy_server_acc_since_reset << std::endl;
 			mrLog.unlock();
 #endif
 		}
 		
 		if(Variant == FULL) {
 			// result: average power consumption
-			mpMeasurement->ipmi_power_sysboard_avg	= mpMeasurement->ipmi_energy_sysboard_acc/mpMeasurement->ipmi_time_runtime;
-			mpMeasurement->ipmi_power_server_avg	= mpMeasurement->ipmi_energy_server_acc/mpMeasurement->ipmi_time_runtime;
+			pMsMeasurementSys->ipmi_power_sysboard_avg	= pMsMeasurementSys->ipmi_energy_sysboard_acc/pMsMeasurementSys->ipmi_time_runtime;
+			pMsMeasurementSys->ipmi_power_server_avg	= pMsMeasurementSys->ipmi_energy_server_acc/pMsMeasurementSys->ipmi_time_runtime;
 		}
 		
 #ifdef DEBUG
 		mrLog.lock();
 		mrLog()
 		<< "ooo 'ipmi thread' (thread #" << mThreadNum << "):" << std::endl
-		<< "     time period              : " << mpMeasurement->ipmi_time_runtime << " s" << std::endl
-		<< "     sys board energy accu.   : " << mpMeasurement->ipmi_energy_sysboard_acc << " Ws" << std::endl
-		<< "     sys board power avg      : " << mpMeasurement->ipmi_power_sysboard_avg << " W" << std::endl
-		<< "     server energy accumulated: " << mpMeasurement->ipmi_energy_server_acc << " Ws" << std::endl
-		<< "     server power average     : " << mpMeasurement->ipmi_power_server_avg << " W" << std::endl
-		<< "     server energy counter acc: " << mpMeasurement->ipmi_energy_server_acc_since_reset << " Wh" << std::endl
-		<< "     server power counter avg : " << mpMeasurement->ipmi_power_server_avg_since_reset << " W" << std::endl
-		<< "     sys board temperature max: " << mpMeasurement->ipmi_temperature_sysboard_max << " \u00b0C" << std::endl;
+		<< "     time period              : " << pMsMeasurementSys->ipmi_time_runtime << " s" << std::endl
+		<< "     sys board energy accu.   : " << pMsMeasurementSys->ipmi_energy_sysboard_acc << " Ws" << std::endl
+		<< "     sys board power avg      : " << pMsMeasurementSys->ipmi_power_sysboard_avg << " W" << std::endl
+		<< "     server energy accumulated: " << pMsMeasurementSys->ipmi_energy_server_acc << " Ws" << std::endl
+		<< "     server power average     : " << pMsMeasurementSys->ipmi_power_server_avg << " W" << std::endl
+		<< "     server energy counter acc: " << pMsMeasurementSys->ipmi_energy_server_acc_since_reset << " Wh" << std::endl
+		<< "     server power counter avg : " << pMsMeasurementSys->ipmi_power_server_avg_since_reset << " W" << std::endl
+		<< "     sys board temperature max: " << pMsMeasurementSys->ipmi_temperature_sysboard_max << " \u00b0C" << std::endl;
 		for (int i=0; i<CPUS; ++i) {
 			mrLog()
-			<< "     cpu " << i << " temperature max    : " << mpMeasurement->ipmi_temperature_max[i] << " \u00b0C" << std::endl;
+			<< "     cpu " << i << " temperature max    : " << pMsMeasurementSys->ipmi_temperature_max[i] << " \u00b0C" << std::endl;
 		}
 		mrLog.unlock();
 #endif /* DEBUG */

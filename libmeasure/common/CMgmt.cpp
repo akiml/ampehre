@@ -23,7 +23,8 @@
  *          0.5.4 - add dynamic loading of resource specific libraries
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
  *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *                   and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct
  */
 
 #include "CMgmt.hpp"
@@ -166,8 +167,8 @@ void CMgmt::postStartSem(int count){
 	mStartSem.post(count);
 }
 
-void CMgmt::initMeasureThread(int res, MEASUREMENT* pMeasurement) {
-	mResources[res]->initResourceThread(mStartSem, pMeasurement);
+void CMgmt::initMeasureThread(int res, MS_LIST* pMsList) {
+	mResources[res]->initResourceThread(mStartSem, pMsList);
 }
 
 void CMgmt::finiMeasureThread(int res) {

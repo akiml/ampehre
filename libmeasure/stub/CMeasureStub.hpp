@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 6/01/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __CMEASURESTUB_HPP__
@@ -31,7 +32,7 @@ namespace NLibMeasure {
 			void destroy(void);
 			
 		public:
-			void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
+			void measure(void *pMsMeasurement, int32_t& rThreadNum);
 			int getVariant();
 	};
 }

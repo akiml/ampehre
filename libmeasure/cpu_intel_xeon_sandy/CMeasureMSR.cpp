@@ -21,7 +21,8 @@
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *                   and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct
  */
 
 #include <sys/types.h>
@@ -256,7 +257,8 @@ namespace NLibMeasure {
 	}
 	
 	template <int SkipMs, int Variant>
-	void CMeasureMSR<SkipMs, Variant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	void CMeasureMSR<SkipMs, Variant>::measure(void *pMsMeasurement, int32_t& rThreadNum) {
+		MS_MEASUREMENT_CPU *pMsMeasurementCpu = (MS_MEASUREMENT_CPU*) pMsMeasurement;
 		mEnergyUnit				= msrGetEnergyUnit(rThreadNum);
 		mEnergyMax				= msrGetEnergyMax();
 		if(Variant == FULL) {
@@ -264,33 +266,33 @@ namespace NLibMeasure {
 		}
 		
 		for (int i=0; i<CPUS; ++i) {
-			pMeasurement->msr_energy_cur[i][PKG]		= msrGetEnergy(rThreadNum, i, MSR_PKG_ENERGY_STATUS)*1000.0;
-			pMeasurement->msr_energy_cur[i][PP0]		= msrGetEnergy(rThreadNum, i, MSR_PP0_ENERGY_STATUS)*1000.0;
-			pMeasurement->msr_energy_cur[i][DRAM]		= msrGetEnergy(rThreadNum, i, MSR_DRAM_ENERGY_STATUS)*1000.0;
+			pMsMeasurementCpu->msr_energy_cur[i][PKG]		= msrGetEnergy(rThreadNum, i, MSR_PKG_ENERGY_STATUS)*1000.0;
+			pMsMeasurementCpu->msr_energy_cur[i][PP0]		= msrGetEnergy(rThreadNum, i, MSR_PP0_ENERGY_STATUS)*1000.0;
+			pMsMeasurementCpu->msr_energy_cur[i][DRAM]		= msrGetEnergy(rThreadNum, i, MSR_DRAM_ENERGY_STATUS)*1000.0;
 			if(Variant == FULL) {
 				if(!(mMeasureCounter % SkipMs)) {
-					pMeasurement->msr_temperature_pkg_cur[i]	= msrGetTemperature(rThreadNum, i, IA32_PACKAGE_THERM_STATUS);
+					pMsMeasurementCpu->msr_temperature_pkg_cur[i]	= msrGetTemperature(rThreadNum, i, IA32_PACKAGE_THERM_STATUS);
 				}
 				
 				for (int j=0; j<CORES; ++j) {
 					if(!(mMeasureCounter % SkipMs)) {
-						pMeasurement->msr_temperature_core_cur[i][j]		= msrGetTemperature(rThreadNum, j*CPUS+i, IA32_THERM_STATUS);
+						pMsMeasurementCpu->msr_temperature_core_cur[i][j]		= msrGetTemperature(rThreadNum, j*CPUS+i, IA32_THERM_STATUS);
 					}
-					pMeasurement->internal.msr_timestamp_core_cur[i][j]	= msrGetTimeStamp(rThreadNum, j*CPUS+i, IA32_TIME_STAMP_COUNTER);
+					pMsMeasurementCpu->internal.msr_timestamp_core_cur[i][j]	= msrGetTimeStamp(rThreadNum, j*CPUS+i, IA32_TIME_STAMP_COUNTER);
 					msrGetPerfCounter(rThreadNum, j*CPUS+i,
-									IA32_APERF, &(pMeasurement->internal.msr_aperf_core_cur[i][j]),
-									IA32_MPERF, &(pMeasurement->internal.msr_mperf_core_cur[i][j]));
+									IA32_APERF, &(pMsMeasurementCpu->internal.msr_aperf_core_cur[i][j]),
+									IA32_MPERF, &(pMsMeasurementCpu->internal.msr_mperf_core_cur[i][j]));
 				}
 			}
 		}
 		
-		pMeasurement->internal.msr_energy_max	= mEnergyMax * 1000.0;
+		pMsMeasurementCpu->internal.msr_energy_max	= mEnergyMax * 1000.0;
 		
-		measureGetUtilization(rThreadNum, pMeasurement->internal.measure_util_cur);
+		measureGetUtilization(rThreadNum, pMsMeasurementCpu->internal.measure_util_cur);
 		
 		if(Variant == FULL) {
 			if(!(mMeasureCounter++ % SkipMs)) {
-				measureGetMemInfo(rThreadNum, pMeasurement->measure_memory_cur);
+				measureGetMemInfo(rThreadNum, pMsMeasurementCpu->measure_memory_cur);
 			}
 		}
 	}

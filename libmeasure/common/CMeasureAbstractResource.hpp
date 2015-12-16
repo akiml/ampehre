@@ -15,6 +15,7 @@
  * version: 0.5.3 - add abstract measure and abstract measure thread
  *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                   and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __CMEASUREABSTRACTRESOURCE_HPP__
@@ -35,7 +36,7 @@
 #include "CLogger.hpp"
 #include "CMutex.hpp"
 
-#include "../../include/measurement.h"
+#include "../../include/ms_measurement.h"
 
 #define UINT64_MAX (0xffffffffffffffff)
 
@@ -54,9 +55,9 @@ namespace NLibMeasure {
 			virtual void destroy(void) = 0;
 			
 		public:
-			virtual void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum) = 0;
+			virtual void measure(void *pMsMeasurement, int32_t& rThreadNum) = 0;
 			virtual int getVariant() = 0;
-			virtual void read_memory_total(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
+			virtual void read_memory_total(void *pMsMeasurement, int32_t& rThreadNum);
 			virtual void trigger_resource_custom(void* pParams);
 	};
 }

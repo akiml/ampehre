@@ -13,13 +13,14 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 6/01/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
+ *          0.7.0 - modularised measurement struct
  */
 
 #include "CMeasureStubThread.hpp"
 
 namespace NLibMeasure {
-	CMeasureStubThread::CMeasureStubThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
-		CMeasureAbstractThread(rLogger, rStartSem, pMeasurement, rMeasureRes)
+	CMeasureStubThread::CMeasureStubThread(CLogger& rLogger, CSemaphore& rStartSem, void* pMsMeasurement, CMeasureAbstractResource& rMeasureRes) :
+		CMeasureAbstractThread(rLogger, rStartSem, pMsMeasurement, rMeasureRes)
 		{
 		mThreadType = "stub";
 	}

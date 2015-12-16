@@ -14,7 +14,8 @@
  * created: 5/29/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
  *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *                   and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct 
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -56,14 +57,14 @@ extern "C" {
 		delete pMIC;
 	}
 	
-	void* init_resource_thread(void* pLogger, void* pStartSem, MEASUREMENT* pMeasurement, void* pMeasureRes){
+	void* init_resource_thread(void* pLogger, void* pStartSem, MS_LIST* pMs_List, void* pMeasureRes){
 		NLibMeasure::CMeasureAbstractThread* pMICThread;
 		NLibMeasure::CMeasureAbstractResource* pMIC = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
 		
 		if(pMIC->getVariant() == FULL) {
-			pMICThread =  new NLibMeasure::CMeasureMICThread<FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMIC);
+			pMICThread =  new NLibMeasure::CMeasureMICThread<FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), getMeasurement(&pMs_List, MIC), *pMIC);
 		} else {
-			pMICThread =  new NLibMeasure::CMeasureMICThread<LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMIC);
+			pMICThread =  new NLibMeasure::CMeasureMICThread<LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), getMeasurement(&pMs_List, MIC), *pMIC);
 		}
 		
 		return (void*) pMICThread;

@@ -17,7 +17,8 @@
  *          0.1.9 - add FPGA utilization measurements
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *                   and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct
  */
 
 namespace NLibMeasure {
@@ -87,18 +88,19 @@ namespace NLibMeasure {
 	}
 	
 	template <int SkipMs, int Variant>
-	void CMeasureMaxeler<SkipMs, Variant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
-		measurePower(pMeasurement, rThreadNum);
+	void CMeasureMaxeler<SkipMs, Variant>::measure(void *pMsMeasurement, int32_t& rThreadNum) {
+		MS_MEASUREMENT_FPGA *pMsMeasurementFpga = (MS_MEASUREMENT_FPGA *) pMsMeasurement;
+		measurePower(pMsMeasurementFpga, rThreadNum);
 		if(Variant==FULL) {
 			if(!(mMeasureCounter++ % SkipMs)) {
-				measureTemperature(pMeasurement, rThreadNum);
+				measureTemperature(pMsMeasurementFpga, rThreadNum);
 			}
-			measureUtilization(pMeasurement, rThreadNum);
+			measureUtilization(pMsMeasurementFpga, rThreadNum);
 		}
 	}
 	
 	template <int SkipMs, int Variant>
-	void CMeasureMaxeler<SkipMs, Variant>::measurePower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	void CMeasureMaxeler<SkipMs, Variant>::measurePower(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, int32_t& rThreadNum) {
 		cJSON *json_response		= NULL;
 		cJSON *json_measurements	= NULL;
 		cJSON *json_single			= NULL;
@@ -133,15 +135,15 @@ namespace NLibMeasure {
 		}
 		
 		json_measurements = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetArrayItem(json_response, 0), "data"), "engine0");
-		pMeasurement->maxeler_power_cur[POWER] = cJSON_GetObjectItem(json_measurements, mMaxPower[POWER].first.c_str())->valuedouble*1000;
+		pMsMeasurementFpga->maxeler_power_cur[POWER] = cJSON_GetObjectItem(json_measurements, mMaxPower[POWER].first.c_str())->valuedouble*1000;
 		
 		json_measurements = cJSON_GetObjectItem(json_measurements, "measurements");
 		for (int i=0; i<cJSON_GetArraySize(json_measurements); ++i) {
 			json_single = cJSON_GetArrayItem(json_measurements, i);
 			if (strncmp(cJSON_GetObjectItem(json_single, "rail_name")->valuestring,
 					mMaxPower[i].first.c_str(), mMaxPower[i].first.length()) == 0) {
-				pMeasurement->maxeler_power_cur[i] = cJSON_GetObjectItem(json_single, "voltage")->valuedouble * cJSON_GetObjectItem(json_single, "current")->valuedouble*1000;
-				pMeasurement->maxeler_power_cur[i] /= mMaxPower[i].second;
+				pMsMeasurementFpga->maxeler_power_cur[i] = cJSON_GetObjectItem(json_single, "voltage")->valuedouble * cJSON_GetObjectItem(json_single, "current")->valuedouble*1000;
+				pMsMeasurementFpga->maxeler_power_cur[i] /= mMaxPower[i].second;
 			} else {
 				mrLog.lock();
 				mrLog(CLogger::scErr) << "!!! 'maxeler thread' (thread #" << rThreadNum << "): Error: json string order changed. did you upgrade maxeler os? (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
@@ -156,7 +158,7 @@ namespace NLibMeasure {
 	}
 	
 	template <int SkipMs, int Variant>
-	void CMeasureMaxeler<SkipMs, Variant>::measureTemperature(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	void CMeasureMaxeler<SkipMs, Variant>::measureTemperature(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, int32_t& rThreadNum) {
 		char *response;
 		max_daemon_device_hw_monitor(mMaxDaemonFildes, 0, &response);
 		
@@ -177,14 +179,14 @@ namespace NLibMeasure {
 		*mend		= '\0';
 		*iend		= '\0';
 		
-		sscanf(meq, "%lf", pMeasurement->maxeler_temperature_cur+MTEMP);
-		sscanf(ieq, "%lf", pMeasurement->maxeler_temperature_cur+ITEMP);
+		sscanf(meq, "%lf", pMsMeasurementFpga->maxeler_temperature_cur+MTEMP);
+		sscanf(ieq, "%lf", pMsMeasurementFpga->maxeler_temperature_cur+ITEMP);
 		
 		free(response);
 	}
 	
 	template <int SkipMs, int Variant>
-	void CMeasureMaxeler<SkipMs, Variant>::measureUtilization(MEASUREMENT *pMeasurement, int32_t &rThreadNum) {
+	void CMeasureMaxeler<SkipMs, Variant>::measureUtilization(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, int32_t &rThreadNum) {
 		cJSON *json_response		= NULL;
 		cJSON *json_measurements	= NULL;
 		
@@ -217,7 +219,7 @@ namespace NLibMeasure {
 		
 		json_measurements = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetArrayItem(json_response, 0), "data"), "engine0");
 		
-		pMeasurement->maxeler_util_comp_cur = cJSON_GetObjectItem(json_measurements, "usage")->valuedouble;
+		pMsMeasurementFpga->maxeler_util_comp_cur = cJSON_GetObjectItem(json_measurements, "usage")->valuedouble;
 		
 		cJSON_Delete(json_response);
 		free(jstr_response);

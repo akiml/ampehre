@@ -24,6 +24,7 @@
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
  *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                   and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __CMGMT_HPP__
@@ -39,7 +40,7 @@
 #include "CMeasureAbstractResource.hpp"
 #include "CMeasureAbstractThread.hpp"
 #include "CResourceLibraryHandler.hpp"
-#include "../../include/measurement.h"
+#include "../../include/ms_measurement.h"
 #include "CMutex.hpp"
 
 typedef std::map<int , NLibMeasure::CResourceLibraryHandler*> map_type;
@@ -69,7 +70,7 @@ class CMgmt {
 		void lockResourceMutexStart(int res);
 		void unlockResourceMutexStart(int res);
 		void postStartSem(int count);
-		void initMeasureThread(int res, MEASUREMENT* pMeasurement);
+		void initMeasureThread(int res, MS_LIST* pMsList);
 		void finiMeasureThread(int res);
 		void startMeasureThread(int res);
 		void stopMeasureThread(int res);

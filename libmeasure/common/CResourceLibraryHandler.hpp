@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 6/11/15
  * version: 0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __CRESOURCELIBRARYHANDLER_HPP__
@@ -31,7 +32,7 @@ namespace NLibMeasure {
 			
 			void* loadFunction(const std::string& rFunctionname);
 			
-			void initResourceThread(CSemaphore& rStartSem, MEASUREMENT* pMeasurement);
+			void initResourceThread(CSemaphore& rStartSem, MS_LIST* MsList);
 			CMeasureAbstractThread* getResourceThread();
 			void finiResourceThread();
 			

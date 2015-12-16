@@ -19,17 +19,18 @@
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *                   and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct
  */
 
 namespace NLibMeasure {
 	template <int Variant>
-	CMeasureMaxelerThread<Variant>::CMeasureMaxelerThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
-		CMeasureAbstractThread(rLogger, rStartSem, pMeasurement, rMeasureRes)
+	CMeasureMaxelerThread<Variant>::CMeasureMaxelerThread(CLogger& rLogger, CSemaphore& rStartSem, void *pMsMeasurement, CMeasureAbstractResource& rMeasureRes) :
+		CMeasureAbstractThread(rLogger, rStartSem, pMsMeasurement, rMeasureRes)
 		{
 		mThreadType = "maxeler";
 		mTimer.setThreadName("maxeler timer");
-		mTimer.setTimer(&(pMeasurement->maxeler_time_wait));
+		mTimer.setTimer(&(((MS_MEASUREMENT_FPGA *)pMsMeasurement)->maxeler_time_wait));
 		mTimer.shareMutex(&mMutexTimer);
 	}
 	
@@ -40,6 +41,7 @@ namespace NLibMeasure {
 	
 	template <int Variant>
 	void CMeasureMaxelerThread<Variant>::run(void) {
+		MS_MEASUREMENT_FPGA *pMsMeasurementFpga = (MS_MEASUREMENT_FPGA *) mpMsMeasurement;
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
@@ -48,77 +50,77 @@ namespace NLibMeasure {
 		mrLog.lock();
 		mThreadNum = CThread::sNumOfThreads++;
 		mrLog() << ">>> 'maxeler thread' (thread #" << mThreadNum << "): init" << std::endl
-				<< "     effective sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->maxeler_skip_ms_rate << " Hz / "
-				<< mTimer.getTimerMillisecond() * mpMeasurement->maxeler_skip_ms_rate << " ms" << std::endl;
+				<< "     effective sampling rate: " << mTimer.getTimerHertz() / pMsMeasurementFpga->maxeler_skip_ms_rate << " Hz / "
+				<< mTimer.getTimerMillisecond() * pMsMeasurementFpga->maxeler_skip_ms_rate << " ms" << std::endl;
 		mrLog.unlock();
 		
 		mMutexTimer.lock();
 		
 		// initialize some values
-		mpMeasurement->maxeler_time_runtime		= 0.0;
+		pMsMeasurementFpga->maxeler_time_runtime		= 0.0;
 		for (int i=0; i<MAX_NUM_POWER; ++i) {
-			mpMeasurement->maxeler_energy_acc[i]	= 0.0;
+			pMsMeasurementFpga->maxeler_energy_acc[i]	= 0.0;
 		}
 		for (int i=0; i<MAX_NUM_TEMPERATURE; ++i) {
-			mpMeasurement->maxeler_temperature_max[i]	= 0.0;
+			pMsMeasurementFpga->maxeler_temperature_max[i]	= 0.0;
 		}
-		mpMeasurement->maxeler_util_comp_acc	= 0.0;
+		pMsMeasurementFpga->maxeler_util_comp_acc	= 0.0;
 		
 		mpMutexStart->unlock();
 		
 		mrStartSem.wait();
 		
 		// first initial measurement (no energy consumption calculated, store current time stamp)
-		mrMeasureResource.measure(mpMeasurement, mThreadNum);
-		clock_gettime(CLOCK_REALTIME, &(mpMeasurement->internal.maxeler_time_cur));
-		mpMeasurement->internal.maxeler_time_temp.tv_sec	= mpMeasurement->internal.maxeler_time_cur.tv_sec;
-		mpMeasurement->internal.maxeler_time_temp.tv_nsec	= mpMeasurement->internal.maxeler_time_cur.tv_nsec;
+		mrMeasureResource.measure(mpMsMeasurement, mThreadNum);
+		clock_gettime(CLOCK_REALTIME, &(pMsMeasurementFpga->internal.maxeler_time_cur));
+		pMsMeasurementFpga->internal.maxeler_time_temp.tv_sec	= pMsMeasurementFpga->internal.maxeler_time_cur.tv_sec;
+		pMsMeasurementFpga->internal.maxeler_time_temp.tv_nsec	= pMsMeasurementFpga->internal.maxeler_time_cur.tv_nsec;
 		
 		while (!mThreadStateStop) {
 			mMutexTimer.lock();
 			
-			if(!(skip_ms_cnt++ % mpMeasurement->maxeler_skip_ms_rate)){
-				mrMeasureResource.measure(mpMeasurement, mThreadNum);
+			if(!(skip_ms_cnt++ % pMsMeasurementFpga->maxeler_skip_ms_rate)){
+				mrMeasureResource.measure(mpMsMeasurement, mThreadNum);
 			}
 			
 			// calculated diff time
-			calcTimeDiff(&(mpMeasurement->internal.maxeler_time_cur), &(mpMeasurement->internal.maxeler_time_temp), &(mpMeasurement->internal.maxeler_time_diff), &(mpMeasurement->internal.maxeler_time_diff_double));
+			calcTimeDiff(&(pMsMeasurementFpga->internal.maxeler_time_cur), &(pMsMeasurementFpga->internal.maxeler_time_temp), &(pMsMeasurementFpga->internal.maxeler_time_diff), &(pMsMeasurementFpga->internal.maxeler_time_diff_double));
 			
 			// result: runtime
-			mpMeasurement->maxeler_time_runtime += mpMeasurement->internal.maxeler_time_diff_double;
+			pMsMeasurementFpga->maxeler_time_runtime += pMsMeasurementFpga->internal.maxeler_time_diff_double;
 			
 			// result: energy consumption
 			for (int i=0; i<MAX_NUM_POWER; ++i) {
-				mpMeasurement->maxeler_energy_acc[i] += mpMeasurement->maxeler_power_cur[i] * mpMeasurement->internal.maxeler_time_diff_double;
+				pMsMeasurementFpga->maxeler_energy_acc[i] += pMsMeasurementFpga->maxeler_power_cur[i] * pMsMeasurementFpga->internal.maxeler_time_diff_double;
 			}
 			if(Variant == FULL) {
 				// result: maximum temperatures
 				for (int i=0; i<MAX_NUM_TEMPERATURE; ++i) {
-					if (mpMeasurement->maxeler_temperature_cur[i] > mpMeasurement->maxeler_temperature_max[i]) {
-						mpMeasurement->maxeler_temperature_max[i] = mpMeasurement->maxeler_temperature_cur[i];
+					if (pMsMeasurementFpga->maxeler_temperature_cur[i] > pMsMeasurementFpga->maxeler_temperature_max[i]) {
+						pMsMeasurementFpga->maxeler_temperature_max[i] = pMsMeasurementFpga->maxeler_temperature_cur[i];
 					}
 				}
 				
 				// result: utlization
-				mpMeasurement->maxeler_util_comp_acc	+= mpMeasurement->maxeler_util_comp_cur * mpMeasurement->internal.maxeler_time_diff_double;
+				pMsMeasurementFpga->maxeler_util_comp_acc	+= pMsMeasurementFpga->maxeler_util_comp_cur * pMsMeasurementFpga->internal.maxeler_time_diff_double;
 			}
 			
 #if 0
 			for (int i=0; i<8; ++i)
-			mrLog()<< "m: " << mpMeasurement->maxeler_power_cur[i] << " mW\n";
+			mrLog()<< "m: " << pMsMeasurementFpga->maxeler_power_cur[i] << " mW\n";
 			for (int i=0; i<2; ++i)
-			mrLog()<< "t: " << mpMeasurement->maxeler_temperature_cur[i] << " \u00b0C\n";
+			mrLog()<< "t: " << pMsMeasurementFpga->maxeler_temperature_cur[i] << " \u00b0C\n";
 			mrLog()<< "\n";
 #endif
 		}
 		
 		// result: average power consumption
 		for (int i=0; i<MAX_NUM_POWER; ++i) {
-			mpMeasurement->maxeler_power_avg[i] = (mpMeasurement->maxeler_energy_acc[i]) / mpMeasurement->maxeler_time_runtime;
+			pMsMeasurementFpga->maxeler_power_avg[i] = (pMsMeasurementFpga->maxeler_energy_acc[i]) / pMsMeasurementFpga->maxeler_time_runtime;
 		}
 		
 		if(Variant == FULL) {
-			mpMeasurement->maxeler_util_comp_avg = mpMeasurement->maxeler_util_comp_acc / mpMeasurement->maxeler_time_runtime;
+			pMsMeasurementFpga->maxeler_util_comp_avg = pMsMeasurementFpga->maxeler_util_comp_acc / pMsMeasurementFpga->maxeler_time_runtime;
 		}
 		
 #ifdef DEBUG
@@ -128,24 +130,24 @@ namespace NLibMeasure {
 		mrLog.lock();
 		mrLog()
 		<< "ooo 'maxeler thread' (thread #" << mThreadNum << "):" << std::endl
-		<< "     time period                     : " << mpMeasurement->maxeler_time_runtime << " s" << std::endl;
+		<< "     time period                     : " << pMsMeasurementFpga->maxeler_time_runtime << " s" << std::endl;
 		for (int i=0; i<MAX_NUM_POWER; ++i) {
 			mrLog()
 			<< "     consumed energy (" << powerName[i] << "): "
-				<< mpMeasurement->maxeler_energy_acc[i] << " mWs" << std::endl;
+				<< pMsMeasurementFpga->maxeler_energy_acc[i] << " mWs" << std::endl;
 		}
 		for (int i=0; i<MAX_NUM_POWER; ++i) {
 			mrLog()
 			<< "     average power   (" << powerName[i] << "): "
-				<< mpMeasurement->maxeler_power_avg[i] << " mW" << std::endl;
+				<< pMsMeasurementFpga->maxeler_power_avg[i] << " mW" << std::endl;
 		}
 		for (int i=0; i<MAX_NUM_TEMPERATURE; ++i) {
 			mrLog()
 			<< "     temperature max (" << tempName[i] << "): "
-				<< mpMeasurement->maxeler_temperature_max[i] << " \u00b0C" << std::endl;
+				<< pMsMeasurementFpga->maxeler_temperature_max[i] << " \u00b0C" << std::endl;
 		}
 		mrLog()
-		<< "     utilization average             : " << mpMeasurement->maxeler_util_comp_avg << " %%" << std::endl;
+		<< "     utilization average             : " << pMsMeasurementFpga->maxeler_util_comp_avg << " %%" << std::endl;
 		mrLog.unlock();
 #endif /* DEBUG */
 		

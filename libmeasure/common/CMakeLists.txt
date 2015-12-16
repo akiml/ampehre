@@ -17,6 +17,7 @@
 #          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
 #          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
 #                   and to select between the full or light library.
+#          0.7.0 - modularised measurement struct
 #
 
 find_package(Threads)
@@ -30,7 +31,7 @@ else (SIGNALS)
 endif (SIGNALS)
 
 set(SRC_COMMON_LIBRARY
-	interface.cpp mgmt.cpp CThread.cpp CMutex.cpp CLogger.cpp CMgmt.cpp CSemaphore.cpp CMeasureThreadTimer.cpp CMeasureAbstractResource.cpp CMeasureAbstractThread.cpp CResourceLibraryHandler.cpp
+	interface.cpp mgmt.cpp list.cpp CThread.cpp CMutex.cpp CLogger.cpp CMgmt.cpp CSemaphore.cpp CMeasureThreadTimer.cpp CMeasureAbstractResource.cpp CMeasureAbstractThread.cpp CResourceLibraryHandler.cpp
 )
 
 # Full library
