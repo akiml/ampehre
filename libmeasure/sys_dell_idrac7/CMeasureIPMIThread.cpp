@@ -17,13 +17,13 @@
  *          0.2.2 - add semaphore to synchronize the start of the measurements
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 namespace NLibMeasure {
-	template <int Variant>
-	CMeasureIPMIThread<Variant>::CMeasureIPMIThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
+	template <int TVariant>
+	CMeasureIPMIThread<TVariant>::CMeasureIPMIThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
 		CMeasureAbstractThread(rLogger, rStartSem, pMeasurement, rMeasureRes)
 		{
 		mThreadType = "ipmi";
@@ -33,13 +33,13 @@ namespace NLibMeasure {
 		
 	}
 	
-	template <int Variant>
-	CMeasureIPMIThread<Variant>::~CMeasureIPMIThread() {
+	template <int TVariant>
+	CMeasureIPMIThread<TVariant>::~CMeasureIPMIThread() {
 		// nothing todo
 	}
 	
-	template <int Variant>
-	void CMeasureIPMIThread<Variant>::run(void) {
+	template <int TVariant>
+	void CMeasureIPMIThread<TVariant>::run(void) {
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
@@ -47,9 +47,9 @@ namespace NLibMeasure {
 		
 		mrLog.lock();
 		mThreadNum = CThread::sNumOfThreads++;
-		mrLog() << ">>> 'ipmi thread' (thread #" << mThreadNum << "): init" << Variant << std::endl
-				<< "     effective sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->ipmi_skip_ms_rate << " Hz / "
-				<< mTimer.getTimerMillisecond() * mpMeasurement->ipmi_skip_ms_rate << " ms" << std::endl;
+		mrLog() << ">>> 'ipmi thread' (thread #" << mThreadNum << "): init" << std::endl
+				<< "     sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->ipmi_check_for_exit_interrupts << " Hz / "
+				<< mTimer.getTimerMillisecond() * mpMeasurement->ipmi_check_for_exit_interrupts << " ms" << std::endl;
 		mrLog.unlock();
 		
 		mMutexTimer.lock();
@@ -66,7 +66,7 @@ namespace NLibMeasure {
 		
 		//static_cast<NLibMeasure::CMeasureIPMI&>(mrMeasureResource).setIPMITimeout((mpMeasurement->ipmi_time_wait.tv_nsec/1000000) + (mpMeasurement->ipmi_time_wait.tv_sec * 1000) - 10, mThreadNum);
 		uint32_t params[2];
-		params[0] = (mpMeasurement->ipmi_time_wait.tv_nsec/1000000) + (mpMeasurement->ipmi_time_wait.tv_sec * 1000) - 10;
+		params[0] = ((mpMeasurement->ipmi_time_wait.tv_nsec/1000000) + (mpMeasurement->ipmi_time_wait.tv_sec * 1000)) * mpMeasurement->ipmi_check_for_exit_interrupts - 10;
 		params[1] = mThreadNum;
 		
 		mrMeasureResource.trigger_resource_custom((void*)params);
@@ -84,8 +84,8 @@ namespace NLibMeasure {
 		while (!mThreadStateStop) {
 			mMutexTimer.lock();
 			
-			if(Variant == FULL) {
-				if(!(skip_ms_cnt++ % mpMeasurement->ipmi_skip_ms_rate)){
+			if(TVariant == VARIANT_FULL) {
+				if(!(skip_ms_cnt++ % mpMeasurement->ipmi_check_for_exit_interrupts)){
 					mrMeasureResource.measure(mpMeasurement, mThreadNum);
 				}
 				
@@ -121,7 +121,7 @@ namespace NLibMeasure {
 #endif
 		}
 		
-		if(Variant == FULL) {
+		if(TVariant == VARIANT_FULL) {
 			// result: average power consumption
 			mpMeasurement->ipmi_power_sysboard_avg	= mpMeasurement->ipmi_energy_sysboard_acc/mpMeasurement->ipmi_time_runtime;
 			mpMeasurement->ipmi_power_server_avg	= mpMeasurement->ipmi_energy_server_acc/mpMeasurement->ipmi_time_runtime;

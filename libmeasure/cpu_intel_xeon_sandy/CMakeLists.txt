@@ -14,8 +14,8 @@
 # created: 5/12/15
 # version: 0.5.1 - modularised libmeasure
 #          0.5.4 - add dynamic loading of resource specific libraries
-#          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
-#                   and to select between the full or light library.
+#          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+#                  and to select between the full or light library.
 #
 
 set(SRC_CPU_LIBRARY

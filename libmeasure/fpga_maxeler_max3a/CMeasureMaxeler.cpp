@@ -16,27 +16,27 @@
  *          0.1.1 - add functionality to force FPGA to idle
  *          0.1.9 - add FPGA utilization measurements
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 namespace NLibMeasure {
-	template <int SkipMs, int Variant>
-	CMeasureMaxeler<SkipMs, Variant>::CMeasureMaxeler(CLogger& rLogger) :
+	template <int TSkipMs, int TVariant>
+	CMeasureMaxeler<TSkipMs, TVariant>::CMeasureMaxeler(CLogger& rLogger) :
 		CMeasureAbstractResource(rLogger)
 		{
 		
 		init();
 	}
 	
-	template <int SkipMs, int Variant>
-	CMeasureMaxeler<SkipMs, Variant>::~CMeasureMaxeler() {
+	template <int TSkipMs, int TVariant>
+	CMeasureMaxeler<TSkipMs, TVariant>::~CMeasureMaxeler() {
 		destroy();
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMaxeler<SkipMs, Variant>::init(void) {
-		if(Variant==FULL) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMaxeler<TSkipMs, TVariant>::init(void) {
+		if(TVariant==VARIANT_FULL) {
 			mrLog()
 			<< ">>> 'maxeler' (full version)" << std::endl;
 		} else {
@@ -67,18 +67,18 @@ namespace NLibMeasure {
 		<< std::endl;
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMaxeler<SkipMs, Variant>::destroy(void) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMaxeler<TSkipMs, TVariant>::destroy(void) {
 		max_daemon_disconnect(mMaxDaemonFildes);
 	}
 	
-	template <int SkipMs, int Variant>
-	int CMeasureMaxeler<SkipMs, Variant>::getVariant() {
-		return Variant;
+	template <int TSkipMs, int TVariant>
+	int CMeasureMaxeler<TSkipMs, TVariant>::getVariant() {
+		return TVariant;
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMaxeler<SkipMs, Variant>::trigger_resource_custom (void* pParams) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMaxeler<TSkipMs, TVariant>::trigger_resource_custom (void* pParams) {
 		mrLog()
 		<< ">>> 'maxeler' (thread main): forcing fpga to idle." << std::endl
 		<< std::endl;
@@ -86,19 +86,19 @@ namespace NLibMeasure {
 		max_daemon_force_idle(mMaxDaemonFildes, 0);
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMaxeler<SkipMs, Variant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMaxeler<TSkipMs, TVariant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		measurePower(pMeasurement, rThreadNum);
-		if(Variant==FULL) {
-			if(!(mMeasureCounter++ % SkipMs)) {
+		if(TVariant==VARIANT_FULL) {
+			if(!(mMeasureCounter++ % TSkipMs)) {
 				measureTemperature(pMeasurement, rThreadNum);
 			}
 			measureUtilization(pMeasurement, rThreadNum);
 		}
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMaxeler<SkipMs, Variant>::measurePower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMaxeler<TSkipMs, TVariant>::measurePower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		cJSON *json_response		= NULL;
 		cJSON *json_measurements	= NULL;
 		cJSON *json_single			= NULL;
@@ -155,8 +155,8 @@ namespace NLibMeasure {
 		free(jstr_response);
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMaxeler<SkipMs, Variant>::measureTemperature(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMaxeler<TSkipMs, TVariant>::measureTemperature(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		char *response;
 		max_daemon_device_hw_monitor(mMaxDaemonFildes, 0, &response);
 		
@@ -183,8 +183,8 @@ namespace NLibMeasure {
 		free(response);
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMaxeler<SkipMs, Variant>::measureUtilization(MEASUREMENT *pMeasurement, int32_t &rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMaxeler<TSkipMs, TVariant>::measureUtilization(MEASUREMENT *pMeasurement, int32_t &rThreadNum) {
 		cJSON *json_response		= NULL;
 		cJSON *json_measurements	= NULL;
 		

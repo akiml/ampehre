@@ -16,8 +16,8 @@
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library.
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
  */
 
 #ifndef __CDATASETTINGS_HPP__
@@ -39,13 +39,13 @@ namespace NData {
 			uint32_t mMICSamplingRate;
 			uint32_t mSystemSamplingRate;
 			
-			uint32_t mCPUSkipMsRate;
-			uint32_t mGPUSkipMsRate;
-			uint32_t mFPGASkipMsRate;
-			uint32_t mMICSkipMsRate;
-			uint32_t mSystemSkipMsRate;
+			uint32_t mCPUCheckForExitInterrupts;
+			uint32_t mGPUCheckForExitInterrupts;
+			uint32_t mFPGACheckForExitInterrupts;
+			uint32_t mMICCheckForExitInterrupts;
+			uint32_t mSystemCheckForExitInterrupts;
 			
-			skip_ms_freq mSkipMsFreq;
+			skip_ms_rate mSkipMsRate;
 			
 			uint32_t mDataSamplingRate;
 			uint32_t mGUIRefreshRate;

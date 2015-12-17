@@ -21,8 +21,8 @@
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 #include <iomanip>
@@ -31,8 +31,8 @@
 #define UINT64_MAX (0xffffffffffffffff)
 
 namespace NLibMeasure {
-	template <int Variant>
-	CMeasureMSRThread<Variant>::CMeasureMSRThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
+	template <int TVariant>
+	CMeasureMSRThread<TVariant>::CMeasureMSRThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
 		CMeasureAbstractThread(rLogger, rStartSem, pMeasurement, rMeasureRes)
 		{
 		mThreadType = "msr";
@@ -41,13 +41,13 @@ namespace NLibMeasure {
 		mTimer.shareMutex(&mMutexTimer);
 	}
 	
-	template <int Variant>
-	CMeasureMSRThread<Variant>::~CMeasureMSRThread() {
+	template <int TVariant>
+	CMeasureMSRThread<TVariant>::~CMeasureMSRThread() {
 		// nothing todo
 	}
 	
-	template <int Variant>
-	void CMeasureMSRThread<Variant>::run(void) {
+	template <int TVariant>
+	void CMeasureMSRThread<TVariant>::run(void) {
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
@@ -56,8 +56,8 @@ namespace NLibMeasure {
 		mrLog.lock();
 		mThreadNum = CThread::sNumOfThreads++;
 		mrLog() << ">>> 'msr thread' (thread #" << mThreadNum << "): init" << std::endl
-				<< "     effective sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->msr_skip_ms_rate << " Hz / "
-				<< mTimer.getTimerMillisecond() * mpMeasurement->msr_skip_ms_rate << " ms" << std::endl;
+				<< "     sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->msr_check_for_exit_interrupts << " Hz / "
+				<< mTimer.getTimerMillisecond() * mpMeasurement->msr_check_for_exit_interrupts << " ms" << std::endl;
 		mrLog.unlock();
 		
 		mMutexTimer.lock();
@@ -116,7 +116,7 @@ namespace NLibMeasure {
 		while (!mThreadStateStop) {
 			mMutexTimer.lock();
 			
-			if(!(skip_ms_cnt++ % mpMeasurement->msr_skip_ms_rate)){
+			if(!(skip_ms_cnt++ % mpMeasurement->msr_check_for_exit_interrupts)){
 				mrMeasureResource.measure(mpMeasurement, mThreadNum);
 			}
 			
@@ -126,7 +126,7 @@ namespace NLibMeasure {
 			// result: runtime
 			mpMeasurement->msr_time_runtime += mpMeasurement->internal.msr_time_diff_double;
 			
-			if(Variant == FULL) {
+			if(TVariant == VARIANT_FULL) {
 				// result: frequency
 				for (int i=0; i<CPUS; ++i) {
 					for (int j=0; j<CORES; ++j) {
@@ -189,7 +189,7 @@ namespace NLibMeasure {
 				}
 			}
 			
-			if(Variant == FULL) {
+			if(TVariant == VARIANT_FULL) {
 				// result: maximum temperatures
 				for (int i=0; i<CPUS; ++i) {
 					mpMeasurement->msr_temperature_pkg_max[i]	=
@@ -231,7 +231,7 @@ namespace NLibMeasure {
 					(mpMeasurement->measure_util_active_cur + mpMeasurement->measure_util_idle_cur);
 			}
 			
-			if(Variant == FULL) {
+			if(TVariant == VARIANT_FULL) {
 				// result: memory usage
 				mpMeasurement->measure_memory_used_max	=
 					(mpMeasurement->measure_memory_cur[CPU_MEM_RAM_USED]>mpMeasurement->measure_memory_used_max) ?
@@ -268,7 +268,7 @@ namespace NLibMeasure {
 			}
 		}
 		
-		if(Variant == FULL) {
+		if(TVariant == VARIANT_FULL) {
 			// result: average frequency
 			for (int i=0; i<CPUS; ++i) {
 				for (int k=0; k<CORES; ++k) {

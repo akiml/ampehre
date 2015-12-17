@@ -61,7 +61,7 @@ void mshnw_init(MS_VERSION *version, HN_MEASUREMENT *measurements, int measureme
 	}
 
 	//Initialize Measurementsystem
-	mintern->global_ms = ms_init(version, measurements->cpu_gov, measurements->cpu_freq_min, measurements->cpu_freq_max, measurements->gpu_freq, IOC_SET_IPMI_TIMEOUT, LOW, FULL);
+	mintern->global_ms = ms_init(version, measurements->cpu_gov, measurements->cpu_freq_min, measurements->cpu_freq_max, measurements->gpu_freq, IOC_SET_IPMI_TIMEOUT, SKIP_NEVER, VARIANT_FULL);
 
 	//Initialize global Measurement
 	mintern->global_m = ms_alloc_measurement();

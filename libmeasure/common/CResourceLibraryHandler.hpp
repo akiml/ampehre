@@ -26,7 +26,7 @@
 namespace NLibMeasure {
 	class CResourceLibraryHandler{
 		public:
-			CResourceLibraryHandler(CLogger& rLogger,const std::string& rLibname, void* pParams);
+			CResourceLibraryHandler(CLogger& rLogger,const std::string& rLibname, lib_variant variant, skip_ms_rate skip_ms, void* pParams);
 			~CResourceLibraryHandler();
 			
 			void* loadFunction(const std::string& rFunctionname);
@@ -47,7 +47,7 @@ namespace NLibMeasure {
 			CLogger& mrLog;
 			
 		private:
-			void initResource(void* pParams);
+			void initResource(lib_variant variant, skip_ms_rate skip_ms, void* pParams);
 			void finiResource();
 			void* openLibrary(const std::string& rLibname);
 			void closeLibrary(void **handler);

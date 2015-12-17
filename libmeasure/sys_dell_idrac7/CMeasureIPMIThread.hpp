@@ -17,8 +17,8 @@
  *          0.2.2 - add semaphore to synchronize the start of the measurements
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library.
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
  */
 
 #ifndef __CMEASUREIPMITHREAD_HPP__
@@ -32,7 +32,7 @@
 #include "../common/CMeasureAbstractThread.hpp"
 
 namespace NLibMeasure {
- 	template <int Variant>
+ 	template <int TVariant>
 	class CMeasureIPMIThread : public CMeasureAbstractThread {
 		public:
 			CMeasureIPMIThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes);

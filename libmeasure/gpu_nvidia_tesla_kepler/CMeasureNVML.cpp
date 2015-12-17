@@ -19,13 +19,13 @@
  *          0.2.3 - add gpu_management tool and use the tool in the libmeasure
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 namespace NLibMeasure {
-	template <int SkipMs, int Variant>
-	CMeasureNVML<SkipMs, Variant>::CMeasureNVML(CLogger& rLogger, gpu_frequency gpuFrequency) :
+	template <int TSkipMs, int TVariant>
+	CMeasureNVML<TSkipMs, TVariant>::CMeasureNVML(CLogger& rLogger, gpu_frequency gpuFrequency) :
 		CMeasureAbstractResource(rLogger),
 		mGpuFrequency(gpuFrequency)
 		{
@@ -33,14 +33,14 @@ namespace NLibMeasure {
 		init();
 	}
 	
-	template <int SkipMs, int Variant>
-	CMeasureNVML<SkipMs, Variant>::~CMeasureNVML() {
+	template <int TSkipMs, int TVariant>
+	CMeasureNVML<TSkipMs, TVariant>::~CMeasureNVML() {
 		destroy();
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureNVML<SkipMs, Variant>::init(void) {
-		if(Variant == FULL) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureNVML<TSkipMs, TVariant>::init(void) {
+		if(TVariant == VARIANT_FULL) {
 			mrLog()
 			<< ">>> 'nvml' (full version)" << std::endl;
 		} else {
@@ -281,8 +281,8 @@ namespace NLibMeasure {
 		<< std::endl;
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureNVML<SkipMs, Variant>::destroy(void) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureNVML<TSkipMs, TVariant>::destroy(void) {
 		nvmlReturn_t result;
 		int rv;
 		char const* args_dis_pm[] = {"gpu_management", "-p 0", "-r", NULL};
@@ -301,13 +301,13 @@ namespace NLibMeasure {
 		}
 	}
 	
-	template <int SkipMs, int Variant>
-	int CMeasureNVML<SkipMs, Variant>::getVariant() {
-		return Variant;
+	template <int TSkipMs, int TVariant>
+	int CMeasureNVML<TSkipMs, TVariant>::getVariant() {
+		return TVariant;
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureNVML<SkipMs, Variant>::read_memory_total(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureNVML<TSkipMs, TVariant>::read_memory_total(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		nvmlReturn_t result;
 		nvmlMemory_t memory;
 		
@@ -321,8 +321,8 @@ namespace NLibMeasure {
 		pMeasurement->nvml_memory_total = (uint32_t)(memory.total >> 10);
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureNVML<SkipMs, Variant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureNVML<TSkipMs, TVariant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		nvmlReturn_t result;
 		
 		result = nvmlDeviceGetPowerUsage(mDevice, &(pMeasurement->nvml_power_cur));
@@ -333,9 +333,9 @@ namespace NLibMeasure {
 			exit(EXIT_FAILURE);
 		}
 		
-		if(Variant == FULL) {
+		if(TVariant == VARIANT_FULL) {
 			nvmlMemory_t memory;
-			if(!(mMeasureCounter++ % SkipMs)) {
+			if(!(mMeasureCounter++ % TSkipMs)) {
 				result = nvmlDeviceGetMemoryInfo(mDevice, &memory);
 				if (NVML_SUCCESS != result) {
 					mrLog.lock();
@@ -403,8 +403,8 @@ namespace NLibMeasure {
 		
 	}
 	
-	template <int SkipMs, int Variant>
-	int CMeasureNVML<SkipMs, Variant>::exec_gpu_mgmt(char* args[]){
+	template <int TSkipMs, int TVariant>
+	int CMeasureNVML<TSkipMs, TVariant>::exec_gpu_mgmt(char* args[]){
 		pid_t new_pid = 0;
 		int status_child = 1;
 

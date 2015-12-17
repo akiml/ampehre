@@ -16,27 +16,27 @@
  *          0.2.1 - add support for IPMI to the measure driver
  *          0.2.4 - add version check functionality to library, wrappers, and tools
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 namespace NLibMeasure {
-	template <int SkipMs, int Variant>
-	CMeasureIPMI<SkipMs, Variant>::CMeasureIPMI(CLogger& rLogger, uint64_t ipmi_timeout_setting) :
+	template <int TSkipMs, int TVariant>
+	CMeasureIPMI<TSkipMs, TVariant>::CMeasureIPMI(CLogger& rLogger, uint64_t ipmi_timeout_setting) :
 		CMeasureAbstractResource(rLogger),
 		mTimeoutSetting(ipmi_timeout_setting)
 		{
 		init();
 	}
 	
-	template <int SkipMs, int Variant>
-	CMeasureIPMI<SkipMs, Variant>::~CMeasureIPMI() {
+	template <int TSkipMs, int TVariant>
+	CMeasureIPMI<TSkipMs, TVariant>::~CMeasureIPMI() {
 		destroy();
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureIPMI<SkipMs, Variant>::init(void) {
-		if (Variant == FULL) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureIPMI<TSkipMs, TVariant>::init(void) {
+		if (TVariant == VARIANT_FULL) {
 			mrLog()
 			<< ">>> 'ipmi' (full version)" << std::endl;
 		} else {
@@ -66,33 +66,33 @@ namespace NLibMeasure {
 		<< std::endl;
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureIPMI<SkipMs, Variant>::destroy(void) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureIPMI<TSkipMs, TVariant>::destroy(void) {
 		close_ipmi_wrapper();
 	}
 	
-	template <int SkipMs, int Variant>
-	int CMeasureIPMI<SkipMs, Variant>::getVariant() {
-		return Variant;
+	template <int TSkipMs, int TVariant>
+	int CMeasureIPMI<TSkipMs, TVariant>::getVariant() {
+		return TVariant;
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureIPMI<SkipMs, Variant>::resetEnergyCounter(int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureIPMI<TSkipMs, TVariant>::resetEnergyCounter(int32_t& rThreadNum) {
 		measureRawMsgDellResetEnergy(rThreadNum);
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureIPMI<SkipMs, Variant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureIPMI<TSkipMs, TVariant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		measureRecordIDs(pMeasurement, rThreadNum);
 		measureRawMsgs(pMeasurement, rThreadNum);
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureIPMI<SkipMs, Variant>::measureRecordIDs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureIPMI<TSkipMs, TVariant>::measureRecordIDs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		double value = 0;
 		
-		if (Variant == FULL) {
-			if(!(mMeasureCounter % SkipMs)) {
+		if (TVariant == VARIANT_FULL) {
+			if(!(mMeasureCounter % TSkipMs)) {
 				value = getTemperature(18);
 				if(value < 0 && value != -ETIMEDOUT){
 					mrLog.lock();
@@ -125,8 +125,8 @@ namespace NLibMeasure {
 			pMeasurement->ipmi_power_sysboard_cur = value;
 		}
 		
-		if (Variant == FULL) {
-			if(!(mMeasureCounter++ % SkipMs)) {
+		if (TVariant == VARIANT_FULL) {
+			if(!(mMeasureCounter++ % TSkipMs)) {
 				value = getTemperature(153);
 				if(value < 0 && value != -ETIMEDOUT){
 					mrLog.lock();
@@ -160,14 +160,14 @@ namespace NLibMeasure {
 		}
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureIPMI<SkipMs, Variant>::measureRawMsgs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureIPMI<TSkipMs, TVariant>::measureRawMsgs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		measureRawMsgDellCumulativeEnergy(pMeasurement, rThreadNum);
 		measureRawMsgDellCurrentPower(pMeasurement, rThreadNum);
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureIPMI<SkipMs, Variant>::measureRawMsgDellResetEnergy(int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureIPMI<TSkipMs, TVariant>::measureRawMsgDellResetEnergy(int32_t& rThreadNum) {
 		int32_t completion_code;
 		
 		completion_code = dellResetEnergyCounter();
@@ -184,8 +184,8 @@ namespace NLibMeasure {
 		}
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureIPMI<SkipMs, Variant>::measureRawMsgDellCumulativeEnergy(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureIPMI<TSkipMs, TVariant>::measureRawMsgDellCumulativeEnergy(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		int32_t completion_code;
 		
 		uint32_t result_energy;
@@ -219,8 +219,8 @@ namespace NLibMeasure {
 		pMeasurement->ipmi_power_server_avg_since_reset		= result_power;
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureIPMI<SkipMs, Variant>::measureRawMsgDellCurrentPower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {	
+	template <int TSkipMs, int TVariant>
+	void CMeasureIPMI<TSkipMs, TVariant>::measureRawMsgDellCurrentPower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {	
 		int32_t completion_code;		
 		uint16_t result_power_current;
 		
@@ -242,8 +242,8 @@ namespace NLibMeasure {
 		pMeasurement->ipmi_power_server_cur = (uint32_t)result_power_current;
 	}
 	
-	template <int SkipMs, int Variant>
-    void CMeasureIPMI<SkipMs, Variant>::setIPMITimeout(uint32_t& timeout, uint32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+    void CMeasureIPMI<TSkipMs, TVariant>::setIPMITimeout(uint32_t& timeout, uint32_t& rThreadNum) {
 		int rv;
 		rv = setIPMITimeoutIOCTL(mTimeoutSetting, timeout);
 		
@@ -253,7 +253,7 @@ namespace NLibMeasure {
 			mrLog.unlock();
 		} else if(rv == ERROR_IPMI_TIMEOUT_MAX){
 			mrLog.lock();
-			mrLog() << ">>> 'ipmi thread' (thread #" << rThreadNum << "): Warning: IPMI timeout is too large. Set timeout to default." << std::endl;
+			mrLog() << ">>> 'ipmi thread' (thread #" << rThreadNum << "): Warning: IPMI timeout is too large or 0. Set timeout to default." << std::endl;
 			mrLog.unlock();
 		} else if(rv){
 			mrLog.lock();
@@ -274,8 +274,8 @@ namespace NLibMeasure {
 		mrLog.unlock();
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureIPMI<SkipMs, Variant>::trigger_resource_custom(void* pParams) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureIPMI<TSkipMs, TVariant>::trigger_resource_custom(void* pParams) {
 		uint32_t* pArgs = (uint32_t*) pParams;
 		setIPMITimeout(pArgs[0], pArgs[1]);
 	}

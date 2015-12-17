@@ -39,10 +39,10 @@ typedef struct __arguments {
 	uint32_t sample_rate_gpu;
 	uint32_t sample_rate_fpga;
 	uint32_t sample_rate_sys;
-	uint32_t skip_ms_rate_cpu;
-	uint32_t skip_ms_rate_gpu;
-	uint32_t skip_ms_rate_fpga;
-	uint32_t skip_ms_rate_sys;
+	uint32_t check_for_exit_interrupts_cpu;
+	uint32_t check_for_exit_interrupts_gpu;
+	uint32_t check_for_exit_interrupts_fpga;
+	uint32_t check_for_exit_interrupts_sys;
 	enum gpu_frequency gpu_freq;
 	enum cpu_governor cpu_gov;
 	uint32_t cpu_freq_min;
@@ -51,7 +51,7 @@ typedef struct __arguments {
 	uint32_t size;
 	uint32_t energy_loops;
 	uint64_t ipmi_timeout_setting;
-	enum skip_ms_freq skip_ms;
+	enum skip_ms_rate skip_ms;
 	enum lib_variant variant;
 } ARGUMENTS;
 

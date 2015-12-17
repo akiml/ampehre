@@ -22,9 +22,9 @@
  * The version number defined here is valid for all tools and libraries.
  */
 #define MS_MAJOR_VERSION	0
-#define MS_MINOR_VERSION	5
-#define MS_REVISION_VERSION	12
-#define MS_VERSION_STRING	"0.5.12"
+#define MS_MINOR_VERSION	6
+#define MS_REVISION_VERSION	0
+#define MS_VERSION_STRING	"0.6.0"
 
 #ifndef BUILD_DRIVER
 #include <stdint.h>

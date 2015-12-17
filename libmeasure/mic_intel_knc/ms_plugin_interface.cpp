@@ -13,8 +13,8 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/29/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -23,28 +23,26 @@
 #include "CMeasureMICThread.hpp"
 
 extern "C" {
-	void* init_resource(void* pLogger, void* pParams){
+	void* init_resource(void* pLogger, lib_variant variant, skip_ms_rate skip_ms, void* pParams){
 		NLibMeasure::CMeasureAbstractResource* pMIC;
-		lib_variant variant = *((lib_variant*) pParams);
-		skip_ms_freq skip_ms = *(skip_ms_freq*)((uint64_t*) pParams + 1);
-		
-		if(variant == FULL) {
+	
+		if(variant == VARIANT_FULL) {
 			switch(skip_ms){
-				case HIGH:
-					pMIC =  new NLibMeasure::CMeasureMIC<10, FULL>(*((NLibMeasure::CLogger*)pLogger));
+				case SKIP_PERIODIC:
+					pMIC =  new NLibMeasure::CMeasureMIC<10, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger));
 					break;
-				case LOW:
+				case SKIP_NEVER:
 				default:
-					pMIC =  new NLibMeasure::CMeasureMIC<1, FULL>(*((NLibMeasure::CLogger*)pLogger));
+					pMIC =  new NLibMeasure::CMeasureMIC<1, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger));
 			}
 		} else {
 			switch(skip_ms){
-				case HIGH:
-					pMIC =  new NLibMeasure::CMeasureMIC<10, LIGHT>(*((NLibMeasure::CLogger*)pLogger));
+				case SKIP_PERIODIC:
+					pMIC =  new NLibMeasure::CMeasureMIC<10, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger));
 					break;
-				case LOW:
+				case SKIP_NEVER:
 				default:
-					pMIC =  new NLibMeasure::CMeasureMIC<1, LIGHT>(*((NLibMeasure::CLogger*)pLogger));
+					pMIC =  new NLibMeasure::CMeasureMIC<1, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger));
 			}
 		}
 		return  (void*) pMIC;
@@ -60,10 +58,10 @@ extern "C" {
 		NLibMeasure::CMeasureAbstractThread* pMICThread;
 		NLibMeasure::CMeasureAbstractResource* pMIC = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
 		
-		if(pMIC->getVariant() == FULL) {
-			pMICThread =  new NLibMeasure::CMeasureMICThread<FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMIC);
+		if(pMIC->getVariant() == VARIANT_FULL) {
+			pMICThread =  new NLibMeasure::CMeasureMICThread<VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMIC);
 		} else {
-			pMICThread =  new NLibMeasure::CMeasureMICThread<LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMIC);
+			pMICThread =  new NLibMeasure::CMeasureMICThread<VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMIC);
 		}
 		
 		return (void*) pMICThread;

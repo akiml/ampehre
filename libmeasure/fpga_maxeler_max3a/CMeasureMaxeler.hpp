@@ -16,8 +16,8 @@
  *          0.1.1 - add functionality to force FPGA to idle
  *          0.1.9 - add FPGA utilization measurements
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library.
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
  */
 
 #ifndef __CMEASUREMAXELER_HPP__
@@ -33,7 +33,7 @@
 #include "../common/CMeasureAbstractResource.hpp"
 
 namespace NLibMeasure {
-	template <int SkipMs, int Variant>
+	template <int TSkipMs, int TVariant>
 	class CMeasureMaxeler : public CMeasureAbstractResource {
 		private:
 			int mMaxDaemonFildes;

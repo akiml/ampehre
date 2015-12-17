@@ -15,13 +15,13 @@
  * version: 0.4.0 - MIC integration into libmeasure
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 namespace NLibMeasure {
-	template <int SkipMs, int Variant>
-	CMeasureMIC<SkipMs, Variant>::CMeasureMIC(CLogger& rLogger):
+	template <int TSkipMs, int TVariant>
+	CMeasureMIC<TSkipMs, TVariant>::CMeasureMIC(CLogger& rLogger):
 		CMeasureAbstractResource(rLogger),
 		mpMicDevice(0),
 		mpMicUtilization(0)
@@ -30,14 +30,14 @@ namespace NLibMeasure {
 		init();
 	}
 	
-	template <int SkipMs, int Variant>
-	CMeasureMIC<SkipMs, Variant>::~CMeasureMIC() {
+	template <int TSkipMs, int TVariant>
+	CMeasureMIC<TSkipMs, TVariant>::~CMeasureMIC() {
 		destroy();
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMIC<SkipMs, Variant>::init(void) {	
-		if(Variant == FULL) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::init(void) {	
+		if(TVariant == VARIANT_FULL) {
 			mrLog()
 			<< ">>> 'mic' (full version)" << std::endl;
 		} else {
@@ -319,8 +319,8 @@ namespace NLibMeasure {
 		
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMIC<SkipMs, Variant>::destroy(void) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::destroy(void) {
 		int32_t status	= E_MIC_SUCCESS;
 		
 		// Close MIC device.
@@ -342,13 +342,13 @@ namespace NLibMeasure {
 		
 	}
 	
-	template <int SkipMs, int Variant>
-	int CMeasureMIC<SkipMs, Variant>::getVariant() {
-		return Variant;
+	template <int TSkipMs, int TVariant>
+	int CMeasureMIC<TSkipMs, TVariant>::getVariant() {
+		return TVariant;
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMIC<SkipMs, Variant>::read_memory_total(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::read_memory_total(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		int32_t status								= E_MIC_SUCCESS;
 		struct mic_memory_util_info *memory_info	= NULL;
 				
@@ -375,14 +375,14 @@ namespace NLibMeasure {
 		
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMIC<SkipMs, Variant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		micGetPower(pMeasurement, rThreadNum);
 		micGetUtil(pMeasurement, rThreadNum);
 		
-		if(Variant == FULL) {
+		if(TVariant == VARIANT_FULL) {
 			micGetFrequency(pMeasurement, rThreadNum);
-			if(!(mMeasureCounter++ % SkipMs)) {
+			if(!(mMeasureCounter++ % TSkipMs)) {
 				micGetMemory(pMeasurement, rThreadNum);
 				micGetTemperature(pMeasurement, rThreadNum);
 			}
@@ -390,8 +390,8 @@ namespace NLibMeasure {
 		
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMIC<SkipMs, Variant>::micGetFrequency(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::micGetFrequency(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		int32_t status						= E_MIC_SUCCESS;
 		uint32_t temp						= 0;
 		struct mic_cores_info *cores_info	= NULL;
@@ -419,7 +419,7 @@ namespace NLibMeasure {
 			exit(EXIT_FAILURE);
 		}
 		
-		if(!(mMeasureCounter % SkipMs)) {
+		if(!(mMeasureCounter % TSkipMs)) {
 			// Get information about the MIC memory.
 			status = mic_get_memory_info(mpMicDevice, &memory_info);
 			if (E_MIC_SUCCESS != status) {
@@ -444,8 +444,8 @@ namespace NLibMeasure {
 		}
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMIC<SkipMs, Variant>::micGetPower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::micGetPower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		int32_t status						= E_MIC_SUCCESS;
 		uint32_t temp						= 0;
 		struct mic_power_util_info *power	= NULL;
@@ -516,8 +516,8 @@ namespace NLibMeasure {
 		}
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMIC<SkipMs, Variant>::micGetTemperature(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::micGetTemperature(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		int32_t status						= E_MIC_SUCCESS;
 		struct mic_thermal_info *thermal	= NULL;
 		uint16_t temp						= 0;
@@ -592,8 +592,8 @@ namespace NLibMeasure {
 		}
 	}	
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMIC<SkipMs, Variant>::micGetUtil(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {  
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::micGetUtil(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {  
 		int32_t status					= E_MIC_SUCCESS;
 		
 		// Update core utilization struct.
@@ -632,8 +632,8 @@ namespace NLibMeasure {
 		}
 	}
 	
-	template <int SkipMs, int Variant>
-	void CMeasureMIC<SkipMs, Variant>::micGetMemory(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::micGetMemory(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
 		int32_t status								= E_MIC_SUCCESS;
 		struct mic_memory_util_info *memory_info	= NULL;
 		

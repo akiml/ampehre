@@ -22,8 +22,8 @@
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.5.4 - add dynamic loading of resource specific libraries
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 #include "CMgmt.hpp"
@@ -40,23 +40,21 @@ void emptySighandler(int signal) {
 }
 #endif /* __cplusplus */
 
-CMgmt::CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency, uint64_t ipmi_timeout_setting, skip_ms_freq skip_ms,  lib_variant variant) :
+CMgmt::CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency, uint64_t ipmi_timeout_setting, skip_ms_rate skip_ms_rate,  lib_variant variant) :
 	mLogger(),
 	mResources(),
 	mStartSem(),
 	mLibVariant(variant)
 	{
-	uint64_t params_cpu[]	= {mLibVariant, skip_ms, cpuGovernor, cpuFrequencyMin, cpuFrequencyMax};
-	uint64_t params_gpu[]	= {mLibVariant, skip_ms, gpuFrequency};
-	uint64_t params_fpga[]	= {mLibVariant, skip_ms};
-	uint64_t params_mic[]	= {mLibVariant, skip_ms};
-	uint64_t params_sys[]	= {mLibVariant, skip_ms, ipmi_timeout_setting};
+	uint64_t params_cpu[]	= {cpuGovernor, cpuFrequencyMin, cpuFrequencyMax};
+	uint64_t params_gpu[]	= {gpuFrequency};
+	uint64_t params_sys[]	= {ipmi_timeout_setting};
 	
-	mResources[CPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, CPU_LIB_NAME, (void*) params_cpu);
-	mResources[GPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, GPU_LIB_NAME, (void*) params_gpu);
-	mResources[FPGA] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, FPGA_LIB_NAME, (void*) params_fpga);
-	mResources[SYSTEM]	= new NLibMeasure::CResourceLibraryHandler(mLogger, SYS_LIB_NAME, (void*) params_sys);
-	mResources[MIC] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, MIC_LIB_NAME, (void*) params_mic);
+	mResources[CPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, CPU_LIB_NAME, mLibVariant, skip_ms_rate, (void*) params_cpu);
+	mResources[GPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, GPU_LIB_NAME, mLibVariant, skip_ms_rate, (void*) params_gpu);
+	mResources[FPGA] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, FPGA_LIB_NAME, mLibVariant, skip_ms_rate, NULL);
+	mResources[SYSTEM]	= new NLibMeasure::CResourceLibraryHandler(mLogger, SYS_LIB_NAME, mLibVariant, skip_ms_rate, (void*) params_sys);
+	mResources[MIC] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, MIC_LIB_NAME, mLibVariant, skip_ms_rate, NULL);
 	
 	mpActionStart	= NULL;
 	mpActionStop	= NULL;
@@ -74,7 +72,7 @@ CMgmt::~CMgmt() {
 	}
 	
 #ifdef SIGNALS
-	if(mLibVariant == FULL){
+	if(mLibVariant == VARIANT_FULL){
 		if (mpActionStart) {
 			sigaction(SIGUSR1, 0, 0);
 			delete mpActionStart;

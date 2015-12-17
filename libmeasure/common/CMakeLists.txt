@@ -15,8 +15,8 @@
 # version: 0.5.1 - modularised libmeasure
 #          0.5.3 - add abstract measure and abstract measure thread
 #          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
-#          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
-#                   and to select between the full or light library.
+#          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+#                  and to select between the full or light library.
 #
 
 find_package(Threads)

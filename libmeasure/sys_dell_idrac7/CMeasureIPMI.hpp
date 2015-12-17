@@ -15,8 +15,8 @@
  * version: 0.1.0 - initial implementation
  *          0.2.1 - add support for IPMI to the measure driver
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library.
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
  */
 
 #ifndef __CMEASUREIPMI_HPP__
@@ -28,7 +28,7 @@
 #include "../../include/ms_ipmiwrapper.h"
 
 namespace NLibMeasure {
-	template <int SkipMs, int Variant>
+	template <int TSkipMs, int TVariant>
 	class CMeasureIPMI : public CMeasureAbstractResource{
 		private: 
 			uint64_t mTimeoutSetting;

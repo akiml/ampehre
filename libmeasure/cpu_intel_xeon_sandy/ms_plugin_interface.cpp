@@ -13,8 +13,8 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/27/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -23,29 +23,26 @@
 #include "CMeasureMSRThread.hpp"
 
 extern "C" {
-	void* init_resource(void* pLogger, void* pParams){
+	void* init_resource(void* pLogger, lib_variant variant, skip_ms_rate skip_ms, void* pParams){
 		NLibMeasure::CMeasureAbstractResource* pMSR;
-		lib_variant variant = *((lib_variant*) pParams);
-		skip_ms_freq skip_ms = *(skip_ms_freq*)((uint64_t*) pParams + 1);
-		pParams = (uint64_t*) pParams + 2; 
-		
-		if(variant == FULL) {
+	
+		if(variant == VARIANT_FULL) {
 			switch(skip_ms){
-				case HIGH:
-					pMSR =  new NLibMeasure::CMeasureMSR<10, FULL>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+				case SKIP_PERIODIC:
+					pMSR =  new NLibMeasure::CMeasureMSR<10, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
 					break;
-				case LOW:
+				case SKIP_NEVER:
 				default:
-					pMSR = new NLibMeasure::CMeasureMSR<1, FULL>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+					pMSR = new NLibMeasure::CMeasureMSR<1, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
 			}
 		} else {
 			switch(skip_ms){
-				case HIGH:
-					pMSR =  new NLibMeasure::CMeasureMSR<10, LIGHT>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+				case SKIP_PERIODIC:
+					pMSR =  new NLibMeasure::CMeasureMSR<10, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
 					break;
-				case LOW:
+				case SKIP_NEVER:
 				default:
-					pMSR = new NLibMeasure::CMeasureMSR<1, LIGHT>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
+					pMSR = new NLibMeasure::CMeasureMSR<1, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), (cpu_governor)((uint64_t*)pParams)[0], ((uint64_t*)pParams)[1], ((uint64_t*)pParams)[2]);
 			}
 		}
 		return  (void*) pMSR;
@@ -61,10 +58,10 @@ extern "C" {
 		NLibMeasure::CMeasureAbstractThread* pMSRThread;
 		NLibMeasure::CMeasureAbstractResource* pMSR = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
 		
-		if(pMSR->getVariant() == FULL) {
-			pMSRThread =  new NLibMeasure::CMeasureMSRThread<FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMSR);
+		if(pMSR->getVariant() == VARIANT_FULL) {
+			pMSRThread =  new NLibMeasure::CMeasureMSRThread<VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMSR);
 		} else {
-			pMSRThread =  new NLibMeasure::CMeasureMSRThread<LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMSR);
+			pMSRThread =  new NLibMeasure::CMeasureMSRThread<VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMSR);
 		}
 		
 		return (void*) pMSRThread;

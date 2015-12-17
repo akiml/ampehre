@@ -22,8 +22,8 @@
  *          0.4.0 - MIC integration into libmeasure
  *          0.5.1 - modularised libmeasure
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 #include "../../include/measurement.h"
@@ -38,15 +38,17 @@
 
 #define UINT64_MAX (0xffffffffffffffff)
 
+static void divide_sampling_rates(struct timespec *time_wait, uint64_t sec, uint64_t nsec, uint32_t check_for_exit_interrupts);
+
 MSYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max,
-				 gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting, enum skip_ms_freq skip_ms, enum lib_variant variant) {
+				 gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting, enum skip_ms_rate skip_ms_rate, enum lib_variant variant) {
 	
 	if((version->major != MS_MAJOR_VERSION) || (version->minor != MS_MINOR_VERSION) || (version->revision != MS_REVISION_VERSION)){
 		std::cout << "!!! 'mgmt' (thread main): Error: Wrong version number! libmeasure version " << MS_MAJOR_VERSION << "." << MS_MINOR_VERSION << "." << MS_REVISION_VERSION  << " is called from tool with version" << version->major << "." << version->minor << "." << version->revision  << " (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	
-	CMgmt *mgmt = new CMgmt(cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq, ipmi_timeout_setting, skip_ms, variant);
+	CMgmt *mgmt = new CMgmt(cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq, ipmi_timeout_setting, skip_ms_rate, variant);
 	
 	return (MSYSTEM *)mgmt;
 }
@@ -77,11 +79,11 @@ MEASUREMENT* ms_alloc_measurement(void) {
 	measurement->mic_time_wait.tv_sec		= UINT64_MAX;
 	measurement->mic_time_wait.tv_nsec		= UINT64_MAX;
 	
-	measurement->msr_skip_ms_rate		= 1;
-	measurement->nvml_skip_ms_rate		= 1;
-	measurement->maxeler_skip_ms_rate	= 1;
-	measurement->ipmi_skip_ms_rate		= 1;
-	measurement->mic_skip_ms_rate		= 1;
+	measurement->msr_check_for_exit_interrupts		= 1;
+	measurement->nvml_check_for_exit_interrupts		= 1;
+	measurement->maxeler_check_for_exit_interrupts	= 1;
+	measurement->ipmi_check_for_exit_interrupts		= 1;
+	measurement->mic_check_for_exit_interrupts		= 1;
 	
 	return measurement;
 }
@@ -90,36 +92,31 @@ void ms_free_measurement(MEASUREMENT* measurement) {
 	delete measurement;
 }
 
-void ms_set_timer(MEASUREMENT* measurement, int flag, uint64_t sec, uint64_t nsec, uint32_t skip_ms_rate) {
-	if(skip_ms_rate <= 0){
-		skip_ms_rate = 1;
+void ms_set_timer(MEASUREMENT* measurement, int flag, uint64_t sec, uint64_t nsec, uint32_t check_for_exit_interrupts) {
+	if(check_for_exit_interrupts <= 0){
+		check_for_exit_interrupts = 1;
 	}
 	
 	switch (flag) {
 		case CPU:
-			measurement->msr_time_wait.tv_sec		= sec;
-			measurement->msr_time_wait.tv_nsec		= nsec;
-			measurement->msr_skip_ms_rate			= skip_ms_rate;
+			divide_sampling_rates(&(measurement->msr_time_wait), sec, nsec, check_for_exit_interrupts);
+			measurement->msr_check_for_exit_interrupts = check_for_exit_interrupts;
 			break;
 		case GPU:
-			measurement->nvml_time_wait.tv_sec		= sec;
-			measurement->nvml_time_wait.tv_nsec		= nsec;
-			measurement->nvml_skip_ms_rate			= skip_ms_rate;
+			divide_sampling_rates(&(measurement->nvml_time_wait), sec, nsec, check_for_exit_interrupts);
+			measurement->nvml_check_for_exit_interrupts = check_for_exit_interrupts;
 			break;
 		case FPGA:
-			measurement->maxeler_time_wait.tv_sec	= sec;
-			measurement->maxeler_time_wait.tv_nsec	= nsec;
-			measurement->maxeler_skip_ms_rate		= skip_ms_rate;
+			divide_sampling_rates(&(measurement->maxeler_time_wait), sec, nsec, check_for_exit_interrupts);
+			measurement->maxeler_check_for_exit_interrupts = check_for_exit_interrupts;
 			break;
 		case SYSTEM:
-			measurement->ipmi_time_wait.tv_sec		= sec;
-			measurement->ipmi_time_wait.tv_nsec		= nsec;
-			measurement->ipmi_skip_ms_rate			= skip_ms_rate;
+			divide_sampling_rates(&(measurement->ipmi_time_wait), sec, nsec, check_for_exit_interrupts);
+			measurement->ipmi_check_for_exit_interrupts = check_for_exit_interrupts;
 			break;
 		case MIC:
-			measurement->mic_time_wait.tv_sec		= sec;
-			measurement->mic_time_wait.tv_nsec		= nsec;
-			measurement->mic_skip_ms_rate			= skip_ms_rate;
+			divide_sampling_rates(&(measurement->mic_time_wait), sec, nsec, check_for_exit_interrupts);
+			measurement->mic_check_for_exit_interrupts = check_for_exit_interrupts;
 			break;
 		default:
 			std::cout << "!!! 'mgmt' (thread main): Error: cannot set measurement timer. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
@@ -227,4 +224,10 @@ void ms_reg_sighandler_stop(MSYSTEM *mgmt, void(*signal_handler)(int)) {
 #else /* NOT(SIGNALS) */
 	std::cout << "!!! 'mgmt' (thread main): Warning: You attempt to add signal handlers to a libmeasure compiled without this feature. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 #endif /* SIGNALS */
+}
+
+static void divide_sampling_rates(struct timespec *time_wait, uint64_t sec, uint64_t nsec, uint32_t check_for_exit_interrupts) {
+	time_wait->tv_sec = sec / check_for_exit_interrupts;
+	time_wait->tv_nsec = ((double)sec / check_for_exit_interrupts - time_wait->tv_sec) * 1000000000 + nsec / check_for_exit_interrupts;
+	
 }

@@ -13,8 +13,8 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/29/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -23,29 +23,26 @@
 #include "CMeasureIPMIThread.hpp"
 
 extern "C" {
-	void* init_resource(void* pLogger, void* pParams){
+	void* init_resource(void* pLogger, lib_variant variant, skip_ms_rate skip_ms, void* pParams){
 		NLibMeasure::CMeasureAbstractResource* pIPMI;
-		lib_variant variant = *((lib_variant*) pParams);
-		skip_ms_freq skip_ms = *(skip_ms_freq*)((uint64_t*) pParams + 1);
-		pParams = (uint64_t*) pParams + 2; 
-		
-		if(variant == FULL) {
+	
+		if(variant == VARIANT_FULL) {
 			switch(skip_ms){
-				case HIGH:
-					pIPMI =  new NLibMeasure::CMeasureIPMI<10, FULL>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+				case SKIP_PERIODIC:
+					pIPMI =  new NLibMeasure::CMeasureIPMI<10, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
 					break;
-				case LOW:
+				case SKIP_NEVER:
 				default:
-					pIPMI =  new NLibMeasure::CMeasureIPMI<1, FULL>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+					pIPMI =  new NLibMeasure::CMeasureIPMI<1, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
 			}
 		} else {
 			switch(skip_ms){
-				case HIGH:
-					pIPMI =  new NLibMeasure::CMeasureIPMI<10, LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+				case SKIP_PERIODIC:
+					pIPMI =  new NLibMeasure::CMeasureIPMI<10, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
 					break;
-				case LOW:
+				case SKIP_NEVER:
 				default:
-					pIPMI =  new NLibMeasure::CMeasureIPMI<1, LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+					pIPMI =  new NLibMeasure::CMeasureIPMI<1, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
 			}
 		}
 		return  (void*) pIPMI;
@@ -61,10 +58,10 @@ extern "C" {
 		NLibMeasure::CMeasureAbstractThread* pIPMIThread;
 		NLibMeasure::CMeasureAbstractResource* pIPMI = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
 		
-		if(pIPMI->getVariant() == FULL) {
-			pIPMIThread =  new NLibMeasure::CMeasureIPMIThread<FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pIPMI);
+		if(pIPMI->getVariant() == VARIANT_FULL) {
+			pIPMIThread =  new NLibMeasure::CMeasureIPMIThread<VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pIPMI);
 		} else {
-			pIPMIThread =  new NLibMeasure::CMeasureIPMIThread<LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pIPMI);
+			pIPMIThread =  new NLibMeasure::CMeasureIPMIThread<VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pIPMI);
 		}
 		
 		return (void*) pIPMIThread;

@@ -71,7 +71,7 @@ void run(ARGUMENTS *settings) {
 static void init_measuring_system(ARGUMENTS *settings, MSYSTEM **ms, MEASUREMENT **m) {
 	// Initialize library and measuring system
 	MS_VERSION version = { .major = MS_MAJOR_VERSION, .minor = MS_MINOR_VERSION, .revision = MS_REVISION_VERSION };
-	*ms	= ms_init(&version, settings->cpu_gov, settings->cpu_freq_min, settings->cpu_freq_max, settings->gpu_freq, settings->ipmi_timeout_setting, LOW, FULL);
+	*ms	= ms_init(&version, settings->cpu_gov, settings->cpu_freq_min, settings->cpu_freq_max, settings->gpu_freq, settings->ipmi_timeout_setting, settings->skip_ms, settings->variant);
 	
 	// Allocate and initialize measurement structs
 	*m	= ms_alloc_measurement();
@@ -80,23 +80,23 @@ static void init_measuring_system(ARGUMENTS *settings, MSYSTEM **ms, MEASUREMENT
 	
 	// Set timer for measurement m
 	if (settings->idle_measurements & MEASURE_IDLE_CPU) {
-		ms_set_timer(*m, CPU   , settings->sample_rate_cpu /1000, (settings->sample_rate_cpu %1000) * 1000000, settings->skip_ms_rate_cpu);
+		ms_set_timer(*m, CPU   , settings->sample_rate_cpu /1000, (settings->sample_rate_cpu %1000) * 1000000, settings->check_for_exit_interrupts_cpu);
 		active_measures |= CPU;
 	}
 	if (settings->idle_measurements & MEASURE_IDLE_GPU) {
-		ms_set_timer(*m, GPU   , settings->sample_rate_gpu /1000, (settings->sample_rate_gpu %1000) * 1000000, settings->skip_ms_rate_gpu);
+		ms_set_timer(*m, GPU   , settings->sample_rate_gpu /1000, (settings->sample_rate_gpu %1000) * 1000000, settings->check_for_exit_interrupts_gpu);
 		active_measures |= GPU;
 	}
 	if (settings->idle_measurements & MEASURE_IDLE_FPGA) {
-		ms_set_timer(*m, FPGA  , settings->sample_rate_fpga/1000, (settings->sample_rate_fpga%1000) * 1000000, settings->skip_ms_rate_fpga);
+		ms_set_timer(*m, FPGA  , settings->sample_rate_fpga/1000, (settings->sample_rate_fpga%1000) * 1000000, settings->check_for_exit_interrupts_fpga);
 		active_measures |= FPGA;
 	}
 	if (settings->idle_measurements & MEASURE_IDLE_MIC) {
-		ms_set_timer(*m, MIC   , settings->sample_rate_mic /1000, (settings->sample_rate_mic %1000) * 1000000, settings->skip_ms_rate_mic);
+		ms_set_timer(*m, MIC   , settings->sample_rate_mic /1000, (settings->sample_rate_mic %1000) * 1000000, settings->check_for_exit_interrupts_mic);
 		active_measures |= MIC;
 	}
 	if (settings->idle_measurements & MEASURE_IDLE_SYS) {
-		ms_set_timer(*m, SYSTEM, settings->sample_rate_sys /1000, (settings->sample_rate_sys %1000) * 1000000, settings->skip_ms_rate_sys);
+		ms_set_timer(*m, SYSTEM, settings->sample_rate_sys /1000, (settings->sample_rate_sys %1000) * 1000000, settings->check_for_exit_interrupts_sys);
 		active_measures |= SYSTEM;
 	}
 	

@@ -28,8 +28,8 @@
  *          0.4.0 - MIC integration into libmeasure
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library.
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
  */
 
 #ifndef __MEASUREMENT_H__
@@ -104,15 +104,15 @@
 
 typedef void MSYSTEM;
 
-enum skip_ms_freq {
-	HIGH,
-	LOW,
-	SKIP_MS_FREQUENCIES
+enum skip_ms_rate {
+	SKIP_PERIODIC,
+	SKIP_NEVER,
+	SKIP_MS_RATES
 };
 
 enum lib_variant {
-	LIGHT,
-	FULL,
+	VARIANT_LIGHT,
+	VARIANT_FULL,
 	VARIANTS
 };
 
@@ -233,7 +233,7 @@ typedef struct __measurement {
 	
 	// NVML
 	struct timespec nvml_time_wait;
-	uint32_t nvml_skip_ms_rate;
+	uint32_t nvml_check_for_exit_interrupts;
 	
 	double nvml_time_runtime;
 	
@@ -268,7 +268,7 @@ typedef struct __measurement {
 	
 	// Maxeler
 	struct timespec maxeler_time_wait;
-	uint32_t maxeler_skip_ms_rate;
+	uint32_t maxeler_check_for_exit_interrupts;
 	
 	double maxeler_time_runtime;
 	
@@ -285,7 +285,7 @@ typedef struct __measurement {
 	
 	// IPMI
 	struct timespec ipmi_time_wait;
-	uint32_t ipmi_skip_ms_rate;
+	uint32_t ipmi_check_for_exit_interrupts;
 	
 	double ipmi_time_runtime;
 	
@@ -306,7 +306,7 @@ typedef struct __measurement {
 	
 	// MSR
 	struct timespec msr_time_wait;
-	uint32_t msr_skip_ms_rate;
+	uint32_t msr_check_for_exit_interrupts;
 	
 	double msr_time_runtime;
 	
@@ -346,7 +346,7 @@ typedef struct __measurement {
 	
 	// MIC
 	struct timespec mic_time_wait;
-	uint32_t mic_skip_ms_rate;
+	uint32_t mic_check_for_exit_interrupts;
 	
 	double mic_time_runtime;
 	
@@ -487,14 +487,14 @@ double server_power_avg(MEASUREMENT *measurement);
 
 // Library management functions
 MSYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max,
-				 enum gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting, enum skip_ms_freq skip_ms, enum lib_variant variant);
+				 enum gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting, enum skip_ms_rate skip_ms_rate, enum lib_variant variant);
 void ms_init_fpga_force_idle(MSYSTEM *mgmt);
 void ms_fini(MSYSTEM *mgmt);
 
 MEASUREMENT *ms_alloc_measurement(void);
 void ms_free_measurement(MEASUREMENT *measurement);
 
-void ms_set_timer(MEASUREMENT *measurement, int flag, uint64_t sec, uint64_t nsec, uint32_t skip_ms_rate);
+void ms_set_timer(MEASUREMENT *measurement, int flag, uint64_t sec, uint64_t nsec, uint32_t check_for_exit_interrupts);
 
 void ms_init_measurement(MSYSTEM *msystem, MEASUREMENT *measurement, int flags);
 void ms_fini_measurement(MSYSTEM *msystem, MEASUREMENT* measurement);

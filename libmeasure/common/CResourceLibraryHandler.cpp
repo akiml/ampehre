@@ -17,14 +17,14 @@
 
 #include "CResourceLibraryHandler.hpp"
 
-typedef void* (*init_res_t)(void*, void*);
+typedef void* (*init_res_t)(void*, lib_variant, skip_ms_rate, void*);
 typedef void (*fini_res_t)(void*);
 
 typedef void* (*init_measure_thread_t)(void*, void*, MEASUREMENT*, void* pMeasureRes);
 typedef void (*fini_measure_thread_t)(void*);
 
 namespace NLibMeasure{
-	CResourceLibraryHandler::CResourceLibraryHandler(CLogger& rLogger,const std::string& rLibname, void* pParams):
+	CResourceLibraryHandler::CResourceLibraryHandler(CLogger& rLogger,const std::string& rLibname, lib_variant variant, skip_ms_rate skip_ms, void* pParams):
 		mpLibhandler(0),
 		mpResource(0),
 		mpResourceThread(0),
@@ -32,7 +32,7 @@ namespace NLibMeasure{
 		mrLog(rLogger)
 		{
 			mpLibhandler = openLibrary(rLibname);
-			initResource(pParams);
+			initResource(variant, skip_ms, pParams);
 	}
 
 	CResourceLibraryHandler::~CResourceLibraryHandler() {
@@ -52,10 +52,10 @@ namespace NLibMeasure{
 		return mpResource;
 	}
 	
-	void CResourceLibraryHandler::initResource(void* pParams) {
+	void CResourceLibraryHandler::initResource(lib_variant variant, skip_ms_rate skip_ms, void* pParams) {
 		init_res_t init_resource = (init_res_t) loadFunction("init_resource");
 		
-		mpResource = (NLibMeasure::CMeasureAbstractResource*) init_resource((void*)(&mrLog), pParams);
+		mpResource = (NLibMeasure::CMeasureAbstractResource*) init_resource((void*)(&mrLog), variant, skip_ms, pParams);
 	}
 
     

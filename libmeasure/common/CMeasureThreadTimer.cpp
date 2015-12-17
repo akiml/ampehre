@@ -16,8 +16,8 @@
  *          0.2.2 - add semaphore to synchronize the start of the measurements
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 #include "CMeasureThreadTimer.hpp"
@@ -89,7 +89,7 @@ namespace NLibMeasure {
 		mThreadNum = CThread::sNumOfThreads++;
 		mrLog()
 		<< ">>> '" << mThreadName << "' (thread #" << mThreadNum << "): init" << std::endl
-		<< "     sampling rate: " << mTimerHertz << " Hz / " << mTimerMilliSecond << " ms" << std::endl;
+		<< "     check for exit rate: " << mTimerHertz << " Hz / " << mTimerMilliSecond << " ms" << std::endl;
 		mrLog.unlock();
 		
 		mrStartSem.wait();

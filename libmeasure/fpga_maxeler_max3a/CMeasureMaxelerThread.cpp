@@ -18,13 +18,13 @@
  *          0.2.2 - add semaphore to synchronize the start of the measurements
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 namespace NLibMeasure {
-	template <int Variant>
-	CMeasureMaxelerThread<Variant>::CMeasureMaxelerThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
+	template <int TVariant>
+	CMeasureMaxelerThread<TVariant>::CMeasureMaxelerThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes) :
 		CMeasureAbstractThread(rLogger, rStartSem, pMeasurement, rMeasureRes)
 		{
 		mThreadType = "maxeler";
@@ -33,13 +33,13 @@ namespace NLibMeasure {
 		mTimer.shareMutex(&mMutexTimer);
 	}
 	
-	template <int Variant>
-	CMeasureMaxelerThread<Variant>::~CMeasureMaxelerThread() {
+	template <int TVariant>
+	CMeasureMaxelerThread<TVariant>::~CMeasureMaxelerThread() {
 		// nothing todo
 	}
 	
-	template <int Variant>
-	void CMeasureMaxelerThread<Variant>::run(void) {
+	template <int TVariant>
+	void CMeasureMaxelerThread<TVariant>::run(void) {
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
@@ -48,8 +48,8 @@ namespace NLibMeasure {
 		mrLog.lock();
 		mThreadNum = CThread::sNumOfThreads++;
 		mrLog() << ">>> 'maxeler thread' (thread #" << mThreadNum << "): init" << std::endl
-				<< "     effective sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->maxeler_skip_ms_rate << " Hz / "
-				<< mTimer.getTimerMillisecond() * mpMeasurement->maxeler_skip_ms_rate << " ms" << std::endl;
+				<< "     sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->maxeler_check_for_exit_interrupts << " Hz / "
+				<< mTimer.getTimerMillisecond() * mpMeasurement->maxeler_check_for_exit_interrupts << " ms" << std::endl;
 		mrLog.unlock();
 		
 		mMutexTimer.lock();
@@ -77,7 +77,7 @@ namespace NLibMeasure {
 		while (!mThreadStateStop) {
 			mMutexTimer.lock();
 			
-			if(!(skip_ms_cnt++ % mpMeasurement->maxeler_skip_ms_rate)){
+			if(!(skip_ms_cnt++ % mpMeasurement->maxeler_check_for_exit_interrupts)){
 				mrMeasureResource.measure(mpMeasurement, mThreadNum);
 			}
 			
@@ -91,7 +91,7 @@ namespace NLibMeasure {
 			for (int i=0; i<MAX_NUM_POWER; ++i) {
 				mpMeasurement->maxeler_energy_acc[i] += mpMeasurement->maxeler_power_cur[i] * mpMeasurement->internal.maxeler_time_diff_double;
 			}
-			if(Variant == FULL) {
+			if(TVariant == VARIANT_FULL) {
 				// result: maximum temperatures
 				for (int i=0; i<MAX_NUM_TEMPERATURE; ++i) {
 					if (mpMeasurement->maxeler_temperature_cur[i] > mpMeasurement->maxeler_temperature_max[i]) {
@@ -117,7 +117,7 @@ namespace NLibMeasure {
 			mpMeasurement->maxeler_power_avg[i] = (mpMeasurement->maxeler_energy_acc[i]) / mpMeasurement->maxeler_time_runtime;
 		}
 		
-		if(Variant == FULL) {
+		if(TVariant == VARIANT_FULL) {
 			mpMeasurement->maxeler_util_comp_avg = mpMeasurement->maxeler_util_comp_acc / mpMeasurement->maxeler_time_runtime;
 		}
 		

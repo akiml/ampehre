@@ -13,8 +13,8 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/29/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -23,28 +23,26 @@
 #include "CMeasureMaxelerThread.hpp"
 
 extern "C" {
-	void* init_resource(void* pLogger, void* pParams){
+	void* init_resource(void* pLogger, lib_variant variant, skip_ms_rate skip_ms, void* pParams){
 		NLibMeasure::CMeasureAbstractResource* pMaxeler;
-		lib_variant variant = *((lib_variant*) pParams);
-		skip_ms_freq skip_ms = *(skip_ms_freq*)((uint64_t*) pParams + 1);
-		
-		if(variant == FULL) {
+	
+		if(variant == VARIANT_FULL) {
 			switch(skip_ms){
-				case HIGH:
-					pMaxeler =  new NLibMeasure::CMeasureMaxeler<10, FULL>(*((NLibMeasure::CLogger*)pLogger));
+				case SKIP_PERIODIC:
+					pMaxeler =  new NLibMeasure::CMeasureMaxeler<10, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger));
 					break;
-				case LOW:
+				case SKIP_NEVER:
 				default:
-					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, FULL>(*((NLibMeasure::CLogger*)pLogger));
+					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger));
 			}
 		} else {
 			switch(skip_ms){
-				case HIGH:
-					pMaxeler =  new NLibMeasure::CMeasureMaxeler<10, LIGHT>(*((NLibMeasure::CLogger*)pLogger));
+				case SKIP_PERIODIC:
+					pMaxeler =  new NLibMeasure::CMeasureMaxeler<10, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger));
 					break;
-				case LOW:
+				case SKIP_NEVER:
 				default:
-					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, LIGHT>(*((NLibMeasure::CLogger*)pLogger));
+					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger));
 			}
 		}
 		return  (void*) pMaxeler;
@@ -60,10 +58,10 @@ extern "C" {
 		NLibMeasure::CMeasureAbstractThread* pMaxelerThread;
 		NLibMeasure::CMeasureAbstractResource* pMaxeler = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
 		
-		if(pMaxeler->getVariant() == FULL) {
-			pMaxelerThread =  new NLibMeasure::CMeasureMaxelerThread<FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMaxeler);
+		if(pMaxeler->getVariant() == VARIANT_FULL) {
+			pMaxelerThread =  new NLibMeasure::CMeasureMaxelerThread<VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMaxeler);
 		} else {
-			pMaxelerThread =  new NLibMeasure::CMeasureMaxelerThread<LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMaxeler);
+			pMaxelerThread =  new NLibMeasure::CMeasureMaxelerThread<VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMaxeler);
 		}
 			
 		return (void*) pMaxelerThread;

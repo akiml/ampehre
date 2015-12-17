@@ -16,13 +16,13 @@
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 namespace NLibMeasure {
-	template <int Variant>
-	CMeasureMICThread<Variant>::CMeasureMICThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes):
+	template <int TVariant>
+	CMeasureMICThread<TVariant>::CMeasureMICThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes):
 		CMeasureAbstractThread(rLogger, rStartSem, pMeasurement, rMeasureRes)
 		{
 		mThreadType = "mic";
@@ -31,13 +31,13 @@ namespace NLibMeasure {
 		mTimer.shareMutex(&mMutexTimer);
 	}
 	
-	template <int Variant>
-	CMeasureMICThread<Variant>::~CMeasureMICThread() {
+	template <int TVariant>
+	CMeasureMICThread<TVariant>::~CMeasureMICThread() {
 		// nothing todo
 	}
 	
-	template <int Variant>
-	void CMeasureMICThread<Variant>::run(void) {
+	template <int TVariant>
+	void CMeasureMICThread<TVariant>::run(void) {
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
@@ -46,8 +46,8 @@ namespace NLibMeasure {
 		mrLog.lock();
 		mThreadNum = CThread::sNumOfThreads++;
 		mrLog() << ">>> 'mic thread' (thread #" << mThreadNum << "): init" << std::endl
-				<< "     effective sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->mic_skip_ms_rate << " Hz / "
-				<< mTimer.getTimerMillisecond() * mpMeasurement->mic_skip_ms_rate << " ms" << std::endl;
+				<< "     sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->mic_check_for_exit_interrupts << " Hz / "
+				<< mTimer.getTimerMillisecond() * mpMeasurement->mic_check_for_exit_interrupts << " ms" << std::endl;
 		mrLog.unlock();
 		
 		mMutexTimer.lock();
@@ -91,8 +91,8 @@ namespace NLibMeasure {
 		while(!mThreadStateStop) {
 			mMutexTimer.lock();
 			
-			if(Variant == FULL) {			
-				if(!(skip_ms_cnt++ % mpMeasurement->mic_skip_ms_rate)){
+			if(TVariant == VARIANT_FULL) {			
+				if(!(skip_ms_cnt++ % mpMeasurement->mic_check_for_exit_interrupts)){
 					mrMeasureResource.measure(mpMeasurement, mThreadNum);
 				}
 				
@@ -147,7 +147,7 @@ namespace NLibMeasure {
 			}
 		}
 		
-		if(Variant == FULL) {
+		if(TVariant == VARIANT_FULL) {
 			// result: average power consumption
 			for (int i=0; i<MIC_NUM_POWER; i++) {
 				mpMeasurement->mic_power_avg[i] = (double) mpMeasurement->mic_energy_acc[i] / mpMeasurement->mic_time_runtime;

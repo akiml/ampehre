@@ -16,8 +16,8 @@
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library.
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
  */
 
 #include "CDataLibrary.hpp"
@@ -66,22 +66,22 @@ namespace NData {
 										  mrSettings.mCpuFrequencyMaximum,
 										  mrSettings.mGpuFrequency,
 										  IOC_SET_AND_LOCK_IPMI_TIMEOUT,
-										  mrSettings.mSkipMsFreq,
+										  mrSettings.mSkipMsRate,
 										  mrSettings.mLibVariant
  										);
 		
 		mpMSMeasurement			= ms_alloc_measurement();
 		
 		ms_set_timer(mpMSMeasurement, CPU   , mrSettings.mCPUSamplingRate   /1000,
-					 (mrSettings.mCPUSamplingRate   %1000) * 1000000, mrSettings.mCPUSkipMsRate);
+					 (mrSettings.mCPUSamplingRate   %1000) * 1000000, mrSettings.mCPUCheckForExitInterrupts);
 		ms_set_timer(mpMSMeasurement, GPU   , mrSettings.mGPUSamplingRate   /1000,
-					 (mrSettings.mGPUSamplingRate   %1000) * 1000000, mrSettings.mGPUSkipMsRate);
+					 (mrSettings.mGPUSamplingRate   %1000) * 1000000, mrSettings.mGPUCheckForExitInterrupts);
 		ms_set_timer(mpMSMeasurement, FPGA  , mrSettings.mFPGASamplingRate  /1000,
-					 (mrSettings.mFPGASamplingRate  %1000) * 1000000, mrSettings.mFPGASkipMsRate);
+					 (mrSettings.mFPGASamplingRate  %1000) * 1000000, mrSettings.mFPGACheckForExitInterrupts);
 		ms_set_timer(mpMSMeasurement, MIC , mrSettings.mMICSamplingRate     /1000,
-					 (mrSettings.mMICSamplingRate   %1000) * 1000000, mrSettings.mMICSkipMsRate);
+					 (mrSettings.mMICSamplingRate   %1000) * 1000000, mrSettings.mMICCheckForExitInterrupts);
 		ms_set_timer(mpMSMeasurement, SYSTEM, mrSettings.mSystemSamplingRate/1000,
-					 (mrSettings.mSystemSamplingRate%1000) * 1000000, mrSettings.mSystemSkipMsRate);
+					 (mrSettings.mSystemSamplingRate%1000) * 1000000, mrSettings.mSystemCheckForExitInterrupts);
 		
 		ms_init_measurement(mpMSSystem, mpMSMeasurement, ALL);
 	}

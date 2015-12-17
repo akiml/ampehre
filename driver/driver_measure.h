@@ -18,8 +18,8 @@
  *          0.2.1 - add support for IPMI to the measure driver
  *          0.3.3 - add cpu memory info to measure driver
  *          0.5.7 - add automatic detection of ipmi device to measure driver
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library.
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
  */
 
 #ifndef __DRIVER_MEASURE_H__

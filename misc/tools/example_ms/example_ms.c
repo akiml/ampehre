@@ -17,8 +17,8 @@
  *          0.1.15 - make CPU frequency settable
  *          0.2.4 - add version check functionality to library, wrappers, and tools
  *          0.4.0 - MIC integration into libmeasure
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library.
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
  */
 
 #include <stdio.h>
@@ -30,7 +30,7 @@
 int main(int argc, char **argv) {
 	// Initialize library and measurement system
 	MS_VERSION version = { .major = MS_MAJOR_VERSION, .minor = MS_MINOR_VERSION, .revision = MS_REVISION_VERSION };
-	MSYSTEM *ms = ms_init(&version, CPU_GOVERNOR_ONDEMAND, 2000000, 2500000, GPU_FREQUENCY_CUR, IOC_SET_IPMI_TIMEOUT, HIGH, FULL);
+	MSYSTEM *ms = ms_init(&version, CPU_GOVERNOR_ONDEMAND, 2000000, 2500000, GPU_FREQUENCY_CUR, IOC_SET_IPMI_TIMEOUT, SKIP_PERIODIC, VARIANT_FULL);
 	
 	// Allocate measurement structs
 	MEASUREMENT *m1 = ms_alloc_measurement();

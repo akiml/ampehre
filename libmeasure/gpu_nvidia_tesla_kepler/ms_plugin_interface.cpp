@@ -13,8 +13,8 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/29/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library. 
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -23,29 +23,26 @@
 #include "CMeasureNVMLThread.hpp"
 
 extern "C" {
-	void* init_resource(void* pLogger, void* pParams){
+	void* init_resource(void* pLogger, lib_variant variant, skip_ms_rate skip_ms, void* pParams){
 		NLibMeasure::CMeasureAbstractResource* pNVML;
-		lib_variant variant = *((lib_variant*) pParams);
-		skip_ms_freq skip_ms = *(skip_ms_freq*)((uint64_t*) pParams + 1);
-		pParams = (uint64_t*) pParams + 2; 
-		
-		if(variant == FULL) {
+	
+		if(variant == VARIANT_FULL) {
 			switch(skip_ms){
-				case HIGH:
-					pNVML =  new NLibMeasure::CMeasureNVML<10, FULL>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
+				case SKIP_PERIODIC:
+					pNVML =  new NLibMeasure::CMeasureNVML<10, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
 					break;
-				case LOW:
+				case SKIP_NEVER:
 				default:
-					pNVML =  new NLibMeasure::CMeasureNVML<1, FULL>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
+					pNVML =  new NLibMeasure::CMeasureNVML<1, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
 			}
 		}else {
 			switch(skip_ms){
-				case HIGH:
-					pNVML =  new NLibMeasure::CMeasureNVML<10, LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
+				case SKIP_PERIODIC:
+					pNVML =  new NLibMeasure::CMeasureNVML<10, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
 					break;
-				case LOW:
+				case SKIP_NEVER:
 				default:
-					pNVML =  new NLibMeasure::CMeasureNVML<1, LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
+					pNVML =  new NLibMeasure::CMeasureNVML<1, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((gpu_frequency*)pParams));
 			}
 		}
 		return  (void*) pNVML;
@@ -61,10 +58,10 @@ extern "C" {
 		NLibMeasure::CMeasureAbstractThread* pNVMLThread;
 		NLibMeasure::CMeasureAbstractResource* pNVML = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
 		
-		if(pNVML->getVariant() == FULL) {
-			pNVMLThread =  new NLibMeasure::CMeasureNVMLThread<FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pNVML);
+		if(pNVML->getVariant() == VARIANT_FULL) {
+			pNVMLThread =  new NLibMeasure::CMeasureNVMLThread<VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pNVML);
 		} else {
-			pNVMLThread =  new NLibMeasure::CMeasureNVMLThread<LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pNVML);
+			pNVMLThread =  new NLibMeasure::CMeasureNVMLThread<VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pNVML);
 		}
 		
 		return (void*) pNVMLThread;

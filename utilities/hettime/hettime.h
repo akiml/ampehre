@@ -18,8 +18,8 @@
  *          0.1.15 - make CPU frequency settable
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.4.0 - MIC integration into libmeasure
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library.
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
  */
 
 #ifndef __HETTIME_H__
@@ -56,18 +56,18 @@ typedef struct __arguments {
 	uint32_t sample_rate_fpga;
 	uint32_t sample_rate_sys;
 	uint32_t sample_rate_mic;
-	uint32_t skip_ms_rate_cpu;
-	uint32_t skip_ms_rate_gpu;
-	uint32_t skip_ms_rate_fpga;
-	uint32_t skip_ms_rate_sys;
-	uint32_t skip_ms_rate_mic;
+	uint32_t check_for_exit_interrupts_cpu;
+	uint32_t check_for_exit_interrupts_gpu;
+	uint32_t check_for_exit_interrupts_fpga;
+	uint32_t check_for_exit_interrupts_sys;
+	uint32_t check_for_exit_interrupts_mic;
 	enum gpu_frequency gpu_freq;
 	enum cpu_governor cpu_gov;
 	uint64_t cpu_freq_min;
 	uint64_t cpu_freq_max;
 	int ush_client;
 	uint64_t ipmi_timeout_setting;
-	enum skip_ms_freq skip_ms;
+	enum skip_ms_rate skip_ms;
 	enum lib_variant variant;
 } ARGUMENTS;
 

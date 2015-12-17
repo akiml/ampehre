@@ -13,8 +13,8 @@
 % author: Achim Lösch (achim.loesch@upb.de)
 % created: 7/24/14
 % version: 0.5.8 - change project name to ampehre
-%          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
-%                   and to select between the full or light library. 
+%          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+%                  and to select between the full or light library. 
 %
 
 \section{Software Framework}\label{sec:SoftwareArchitecture}
@@ -287,7 +287,7 @@ As we already mentioned in Section \ref{sec:BuildInstallInstructions}, it is pos
 \pagebreak
 
 \subsection{Modular Expendability}
-The existing modules fit perfectly to our heterogeneous node but it is very unlikely that someone uses a system with the same hardware resources. Therefore the modular software architecture can be extended by additional modules for new or different resources. In the following section, we explain how new modules must be implemented and what programmers have to modify in the \texttt{libms\_common.so} to add a new module. Since you must modify the code of \texttt{libms\_common.so}, this shared object is not really resource-independent at the moment. In one of our next future releases, we will address this issue, so that programmers must only provide a plugin without any changes to other code segments of Ampehre. \added[id=al]{Since version 0.5.12 we use C++ templates in all of our modules to provide an easily adjustable measuring framework as introduced in Section \ref{sec:SoftwareArchitecture}. In the following sections we describe how to add a new resource to libmeasure. This includes how to use the introduced templates in your individual extension as well.} The following list shows all files and classes of the libmeasure which have to be edited or added.
+The existing modules fit perfectly to our heterogeneous node but it is very unlikely that someone uses a system with the same hardware resources. Therefore the modular software architecture can be extended by additional modules for new or different resources. In the following section, we explain how new modules must be implemented and what programmers have to modify in the \texttt{libms\_common.so} to add a new module. Since you must modify the code of \texttt{libms\_common.so}, this shared object is not really resource-independent at the moment. In one of our next future releases, we will address this issue, so that programmers must only provide a plugin without any changes to other code segments of Ampehre. \added[id=al]{Since version 0.6.0 we use C++ templates in all of our modules to provide an easily adjustable measuring framework as introduced in Section \ref{sec:SoftwareArchitecture}. In the following sections we describe how to add a new resource to libmeasure. This includes how to use the introduced templates in your individual extension as well.} The following list shows all files and classes of the libmeasure which have to be edited or added.
 
 \begin{itemize}
 	\item \textbf{resource-specific module:}

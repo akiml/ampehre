@@ -19,8 +19,8 @@
  *          0.2.1 - add support for IPMI to the measure driver
  *          0.3.3 - add cpu memory info to measure driver
  *          0.5.7 - add automatic detection of ipmi device to measure driver
- *          0.5.12 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
- *                   and to select between the full or light library.
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
  */
 
 #include "driver_measure.h"
@@ -577,7 +577,7 @@ static long driver_ioctl(struct file *f, unsigned int request, unsigned long arg
 				mutex_unlock(&ioctl_mutex);
 				return -EACCES;
 			}
-			if(new_timeout > IPMI_MAX_TIMEOUT){
+			if(new_timeout > IPMI_MAX_TIMEOUT || new_timeout == 0){
 				ipmi_timeout = IPMI_MAX_TIMEOUT;
 				return ERROR_IPMI_TIMEOUT_MAX;
 				mutex_unlock(&ioctl_mutex);
@@ -592,7 +592,7 @@ static long driver_ioctl(struct file *f, unsigned int request, unsigned long arg
 				mutex_unlock(&ioctl_mutex);
 				return -EACCES;
 			}
-			if(new_timeout > IPMI_MAX_TIMEOUT){
+			if(new_timeout > IPMI_MAX_TIMEOUT || new_timeout == 0){
 				ipmi_timeout = IPMI_MAX_TIMEOUT;
 				mutex_unlock(&ioctl_mutex);
 				return ERROR_IPMI_TIMEOUT_MAX;
