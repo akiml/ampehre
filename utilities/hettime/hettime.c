@@ -296,17 +296,17 @@ static void print_help(char **argv, ARGUMENTS *std_settings) {
 			break;
 	}	
 	
-	size_t skip_ms_rate_string_size = 4;
+	size_t skip_ms_rate_string_size = 8;
 	char skip_ms_rate_string[skip_ms_rate_string_size+1];
 	memset(skip_ms_rate_string, 0, skip_ms_rate_string_size+1);
 	
 	switch (std_settings->skip_ms) {
 		case SKIP_PERIODIC:
-			strncpy(skip_ms_rate_string, "periodic", 4);
+			strncpy(skip_ms_rate_string, "periodic", 8);
 			break;
 		case SKIP_NEVER:
 		default:
-			strncpy(skip_ms_rate_string, "never", 3);
+			strncpy(skip_ms_rate_string, "never", 5);
 			break;
 	}
 	
