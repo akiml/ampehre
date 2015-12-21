@@ -21,6 +21,7 @@
  *          0.4.0 - MIC integration into libmeasure
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
+ *          0.6.1 - add json printer to hettime
  */
 
 #include <stdlib.h>
@@ -206,6 +207,19 @@ static void print(ARGUMENTS *settings, MEASUREMENT *m, EXEC_TIME *time) {
 		
 		fflush(csv);
 		fclose(csv);
+	}
+	
+	if (NULL != settings->json_filename) {
+		FILE *json = fopen(settings->json_filename, "w");
+		if (NULL == json) {
+			LOG_ERROR("Cannot open file to write.");
+			return;
+		}
+		
+		print_json(json, settings, m);
+		
+		fflush(json);
+		fclose(json);
 	}
 	
 	if (NULL == settings->ostream_filename) {

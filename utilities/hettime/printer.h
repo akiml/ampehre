@@ -14,6 +14,7 @@
  * created: 2/26/14
  * version: 0.3.1 - add correlation example application
  *          0.5.6 - extended hettime csv printer
+ *          0.6.1 - add json printer to hettime
  */
 
 #ifndef __PRINTER_H__
@@ -32,5 +33,6 @@
 
 void print_ostream(FILE *file, ARGUMENTS* settings, MEASUREMENT *m, EXEC_TIME *exec_time);
 void print_csv(FILE *csv, ARGUMENTS* settings, MEASUREMENT *m, EXEC_TIME *exec_time);
+void print_json(FILE *json, ARGUMENTS *settings, MEASUREMENT *m);
 
 #endif /* __PRINTER_H__ */
