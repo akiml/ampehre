@@ -17,6 +17,7 @@
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __CMEASUREIPMI_HPP__
@@ -39,16 +40,16 @@ namespace NLibMeasure {
 		private:
 			void init(void);
 			void destroy(void);
-			void measureRecordIDs(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
-			void measureRawMsgs(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
+			void measureRecordIDs(MS_MEASUREMENT_SYS *pMsMeasurementSys, int32_t& rThreadNum);
+			void measureRawMsgs(MS_MEASUREMENT_SYS *pMsMeasurementSys, int32_t& rThreadNum);
 			void measureRawMsgDellResetEnergy(int32_t& rThreadNum);
-			void measureRawMsgDellCumulativeEnergy(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
-			void measureRawMsgDellCurrentPower(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
+			void measureRawMsgDellCumulativeEnergy(MS_MEASUREMENT_SYS *pMsMeasurementSys, int32_t& rThreadNum);
+			void measureRawMsgDellCurrentPower(MS_MEASUREMENT_SYS *pMsMeasurementSys, int32_t& rThreadNum);
 			void resetEnergyCounter(int32_t& rThreadNum);
 			void setIPMITimeout(uint32_t& timeout, uint32_t& rThreadNum);
 			
 		public:
-			void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
+			void measure(void *pMsMeasurement, int32_t& rThreadNum);
 			void trigger_resource_custom(void* pParams);
 			int getVariant();
 	};

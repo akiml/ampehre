@@ -18,6 +18,7 @@
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __CMEASUREMIC_HPP__
@@ -41,15 +42,15 @@ namespace NLibMeasure {
 			void init(void);
 			void destroy(void);
 			
-			void micGetPower(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
-			void micGetTemperature(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
-			void micGetFrequency(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
-			void micGetUtil(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
-			void micGetMemory(MEASUREMENT *pMeasurement, int32_t &rThreadNum);
+			void micGetPower(MS_MEASUREMENT_MIC *pMsMeasurementMic, int32_t& rThreadNum);
+			void micGetTemperature(MS_MEASUREMENT_MIC *pMsMeasurementMic, int32_t& rThreadNum);
+			void micGetFrequency(MS_MEASUREMENT_MIC *pMsMeasurementMic, int32_t& rThreadNum);
+			void micGetUtil(MS_MEASUREMENT_MIC *pMsMeasurementMic, int32_t& rThreadNum);
+			void micGetMemory(MS_MEASUREMENT_MIC *pMsMeasurementMic, int32_t &rThreadNum);
 		
 		public:
-			void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
-			void read_memory_total(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
+			void measure(void *pMsMeasurement, int32_t& rThreadNum);
+			void read_memory_total(void *pMsMeasurement, int32_t& rThreadNum);
 			int getVariant();
 	};
 }

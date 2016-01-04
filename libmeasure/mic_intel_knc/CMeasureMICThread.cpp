@@ -18,16 +18,17 @@
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library. 
+ *          0.7.0 - modularised measurement struct 
  */
 
 namespace NLibMeasure {
 	template <int TVariant>
-	CMeasureMICThread<TVariant>::CMeasureMICThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes):
-		CMeasureAbstractThread(rLogger, rStartSem, pMeasurement, rMeasureRes)
+	CMeasureMICThread<TVariant>::CMeasureMICThread(CLogger& rLogger, CSemaphore& rStartSem, void* pMsMeasurement, CMeasureAbstractResource& rMeasureRes):
+		CMeasureAbstractThread(rLogger, rStartSem, pMsMeasurement, rMeasureRes)
 		{
 		mThreadType = "mic";
 		mTimer.setThreadName("mic timer");
-		mTimer.setTimer(&(pMeasurement->mic_time_wait));
+		mTimer.setTimer(&(((MS_MEASUREMENT_MIC *)pMsMeasurement)->mic_time_wait));
 		mTimer.shareMutex(&mMutexTimer);
 	}
 	
@@ -38,6 +39,7 @@ namespace NLibMeasure {
 	
 	template <int TVariant>
 	void CMeasureMICThread<TVariant>::run(void) {
+		MS_MEASUREMENT_MIC *pMsMeasurementMic = (MS_MEASUREMENT_MIC *) mpMsMeasurement;
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
@@ -46,160 +48,160 @@ namespace NLibMeasure {
 		mrLog.lock();
 		mThreadNum = CThread::sNumOfThreads++;
 		mrLog() << ">>> 'mic thread' (thread #" << mThreadNum << "): init" << std::endl
-				<< "     sampling rate: " << mTimer.getTimerHertz() / mpMeasurement->mic_check_for_exit_interrupts << " Hz / "
-				<< mTimer.getTimerMillisecond() * mpMeasurement->mic_check_for_exit_interrupts << " ms" << std::endl;
+				<< "     sampling rate: " << mTimer.getTimerHertz() / pMsMeasurementMic->mic_check_for_exit_interrupts << " Hz / "
+				<< mTimer.getTimerMillisecond() * pMsMeasurementMic->mic_check_for_exit_interrupts << " ms" << std::endl;
 		mrLog.unlock();
 		
 		mMutexTimer.lock();
 		
 		//initialize some values
-		mpMeasurement->mic_time_runtime = 0.0;
+		pMsMeasurementMic->mic_time_runtime = 0.0;
 		for (int i=0; i<MIC_NUM_POWER; i++) {
-			mpMeasurement->mic_energy_acc[i] = 0.0;
+			pMsMeasurementMic->mic_energy_acc[i] = 0.0;
 		}
 		for (int i=0; i<MIC_NUM_TEMPERATURE; i++){
-			mpMeasurement->mic_temperature_max[i] = 0;
+			pMsMeasurementMic->mic_temperature_max[i] = 0;
 		}
 		for (int i=0; i<MIC_NUM_UTIL; i++){
-			mpMeasurement->mic_util_acc[i] = 	0;
+			pMsMeasurementMic->mic_util_acc[i] = 	0;
 		}
-		mpMeasurement->mic_util_avg = 			0.0;
-		mpMeasurement->mic_util_active_cur = 	0.0;
-		mpMeasurement->mic_util_idle_cur = 		0.0;
-		mpMeasurement->mic_util_avg_cur = 		0.0;
-		mpMeasurement->mic_freq_core_acc =		0.0;
-		mpMeasurement->mic_freq_mem_acc = 		0.0;
-		mpMeasurement->mic_memory_free_max = 	0;
-		mpMeasurement->mic_memory_used_max =	0;
+		pMsMeasurementMic->mic_util_avg = 			0.0;
+		pMsMeasurementMic->mic_util_active_cur = 	0.0;
+		pMsMeasurementMic->mic_util_idle_cur = 		0.0;
+		pMsMeasurementMic->mic_util_avg_cur = 		0.0;
+		pMsMeasurementMic->mic_freq_core_acc =		0.0;
+		pMsMeasurementMic->mic_freq_mem_acc = 		0.0;
+		pMsMeasurementMic->mic_memory_free_max = 	0;
+		pMsMeasurementMic->mic_memory_used_max =	0;
 		
-		mrMeasureResource.read_memory_total(mpMeasurement, mThreadNum);
+		mrMeasureResource.read_memory_total(mpMsMeasurement, mThreadNum);
 		
 		mpMutexStart->unlock();
 		
 		mrStartSem.wait();
 		
 		// first initial measurement (no energy consumption calculated, store current time stamp)
-		mrMeasureResource.measure(mpMeasurement, mThreadNum);
-		clock_gettime(CLOCK_REALTIME, &(mpMeasurement->internal.mic_time_cur));
-		mpMeasurement->internal.mic_time_temp.tv_sec = mpMeasurement->internal.mic_time_cur.tv_sec;
-		mpMeasurement->internal.mic_time_temp.tv_nsec = mpMeasurement->internal.mic_time_cur.tv_nsec;
+		mrMeasureResource.measure(mpMsMeasurement, mThreadNum);
+		clock_gettime(CLOCK_REALTIME, &(pMsMeasurementMic->internal.mic_time_cur));
+		pMsMeasurementMic->internal.mic_time_temp.tv_sec = pMsMeasurementMic->internal.mic_time_cur.tv_sec;
+		pMsMeasurementMic->internal.mic_time_temp.tv_nsec = pMsMeasurementMic->internal.mic_time_cur.tv_nsec;
 		
 		for (int i=0; i<MIC_NUM_UTIL; i++){
-			mpMeasurement->internal.mic_util_temp[i] = mpMeasurement->internal.mic_util_cur[i];
+			pMsMeasurementMic->internal.mic_util_temp[i] = pMsMeasurementMic->internal.mic_util_cur[i];
 		}
 		
 		while(!mThreadStateStop) {
 			mMutexTimer.lock();
 			
 			if(TVariant == VARIANT_FULL) {			
-				if(!(skip_ms_cnt++ % mpMeasurement->mic_check_for_exit_interrupts)){
-					mrMeasureResource.measure(mpMeasurement, mThreadNum);
+				if(!(skip_ms_cnt++ % pMsMeasurementMic->mic_check_for_exit_interrupts)){
+					mrMeasureResource.measure(mpMsMeasurement, mThreadNum);
 				}
 				
 				// calculated diff time
-				calcTimeDiff(&(mpMeasurement->internal.mic_time_cur), &(mpMeasurement->internal.mic_time_temp), &(mpMeasurement->internal.mic_time_diff), &(mpMeasurement->internal.mic_time_diff_double));
+				calcTimeDiff(&(pMsMeasurementMic->internal.mic_time_cur), &(pMsMeasurementMic->internal.mic_time_temp), &(pMsMeasurementMic->internal.mic_time_diff), &(pMsMeasurementMic->internal.mic_time_diff_double));
 				
 				// result: runtime
-				mpMeasurement->mic_time_runtime += mpMeasurement->internal.mic_time_diff_double;
+				pMsMeasurementMic->mic_time_runtime += pMsMeasurementMic->internal.mic_time_diff_double;
 				
 				// result: "accumulated frequencies"
-				mpMeasurement->mic_freq_core_acc += mpMeasurement->mic_freq_core_cur * mpMeasurement->internal.mic_time_diff_double;
-				mpMeasurement->mic_freq_mem_acc += mpMeasurement->mic_freq_mem_cur * mpMeasurement->internal.mic_time_diff_double;
+				pMsMeasurementMic->mic_freq_core_acc += pMsMeasurementMic->mic_freq_core_cur * pMsMeasurementMic->internal.mic_time_diff_double;
+				pMsMeasurementMic->mic_freq_mem_acc += pMsMeasurementMic->mic_freq_mem_cur * pMsMeasurementMic->internal.mic_time_diff_double;
 				
 				// result: energy consumption
 				for (int i=0; i<MIC_NUM_POWER; i++) {
-					mpMeasurement->mic_energy_acc[i] += (double)mpMeasurement->mic_power_cur[i] * mpMeasurement->internal.mic_time_diff_double;
+					pMsMeasurementMic->mic_energy_acc[i] += (double)pMsMeasurementMic->mic_power_cur[i] * pMsMeasurementMic->internal.mic_time_diff_double;
 				}
 				
 				// result: maximum temperatures
 				for (int i=0; i<MIC_NUM_TEMPERATURE; i++) {
-					if (mpMeasurement->mic_temperature_cur[i] > mpMeasurement->mic_temperature_max[i]) {
-						mpMeasurement->mic_temperature_max[i] = mpMeasurement->mic_temperature_cur[i];
+					if (pMsMeasurementMic->mic_temperature_cur[i] > pMsMeasurementMic->mic_temperature_max[i]) {
+						pMsMeasurementMic->mic_temperature_max[i] = pMsMeasurementMic->mic_temperature_cur[i];
 					}
 				}
 				
 				// result: utilization
 				for (int i=0; i<MIC_NUM_UTIL; i++){
-					mpMeasurement->mic_util_cur[i] = mpMeasurement->internal.mic_util_cur[i] - mpMeasurement->internal.mic_util_temp[i];
-					mpMeasurement->mic_util_acc[i] += mpMeasurement->mic_util_cur[i];
+					pMsMeasurementMic->mic_util_cur[i] = pMsMeasurementMic->internal.mic_util_cur[i] - pMsMeasurementMic->internal.mic_util_temp[i];
+					pMsMeasurementMic->mic_util_acc[i] += pMsMeasurementMic->mic_util_cur[i];
 					
-					mpMeasurement->internal.mic_util_temp[i] = mpMeasurement->internal.mic_util_cur[i];
+					pMsMeasurementMic->internal.mic_util_temp[i] = pMsMeasurementMic->internal.mic_util_cur[i];
 				}
 				
-				mpMeasurement->mic_util_active_cur = (double)(
-					mpMeasurement->mic_util_cur[SYS_SUM] +
-					mpMeasurement->mic_util_cur[NICE_SUM] +
-					mpMeasurement->mic_util_cur[USER_SUM]);
-				mpMeasurement->mic_util_idle_cur = ((double)
-					mpMeasurement->mic_util_cur[IDLE_SUM]);
-				mpMeasurement->mic_util_avg_cur =
-					(mpMeasurement->mic_util_active_cur * 100.0) /
-					(mpMeasurement->mic_util_active_cur + mpMeasurement->mic_util_idle_cur);
+				pMsMeasurementMic->mic_util_active_cur = (double)(
+					pMsMeasurementMic->mic_util_cur[SYS_SUM] +
+					pMsMeasurementMic->mic_util_cur[NICE_SUM] +
+					pMsMeasurementMic->mic_util_cur[USER_SUM]);
+				pMsMeasurementMic->mic_util_idle_cur = ((double)
+					pMsMeasurementMic->mic_util_cur[IDLE_SUM]);
+				pMsMeasurementMic->mic_util_avg_cur =
+					(pMsMeasurementMic->mic_util_active_cur * 100.0) /
+					(pMsMeasurementMic->mic_util_active_cur + pMsMeasurementMic->mic_util_idle_cur);
 					
 				// result: memory usage
-				mpMeasurement->mic_memory_used_max		=
-					(mpMeasurement->mic_memory_used_cur>mpMeasurement->mic_memory_used_max) ?
-					mpMeasurement->mic_memory_used_cur : mpMeasurement->mic_memory_used_max;
+				pMsMeasurementMic->mic_memory_used_max		=
+					(pMsMeasurementMic->mic_memory_used_cur>pMsMeasurementMic->mic_memory_used_max) ?
+					pMsMeasurementMic->mic_memory_used_cur : pMsMeasurementMic->mic_memory_used_max;
 					
-				mpMeasurement->mic_memory_free_max		=
-					(mpMeasurement->mic_memory_free_cur>mpMeasurement->mic_memory_free_max) ?
-					mpMeasurement->mic_memory_free_cur : mpMeasurement->mic_memory_free_max;
+				pMsMeasurementMic->mic_memory_free_max		=
+					(pMsMeasurementMic->mic_memory_free_cur>pMsMeasurementMic->mic_memory_free_max) ?
+					pMsMeasurementMic->mic_memory_free_cur : pMsMeasurementMic->mic_memory_free_max;
 			}
 		}
 		
 		if(TVariant == VARIANT_FULL) {
 			// result: average power consumption
 			for (int i=0; i<MIC_NUM_POWER; i++) {
-				mpMeasurement->mic_power_avg[i] = (double) mpMeasurement->mic_energy_acc[i] / mpMeasurement->mic_time_runtime;
+				pMsMeasurementMic->mic_power_avg[i] = (double) pMsMeasurementMic->mic_energy_acc[i] / pMsMeasurementMic->mic_time_runtime;
 			}
 			
 			//result: average frequencies
-			mpMeasurement->mic_freq_core_avg = mpMeasurement->mic_freq_core_acc / mpMeasurement->mic_time_runtime;
-			mpMeasurement->mic_freq_mem_avg = mpMeasurement->mic_freq_mem_acc / mpMeasurement->mic_time_runtime;
+			pMsMeasurementMic->mic_freq_core_avg = pMsMeasurementMic->mic_freq_core_acc / pMsMeasurementMic->mic_time_runtime;
+			pMsMeasurementMic->mic_freq_mem_avg = pMsMeasurementMic->mic_freq_mem_acc / pMsMeasurementMic->mic_time_runtime;
 			
 			// result average utilization
-			mpMeasurement->mic_util_active_total =
-				mpMeasurement->mic_util_acc[SYS_SUM] +
-				mpMeasurement->mic_util_acc[NICE_SUM] +
-				mpMeasurement->mic_util_acc[USER_SUM];
-			mpMeasurement->mic_util_idle_total = mpMeasurement->mic_util_acc[IDLE_SUM];
+			pMsMeasurementMic->mic_util_active_total =
+				pMsMeasurementMic->mic_util_acc[SYS_SUM] +
+				pMsMeasurementMic->mic_util_acc[NICE_SUM] +
+				pMsMeasurementMic->mic_util_acc[USER_SUM];
+			pMsMeasurementMic->mic_util_idle_total = pMsMeasurementMic->mic_util_acc[IDLE_SUM];
 			
-			mpMeasurement->mic_util_active_avg = ((double)mpMeasurement->mic_util_active_total) * S_PER_JIFFY / MIC_CORES / MIC_THREADS;
-			mpMeasurement->mic_util_idle_avg = ((double)mpMeasurement->mic_util_idle_total)* S_PER_JIFFY / MIC_CORES / MIC_THREADS;
+			pMsMeasurementMic->mic_util_active_avg = ((double)pMsMeasurementMic->mic_util_active_total) * S_PER_JIFFY / MIC_CORES / MIC_THREADS;
+			pMsMeasurementMic->mic_util_idle_avg = ((double)pMsMeasurementMic->mic_util_idle_total)* S_PER_JIFFY / MIC_CORES / MIC_THREADS;
 			
-			mpMeasurement->mic_util_avg = (mpMeasurement->mic_util_active_total * 100.0) / 
-				(mpMeasurement->mic_util_active_total + mpMeasurement->mic_util_idle_total);
+			pMsMeasurementMic->mic_util_avg = (pMsMeasurementMic->mic_util_active_total * 100.0) / 
+				(pMsMeasurementMic->mic_util_active_total + pMsMeasurementMic->mic_util_idle_total);
 		}
 		
 #ifdef DEBUG
 		mrLog.lock();
 		mrLog()
 		<< "ooo 'mic thread' (thread #" << mThreadNum << "):" << std::endl
-		<< "     time period            : " << mpMeasurement->mic_time_runtime << " s" << std::endl
-		<< "     consumed energy (PCIE) : " << mpMeasurement->mic_energy_acc[MIC_PCIE] << " mWs" << std::endl
-		<< "     consumed energy (C2X3) : " << mpMeasurement->mic_energy_acc[MIC_C2X3] << " mWs" << std::endl
-		<< "     consumed energy (C2X4) : " << mpMeasurement->mic_energy_acc[MIC_C2X4] << " mWs" << std::endl
-		<< "     consumed energy (VCCP) : " << mpMeasurement->mic_energy_acc[MIC_VCCP] << " mWs" << std::endl
-		<< "     consumed energy (VDDG) : " << mpMeasurement->mic_energy_acc[MIC_VDDG] << " mWs" << std::endl
-		<< "     consumed energy (VDDQ) : " << mpMeasurement->mic_energy_acc[MIC_VDDQ] << " mWs" << std::endl
-		<< "     consumed energy (TOTAL): " << mpMeasurement->mic_energy_acc[MIC_POWER] << " mWs" << std::endl
-		<< "     average power (PCIE)   : " << mpMeasurement->mic_power_avg[MIC_PCIE] << " mW" << std::endl
-		<< "     average power (C2X3)   : " << mpMeasurement->mic_power_avg[MIC_C2X3] << " mW" << std::endl
-		<< "     average power (C2X4)   : " << mpMeasurement->mic_power_avg[MIC_C2X4] << " mW" << std::endl
-		<< "     average power (VCCP)   : " << mpMeasurement->mic_power_avg[MIC_VCCP] << " mW" << std::endl
-		<< "     average power (VDDG)   : " << mpMeasurement->mic_power_avg[MIC_VDDG] << " mW" << std::endl
-		<< "     average power (VDDQ)   : " << mpMeasurement->mic_power_avg[MIC_VDDQ] << " mW" << std::endl
-		<< "     average power (TOTAL)  : " << mpMeasurement->mic_power_avg[MIC_POWER] << " mW" << std::endl
-		<< "     max temperature (DIE)  : " << mpMeasurement->mic_temperature_max[MIC_DIE_TEMP] << " \u00b0C" << std::endl
-		<< "     max temperature (GDDR)  : " << mpMeasurement->mic_temperature_max[MIC_GDDR_TEMP] << " \u00b0C" << std::endl
-		<< "     max temperature (FAN IN): " << mpMeasurement->mic_temperature_max[MIC_FAN_IN_TEMP] << " \u00b0C" << std::endl
-		<< "     max temperature (FAN OUT): " << mpMeasurement->mic_temperature_max[MIC_FAN_OUT_TEMP] << " \u00b0C" << std::endl
-		<< "     max temperature (VCCP)  : " << mpMeasurement->mic_temperature_max[MIC_VCCP_TEMP] << " \u00b0C" << std::endl
-		<< "     max temperature (VDDG)  : " << mpMeasurement->mic_temperature_max[MIC_VDDG_TEMP] << " \u00b0C" << std::endl
-		<< "     max temperature (VDDQ)  : " << mpMeasurement->mic_temperature_max[MIC_VDDQ_TEMP] << " \u00b0C" << std::endl
-		<< "     average core frequency  : " << mpMeasurement->mic_freq_core_avg << " MHz" << std::endl
-		<< "     average memory frequency: " << mpMeasurement->mic_freq_mem_avg << " MHz" << std::endl
-		<< "     average utilization     : " << mpMeasurement->mic_util_avg << " %%" << std::endl;
+		<< "     time period            : " << pMsMeasurementMic->mic_time_runtime << " s" << std::endl
+		<< "     consumed energy (PCIE) : " << pMsMeasurementMic->mic_energy_acc[MIC_PCIE] << " mWs" << std::endl
+		<< "     consumed energy (C2X3) : " << pMsMeasurementMic->mic_energy_acc[MIC_C2X3] << " mWs" << std::endl
+		<< "     consumed energy (C2X4) : " << pMsMeasurementMic->mic_energy_acc[MIC_C2X4] << " mWs" << std::endl
+		<< "     consumed energy (VCCP) : " << pMsMeasurementMic->mic_energy_acc[MIC_VCCP] << " mWs" << std::endl
+		<< "     consumed energy (VDDG) : " << pMsMeasurementMic->mic_energy_acc[MIC_VDDG] << " mWs" << std::endl
+		<< "     consumed energy (VDDQ) : " << pMsMeasurementMic->mic_energy_acc[MIC_VDDQ] << " mWs" << std::endl
+		<< "     consumed energy (TOTAL): " << pMsMeasurementMic->mic_energy_acc[MIC_POWER] << " mWs" << std::endl
+		<< "     average power (PCIE)   : " << pMsMeasurementMic->mic_power_avg[MIC_PCIE] << " mW" << std::endl
+		<< "     average power (C2X3)   : " << pMsMeasurementMic->mic_power_avg[MIC_C2X3] << " mW" << std::endl
+		<< "     average power (C2X4)   : " << pMsMeasurementMic->mic_power_avg[MIC_C2X4] << " mW" << std::endl
+		<< "     average power (VCCP)   : " << pMsMeasurementMic->mic_power_avg[MIC_VCCP] << " mW" << std::endl
+		<< "     average power (VDDG)   : " << pMsMeasurementMic->mic_power_avg[MIC_VDDG] << " mW" << std::endl
+		<< "     average power (VDDQ)   : " << pMsMeasurementMic->mic_power_avg[MIC_VDDQ] << " mW" << std::endl
+		<< "     average power (TOTAL)  : " << pMsMeasurementMic->mic_power_avg[MIC_POWER] << " mW" << std::endl
+		<< "     max temperature (DIE)  : " << pMsMeasurementMic->mic_temperature_max[MIC_DIE_TEMP] << " \u00b0C" << std::endl
+		<< "     max temperature (GDDR)  : " << pMsMeasurementMic->mic_temperature_max[MIC_GDDR_TEMP] << " \u00b0C" << std::endl
+		<< "     max temperature (FAN IN): " << pMsMeasurementMic->mic_temperature_max[MIC_FAN_IN_TEMP] << " \u00b0C" << std::endl
+		<< "     max temperature (FAN OUT): " << pMsMeasurementMic->mic_temperature_max[MIC_FAN_OUT_TEMP] << " \u00b0C" << std::endl
+		<< "     max temperature (VCCP)  : " << pMsMeasurementMic->mic_temperature_max[MIC_VCCP_TEMP] << " \u00b0C" << std::endl
+		<< "     max temperature (VDDG)  : " << pMsMeasurementMic->mic_temperature_max[MIC_VDDG_TEMP] << " \u00b0C" << std::endl
+		<< "     max temperature (VDDQ)  : " << pMsMeasurementMic->mic_temperature_max[MIC_VDDQ_TEMP] << " \u00b0C" << std::endl
+		<< "     average core frequency  : " << pMsMeasurementMic->mic_freq_core_avg << " MHz" << std::endl
+		<< "     average memory frequency: " << pMsMeasurementMic->mic_freq_mem_avg << " MHz" << std::endl
+		<< "     average utilization     : " << pMsMeasurementMic->mic_util_avg << " %%" << std::endl;
 		mrLog.unlock();
 #endif /* DEBUG */
 	}

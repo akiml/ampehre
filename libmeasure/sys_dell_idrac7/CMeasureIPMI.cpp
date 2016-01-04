@@ -18,6 +18,7 @@
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library. 
+ *          0.7.0 - modularised measurement struct 
  */
 
 namespace NLibMeasure {
@@ -82,13 +83,14 @@ namespace NLibMeasure {
 	}
 	
 	template <int TSkipMs, int TVariant>
-	void CMeasureIPMI<TSkipMs, TVariant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
-		measureRecordIDs(pMeasurement, rThreadNum);
-		measureRawMsgs(pMeasurement, rThreadNum);
+	void CMeasureIPMI<TSkipMs, TVariant>::measure(void* pMsMeasurement, int32_t& rThreadNum) {
+		MS_MEASUREMENT_SYS *pMsMeasurementSys = (MS_MEASUREMENT_SYS *) pMsMeasurement;
+		measureRecordIDs(pMsMeasurementSys, rThreadNum);
+		measureRawMsgs(pMsMeasurementSys, rThreadNum);
 	}
 	
 	template <int TSkipMs, int TVariant>
-	void CMeasureIPMI<TSkipMs, TVariant>::measureRecordIDs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	void CMeasureIPMI<TSkipMs, TVariant>::measureRecordIDs(MS_MEASUREMENT_SYS *pMsMeasurementSys, int32_t& rThreadNum) {
 		double value = 0;
 		
 		if (TVariant == VARIANT_FULL) {
@@ -105,7 +107,7 @@ namespace NLibMeasure {
 					mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout in getTemperature record id 18 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 					mrLog.unlock();
 				} else {
-					pMeasurement->ipmi_temperature_sysboard_cur = value;
+					pMsMeasurementSys->ipmi_temperature_sysboard_cur = value;
 				}
 			}
 		}
@@ -122,7 +124,7 @@ namespace NLibMeasure {
 			mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout getPower record id 90 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			mrLog.unlock();
 		} else {
-			pMeasurement->ipmi_power_sysboard_cur = value;
+			pMsMeasurementSys->ipmi_power_sysboard_cur = value;
 		}
 		
 		if (TVariant == VARIANT_FULL) {
@@ -139,7 +141,7 @@ namespace NLibMeasure {
 					mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout in getTemperature record id 153 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 					mrLog.unlock();
 				} else {
-					pMeasurement->ipmi_temperature_cur[0] = value;
+					pMsMeasurementSys->ipmi_temperature_cur[0] = value;
 				}
 			
 				value = getTemperature(154);
@@ -154,16 +156,16 @@ namespace NLibMeasure {
 					mrLog() << "!!! 'ipmi thread' (thread #" << rThreadNum << "): Warning: ipmi request timeout in getTemperature record id 154 (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 					mrLog.unlock();
 				} else {
-					pMeasurement->ipmi_temperature_cur[1] = value;
+					pMsMeasurementSys->ipmi_temperature_cur[1] = value;
 				}
 			}
 		}
 	}
 	
 	template <int TSkipMs, int TVariant>
-	void CMeasureIPMI<TSkipMs, TVariant>::measureRawMsgs(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
-		measureRawMsgDellCumulativeEnergy(pMeasurement, rThreadNum);
-		measureRawMsgDellCurrentPower(pMeasurement, rThreadNum);
+	void CMeasureIPMI<TSkipMs, TVariant>::measureRawMsgs(MS_MEASUREMENT_SYS *pMsMeasurementSys, int32_t& rThreadNum) {
+		measureRawMsgDellCumulativeEnergy(pMsMeasurementSys, rThreadNum);
+		measureRawMsgDellCurrentPower(pMsMeasurementSys, rThreadNum);
 	}
 	
 	template <int TSkipMs, int TVariant>
@@ -185,7 +187,7 @@ namespace NLibMeasure {
 	}
 	
 	template <int TSkipMs, int TVariant>
-	void CMeasureIPMI<TSkipMs, TVariant>::measureRawMsgDellCumulativeEnergy(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	void CMeasureIPMI<TSkipMs, TVariant>::measureRawMsgDellCumulativeEnergy(MS_MEASUREMENT_SYS *pMsMeasurementSys, int32_t& rThreadNum) {
 		int32_t completion_code;
 		
 		uint32_t result_energy;
@@ -215,12 +217,12 @@ namespace NLibMeasure {
 		result_energy_diff_time	= result_energy_cur_time - result_energy_start_time;
 		result_power			= (double)(result_energy * 3600) / (double)result_energy_diff_time;
 		
-		pMeasurement->ipmi_energy_server_acc_since_reset	= result_energy;
-		pMeasurement->ipmi_power_server_avg_since_reset		= result_power;
+		pMsMeasurementSys->ipmi_energy_server_acc_since_reset	= result_energy;
+		pMsMeasurementSys->ipmi_power_server_avg_since_reset		= result_power;
 	}
 	
 	template <int TSkipMs, int TVariant>
-	void CMeasureIPMI<TSkipMs, TVariant>::measureRawMsgDellCurrentPower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {	
+	void CMeasureIPMI<TSkipMs, TVariant>::measureRawMsgDellCurrentPower(MS_MEASUREMENT_SYS *pMsMeasurementSys, int32_t& rThreadNum) {	
 		int32_t completion_code;		
 		uint16_t result_power_current;
 		
@@ -239,7 +241,7 @@ namespace NLibMeasure {
 			exit(EXIT_FAILURE);
 		}
 		
-		pMeasurement->ipmi_power_server_cur = (uint32_t)result_power_current;
+		pMsMeasurementSys->ipmi_power_server_cur = (uint32_t)result_power_current;
 	}
 	
 	template <int TSkipMs, int TVariant>

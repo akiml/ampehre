@@ -19,21 +19,22 @@
  *          0.4.0 - MIC integration into libmeasure
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "../../../include/measurement.h"
+#include "../../../include/ms_measurement.h"
 
 int main(int argc, char **argv) {
 	// Initialize library and measurement system
 	MS_VERSION version = { .major = MS_MAJOR_VERSION, .minor = MS_MINOR_VERSION, .revision = MS_REVISION_VERSION };
-	MSYSTEM *ms = ms_init(&version, CPU_GOVERNOR_ONDEMAND, 2000000, 2500000, GPU_FREQUENCY_CUR, IOC_SET_IPMI_TIMEOUT, SKIP_PERIODIC, VARIANT_FULL);
+	MS_SYSTEM *ms = ms_init(&version, CPU_GOVERNOR_ONDEMAND, 2000000, 2500000, GPU_FREQUENCY_CUR, IOC_SET_IPMI_TIMEOUT, SKIP_PERIODIC, VARIANT_FULL);
 	
-	// Allocate measurement structs
-	MEASUREMENT *m1 = ms_alloc_measurement();
+	// Allocate measurement list
+	MS_LIST *m1 = ms_alloc_measurement(ms);
 	
 	// Set timer for m1. Measurements perform every (10ms/30ms)*10 = 100ms/300ms.
 	ms_set_timer(m1, CPU , 0, 10000000, 10);
@@ -44,15 +45,15 @@ int main(int argc, char **argv) {
 	ms_init_measurement(ms, m1, ALL);
 	
 	// Start measurements
-	ms_start_measurement(ms, m1);
+	ms_start_measurement(ms);
 	sleep(10);
 	
 	// Stop all measurement procedures.
-	ms_stop_measurement(ms, m1);
+	ms_stop_measurement(ms);
 	
 	// Join measurement threads and remove thread objects.
-	ms_join_measurement(ms, m1);
-	ms_fini_measurement(ms, m1);
+	ms_join_measurement(ms);
+	ms_fini_measurement(ms);
 	
 	// Print some measured data to stdout.
 	printf("consumed energy of cpu 1 dram bank : %.2lf mWs\n", cpu_energy_total_dram(m1, 1));

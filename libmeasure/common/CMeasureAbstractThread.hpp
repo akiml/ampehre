@@ -15,6 +15,7 @@
  * version: 0.5.3 - add abstract measure and abstract measure thread
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __CMEASUREABSTRACTTHREAD_HPP__
@@ -32,9 +33,7 @@
 #include "CMutex.hpp"
 #include "CSemaphore.hpp"
 
-#include "../../include/measurement.h"
-
-#define UINT64_MAX (0xffffffffffffffff)
+#include "../../include/ms_measurement.h"
 
 namespace NLibMeasure {
 	class CMeasureAbstractThread : protected CThread {
@@ -48,7 +47,7 @@ namespace NLibMeasure {
 			
 			CSemaphore& mrStartSem;
 			
-			MEASUREMENT* mpMeasurement;
+			void *mpMsMeasurement;
 			CMeasureAbstractResource& mrMeasureResource;
 			CMeasureThreadTimer mTimer;
 			CMutex mMutexTimer;
@@ -58,7 +57,7 @@ namespace NLibMeasure {
 			std::string mThreadType;
 			
 		public:
-			CMeasureAbstractThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureResource);
+			CMeasureAbstractThread(CLogger& rLogger, CSemaphore& rStartSem, void *pMsMeasurement, CMeasureAbstractResource& rMeasureResource);
 			virtual ~CMeasureAbstractThread();
 			
 		private:

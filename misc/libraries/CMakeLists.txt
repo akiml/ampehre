@@ -16,8 +16,8 @@
 #
 
 add_subdirectory(ipmiwrapper)
-add_subdirectory(taskwrapper)
-add_subdirectory(hetschedwrapper)
-add_subdirectory(hetnodewrapper)
-add_subdirectory(unixsockethandler)
-add_subdirectory(ushmsmonitor)
+#add_subdirectory(taskwrapper)
+#add_subdirectory(hetschedwrapper)
+#add_subdirectory(hetnodewrapper)
+#add_subdirectory(unixsockethandler)
+#add_subdirectory(ushmsmonitor)

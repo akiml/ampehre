@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 6/11/15
  * version: 0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+ *          0.7.0 - modularised measurement struct
  */
 
 #include "CResourceLibraryHandler.hpp"
@@ -20,7 +21,7 @@
 typedef void* (*init_res_t)(void*, lib_variant, skip_ms_rate, void*);
 typedef void (*fini_res_t)(void*);
 
-typedef void* (*init_measure_thread_t)(void*, void*, MEASUREMENT*, void* pMeasureRes);
+typedef void* (*init_measure_thread_t)(void*, void*, MS_LIST*, void* pMeasureRes);
 typedef void (*fini_measure_thread_t)(void*);
 
 namespace NLibMeasure{
@@ -59,10 +60,10 @@ namespace NLibMeasure{
 	}
 
     
-	void CResourceLibraryHandler::initResourceThread(CSemaphore& rStartSem, MEASUREMENT* pMeasurement) {
+	void CResourceLibraryHandler::initResourceThread(CSemaphore& rStartSem, MS_LIST* pMsList) {
 		init_measure_thread_t init_thread = (init_measure_thread_t) loadFunction("init_resource_thread");
 		
-		mpResourceThread = (CMeasureAbstractThread*) init_thread((void*) &mrLog, (void*) &rStartSem, pMeasurement, (void*) mpResource);
+		mpResourceThread = (CMeasureAbstractThread*) init_thread((void*) &mrLog, (void*) &rStartSem, pMsList, (void*) mpResource);
 	}
 
 	void CResourceLibraryHandler::finiResourceThread() {

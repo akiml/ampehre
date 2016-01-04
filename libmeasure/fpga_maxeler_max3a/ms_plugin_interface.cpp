@@ -15,6 +15,7 @@
  * version: 0.5.4 - add dynamic loading of resource specific libraries
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library. 
+ *          0.7.0 - modularised measurement struct
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -54,14 +55,14 @@ extern "C" {
 		delete pMaxeler;
 	}
 	
-	void* init_resource_thread(void* pLogger, void* pStartSem, MEASUREMENT* pMeasurement, void* pMeasureRes){
+	void* init_resource_thread(void* pLogger, void* pStartSem, MS_LIST* pMs_List, void* pMeasureRes){
 		NLibMeasure::CMeasureAbstractThread* pMaxelerThread;
 		NLibMeasure::CMeasureAbstractResource* pMaxeler = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
 		
 		if(pMaxeler->getVariant() == VARIANT_FULL) {
-			pMaxelerThread =  new NLibMeasure::CMeasureMaxelerThread<VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMaxeler);
+			pMaxelerThread =  new NLibMeasure::CMeasureMaxelerThread<VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), getMeasurement(&pMs_List, FPGA), *pMaxeler);
 		} else {
-			pMaxelerThread =  new NLibMeasure::CMeasureMaxelerThread<VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *pMaxeler);
+			pMaxelerThread =  new NLibMeasure::CMeasureMaxelerThread<VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), getMeasurement(&pMs_List, FPGA), *pMaxeler);
 		}
 			
 		return (void*) pMaxelerThread;

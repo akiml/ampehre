@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 6/01/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
+ *          0.7.0 - modularised measurement struct
  */
 
 #include "CMeasureStub.hpp"
@@ -37,7 +38,7 @@ namespace NLibMeasure {
 		//nothing todo
 	}
 	
-	void CMeasureStub::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	void CMeasureStub::measure(void* pMsMeasurement, int32_t& rThreadNum) {
 		//nothing todo
 	}
 	
