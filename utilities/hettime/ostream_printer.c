@@ -32,8 +32,7 @@ static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MS_LIST *m);
 static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MS_LIST *m);
 static void print_ostream_fpga(FILE *file, ARGUMENTS *settings, MS_LIST *m);
 static void print_ostream_mic(FILE *file, ARGUMENTS *settings, MS_LIST *m);
-static void print_ostream_sysboard(FILE *file, ARGUMENTS *settings, MS_LIST *m);
-static void print_ostream_server(FILE *file, ARGUMENTS *settings, MS_LIST *m);
+static void print_ostream_system(FILE *file, ARGUMENTS *settings, MS_LIST *m);
 
 void print_ostream(FILE *file, ARGUMENTS *settings, MS_LIST *m, EXEC_TIME *exec_time) {
 	fprintf(file,
@@ -65,14 +64,9 @@ void print_ostream(FILE *file, ARGUMENTS *settings, MS_LIST *m, EXEC_TIME *exec_
 	print_ostream_mic(file, settings, m);
 	
 	fprintf(file,
-		"\nSystem board:\n=============\n"
+		"\nSystem:\n=======\n"
 	);
-	print_ostream_sysboard(file, settings, m);
-	
-	fprintf(file,
-		"\nServer:\n=======\n"
-	);
-	print_ostream_server(file, settings, m);
+	print_ostream_system(file, settings, m);
 }
 
 static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
@@ -379,32 +373,22 @@ static void print_ostream_mic(FILE *file, ARGUMENTS *settings, MS_LIST *m){
 	);
 }
 
-static void print_ostream_sysboard(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
+static void print_ostream_system(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 	fprintf(file,
-		"time total measure sysb [ s ]: %lf\n\n",
-		sysboard_time_total(m)
+		"time total measure sys  [ s ]: %lf\n\n",
+		system_time_total(m)
 	);
 	
 	fprintf(file,
-		"energy total sysb       [ Ws]: %lf\n"
-		"power  avg   sysb       [ W ]: %lf\n"
-		"temp   max   sysb       [\u00b0C ]: %lf\n",
-		sysboard_energy_total(m),
-		sysboard_power_avg(m),
-		sysboard_temp_max(m)
-	);
-}
-
-static void print_ostream_server(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
-	fprintf(file,
-		"time total measure serv [ s ]: %lf\n\n",
-		server_time_total(m)
-	);
-	
-	fprintf(file,
-		"energy total serv       [ Ws]: %lf\n"
-		"power  avg   serv       [ W ]: %lf\n",
-		server_energy_total(m),
-		server_power_avg(m)
+		"energy total board      [Ws ]: %lf\n"
+		"energy total system     [Ws ]: %lf\n"
+		"power  avg   board      [ W ]: %lf\n"
+		"power  avg   system     [ W ]: %lf\n"
+		"temp   max   system     [\u00b0C ]: %lf\n",
+		system_energy_board(m),
+		system_energy_total(m),
+		system_power_board_avg(m),
+		system_power_avg(m),
+		system_temp_max(m)
 	);
 }

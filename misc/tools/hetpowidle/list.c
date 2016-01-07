@@ -89,7 +89,7 @@ IDLE_POWER *create_element(ARGUMENTS *settings, MS_LIST  *m) {
 	}
 	
 	if (settings->idle_measurements & MEASURE_IDLE_SYS) {
-		ip->idle_power_sys	+= server_power_avg(m)*1000.0;
+		ip->idle_power_sys	+= system_power_avg(m)*1000.0;
 		ip->idle_power_sys	-= ip->idle_power_cpu + ip->idle_power_gpu + ip->idle_power_fpga;
 		ip->idle_power_all	+= ip->idle_power_sys;
 	}

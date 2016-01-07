@@ -88,12 +88,12 @@ void set_measurement(int no, MINTERN *mintern, MSDATAINTERN *temp_data) {
 	}
 	if (((int)mintern->measurements[no].resources & SYSTEM) != 0) {
 		// System board
-		mintern->measurements[no].sysboard_time_total = sysboard_time_total(mintern->global_m);
-		mintern->measurements[no].sysboard_energy_total = sysboard_energy_total(mintern->global_m);
+		mintern->measurements[no].sysboard_time_total = system_time_total(mintern->global_m);
+		mintern->measurements[no].sysboard_energy_total = system_energy_board(mintern->global_m);
 
 		// Server
-		mintern->measurements[no].server_time_total = server_time_total(mintern->global_m);
-		mintern->measurements[no].server_energy_total = server_energy_total(mintern->global_m);
+		mintern->measurements[no].server_time_total = system_time_total(mintern->global_m);
+		mintern->measurements[no].server_energy_total = system_energy_total(mintern->global_m);
 	}
 }
 
@@ -140,11 +140,11 @@ void get_diff_measurement(int no, MINTERN *mintern, MSDATAINTERN *temp_data) {
 	}
 	if (((int)mintern->measurements[no].resources & SYSTEM) != 0) {
 		// System board
-		mintern->measurements[no].sysboard_time_total = sysboard_time_total(mintern->global_m) - mintern->measurements[no].sysboard_time_total;
-		mintern->measurements[no].sysboard_energy_total = sysboard_energy_total(mintern->global_m) - mintern->measurements[no].sysboard_energy_total;
+		mintern->measurements[no].sysboard_time_total = system_time_total(mintern->global_m) - mintern->measurements[no].sysboard_time_total;
+		mintern->measurements[no].sysboard_energy_total = system_energy_board(mintern->global_m) - mintern->measurements[no].sysboard_energy_total;
 
 		// Server
-		mintern->measurements[no].server_time_total = server_time_total(mintern->global_m) - mintern->measurements[no].server_time_total;
-		mintern->measurements[no].server_energy_total = server_energy_total(mintern->global_m);
+		mintern->measurements[no].server_time_total = system_time_total(mintern->global_m) - mintern->measurements[no].server_time_total;
+		mintern->measurements[no].server_energy_total = system_energy_total(mintern->global_m);
 	}
 }

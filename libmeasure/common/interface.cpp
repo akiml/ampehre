@@ -606,51 +606,43 @@ uint32_t mic_memory_free_max(MS_LIST *ms_list) {
 	return ms_measurement_mic->mic_memory_free_max;
 }
 
-// System board
-double sysboard_time_total(MS_LIST *ms_list) {
+// System
+double system_time_total(MS_LIST *ms_list) {
 	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
 	NULL_CHECK(ms_measurement_sys);
 	
 	return ms_measurement_sys->ipmi_time_runtime;
 }
 
-double sysboard_energy_total(MS_LIST *ms_list) {
+double system_energy_board(MS_LIST *ms_list) {
 	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
 	NULL_CHECK(ms_measurement_sys);
 	
 	return ms_measurement_sys->ipmi_energy_sysboard_acc;
 }
 
-double sysboard_power_avg(MS_LIST *ms_list) {
+double system_power_board_avg(MS_LIST *ms_list) {
 	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
 	NULL_CHECK(ms_measurement_sys);
 	
 	return ms_measurement_sys->ipmi_power_sysboard_avg;
 }
 
-double sysboard_temp_max(MS_LIST *ms_list) {
+double system_temp_max(MS_LIST *ms_list) {
 	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
 	NULL_CHECK(ms_measurement_sys);
 	
 	return ms_measurement_sys->ipmi_temperature_sysboard_max;
 }
 
-// Server
-double server_time_total(MS_LIST *ms_list) {
-		MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
-	NULL_CHECK(ms_measurement_sys);
-	
-	return ms_measurement_sys->ipmi_time_runtime;
-}
-
-double server_energy_total(MS_LIST *ms_list) {
+double system_energy_total(MS_LIST *ms_list) {
 	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
 	NULL_CHECK(ms_measurement_sys);
 	
 	return ms_measurement_sys->ipmi_energy_server_acc;
 }
 
-double server_power_avg(MS_LIST *ms_list) {
+double system_power_avg(MS_LIST *ms_list) {
 	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
 	NULL_CHECK(ms_measurement_sys);
 	

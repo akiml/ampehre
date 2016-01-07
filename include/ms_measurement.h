@@ -27,11 +27,11 @@ extern "C" {
 #include "ms_driver.h"
 #include "ms_ipmiwrapper.h"
 #include "ms_version.h"
-#include "../libmeasure/cpu_intel_xeon_sandy/ms_cpu_intel_xeon_sandy.h"
-#include "../libmeasure/gpu_nvidia_tesla_kepler/ms_gpu_nvidia_tesla_kepler.h"
-#include "../libmeasure/fpga_maxeler_max3a/ms_fpga_maxeler_max3a.h"
-#include "../libmeasure/mic_intel_knc/ms_mic_intel_knc.h"
-#include "../libmeasure/sys_dell_idrac7/ms_sys_dell_idrac7.h"
+#include "ms_cpu_intel_xeon_sandy.h"
+#include "ms_gpu_nvidia_tesla_kepler.h"
+#include "ms_fpga_maxeler_max3a.h"
+#include "ms_mic_intel_knc.h"
+#include "ms_sys_dell_idrac7.h"
 
 // Value from kernel (2.6.38.8+mpss3.4.1) which may change with a new kernel version
 #define S_PER_JIFFY 0.01
@@ -220,16 +220,13 @@ uint32_t mic_memory_total(MS_LIST *ms_list);
 uint32_t mic_memory_used_max(MS_LIST *ms_list);
 uint32_t mic_memory_free_max(MS_LIST *ms_list);
 
-// System board
-double sysboard_time_total(MS_LIST *ms_list);
-double sysboard_energy_total(MS_LIST *ms_list);
-double sysboard_power_avg(MS_LIST *ms_list);
-double sysboard_temp_max(MS_LIST *ms_list);
-
-// Server
-double server_time_total(MS_LIST *ms_list);
-double server_energy_total(MS_LIST *ms_list);
-double server_power_avg(MS_LIST *ms_list);
+// System
+double system_time_total(MS_LIST *ms_list);
+double system_energy_board(MS_LIST *ms_list);
+double system_power_board_avg(MS_LIST *ms_list);
+double system_temp_max(MS_LIST *ms_list);
+double system_energy_total(MS_LIST *ms_list);
+double system_power_avg(MS_LIST *ms_list);
 
 #ifdef __cplusplus
 }

@@ -67,6 +67,14 @@ set(MS_LIBRARY_LIGHT
 	ms_common_light
 )
 
+set(MS_LIBRARY_MODULE_PATH
+	libmeasure/cpu_intel_xeon_sandy
+	libmeasure/gpu_nvidia_tesla_kepler
+	libmeasure/fpga_maxeler_max3a
+	libmeasure/mic_intel_knc
+	libmeasure/sys_dell_idrac7
+)
+
 option(DEBUG_SYMS "Compile library and applications with debug symbols." OFF)
 if (DEBUG_SYMS)
 	message(STATUS "${Yellow}INFO: Compile with debug symbols ENABLED.${ColourReset}")
@@ -102,6 +110,8 @@ if(CPU_INTEL_SANDY_SUPPORT)
 else(CPU_INTEL_SANDY_SUPPORT)
 	message(STATUS "${BoldYellow}INFO: Compile with cpu  intel   xeon   sandy DISABLED.${ColourReset}")
 endif(CPU_INTEL_SANDY_SUPPORT)
+
+include_directories(${MS_LIBRARY_MODULE_PATH})
 
 add_subdirectory(cjson)
 #add_subdirectory(driver)

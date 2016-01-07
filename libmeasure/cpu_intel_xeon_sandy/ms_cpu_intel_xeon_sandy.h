@@ -22,7 +22,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#include "../../include/ms_driver.h"
 #include <time.h>
 
 #define CPUS 2

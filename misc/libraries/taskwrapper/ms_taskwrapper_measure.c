@@ -86,8 +86,8 @@ void mstw_capture_start_measure(MINTERNAL *minternal, MREL_MEASUREMENT *m) {
 	
 	// System
 	if (minternal->resources & SYSTEM) {
-		m->cur_sysboard_energy_total	= sysboard_energy_total(minternal->global_m);
-		m->cur_server_energy_total		= server_energy_total(minternal->global_m);
+		m->cur_sysboard_energy_total	= system_energy_board(minternal->global_m);
+		m->cur_server_energy_total		= system_energy_total(minternal->global_m);
 	}
 }
 
@@ -119,7 +119,7 @@ void mstw_capture_stop_measure(MINTERNAL *minternal, MREL_MEASUREMENT *m) {
 	
 	// System
 	if (minternal->resources & SYSTEM) {
-		m->acc_sysboard_energy_total	+= sysboard_energy_total(minternal->global_m)			- m->cur_sysboard_energy_total;
-		m->acc_server_energy_total		+= server_energy_total(minternal->global_m)				- m->cur_server_energy_total;
+		m->acc_sysboard_energy_total	+= system_energy_board(minternal->global_m)				- m->cur_sysboard_energy_total;
+		m->acc_server_energy_total		+= system_energy_total(minternal->global_m)				- m->cur_server_energy_total;
 	}
 }

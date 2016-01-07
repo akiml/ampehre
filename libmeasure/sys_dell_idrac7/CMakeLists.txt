@@ -16,6 +16,7 @@
 #          0.5.4 - add dynamic loading of resource specific libraries
 #          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
 #                  and to select between the full or light library.
+#          0.7.0 - modularised measurement struct
 #
 
 set(SRC_SYS_LIBRARY
@@ -27,3 +28,4 @@ add_library(ms_sys_dell_idrac7 SHARED ${SRC_SYS_LIBRARY})
 target_link_libraries(ms_sys_dell_idrac7 ms_common ipmimeasure)
 
 install(TARGETS ms_sys_dell_idrac7 LIBRARY DESTINATION lib)
+install(FILES ms_sys_dell_idrac7.h DESTINATION include)

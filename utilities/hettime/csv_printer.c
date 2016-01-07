@@ -23,8 +23,7 @@ static void print_csv_cpu(FILE *csv, char* captions, int* cur_caption_pos, char*
 static void print_csv_gpu(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
 static void print_csv_fpga(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
 static void print_csv_mic(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
-static void print_csv_sysboard(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
-static void print_csv_server(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
+static void print_csv_system(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
 static void print_csv_settings(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, ARGUMENTS* settings);
 
 void print_csv(FILE *csv, ARGUMENTS* settings, MS_LIST *m, EXEC_TIME *exec_time) {
@@ -49,8 +48,7 @@ void print_csv(FILE *csv, ARGUMENTS* settings, MS_LIST *m, EXEC_TIME *exec_time)
 	print_csv_gpu(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
 	print_csv_fpga(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
 	print_csv_mic(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
-	print_csv_sysboard(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
-	print_csv_server(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
+	print_csv_system(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
 	print_csv_settings(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, settings);
 		
 	if (ftell(csv) == 0) {
@@ -339,36 +337,27 @@ static void print_csv_mic(FILE *csv, char* captions, int* cur_caption_pos, char*
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"kiB;kiB;kiB;");
 }
 
-static void print_csv_sysboard(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m){
-
-	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "SYSTEM_BOARD;");
-	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, ";");
-	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,";");
-	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "time_total_measure_sysb;");
-	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;", sysboard_time_total(m));
-	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"s;");
-	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "energy_total_sysb;"
-								"power_avg_sysb;"
-								"temp_max_sysb;");
-	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;%lf;%lf;", sysboard_energy_total(m),
-								sysboard_power_avg(m),
-								sysboard_temp_max(m));
-	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"Ws;W;\u00b0C;");
-}
-
-static void print_csv_server(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m){
+static void print_csv_system(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m){
 	
-	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "SERVER;");
+	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "SYSTEM;");
 	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, ";");
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,";");
-	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "time_total_measure_serv;");
-	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;", server_time_total(m));
+	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "time_total_measure_system;");
+	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;", system_time_total(m));
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"s;");
-	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "energy_total_serv;"
-								"power_avg_serv;");
-	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;%lf;", server_energy_total(m),
-								server_power_avg(m));
-	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"Ws;W;");
+	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "energy_total_board;"
+								"energy_total_system;");
+	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;%lf;", system_energy_board(m),
+								system_energy_total(m));
+	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"Ws;Ws;");
+	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "power_avg_board;"
+								"power_avg_system;");
+	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;%lf;", system_power_board_avg(m),
+								system_power_avg(m));
+	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"W;W;");
+	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "temp_max_system;");
+	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;", system_temp_max(m));
+	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"\u00b0C;");
 }
 
 static void print_csv_settings(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, ARGUMENTS* settings){

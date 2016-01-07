@@ -16,6 +16,7 @@
 #          0.5.4 - add dynamic loading of resource specific libraries
 #          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
 #                  and to select between the full or light library.
+#          0.7.0 - modularised measurement struct
 #
 
 set(SRC_MIC_LIBRARY
@@ -27,3 +28,4 @@ add_library(ms_mic_intel_knc SHARED ${SRC_MIC_LIBRARY})
 target_link_libraries(ms_mic_intel_knc ms_common -lmicmgmt -lscif)
 
 install(TARGETS ms_mic_intel_knc LIBRARY DESTINATION lib)
+install(FILES ms_mic_intel_knc.h DESTINATION include)

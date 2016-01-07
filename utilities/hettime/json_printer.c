@@ -434,22 +434,22 @@ static void add_mic_temperature(cJSON *val_mic, MS_LIST *m){
 	add_json_leaf_to_object(item, "vddq",		mic_temp_max_vddq(m),		"\u00b0C");
 }
 
-
 static void add_system_values(cJSON *values, MS_LIST *m){
 	cJSON *val_sys;
+	cJSON *item;
 	
 	cJSON_AddItemToArray(values, val_sys = cJSON_CreateObject());
+	cJSON_AddStringToObject(val_sys, "resource", "system");
 	
-	cJSON_AddStringToObject(val_sys, "resource", "system board");
-	add_json_leaf_to_object(val_sys, "runtime",			sysboard_time_total(m),		"s");
-	add_json_leaf_to_object(val_sys, "energy_total",	sysboard_energy_total(m),	"Ws");
-	add_json_leaf_to_object(val_sys, "power_avg",		sysboard_power_avg(m), 		"W");
-	add_json_leaf_to_object(val_sys, "temperature_max",	sysboard_temp_max(m),		"\u00b0C");
+	add_json_leaf_to_object(val_sys, "runtime", system_time_total(m), "s");
 	
-	cJSON_AddItemToArray(values, val_sys = cJSON_CreateObject());
+	cJSON_AddItemToObject(val_sys, "energy_total", item = cJSON_CreateObject());
+	add_json_leaf_to_object(item, "board",	system_energy_board(m),	"Ws");
+	add_json_leaf_to_object(item, "total",	system_energy_total(m),	"Ws");
 	
-	cJSON_AddStringToObject(val_sys, "resource", "server");
-	add_json_leaf_to_object(val_sys, "runtime",			server_time_total(m),	"s");
-	add_json_leaf_to_object(val_sys, "energy_total",	server_energy_total(m),	"Ws");
-	add_json_leaf_to_object(val_sys, "power_avg",		server_power_avg(m),	"W");
+	cJSON_AddItemToObject(val_sys, "power_avg", item = cJSON_CreateObject());
+	add_json_leaf_to_object(item, "board",	system_power_board_avg(m),	"W");
+	add_json_leaf_to_object(item, "total",	system_power_avg(m),		"W");
+	
+	add_json_leaf_to_object(val_sys, "temperature_max",	system_temp_max(m),	"\u00b0C");
 }

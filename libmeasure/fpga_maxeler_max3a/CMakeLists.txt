@@ -16,6 +16,7 @@
 #          0.5.4 - add dynamic loading of resource specific libraries
 #          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
 #                  and to select between the full or light library.
+#          0.7.0 - modularised measurement struct
 #
 
 find_library(MAX_LIBRARY libmaxeleros.so PATHS /opt/maxeler/maxeleros/lib)
@@ -30,3 +31,4 @@ add_library(ms_fpga_maxeler_max3a SHARED ${SRC_FPGA_LIBRARY})
 target_link_libraries(ms_fpga_maxeler_max3a ms_common cjson ${MAX_LIBRARY})
 
 install(TARGETS ms_fpga_maxeler_max3a LIBRARY DESTINATION lib)
+install(FILES ms_fpga_maxeler_max3a.h DESTINATION include)
