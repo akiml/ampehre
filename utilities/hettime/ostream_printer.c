@@ -23,18 +23,19 @@
  *          0.1.11 - add a seperate csv printer file to hettime tool
  *          0.4.0 - MIC integration into libmeasure
  *          0.5.0 - add cpu, gpu and mic memory information
+ *          0.7.0 - modularised measurement struct
  */
 
 #include "printer.h"
 
-static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MEASUREMENT *m);
-static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MEASUREMENT *m);
-static void print_ostream_fpga(FILE *file, ARGUMENTS *settings, MEASUREMENT *m);
-static void print_ostream_mic(FILE *file, ARGUMENTS *settings, MEASUREMENT *m);
-static void print_ostream_sysboard(FILE *file, ARGUMENTS *settings, MEASUREMENT *m);
-static void print_ostream_server(FILE *file, ARGUMENTS *settings, MEASUREMENT *m);
+static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MS_LIST *m);
+static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MS_LIST *m);
+static void print_ostream_fpga(FILE *file, ARGUMENTS *settings, MS_LIST *m);
+static void print_ostream_mic(FILE *file, ARGUMENTS *settings, MS_LIST *m);
+static void print_ostream_sysboard(FILE *file, ARGUMENTS *settings, MS_LIST *m);
+static void print_ostream_server(FILE *file, ARGUMENTS *settings, MS_LIST *m);
 
-void print_ostream(FILE *file, ARGUMENTS *settings, MEASUREMENT *m, EXEC_TIME *exec_time) {
+void print_ostream(FILE *file, ARGUMENTS *settings, MS_LIST *m, EXEC_TIME *exec_time) {
 	fprintf(file,
 		"RESULTS:\n========\n"
 		"time total exec child   [ s ]: %lf\n"
@@ -74,7 +75,7 @@ void print_ostream(FILE *file, ARGUMENTS *settings, MEASUREMENT *m, EXEC_TIME *e
 	print_ostream_server(file, settings, m);
 }
 
-static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
+static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 	fprintf(file,
 		"time total measure cpu  [ s ]: %lf\n\n",
 		cpu_time_total(m)
@@ -206,7 +207,7 @@ static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
 	);
 }
 
-static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
+static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 	fprintf(file,
 		"time total measure gpu  [ s ]: %lf\n\n",
 		gpu_time_total(m)
@@ -238,7 +239,7 @@ static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
 	);
 }
 
-static void print_ostream_fpga(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
+static void print_ostream_fpga(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 	fprintf(file,
 		"time total measure fpga [ s ]: %lf\n\n",
 		fpga_time_total(m)
@@ -295,7 +296,7 @@ static void print_ostream_fpga(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) 
 	);
 }
 
-static void print_ostream_mic(FILE *file, ARGUMENTS *settings, MEASUREMENT *m){
+static void print_ostream_mic(FILE *file, ARGUMENTS *settings, MS_LIST *m){
 	fprintf(file,
 		"time total measure mic  [ s ]: %lf\n\n",
 		mic_time_total(m)
@@ -378,7 +379,7 @@ static void print_ostream_mic(FILE *file, ARGUMENTS *settings, MEASUREMENT *m){
 	);
 }
 
-static void print_ostream_sysboard(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
+static void print_ostream_sysboard(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 	fprintf(file,
 		"time total measure sysb [ s ]: %lf\n\n",
 		sysboard_time_total(m)
@@ -394,7 +395,7 @@ static void print_ostream_sysboard(FILE *file, ARGUMENTS *settings, MEASUREMENT 
 	);
 }
 
-static void print_ostream_server(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
+static void print_ostream_server(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 	fprintf(file,
 		"time total measure serv [ s ]: %lf\n\n",
 		server_time_total(m)

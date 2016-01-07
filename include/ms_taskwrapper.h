@@ -17,12 +17,13 @@
  *          0.1.13 - make GPU frequency settable
  *          0.1.15 - make CPU frequency settable
  *          0.2.4 - add version check functionality to library, wrappers, and tools
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __MS_TASKWRAPPER_H__
 #define __MS_TASKWRAPPER_H__
 
-#include "measurement.h"
+#include "ms_measurement.h"
 
 // Please define the relevant measurements in this struct!
 typedef struct __mrel_measurement {

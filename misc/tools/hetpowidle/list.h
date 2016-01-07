@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 10/27/14
  * version: 0.1.19 - add a hettime based idle power measurement tool
+ *          0.7.0 - modularised measurement struct 
  */
 
 #ifndef __LIST_H__
@@ -35,8 +36,8 @@ typedef struct __idle_power {
 	struct __idle_power *prev;
 } IDLE_POWER;
 
-IDLE_POWER *create_element(ARGUMENTS *settings, MEASUREMENT *m);
-void append_list_create_element(IDLE_POWER **ip_list, ARGUMENTS *settings, MEASUREMENT *m);
+IDLE_POWER *create_element(ARGUMENTS *settings, MS_LIST *m);
+void append_list_create_element(IDLE_POWER **ip_list, ARGUMENTS *settings, MS_LIST *m);
 void append_list(IDLE_POWER **ip_list, ARGUMENTS *settings, IDLE_POWER *ip);
 void sort_list(IDLE_POWER **ip_list, ARGUMENTS *settings);
 IDLE_POWER *get_median(IDLE_POWER **ip_list, ARGUMENTS *settings);

@@ -16,7 +16,6 @@
  *          0.1.18 - hettime dummy tool can be used similar to ordinary "sleep" command
  */
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>

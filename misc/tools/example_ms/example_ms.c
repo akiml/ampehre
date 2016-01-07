@@ -23,7 +23,6 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 #include "../../../include/ms_measurement.h"
@@ -60,6 +59,7 @@ int main(int argc, char **argv) {
 	printf("maximum temperature of gpu         : %u \u00b0C\n", gpu_temp_max(m1));
 	printf("total time of mic measuring        : %.2lf s\n", mic_time_total(m1));
 	printf("mic temperature max die            : %u \u00b0C\n", mic_temp_max_die(m1));
+	printf("consumed energy of the fpga        : %lf mWs\n", fpga_energy_total_power_usage(m1));
 	
 	// Cleanup the environment before exiting the program
 	ms_free_measurement(m1);

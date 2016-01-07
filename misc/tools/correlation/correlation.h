@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 2/04/15
  * version: 0.3.1 - add correlation example application
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __CORRELATION_H__
@@ -24,7 +25,7 @@
 #include <string.h>
 #include <limits.h>
 
-#include "../../../include/measurement.h"
+#include "../../../include/ms_measurement.h"
 
 #undef LOG_ERROR
 #undef LOG_WARN
@@ -55,6 +56,6 @@ typedef struct __arguments {
 
 void run(ARGUMENTS *settings);
 
-void print_ostream(FILE *file, ARGUMENTS* settings, MEASUREMENT *m);
+void print_ostream(FILE *file, ARGUMENTS* settings, MS_LIST *m);
 
 #endif /* __CORRELATION_H__ */

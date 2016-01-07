@@ -18,6 +18,7 @@
  *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct
  */
 
 #include "CDataLibrary.hpp"
@@ -70,7 +71,7 @@ namespace NData {
 										  mrSettings.mLibVariant
  										);
 		
-		mpMSMeasurement			= ms_alloc_measurement();
+		mpMSMeasurement			= ms_alloc_measurement(mpMSSystem);
 		
 		ms_set_timer(mpMSMeasurement, CPU   , mrSettings.mCPUSamplingRate   /1000,
 					 (mrSettings.mCPUSamplingRate   %1000) * 1000000, mrSettings.mCPUCheckForExitInterrupts);
@@ -92,14 +93,14 @@ namespace NData {
 	}
 	
 	void CDataLibrary::startMSSystem(void) {
-		ms_start_measurement(mpMSSystem, mpMSMeasurement);
+		ms_start_measurement(mpMSSystem);
 	}
 	
 	void CDataLibrary::stopMSSystem(void) {
-		ms_stop_measurement(mpMSSystem, mpMSMeasurement);
+		ms_stop_measurement(mpMSSystem);
 		
-		ms_join_measurement(mpMSSystem, mpMSMeasurement);
-		ms_fini_measurement(mpMSSystem, mpMSMeasurement);
+		ms_join_measurement(mpMSSystem);
+		ms_fini_measurement(mpMSSystem);
 	}
 	
 	void CDataLibrary::start(void) {
@@ -137,8 +138,50 @@ namespace NData {
 		double clockCpu0_temp;
 		double clockCpu1_temp;
 		
+		MS_MEASUREMENT_CPU *pMsMeasurementCpu;
+		MS_MEASUREMENT_GPU *pMsMeasurementGpu;
+		MS_MEASUREMENT_FPGA *pMsMeasurementFpga;
+		MS_MEASUREMENT_MIC *pMsMeasurementMic;
+		MS_MEASUREMENT_SYS *pMsMeasurementSys;
+		
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
+		
+		//get available resource specific measurement structs
+		if(mpMSSystem->config->cpu_enabled) {
+			pMsMeasurementCpu = (MS_MEASUREMENT_CPU *) getMeasurement(&mpMSMeasurement, CPU);
+		} else {
+			pMsMeasurementCpu = new MS_MEASUREMENT_CPU;
+			memset(pMsMeasurementCpu ,0, sizeof(MS_MEASUREMENT_CPU));
+		}
+		
+		if(mpMSSystem->config->gpu_enabled) {
+			pMsMeasurementGpu = (MS_MEASUREMENT_GPU *) getMeasurement(&mpMSMeasurement, GPU);
+		} else {
+			pMsMeasurementGpu = new MS_MEASUREMENT_GPU;
+			memset(pMsMeasurementGpu ,0, sizeof(MS_MEASUREMENT_GPU));
+		}
+		
+		if(mpMSSystem->config->fpga_enabled) {
+			pMsMeasurementFpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&mpMSMeasurement, FPGA);
+		} else {
+			pMsMeasurementFpga = new MS_MEASUREMENT_FPGA;
+			memset(pMsMeasurementFpga ,0, sizeof(MS_MEASUREMENT_FPGA));
+		}
+		
+		if(mpMSSystem->config->mic_enabled) {
+			pMsMeasurementMic = (MS_MEASUREMENT_MIC *) getMeasurement(&mpMSMeasurement, MIC);
+		} else {
+			pMsMeasurementMic = new MS_MEASUREMENT_MIC;
+			memset(pMsMeasurementMic ,0, sizeof(MS_MEASUREMENT_MIC));
+		}
+		
+		if(mpMSSystem->config->sys_enabled) {
+			pMsMeasurementSys = (MS_MEASUREMENT_SYS *) getMeasurement(&mpMSMeasurement, SYSTEM);
+		} else {
+			pMsMeasurementSys = new MS_MEASUREMENT_SYS;
+			memset(pMsMeasurementSys ,0, sizeof(MS_MEASUREMENT_SYS));
+		}
 		
 		if(mrSettings.mWriteResultsToCsv) {
 			char *home_directory = getenv("HOME");
@@ -171,46 +214,46 @@ namespace NData {
 			// store current values
 			mrMeasurement.mpX->push_back(calcTimeSinceStart());
 			
-			mrMeasurement.mpYPowerCpu0->push_back((mpMSMeasurement->msr_power_cur[0][PKG]
-													+ mpMSMeasurement->msr_power_cur[0][DRAM])/1000.0);
-			mrMeasurement.mpYPowerCpu1->push_back((mpMSMeasurement->msr_power_cur[1][PKG]
-													+ mpMSMeasurement->msr_power_cur[1][DRAM])/1000.0);
-			mrMeasurement.mpYPowerGpu->push_back(mpMSMeasurement->nvml_power_cur/1000.0);
-			mrMeasurement.mpYPowerFpga->push_back(mpMSMeasurement->maxeler_power_cur[POWER]/1000.0);
-			mrMeasurement.mpYPowerMic->push_back(mpMSMeasurement->mic_power_cur[MIC_POWER]/1000.0);
-			mrMeasurement.mpYPowerSystem->push_back(mpMSMeasurement->ipmi_power_server_cur);
+			mrMeasurement.mpYPowerCpu0->push_back((pMsMeasurementCpu->msr_power_cur[0][PKG]
+													+ pMsMeasurementCpu->msr_power_cur[0][DRAM])/1000.0);
+			mrMeasurement.mpYPowerCpu1->push_back((pMsMeasurementCpu->msr_power_cur[1][PKG]
+													+ pMsMeasurementCpu->msr_power_cur[1][DRAM])/1000.0);
+			mrMeasurement.mpYPowerGpu->push_back(pMsMeasurementGpu->nvml_power_cur/1000.0);
+			mrMeasurement.mpYPowerFpga->push_back(pMsMeasurementFpga->maxeler_power_cur[POWER]/1000.0);
+			mrMeasurement.mpYPowerMic->push_back(pMsMeasurementMic->mic_power_cur[MIC_POWER]/1000.0);
+			mrMeasurement.mpYPowerSystem->push_back(pMsMeasurementSys->ipmi_power_server_cur);
 			
-			mrMeasurement.mpYTempCpu0->push_back(mpMSMeasurement->msr_temperature_pkg_cur[0]);
-			mrMeasurement.mpYTempCpu1->push_back(mpMSMeasurement->msr_temperature_pkg_cur[1]);
-			mrMeasurement.mpYTempGpu->push_back(mpMSMeasurement->nvml_temperature_cur);
-			mrMeasurement.mpYTempFpgaM->push_back(mpMSMeasurement->maxeler_temperature_cur[MTEMP]);
-			mrMeasurement.mpYTempFpgaI->push_back(mpMSMeasurement->maxeler_temperature_cur[ITEMP]);
-			mrMeasurement.mpYTempMicDie->push_back(mpMSMeasurement->mic_temperature_cur[MIC_DIE_TEMP]);
-			mrMeasurement.mpYTempSystem->push_back(mpMSMeasurement->ipmi_temperature_sysboard_cur);
+			mrMeasurement.mpYTempCpu0->push_back(pMsMeasurementCpu->msr_temperature_pkg_cur[0]);
+			mrMeasurement.mpYTempCpu1->push_back(pMsMeasurementCpu->msr_temperature_pkg_cur[1]);
+			mrMeasurement.mpYTempGpu->push_back(pMsMeasurementGpu->nvml_temperature_cur);
+			mrMeasurement.mpYTempFpgaM->push_back(pMsMeasurementFpga->maxeler_temperature_cur[MTEMP]);
+			mrMeasurement.mpYTempFpgaI->push_back(pMsMeasurementFpga->maxeler_temperature_cur[ITEMP]);
+			mrMeasurement.mpYTempMicDie->push_back(pMsMeasurementMic->mic_temperature_cur[MIC_DIE_TEMP]);
+			mrMeasurement.mpYTempSystem->push_back(pMsMeasurementSys->ipmi_temperature_sysboard_cur);
 			
 			clockCpu0_temp = 0.0;
 			clockCpu1_temp = 0.0;
 			for (i=0; i<CORES; ++i) {
-				clockCpu0_temp	+= mpMSMeasurement->msr_freq_core_eff_cur[0][i];
-				clockCpu1_temp	+= mpMSMeasurement->msr_freq_core_eff_cur[1][i];
+				clockCpu0_temp	+= pMsMeasurementCpu->msr_freq_core_eff_cur[0][i];
+				clockCpu1_temp	+= pMsMeasurementCpu->msr_freq_core_eff_cur[1][i];
 			}
 			mrMeasurement.mpYClockCpu0->push_back(clockCpu0_temp / CORES);		
 			mrMeasurement.mpYClockCpu1->push_back(clockCpu1_temp / CORES);
-			mrMeasurement.mpYClockGpuCore->push_back(mpMSMeasurement->nvml_clock_graphics_cur);
-			mrMeasurement.mpYClockGpuMem->push_back(mpMSMeasurement->nvml_clock_mem_cur);
-			mrMeasurement.mpYClockMicCore->push_back(mpMSMeasurement->mic_freq_core_cur);
-			mrMeasurement.mpYClockMicMem->push_back(mpMSMeasurement->mic_freq_mem_cur);
+			mrMeasurement.mpYClockGpuCore->push_back(pMsMeasurementGpu->nvml_clock_graphics_cur);
+			mrMeasurement.mpYClockGpuMem->push_back(pMsMeasurementGpu->nvml_clock_mem_cur);
+			mrMeasurement.mpYClockMicCore->push_back(pMsMeasurementMic->mic_freq_core_cur);
+			mrMeasurement.mpYClockMicMem->push_back(pMsMeasurementMic->mic_freq_mem_cur);
 			
-			mrMeasurement.mpYUtilCpu->push_back(mpMSMeasurement->measure_util_avg_cur);
-			mrMeasurement.mpYUtilGpuCore->push_back(mpMSMeasurement->nvml_util_gpu_cur);
-			mrMeasurement.mpYUtilGpuMem->push_back(mpMSMeasurement->nvml_util_mem_cur);
-			mrMeasurement.mpYUtilFpga->push_back(mpMSMeasurement->maxeler_util_comp_cur);
-			mrMeasurement.mpYUtilMic->push_back(mpMSMeasurement->mic_util_avg_cur);
+			mrMeasurement.mpYUtilCpu->push_back(pMsMeasurementCpu->measure_util_avg_cur);
+			mrMeasurement.mpYUtilGpuCore->push_back(pMsMeasurementGpu->nvml_util_gpu_cur);
+			mrMeasurement.mpYUtilGpuMem->push_back(pMsMeasurementGpu->nvml_util_mem_cur);
+			mrMeasurement.mpYUtilFpga->push_back(pMsMeasurementFpga->maxeler_util_comp_cur);
+			mrMeasurement.mpYUtilMic->push_back(pMsMeasurementMic->mic_util_avg_cur);
 			
-			mrMeasurement.mpYMemoryCpu->push_back(mpMSMeasurement->measure_memory_cur[CPU_MEM_RAM_USED]>>10);
-			mrMeasurement.mpYSwapCpu->push_back(mpMSMeasurement->measure_memory_cur[CPU_MEM_SWAP_USED]>>10);
-			mrMeasurement.mpYMemoryGpu->push_back(mpMSMeasurement->nvml_memory_used_cur>>10);
-			mrMeasurement.mpYMemoryMic->push_back(mpMSMeasurement->mic_memory_used_cur>>10);
+			mrMeasurement.mpYMemoryCpu->push_back(pMsMeasurementCpu->measure_memory_cur[CPU_MEM_RAM_USED]>>10);
+			mrMeasurement.mpYSwapCpu->push_back(pMsMeasurementCpu->measure_memory_cur[CPU_MEM_SWAP_USED]>>10);
+			mrMeasurement.mpYMemoryGpu->push_back(pMsMeasurementGpu->nvml_memory_used_cur>>10);
+			mrMeasurement.mpYMemoryMic->push_back(pMsMeasurementMic->mic_memory_used_cur>>10);
 			
 			if(mrSettings.mWriteResultsToCsv) {
 				printValues(csv_file);
@@ -219,6 +262,22 @@ namespace NData {
 		
 		if(mrSettings.mWriteResultsToCsv) {
 			csv_file.close();
+		}
+		
+		if(!(mpMSSystem->config->cpu_enabled)) {
+			delete pMsMeasurementCpu;
+		}
+		if(!(mpMSSystem->config->gpu_enabled)) {
+			delete pMsMeasurementGpu;
+		}
+		if(!(mpMSSystem->config->fpga_enabled)) {
+			delete pMsMeasurementFpga;
+		}
+		if(!(mpMSSystem->config->mic_enabled)) {
+			delete pMsMeasurementMic;
+		}
+		if(!(mpMSSystem->config->sys_enabled)) {
+			delete pMsMeasurementSys;
 		}
 		
 		exit();

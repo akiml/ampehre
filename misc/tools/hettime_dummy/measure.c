@@ -15,9 +15,9 @@
  * version: 0.1.17 - add a hettime dummy executable for some hetsched measurements
  *          0.1.18 - hettime dummy tool can be used similar to ordinary "sleep" command
  *          0.2.4 - add version check functionality to library, wrappers, and tools
+ *          0.7.0 - modularised measurement struct
  */
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -28,12 +28,12 @@
 
 void signal_int_handler(int signal_number);
 
-static void exec_dummy_app(ARGUMENTS *settings, MSYSTEM *ms, MEASUREMENT *m);
-static void init_measuring_system(ARGUMENTS *settings, MSYSTEM **ms, MEASUREMENT **m);
-static void start_measuring_system(MSYSTEM *ms, MEASUREMENT *m);
-static void stop_measuring_system(MSYSTEM *ms, MEASUREMENT *m);
-static void fini_measuring_system(MSYSTEM **ms, MEASUREMENT **m);
-static void print(ARGUMENTS *settings, MEASUREMENT *m);
+static void exec_dummy_app(ARGUMENTS *settings, MS_SYSTEM *ms);
+static void init_measuring_system(ARGUMENTS *settings, MS_SYSTEM **ms, MS_LIST **m);
+static void start_measuring_system(MS_SYSTEM *ms);
+static void stop_measuring_system(MS_SYSTEM *ms);
+static void fini_measuring_system(MS_SYSTEM **ms, MS_LIST **m);
+static void print(ARGUMENTS *settings, MS_LIST *m);
 
 static pthread_mutex_t mutex;
 
@@ -45,8 +45,8 @@ void signal_int_handler(int signal_number) {
 }
 
 void run(ARGUMENTS *settings) {
-	MSYSTEM *ms			= NULL;
-	MEASUREMENT *m		= NULL;
+	MS_SYSTEM *ms	= NULL;
+	MS_LIST *m		= NULL;
 	
 	if (settings->runtime == 0) {
 		signal(SIGINT, &signal_int_handler);
@@ -57,7 +57,7 @@ void run(ARGUMENTS *settings) {
 	
 	init_measuring_system(settings, &ms, &m);
 	
-	exec_dummy_app(settings, ms, m);
+	exec_dummy_app(settings, ms);
 	
 	print(settings, m);
 	
@@ -68,13 +68,13 @@ void run(ARGUMENTS *settings) {
 	}
 }
 
-static void init_measuring_system(ARGUMENTS *settings, MSYSTEM **ms, MEASUREMENT **m) {
+static void init_measuring_system(ARGUMENTS *settings, MS_SYSTEM **ms, MS_LIST **m) {
 	// Initialize library and measuring system
 	MS_VERSION version = { .major = MS_MAJOR_VERSION, .minor = MS_MINOR_VERSION, .revision = MS_REVISION_VERSION };
 	*ms	= ms_init(&version, settings->cpu_gov, settings->cpu_freq_min, settings->cpu_freq_max, settings->gpu_freq, settings->ipmi_timeout_setting, settings->skip_ms, settings->variant);
 	
 	// Allocate and initialize measurement structs
-	*m	= ms_alloc_measurement();
+	*m	= ms_alloc_measurement(*ms);
 	
 	// Set timer for measurement m
 	ms_set_timer(*m, CPU   , settings->sample_rate_cpu /1000, (settings->sample_rate_cpu %1000) * 1000000, settings->check_for_exit_interrupts_cpu);
@@ -84,21 +84,21 @@ static void init_measuring_system(ARGUMENTS *settings, MSYSTEM **ms, MEASUREMENT
 	ms_init_measurement(*ms, *m, ALL);
 }
 
-static void start_measuring_system(MSYSTEM *ms, MEASUREMENT *m) {
+static void start_measuring_system(MS_SYSTEM *ms) {
 	// Start measuring system
-	ms_start_measurement(ms, m);
+	ms_start_measurement(ms);
 }
 
-static void stop_measuring_system(MSYSTEM *ms, MEASUREMENT *m) {
+static void stop_measuring_system(MS_SYSTEM *ms) {
 	// Stop all measuring procedures
-	ms_stop_measurement(ms, m);
+	ms_stop_measurement(ms);
 	
 	// Join measurement threads and remove thread objects
-	ms_join_measurement(ms, m);
-	ms_fini_measurement(ms, m);
+	ms_join_measurement(ms);
+	ms_fini_measurement(ms);
 }
 
-static void fini_measuring_system(MSYSTEM **ms, MEASUREMENT **m) {
+static void fini_measuring_system(MS_SYSTEM **ms, MS_LIST **m) {
 	// Cleanup the environment before exiting the program
 	ms_free_measurement(*m);
 	ms_fini(*ms);
@@ -107,8 +107,8 @@ static void fini_measuring_system(MSYSTEM **ms, MEASUREMENT **m) {
 	*m	= NULL;
 }
 
-static void exec_dummy_app(ARGUMENTS *settings, MSYSTEM *ms, MEASUREMENT *m) {
-	start_measuring_system(ms, m);
+static void exec_dummy_app(ARGUMENTS *settings, MS_SYSTEM *ms) {
+	start_measuring_system(ms);
 	fprintf(stderr, ">>> 'hettime dummy': measuring system initialized.\n");
 	
 	if (settings->runtime == 0) {
@@ -126,10 +126,10 @@ static void exec_dummy_app(ARGUMENTS *settings, MSYSTEM *ms, MEASUREMENT *m) {
 		}
 	}
 	
-	stop_measuring_system(ms, m);
+	stop_measuring_system(ms);
 	fprintf(stderr, "<<< 'hettime dummy':  measuring system stopped.\n");
 }
 
-static void print(ARGUMENTS *settings, MEASUREMENT *m) {
+static void print(ARGUMENTS *settings, MS_LIST *m) {
 	print_ostream(stdout, settings, m);
 }

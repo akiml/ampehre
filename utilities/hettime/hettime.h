@@ -21,6 +21,7 @@
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
  *          0.6.1 - add json printer to hettime
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __HETTIME_H__
@@ -31,7 +32,7 @@
 #include <time.h>
 #include <string.h>
 
-#include "../../include/measurement.h"
+#include "../../include/ms_measurement.h"
 
 #define LOG_ERROR(msg) \
 	fprintf(stderr, "Error (file: %s, line: %i): %s\n", (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__), __LINE__, msg)

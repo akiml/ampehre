@@ -18,6 +18,7 @@
  *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __CDATASETTINGS_HPP__
@@ -25,7 +26,7 @@
 
 #include "../common/CMutex.hpp"
 
-#include "../../../include/measurement.h"
+#include "../../../include/ms_measurement.h"
 
 // TODO: This is a non-C++ hack!
 #include <stdint.h>

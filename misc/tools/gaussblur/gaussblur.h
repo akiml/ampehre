@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 1/11/15
  * version: 0.2.5 - add gaussblur example application
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __GAUSSBLUR_H__
@@ -24,7 +25,7 @@
 #include <string.h>
 #include <limits.h>
 
-#include "../../../include/measurement.h"
+#include "../../../include/ms_measurement.h"
 
 #undef LOG_ERROR
 #undef LOG_WARN
@@ -61,6 +62,6 @@ typedef uint16_t DATA;
 
 void run(ARGUMENTS *settings);
 
-void print_ostream(FILE *file, ARGUMENTS* settings, MEASUREMENT *m);
+void print_ostream(FILE *file, ARGUMENTS* settings, MS_LIST *m);
 
 #endif /* __GAUSSBLUR_H__ */

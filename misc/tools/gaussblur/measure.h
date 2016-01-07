@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 1/11/15
  * version: 0.2.5 - add gaussblur example application
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __MEASURE_H__
@@ -20,12 +21,12 @@
 
 #include "gaussblur.h"
 
-#include "../../../include/measurement.h"
+#include "../../../include/ms_measurement.h"
 #include "../../../include/ms_version.h"
 
-void init_measuring_system(ARGUMENTS *settings, MSYSTEM **ms, MEASUREMENT **m);
-void start_measuring_system(MSYSTEM *ms, MEASUREMENT *m);
-void stop_measuring_system(MSYSTEM *ms, MEASUREMENT *m);
-void fini_measuring_system(MSYSTEM **ms, MEASUREMENT **m);
+void init_measuring_system(ARGUMENTS *settings, MS_SYSTEM **ms, MS_LIST **m);
+void start_measuring_system(MS_SYSTEM *ms);
+void stop_measuring_system(MS_SYSTEM *ms);
+void fini_measuring_system(MS_SYSTEM **ms, MS_LIST **m);
 
 #endif /* __MEASURE_H__ */

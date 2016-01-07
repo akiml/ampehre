@@ -13,6 +13,7 @@
  * @author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 9/02/14
  * version: 0.1.16 - add wrapper for heterogenous Node and test tool
+ *          0.7.0 - modularised measurement struct
  */
 
 #include "ms_hetnodewrapper_internal.h"
@@ -51,6 +52,7 @@ void set_measurement(int no, MINTERN *mintern, MSDATAINTERN *temp_data) {
 	// Only values for selected resources are read
 	if (((int)mintern->measurements[no].resources & CPU) != 0) {
 		//CPU
+		MS_MEASUREMENT_CPU *pMsMeasurementCpu = getMeasurement(&(mintern->global_m), CPU);
 		mintern->measurements[no].cpu_time_total = cpu_time_total(mintern->global_m);
 		int j = 0;
 		for (j = 0; j < CPUS; j++) {
@@ -58,19 +60,21 @@ void set_measurement(int no, MINTERN *mintern, MSDATAINTERN *temp_data) {
 			mintern->measurements[no].cpu_energy_total_pp0[j] = cpu_energy_total_pp0(mintern->global_m, j);
 			mintern->measurements[no].cpu_energy_total_dram[j] = cpu_energy_total_dram(mintern->global_m, j);
 		}
-		for (j = 0; j < CPU_STATS; j++){		
-			temp_data[no].cpu_util_acc[j] = mintern->global_m->measure_util_acc[j];
+		for (j = 0; j < CPU_STATS; j++){
+			temp_data[no].cpu_util_acc[j] = pMsMeasurementCpu->measure_util_acc[j];
 		}
 	}
 	if (((int)mintern->measurements[no].resources & GPU) != 0) {
 		//GPU
+		MS_MEASUREMENT_GPU *pMsMeasurementGpu = getMeasurement(&(mintern->global_m), GPU);
 		mintern->measurements[no].gpu_time_total = gpu_time_total(mintern->global_m);
 		mintern->measurements[no].gpu_energy_total = gpu_energy_total(mintern->global_m);
-		mintern->measurements[no].gpu_util_avg_gpu = mintern->global_m->nvml_util_gpu_acc;
-		mintern->measurements[no].gpu_util_avg_mem = mintern->global_m->nvml_util_mem_acc;
+		mintern->measurements[no].gpu_util_avg_gpu = pMsMeasurementGpu->nvml_util_gpu_acc;
+		mintern->measurements[no].gpu_util_avg_mem = pMsMeasurementGpu->nvml_util_mem_acc;
 	}
 	if (((int)mintern->measurements[no].resources & FPGA) != 0) {
 		// FPGA
+		MS_MEASUREMENT_FPGA *pMsMeasurementFpga = getMeasurement(&(mintern->global_m), FPGA);
 		mintern->measurements[no].fpga_time_total = fpga_time_total(mintern->global_m);
 		mintern->measurements[no].fpga_energy_total = fpga_energy_total_power_usage(mintern->global_m);
 		mintern->measurements[no].fpga_energy_total_vcc1v0_core = fpga_energy_total_vcc1v0_core(mintern->global_m);
@@ -80,7 +84,7 @@ void set_measurement(int no, MINTERN *mintern, MSDATAINTERN *temp_data) {
 		mintern->measurements[no].fpga_energy_total_imgt_1v2 = fpga_energy_total_imgt_1v2(mintern->global_m);
 		mintern->measurements[no].fpga_energy_total_mgt_1v0 = fpga_energy_total_mgt_1v0(mintern->global_m);
 		mintern->measurements[no].fpga_energy_total_mgt_1v2 = fpga_energy_total_mgt_1v2(mintern->global_m);
-		mintern->measurements[no].fpga_util_avg_comp = mintern->global_m->maxeler_util_comp_acc;
+		mintern->measurements[no].fpga_util_avg_comp = pMsMeasurementFpga->maxeler_util_comp_acc;
 	}
 	if (((int)mintern->measurements[no].resources & SYSTEM) != 0) {
 		// System board
@@ -97,6 +101,7 @@ void get_diff_measurement(int no, MINTERN *mintern, MSDATAINTERN *temp_data) {
 	// Only values for selected resources are read
 	if (((int)mintern->measurements[no].resources & CPU) != 0) {
 		//CPU
+		MS_MEASUREMENT_CPU *pMsMeasurementCpu = getMeasurement(&(mintern->global_m), CPU);
 		mintern->measurements[no].cpu_time_total = cpu_time_total(mintern->global_m) - mintern->measurements[no].cpu_time_total;
 		int j = 0;
 		for (j = 0; j < CPUS; j++) {
@@ -105,7 +110,7 @@ void get_diff_measurement(int no, MINTERN *mintern, MSDATAINTERN *temp_data) {
 			mintern->measurements[no].cpu_energy_total_dram[j] = cpu_energy_total_dram(mintern->global_m, j) - mintern->measurements[no].cpu_energy_total_dram[j];
 		}
 		for (j = 0; j < CPU_STATS; j++){		
-			temp_data[no].cpu_util_acc[j] = mintern->global_m->measure_util_acc[j]-temp_data[no].cpu_util_acc[j];
+			temp_data[no].cpu_util_acc[j] = pMsMeasurementCpu->measure_util_acc[j]-temp_data[no].cpu_util_acc[j];
 		}
 		temp_data[no].cpu_util_active_total = temp_data[no].cpu_util_acc[0] + temp_data[no].cpu_util_acc[1] + temp_data[no].cpu_util_acc[2] + temp_data[no].cpu_util_acc[5] + temp_data[no].cpu_util_acc[6] + temp_data[no].cpu_util_acc[7] + temp_data[no].cpu_util_acc[8];
 		temp_data[no].cpu_util_idle_total = temp_data[no].cpu_util_acc[3] + temp_data[no].cpu_util_acc[4];
@@ -113,13 +118,15 @@ void get_diff_measurement(int no, MINTERN *mintern, MSDATAINTERN *temp_data) {
 	} 
 	if (((int)mintern->measurements[no].resources & GPU) != 0) {
 		//GPU
+		MS_MEASUREMENT_GPU *pMsMeasurementGpu = getMeasurement(&(mintern->global_m), GPU);
 		mintern->measurements[no].gpu_time_total = gpu_time_total(mintern->global_m) - mintern->measurements[no].gpu_time_total;
 		mintern->measurements[no].gpu_energy_total  = gpu_energy_total(mintern->global_m) - mintern->measurements[no].gpu_energy_total;
-		mintern->measurements[no].gpu_util_avg_gpu = (mintern->global_m->nvml_util_gpu_acc - mintern->measurements[no].gpu_util_avg_gpu) / mintern->measurements[no].gpu_time_total;
-		mintern->measurements[no].gpu_util_avg_mem = (mintern->global_m->nvml_util_mem_acc - mintern->measurements[no].gpu_util_avg_mem) / mintern->measurements[no].gpu_time_total;
+		mintern->measurements[no].gpu_util_avg_gpu = (pMsMeasurementGpu->nvml_util_gpu_acc - mintern->measurements[no].gpu_util_avg_gpu) / mintern->measurements[no].gpu_time_total;
+		mintern->measurements[no].gpu_util_avg_mem = (pMsMeasurementGpu->nvml_util_mem_acc - mintern->measurements[no].gpu_util_avg_mem) / mintern->measurements[no].gpu_time_total;
 	} 
 	if (((int)mintern->measurements[no].resources & FPGA) != 0) {
 		// FPGA
+		MS_MEASUREMENT_FPGA *pMsMeasurementFpga = getMeasurement(&(mintern->global_m), FPGA);
 		mintern->measurements[no].fpga_time_total = fpga_time_total(mintern->global_m) - mintern->measurements[no].fpga_time_total;
 		mintern->measurements[no].fpga_energy_total = fpga_energy_total_power_usage(mintern->global_m) - mintern->measurements[no].fpga_energy_total;
 		mintern->measurements[no].fpga_energy_total_vcc1v0_core = fpga_energy_total_vcc1v0_core(mintern->global_m) - mintern->measurements[no].fpga_energy_total_vcc1v0_core;
@@ -129,7 +136,7 @@ void get_diff_measurement(int no, MINTERN *mintern, MSDATAINTERN *temp_data) {
 		mintern->measurements[no].fpga_energy_total_imgt_1v2 = fpga_energy_total_imgt_1v2(mintern->global_m) - mintern->measurements[no].fpga_energy_total_imgt_1v2;
 		mintern->measurements[no].fpga_energy_total_mgt_1v0 = fpga_energy_total_mgt_1v0(mintern->global_m) - mintern->measurements[no].fpga_energy_total_mgt_1v0;
 		mintern->measurements[no].fpga_energy_total_mgt_1v2 = fpga_energy_total_mgt_1v2(mintern->global_m) - mintern->measurements[no].fpga_energy_total_mgt_1v2;
-		mintern->measurements[no].fpga_util_avg_comp = (mintern->global_m->maxeler_util_comp_acc - mintern->measurements[no].fpga_util_avg_comp) / mintern->measurements[no].fpga_time_total;
+		mintern->measurements[no].fpga_util_avg_comp = (pMsMeasurementFpga->maxeler_util_comp_acc - mintern->measurements[no].fpga_util_avg_comp) / mintern->measurements[no].fpga_time_total;
 	}
 	if (((int)mintern->measurements[no].resources & SYSTEM) != 0) {
 		// System board

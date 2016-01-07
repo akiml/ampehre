@@ -106,7 +106,7 @@ endif(CPU_INTEL_SANDY_SUPPORT)
 add_subdirectory(cjson)
 #add_subdirectory(driver)
 add_subdirectory(libmeasure)
-#add_subdirectory(utilities)
+add_subdirectory(utilities)
 add_subdirectory(misc)
 
 install(FILES include/unixsockethandler.h DESTINATION include)

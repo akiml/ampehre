@@ -14,6 +14,7 @@
  * created: 10/13/14
  * version: 0.1.17 - add a hettime dummy executable for some hetsched measurements
  *          0.1.18 - hettime dummy tool can be used similar to ordinary "sleep" command
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __HETTIME_H__
@@ -24,7 +25,7 @@
 #include <time.h>
 #include <string.h>
 
-#include "../../../include/measurement.h"
+#include "../../../include/ms_measurement.h"
 
 #define LOG_ERROR(msg) \
 	fprintf(stderr, "Error (file: %s, line: %i): %s\n", (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__), __LINE__, msg)
@@ -52,6 +53,6 @@ typedef struct __arguments {
 
 void run(ARGUMENTS *settings);
 
-void print_ostream(FILE *file, ARGUMENTS* settings, MEASUREMENT *m);
+void print_ostream(FILE *file, ARGUMENTS* settings, MS_LIST *m);
 
 #endif /* __HETTIME_H__ */

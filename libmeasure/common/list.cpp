@@ -20,7 +20,6 @@
 #include <iostream>
 #include <cstring>
 
-#include <stdlib.h>
 #define UINT64_MAX (0xffffffffffffffff)
 
 static void* allocMeasurement(int id);

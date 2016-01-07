@@ -13,13 +13,13 @@
  * @author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 9/02/14
  * version: 0.1.16 - add wrapper for heterogenous Node and test tool
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __MS_HETNODEWRAPPER_INTERNAL_H__
 #define __MS_HETNODEWRAPPER_INTERNAL_H__
 
 #include <stdio.h>
-#include <stdlib.h>
 #include "../../../include/ms_hetnodewrapper.h"
 
 #define CPU_STATS 9
@@ -33,8 +33,8 @@
  * Struct to store all relevant data for the measurement system.
  */
 typedef struct __mintern {
-	MSYSTEM *global_ms;
-	MEASUREMENT *global_m;
+	MS_SYSTEM *global_ms;
+	MS_LIST *global_m;
 	MEASUREMENT_DATA *measurements;
 	int32_t	resources;
 	uint32_t sample_rate_cpu;

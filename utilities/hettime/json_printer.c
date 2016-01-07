@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.uni-paderborn.de)
  * created: 12/2/15
  * version: 0.6.1 - add json printer to hettime
+ *          0.7.0 - modularised measurement struct
  */
 
 #include "printer.h"
@@ -20,30 +21,30 @@
 
 static void add_config(cJSON *config, ARGUMENTS *settings);
 
-static void add_cpu_values(cJSON *values, MEASUREMENT *m);
-static void add_cpu_energy(cJSON *val_cpu, MEASUREMENT *m);
-static void add_cpu_power(cJSON *val_cpu, MEASUREMENT *m);
-static void add_cpu_temperature(cJSON *val_cpu, MEASUREMENT *m);
-static void add_cpu_frequency(cJSON *val_cpu, MEASUREMENT *m);
-static void add_cpu_memory(cJSON *val_cpu, MEASUREMENT *m);
+static void add_cpu_values(cJSON *values, MS_LIST *m);
+static void add_cpu_energy(cJSON *val_cpu, MS_LIST *m);
+static void add_cpu_power(cJSON *val_cpu, MS_LIST *m);
+static void add_cpu_temperature(cJSON *val_cpu, MS_LIST *m);
+static void add_cpu_frequency(cJSON *val_cpu, MS_LIST *m);
+static void add_cpu_memory(cJSON *val_cpu, MS_LIST *m);
 
-static void add_gpu_values(cJSON *values, MEASUREMENT *m);
+static void add_gpu_values(cJSON *values, MS_LIST *m);
 
-static void add_fpga_values(cJSON *values, MEASUREMENT *m);
-static void add_fpga_energy(cJSON *val_fpga, MEASUREMENT *m);
-static void add_fpga_power(cJSON *val_fpga, MEASUREMENT *m);
+static void add_fpga_values(cJSON *values, MS_LIST *m);
+static void add_fpga_energy(cJSON *val_fpga, MS_LIST *m);
+static void add_fpga_power(cJSON *val_fpga, MS_LIST *m);
 
-static void add_mic_values(cJSON *values, MEASUREMENT *m);
-static void add_mic_energy(cJSON *val_mic, MEASUREMENT *m);
-static void add_mic_power(cJSON* val_mic, MEASUREMENT *m);
-static void add_mic_temperature(cJSON *val_mic, MEASUREMENT *m);
+static void add_mic_values(cJSON *values, MS_LIST *m);
+static void add_mic_energy(cJSON *val_mic, MS_LIST *m);
+static void add_mic_power(cJSON* val_mic, MS_LIST *m);
+static void add_mic_temperature(cJSON *val_mic, MS_LIST *m);
 
-static void add_system_values(cJSON *values, MEASUREMENT *m);
+static void add_system_values(cJSON *values, MS_LIST *m);
 
 static void add_json_leaf_to_object(cJSON *parent, const char *name, double value, const char *unit);
 static void add_json_leaf_to_array(cJSON *array, double value, const char *unit);
 
-void print_json(FILE *json, ARGUMENTS *settings, MEASUREMENT *m){
+void print_json(FILE *json, ARGUMENTS *settings, MS_LIST *m){
 	cJSON *root;
 	cJSON *config;
 	cJSON *values;
@@ -175,7 +176,7 @@ static void add_config(cJSON *config, ARGUMENTS *settings){
 }
 
 
-static void add_cpu_values(cJSON *values, MEASUREMENT *m){
+static void add_cpu_values(cJSON *values, MS_LIST *m){
 	cJSON *val_cpu;
 	cJSON *item;
 	
@@ -197,7 +198,7 @@ static void add_cpu_values(cJSON *values, MEASUREMENT *m){
 	add_cpu_memory(val_cpu, m);
 }
 
-static void add_cpu_energy(cJSON *val_cpu, MEASUREMENT *m){
+static void add_cpu_energy(cJSON *val_cpu, MS_LIST *m){
 	cJSON *item;
 	cJSON *array;
 	
@@ -211,7 +212,7 @@ static void add_cpu_energy(cJSON *val_cpu, MEASUREMENT *m){
 		add_json_leaf_to_object(item, "dram",	cpu_energy_total_dram(m, i),	"mWs");
 	}
 }
-static void add_cpu_power(cJSON *val_cpu, MEASUREMENT *m){
+static void add_cpu_power(cJSON *val_cpu, MS_LIST *m){
 	cJSON *item;
 	cJSON *array;
 	
@@ -226,7 +227,7 @@ static void add_cpu_power(cJSON *val_cpu, MEASUREMENT *m){
 	}
 }
 
-static void add_cpu_temperature(cJSON *val_cpu, MEASUREMENT *m){
+static void add_cpu_temperature(cJSON *val_cpu, MS_LIST *m){
 	cJSON *item;
 	cJSON *array;
 	cJSON *array2;
@@ -244,7 +245,7 @@ static void add_cpu_temperature(cJSON *val_cpu, MEASUREMENT *m){
 	}
 }
 
-static void add_cpu_frequency(cJSON *val_cpu, MEASUREMENT *m){
+static void add_cpu_frequency(cJSON *val_cpu, MS_LIST *m){
 	cJSON *item;
 	cJSON *subitem;
 	cJSON *array;
@@ -271,7 +272,7 @@ static void add_cpu_frequency(cJSON *val_cpu, MEASUREMENT *m){
 	}
 }
 
-static void add_cpu_memory(cJSON *val_cpu, MEASUREMENT *m){
+static void add_cpu_memory(cJSON *val_cpu, MS_LIST *m){
 	cJSON *item;
 	
 	cJSON_AddItemToObject(val_cpu, "memory", item = cJSON_CreateObject());
@@ -287,7 +288,7 @@ static void add_cpu_memory(cJSON *val_cpu, MEASUREMENT *m){
 	add_json_leaf_to_object(item, "max_free",	cpu_swap_free_max(m),	"kiB");
 }
 
-static void add_gpu_values(cJSON *values, MEASUREMENT *m){
+static void add_gpu_values(cJSON *values, MS_LIST *m){
 	cJSON *val_gpu;
 	cJSON *item;
 	
@@ -315,7 +316,7 @@ static void add_gpu_values(cJSON *values, MEASUREMENT *m){
 	add_json_leaf_to_object(item, "max_free",	gpu_memory_free_max(m),	"kiB");	
 }
 
-static void add_fpga_values(cJSON *values, MEASUREMENT *m){
+static void add_fpga_values(cJSON *values, MS_LIST *m){
 	cJSON *val_fpga;
 	cJSON *item;
 	
@@ -336,7 +337,7 @@ static void add_fpga_values(cJSON *values, MEASUREMENT *m){
 
 }
 
-static void add_fpga_energy(cJSON *val_fpga, MEASUREMENT *m){
+static void add_fpga_energy(cJSON *val_fpga, MS_LIST *m){
 	cJSON *item;
 	
 	cJSON_AddItemToObject(val_fpga, "energy_total", item = cJSON_CreateObject());
@@ -350,7 +351,7 @@ static void add_fpga_energy(cJSON *val_fpga, MEASUREMENT *m){
 	add_json_leaf_to_object(item, "total",		fpga_energy_total_power_usage(m),	"mWs");
 }
 
-static void add_fpga_power(cJSON *val_fpga, MEASUREMENT *m){
+static void add_fpga_power(cJSON *val_fpga, MS_LIST *m){
 	cJSON *item;
 	
 	cJSON_AddItemToObject(val_fpga, "power_avg", item = cJSON_CreateObject());
@@ -364,7 +365,7 @@ static void add_fpga_power(cJSON *val_fpga, MEASUREMENT *m){
 	add_json_leaf_to_object(item, "total",		fpga_power_avg_power_usage(m),	"mW");
 }
 
-static void add_mic_values(cJSON *values, MEASUREMENT *m){
+static void add_mic_values(cJSON *values, MS_LIST *m){
 	cJSON *val_mic;
 	cJSON *item;
 	
@@ -394,7 +395,7 @@ static void add_mic_values(cJSON *values, MEASUREMENT *m){
 	
 }
 
-static void add_mic_energy(cJSON *val_mic, MEASUREMENT *m){
+static void add_mic_energy(cJSON *val_mic, MS_LIST *m){
 	cJSON *item;
 	
 	cJSON_AddItemToObject(val_mic, "energy_total", item = cJSON_CreateObject());
@@ -407,7 +408,7 @@ static void add_mic_energy(cJSON *val_mic, MEASUREMENT *m){
 	add_json_leaf_to_object(item, "total",	mic_energy_total_power_usage(m),"mWs");
 }
 
-static void add_mic_power(cJSON* val_mic, MEASUREMENT *m){
+static void add_mic_power(cJSON* val_mic, MS_LIST *m){
 	cJSON *item;
 	
 	cJSON_AddItemToObject(val_mic, "power_avg", item = cJSON_CreateObject());
@@ -420,7 +421,7 @@ static void add_mic_power(cJSON* val_mic, MEASUREMENT *m){
 	add_json_leaf_to_object(item, "total",	mic_power_avg_power_usage(m),	"mW");
 }
 
-static void add_mic_temperature(cJSON *val_mic, MEASUREMENT *m){
+static void add_mic_temperature(cJSON *val_mic, MS_LIST *m){
 	cJSON *item;
 	
 	cJSON_AddItemToObject(val_mic, "temperature_max", item = cJSON_CreateObject());
@@ -434,7 +435,7 @@ static void add_mic_temperature(cJSON *val_mic, MEASUREMENT *m){
 }
 
 
-static void add_system_values(cJSON *values, MEASUREMENT *m){
+static void add_system_values(cJSON *values, MS_LIST *m){
 	cJSON *val_sys;
 	
 	cJSON_AddItemToArray(values, val_sys = cJSON_CreateObject());

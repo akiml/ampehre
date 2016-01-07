@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 1/27/14
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
+ *          0.7.0 - modularised measurement struct
  */
 
 #ifndef __CDATALIBRARY_HPP__
@@ -28,7 +29,7 @@
 #include "CDataSettings.hpp"
 #include "CDataMeasurement.hpp"
 
-#include "../../../include/measurement.h"
+#include "../../../include/ms_measurement.h"
 #include "../../../include/ms_version.h"
 
 namespace NData {
@@ -47,8 +48,8 @@ namespace NData {
 			CDataTimer mTimer;
 			
 			MS_VERSION *mpMSVersion;
-			MSYSTEM *mpMSSystem;
-			MEASUREMENT *mpMSMeasurement;
+			MS_SYSTEM *mpMSSystem;
+			MS_LIST *mpMSMeasurement;
 			
 			struct timespec mTimeStart;
 			struct timespec mTimeCurrent;

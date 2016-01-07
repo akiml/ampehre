@@ -43,7 +43,7 @@ extern "C" {
 					break;
 				case SKIP_NEVER:
 				default:
-					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger));
+					pMaxeler =  new NLibMeasure::CMeasureMaxeler<1, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger));
 			}
 		}
 		return  (void*) pMaxeler;

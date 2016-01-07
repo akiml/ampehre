@@ -22,7 +22,6 @@
  *          0.6.1 - add json printer to hettime
  */
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>

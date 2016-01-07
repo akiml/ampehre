@@ -14,19 +14,20 @@
  * created: 7/29/14
  * version: 0.1.11 - add a seperate csv printer file to hettime tool
  *          0.5.6 - extended hettime csv printer
+ *          0.7.0 - modularised measurement struct
  */
 
 #include "printer.h"
 
-static void print_csv_cpu(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MEASUREMENT* m);
-static void print_csv_gpu(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MEASUREMENT* m);
-static void print_csv_fpga(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MEASUREMENT* m);
-static void print_csv_mic(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MEASUREMENT* m);
-static void print_csv_sysboard(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MEASUREMENT* m);
-static void print_csv_server(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MEASUREMENT* m);
+static void print_csv_cpu(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
+static void print_csv_gpu(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
+static void print_csv_fpga(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
+static void print_csv_mic(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
+static void print_csv_sysboard(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
+static void print_csv_server(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
 static void print_csv_settings(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, ARGUMENTS* settings);
 
-void print_csv(FILE *csv, ARGUMENTS* settings, MEASUREMENT *m, EXEC_TIME *exec_time) {
+void print_csv(FILE *csv, ARGUMENTS* settings, MS_LIST *m, EXEC_TIME *exec_time) {
 	int cur_caption_pos = 0;
 	int cur_unit_pos 	= 0;
 	int cur_value_pos 	= 0;
@@ -64,7 +65,7 @@ void print_csv(FILE *csv, ARGUMENTS* settings, MEASUREMENT *m, EXEC_TIME *exec_t
 	free(units);
 }
 
-static void print_csv_cpu(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MEASUREMENT* m){
+static void print_csv_cpu(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m){
 	
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "CPU;");
 	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, ";");
@@ -179,7 +180,7 @@ static void print_csv_cpu(FILE *csv, char* captions, int* cur_caption_pos, char*
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"kiB;kiB;kiB;kiB;kiB;kiB;");
 }
 
-static void print_csv_gpu(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MEASUREMENT* m){
+static void print_csv_gpu(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m){
 	
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "GPU;");
 	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, ";");
@@ -212,7 +213,7 @@ static void print_csv_gpu(FILE *csv, char* captions, int* cur_caption_pos, char*
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"mWs;mW;\u00b0C;MHz;MHz;MHz;%%;%%;kiB;kiB;kiB;");
 }
 
-static void print_csv_fpga(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MEASUREMENT* m){
+static void print_csv_fpga(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m){
 	
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "FPGA;");
 	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, ";");
@@ -264,7 +265,7 @@ static void print_csv_fpga(FILE *csv, char* captions, int* cur_caption_pos, char
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"%%;");
 }
 
-static void print_csv_mic(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MEASUREMENT* m){
+static void print_csv_mic(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m){
 	
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "MIC;");
 	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, ";");
@@ -338,7 +339,7 @@ static void print_csv_mic(FILE *csv, char* captions, int* cur_caption_pos, char*
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"kiB;kiB;kiB;");
 }
 
-static void print_csv_sysboard(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MEASUREMENT* m){
+static void print_csv_sysboard(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m){
 
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "SYSTEM_BOARD;");
 	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, ";");
@@ -355,7 +356,7 @@ static void print_csv_sysboard(FILE *csv, char* captions, int* cur_caption_pos, 
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"Ws;W;\u00b0C;");
 }
 
-static void print_csv_server(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MEASUREMENT* m){
+static void print_csv_server(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m){
 	
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "SERVER;");
 	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, ";");

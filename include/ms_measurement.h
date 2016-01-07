@@ -21,7 +21,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-	
+
+#include <stdlib.h>
+
 #include "ms_driver.h"
 #include "ms_ipmiwrapper.h"
 #include "ms_version.h"

@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 2/04/15
  * version: 0.3.1 - add correlation example application
+ *          0.7.0 - modularised measurement struct
  */
 
 #include "printer.h"
@@ -21,7 +22,7 @@
 
 #include "settings.h"
 
-void print_json(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
+void print_json(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 	cJSON *json		= cJSON_CreateObject();
 	
 	double energy	= 0.0;

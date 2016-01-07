@@ -90,6 +90,7 @@ namespace NLibMeasure {
 	template <int TSkipMs, int TVariant>
 	void CMeasureMaxeler<TSkipMs, TVariant>::measure(void *pMsMeasurement, int32_t& rThreadNum) {
 		MS_MEASUREMENT_FPGA *pMsMeasurementFpga = (MS_MEASUREMENT_FPGA *) pMsMeasurement;
+		measurePower(pMsMeasurementFpga, rThreadNum);
 		if(TVariant==VARIANT_FULL) {
 			if(!(mMeasureCounter++ % TSkipMs)) {
 				measureTemperature(pMsMeasurementFpga, rThreadNum);

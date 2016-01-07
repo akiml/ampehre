@@ -17,12 +17,12 @@
  *          0.1.13 - make GPU frequency settable
  *          0.1.15 - make CPU frequency settable
  *          0.2.4 - add version check functionality to library, wrappers, and tools
+ *          0.7.0 - modularised measurement struct
  */
 
 #include "ms_taskwrapper_internal.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 
 static MINTERNAL *minternal = NULL;
 
@@ -71,7 +71,7 @@ void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, ui
 	}
 	
 	// Allocate and initialize measurement structs
-	minternal->global_m		= ms_alloc_measurement();
+	minternal->global_m		= ms_alloc_measurement(minternal->global_ms);
 	
 	// Set timer for measurement m
 	ms_set_timer(minternal->global_m, CPU   , minternal->sample_rate_cpu /1000, (minternal->sample_rate_cpu %1000) * 1000000, minternal->check_for_exit_interrupts_cpu);
@@ -93,16 +93,16 @@ void mstw_free(void) {
 
 void mstw_start(void) {
 	// Start measuring system
-	ms_start_measurement(minternal->global_ms, minternal->global_m);
+	ms_start_measurement(minternal->global_ms);
 }
 
 void mstw_stop(void) {
 	// Stop all measuring procedures
-	ms_stop_measurement(minternal->global_ms, minternal->global_m);
+	ms_stop_measurement(minternal->global_ms);
 	
 	// Join measurement threads and remove thread objects
-	ms_join_measurement(minternal->global_ms, minternal->global_m);
-	ms_fini_measurement(minternal->global_ms, minternal->global_m);
+	ms_join_measurement(minternal->global_ms);
+	ms_fini_measurement(minternal->global_ms);
 }
 
 void mstw_reg_sighandler_start(void(*signal_handler)(int)) {

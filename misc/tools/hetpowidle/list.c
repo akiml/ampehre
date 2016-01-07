@@ -13,13 +13,14 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 10/27/14
  * version: 0.1.19 - add a hettime based idle power measurement tool
+ *          0.7.0 - modularised measurement struct
  */
 
 #include "list.h"
 
 #include <float.h>
 
-void append_list_create_element(IDLE_POWER **ip_list, ARGUMENTS *settings, MEASUREMENT *m) {
+void append_list_create_element(IDLE_POWER **ip_list, ARGUMENTS *settings, MS_LIST *m) {
 	IDLE_POWER *ip = create_element(settings, m);
 	
 	append_list(ip_list, settings, ip);
@@ -42,7 +43,7 @@ void append_list(IDLE_POWER **ip_list, ARGUMENTS *settings, IDLE_POWER *ip) {
 	ip->prev	= temp;
 }
 
-IDLE_POWER *create_element(ARGUMENTS *settings, MEASUREMENT *m) {
+IDLE_POWER *create_element(ARGUMENTS *settings, MS_LIST  *m) {
 	IDLE_POWER* ip = malloc(sizeof(IDLE_POWER));
 	if (NULL == ip) {
 		LOG_ERROR("Cannot allocate memory.");

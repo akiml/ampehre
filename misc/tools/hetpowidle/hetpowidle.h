@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 10/27/14
  * version: 0.1.19 - add a hettime based idle power measurement tool
+ *          0.7.0 - modularised measurement struct 
  */
 
 #ifndef __HETPOWIDLE_H__
@@ -22,7 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../../../include/measurement.h"
+#include "../../../include/ms_measurement.h"
 
 #define LOG_ERROR(msg) \
 	fprintf(stderr, "Error (file: %s, line: %i): %s\n", (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__), __LINE__, msg)
