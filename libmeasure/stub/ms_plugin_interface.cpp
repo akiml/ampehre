@@ -15,7 +15,7 @@
  * version: 0.5.4 - add dynamic loading of resource specific libraries
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
- *          0.7.0 - modularised measurement struct
+ *          0.7.0 - modularized measurement struct
  */
 
 #include "../../include/ms_plugin_interface.h"

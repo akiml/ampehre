@@ -23,7 +23,7 @@
  *          0.1.11 - add a seperate csv printer file to hettime tool
  *          0.4.0 - MIC integration into libmeasure
  *          0.5.0 - add cpu, gpu and mic memory information
- *          0.7.0 - modularised measurement struct
+ *          0.7.0 - modularized measurement struct
  */
 
 #include "printer.h"

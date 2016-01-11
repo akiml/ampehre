@@ -14,7 +14,7 @@
  * created: 10/13/14
  * version: 0.1.17 - add a hettime dummy executable for some hetsched measurements
  *          0.1.18 - hettime dummy tool can be used similar to ordinary "sleep" command
- *          0.7.0 - modularised measurement struct
+ *          0.7.0 - modularized measurement struct
  */
 
 #include <stdio.h>

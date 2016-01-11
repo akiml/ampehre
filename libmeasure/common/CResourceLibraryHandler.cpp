@@ -13,7 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 6/11/15
  * version: 0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
- *          0.7.0 - modularised measurement struct
+ *          0.7.0 - modularized measurement struct
  */
 
 #include "CResourceLibraryHandler.hpp"

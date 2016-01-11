@@ -13,7 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 10/27/14
  * version: 0.1.19 - add a hettime based idle power measurement tool
- *          0.7.0 - modularised measurement struct 
+ *          0.7.0 - modularized measurement struct 
  */
 
 #ifndef __HETPOWIDLE_H__

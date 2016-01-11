@@ -13,7 +13,7 @@
 # author: Achim Lösch (achim.loesch@upb.de)
 # created: 10/13/14
 # version: 0.1.17 - add a hettime dummy executable for some hetsched measurements
-#          0.5.1 - modularised libmeasure
+#          0.5.1 - modularized libmeasure
 #          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
 #                  and to select between the full or light library.
 #

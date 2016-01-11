@@ -24,7 +24,7 @@
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library. 
- *          0.7.0 - modularised measurement struct
+ *          0.7.0 - modularized measurement struct
  */
 
 #include "CMgmt.hpp"

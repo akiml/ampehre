@@ -13,7 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 8/05/14
  * version: 0.1.0 - initial implementation
- *          0.7.0 - modularised measurement struct
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __MS_TASKWRAPPER_INTERNAL_H__

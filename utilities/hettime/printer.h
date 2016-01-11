@@ -15,7 +15,7 @@
  * version: 0.3.1 - add correlation example application
  *          0.5.6 - extended hettime csv printer
  *          0.6.1 - add json printer to hettime
- *          0.7.0 - modularised measurement struct
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __PRINTER_H__

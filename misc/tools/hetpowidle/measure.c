@@ -14,7 +14,7 @@
  * created: 10/27/14
  * version: 0.1.19 - add a hettime based idle power measurement tool
  *          0.2.4 - add version check functionality to library, wrappers, and tools
- *          0.7.0 - modularised measurement struct
+ *          0.7.0 - modularized measurement struct
  */
 
 #include <stdio.h>

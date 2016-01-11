@@ -18,13 +18,13 @@
  *          0.1.15 - make CPU frequency settable
  *          0.2.2 - add semaphore to synchronize the start of the measurements
  *          0.4.0 - MIC integration into libmeasure
- *          0.5.1 - modularised libmeasure
+ *          0.5.1 - modularized libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.5.4 - add dynamic loading of resource specific libraries
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
- *          0.7.0 - modularised measurement struct
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __CMGMT_HPP__

@@ -12,7 +12,7 @@
  * 
  * author: Christoph Knorr (cknorr@mail.uni-paderborn.de)
  * created: 12/10/15
- * version: 0.7.0 - modularised measurement struct
+ * version: 0.7.0 - modularized measurement struct
  */
 
 #ifndef __MS_MIC_INTEL_KNC_H__

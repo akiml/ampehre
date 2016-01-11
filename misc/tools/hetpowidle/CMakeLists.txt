@@ -13,7 +13,7 @@
 # author: Achim Lösch (achim.loesch@upb.de)
 # created: 10/27/14
 # version: 0.1.19 - add a hettime based idle power measurement tool
-#          0.5.1 - modularised libmeasure
+#          0.5.1 - modularized libmeasure
 #          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
 #                  and to select between the full or light library.
 #

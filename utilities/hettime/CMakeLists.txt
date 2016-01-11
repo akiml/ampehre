@@ -16,7 +16,7 @@
 #          0.1.10 - add child execution time measurement
 #          0.1.11 - add a seperate csv printer file to hettime tool
 #          0.3.2 - add a networking component to show influence of a task to measurements in GUI
-#          0.5.1 - modularised libmeasure
+#          0.5.1 - modularized libmeasure
 #          0.6.1 - add json printer to hettime
 #
 

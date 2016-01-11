@@ -14,7 +14,7 @@
  * created: 7/29/14
  * version: 0.1.11 - add a seperate csv printer file to hettime tool
  *          0.5.6 - extended hettime csv printer
- *          0.7.0 - modularised measurement struct
+ *          0.7.0 - modularized measurement struct
  */
 
 #include "printer.h"

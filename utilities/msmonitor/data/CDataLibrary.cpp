@@ -18,7 +18,7 @@
  *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
- *          0.7.0 - modularised measurement struct
+ *          0.7.0 - modularized measurement struct
  */
 
 #include "CDataLibrary.hpp"
@@ -138,50 +138,17 @@ namespace NData {
 		double clockCpu0_temp;
 		double clockCpu1_temp;
 		
-		MS_MEASUREMENT_CPU *pMsMeasurementCpu;
-		MS_MEASUREMENT_GPU *pMsMeasurementGpu;
-		MS_MEASUREMENT_FPGA *pMsMeasurementFpga;
-		MS_MEASUREMENT_MIC *pMsMeasurementMic;
-		MS_MEASUREMENT_SYS *pMsMeasurementSys;
+		MS_MEASUREMENT_CPU *pMsMeasurementCpu = NULL;
+		MS_MEASUREMENT_GPU *pMsMeasurementGpu = NULL;
+		MS_MEASUREMENT_FPGA *pMsMeasurementFpga = NULL;
+		MS_MEASUREMENT_MIC *pMsMeasurementMic = NULL;
+		MS_MEASUREMENT_SYS *pMsMeasurementSys = NULL;
 		
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
 		//get available resource specific measurement structs
-		if(mpMSSystem->config->cpu_enabled) {
-			pMsMeasurementCpu = (MS_MEASUREMENT_CPU *) getMeasurement(&mpMSMeasurement, CPU);
-		} else {
-			pMsMeasurementCpu = new MS_MEASUREMENT_CPU;
-			memset(pMsMeasurementCpu ,0, sizeof(MS_MEASUREMENT_CPU));
-		}
-		
-		if(mpMSSystem->config->gpu_enabled) {
-			pMsMeasurementGpu = (MS_MEASUREMENT_GPU *) getMeasurement(&mpMSMeasurement, GPU);
-		} else {
-			pMsMeasurementGpu = new MS_MEASUREMENT_GPU;
-			memset(pMsMeasurementGpu ,0, sizeof(MS_MEASUREMENT_GPU));
-		}
-		
-		if(mpMSSystem->config->fpga_enabled) {
-			pMsMeasurementFpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&mpMSMeasurement, FPGA);
-		} else {
-			pMsMeasurementFpga = new MS_MEASUREMENT_FPGA;
-			memset(pMsMeasurementFpga ,0, sizeof(MS_MEASUREMENT_FPGA));
-		}
-		
-		if(mpMSSystem->config->mic_enabled) {
-			pMsMeasurementMic = (MS_MEASUREMENT_MIC *) getMeasurement(&mpMSMeasurement, MIC);
-		} else {
-			pMsMeasurementMic = new MS_MEASUREMENT_MIC;
-			memset(pMsMeasurementMic ,0, sizeof(MS_MEASUREMENT_MIC));
-		}
-		
-		if(mpMSSystem->config->sys_enabled) {
-			pMsMeasurementSys = (MS_MEASUREMENT_SYS *) getMeasurement(&mpMSMeasurement, SYSTEM);
-		} else {
-			pMsMeasurementSys = new MS_MEASUREMENT_SYS;
-			memset(pMsMeasurementSys ,0, sizeof(MS_MEASUREMENT_SYS));
-		}
+		getMs_Measurements(&pMsMeasurementCpu, &pMsMeasurementGpu, &pMsMeasurementFpga, &pMsMeasurementMic, &pMsMeasurementSys);
 		
 		if(mrSettings.mWriteResultsToCsv) {
 			char *home_directory = getenv("HOME");
@@ -264,21 +231,7 @@ namespace NData {
 			csv_file.close();
 		}
 		
-		if(!(mpMSSystem->config->cpu_enabled)) {
-			delete pMsMeasurementCpu;
-		}
-		if(!(mpMSSystem->config->gpu_enabled)) {
-			delete pMsMeasurementGpu;
-		}
-		if(!(mpMSSystem->config->fpga_enabled)) {
-			delete pMsMeasurementFpga;
-		}
-		if(!(mpMSSystem->config->mic_enabled)) {
-			delete pMsMeasurementMic;
-		}
-		if(!(mpMSSystem->config->sys_enabled)) {
-			delete pMsMeasurementSys;
-		}
+		deleteUnusedMs_Measurements(&pMsMeasurementCpu, &pMsMeasurementGpu, &pMsMeasurementFpga, &pMsMeasurementMic, &pMsMeasurementSys);
 		
 		exit();
 	}
@@ -380,5 +333,64 @@ namespace NData {
 		<< mrMeasurement.mpYMemoryMic->getLast() << ";"
 		
 		<< std::endl;
+	}
+	
+	void CDataLibrary::getMs_Measurements(MS_MEASUREMENT_CPU **pMsMeasurementCpu, MS_MEASUREMENT_GPU **pMsMeasurementGpu,
+									MS_MEASUREMENT_FPGA **pMsMeasurementFpga, MS_MEASUREMENT_MIC **pMsMeasurementMic,
+									MS_MEASUREMENT_SYS **pMsMeasurementSys) {
+		if(mpMSSystem->config->cpu_enabled) {
+			*pMsMeasurementCpu = (MS_MEASUREMENT_CPU *) getMeasurement(&mpMSMeasurement, CPU);
+		} else {
+			*pMsMeasurementCpu = new MS_MEASUREMENT_CPU;
+			memset(*pMsMeasurementCpu ,0, sizeof(MS_MEASUREMENT_CPU));
+		}
+		
+		if(mpMSSystem->config->gpu_enabled) {
+			*pMsMeasurementGpu = (MS_MEASUREMENT_GPU *) getMeasurement(&mpMSMeasurement, GPU);
+		} else {
+			*pMsMeasurementGpu = new MS_MEASUREMENT_GPU;
+			memset(*pMsMeasurementGpu ,0, sizeof(MS_MEASUREMENT_GPU));
+		}
+		
+		if(mpMSSystem->config->fpga_enabled) {
+			*pMsMeasurementFpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&mpMSMeasurement, FPGA);
+		} else {
+			*pMsMeasurementFpga = new MS_MEASUREMENT_FPGA;
+			memset(*pMsMeasurementFpga ,0, sizeof(MS_MEASUREMENT_FPGA));
+		}
+		
+		if(mpMSSystem->config->mic_enabled) {
+			*pMsMeasurementMic = (MS_MEASUREMENT_MIC *) getMeasurement(&mpMSMeasurement, MIC);
+		} else {
+			*pMsMeasurementMic = new MS_MEASUREMENT_MIC;
+			memset(*pMsMeasurementMic ,0, sizeof(MS_MEASUREMENT_MIC));
+		}
+		
+		if(mpMSSystem->config->sys_enabled) {
+			*pMsMeasurementSys = (MS_MEASUREMENT_SYS *) getMeasurement(&mpMSMeasurement, SYSTEM);
+		} else {
+			*pMsMeasurementSys = new MS_MEASUREMENT_SYS;
+			memset(*pMsMeasurementSys ,0, sizeof(MS_MEASUREMENT_SYS));
+		}
+	}
+	
+	void CDataLibrary::deleteUnusedMs_Measurements(MS_MEASUREMENT_CPU **pMsMeasurementCpu, MS_MEASUREMENT_GPU **pMsMeasurementGpu,
+											 MS_MEASUREMENT_FPGA **pMsMeasurementFpga, MS_MEASUREMENT_MIC **pMsMeasurementMic,
+											 MS_MEASUREMENT_SYS **pMsMeasurementSys) {
+		if(!(mpMSSystem->config->cpu_enabled)) {
+			delete *pMsMeasurementCpu;
+		}
+		if(!(mpMSSystem->config->gpu_enabled)) {
+			delete *pMsMeasurementGpu;
+		}
+		if(!(mpMSSystem->config->fpga_enabled)) {
+			delete *pMsMeasurementFpga;
+		}
+		if(!(mpMSSystem->config->mic_enabled)) {
+			delete *pMsMeasurementMic;
+		}
+		if(!(mpMSSystem->config->sys_enabled)) {
+			delete *pMsMeasurementSys;
+		}
 	}
 }

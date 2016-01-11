@@ -13,7 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 6/01/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
- *          0.7.0 - modularised measurement struct
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __CMEASURESTUBTHREAD_HPP__

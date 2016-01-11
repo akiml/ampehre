@@ -14,7 +14,7 @@
  * created: 9/09/14
  * version: 0.1.12 - use more C++ features in library
  *          0.2.2 - add semaphore to synchronize the start of the measurements
- *          0.5.1 - modularised libmeasure
+ *          0.5.1 - modularized libmeasure
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 

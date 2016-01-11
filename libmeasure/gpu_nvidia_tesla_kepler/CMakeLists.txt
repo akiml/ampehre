@@ -12,11 +12,11 @@
 #
 # author: Christoph Knorr (cknorr@mail.upb.de)
 # created: 5/12/15
-# version: 0.5.1 - modularised libmeasure
+# version: 0.5.1 - modularized libmeasure
 #          0.5.4 - add dynamic loading of resource specific libraries
 #          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
 #                  and to select between the full or light library.
-#          0.7.0 - modularised measurement struct
+#          0.7.0 - modularized measurement struct
 #
 
 find_library(NVML_LIBRARY libnvidia-ml.so PATHS /usr/lib64)

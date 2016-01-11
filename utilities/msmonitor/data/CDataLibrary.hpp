@@ -13,7 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 1/27/14
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
- *          0.7.0 - modularised measurement struct
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __CDATALIBRARY_HPP__
@@ -66,6 +66,12 @@ namespace NData {
 			void freeMSSystem(void);
 			void printHeader(std::ofstream& rCsvFile);
 			void printValues(std::ofstream& rCsvFile);
+			void getMs_Measurements(MS_MEASUREMENT_CPU **pMsMeasurementCpu, MS_MEASUREMENT_GPU **pMsMeasurementGpu,
+									MS_MEASUREMENT_FPGA **pMsMeasurementFpga, MS_MEASUREMENT_MIC **pMsMeasurementMic,
+									MS_MEASUREMENT_SYS **pMsMeasurementSys);
+			void deleteUnusedMs_Measurements(MS_MEASUREMENT_CPU **pMsMeasurementCpu, MS_MEASUREMENT_GPU **pMsMeasurementGpu,
+											 MS_MEASUREMENT_FPGA **pMsMeasurementFpga, MS_MEASUREMENT_MIC **pMsMeasurementMic,
+											 MS_MEASUREMENT_SYS **pMsMeasurementSys);
 			
 		protected:
 			void run(void);
