@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.uni-paderborn.de)
  * created: 12/10/15
  * version: 0.7.0 - modularized measurement struct
+ *          0.7.1 - move functions to query measurement results into the modules
  */
 
 #ifndef __MS_SYS_DELL_IDRAC7_H__
@@ -21,6 +22,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+#include "ms_list.h"
 
 // Only for library internal usage!
 typedef struct __measurement_internal_sys {
@@ -54,6 +57,48 @@ typedef struct __ms_measurement_sys {
 	uint32_t ipmi_energy_server_acc_since_reset;
 	double ipmi_power_server_avg_since_reset;
 } MS_MEASUREMENT_SYS;
+
+inline double system_time_total(MS_LIST *ms_list) {
+	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
+	NULL_CHECK(ms_measurement_sys);
+	
+	return ms_measurement_sys->ipmi_time_runtime;
+}
+
+inline double system_energy_board(MS_LIST *ms_list) {
+	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
+	NULL_CHECK(ms_measurement_sys);
+	
+	return ms_measurement_sys->ipmi_energy_sysboard_acc;
+}
+
+inline double system_power_board_avg(MS_LIST *ms_list) {
+	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
+	NULL_CHECK(ms_measurement_sys);
+	
+	return ms_measurement_sys->ipmi_power_sysboard_avg;
+}
+
+inline double system_temp_max(MS_LIST *ms_list) {
+	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
+	NULL_CHECK(ms_measurement_sys);
+	
+	return ms_measurement_sys->ipmi_temperature_sysboard_max;
+}
+
+inline double system_energy_total(MS_LIST *ms_list) {
+	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
+	NULL_CHECK(ms_measurement_sys);
+	
+	return ms_measurement_sys->ipmi_energy_server_acc;
+}
+
+inline double system_power_avg(MS_LIST *ms_list) {
+	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
+	NULL_CHECK(ms_measurement_sys);
+	
+	return ms_measurement_sys->ipmi_power_server_avg;
+}
 
 #ifdef __cplusplus
 }

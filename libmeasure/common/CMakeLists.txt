@@ -18,6 +18,7 @@
 #          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
 #                  and to select between the full or light library.
 #          0.7.0 - modularized measurement struct
+#          0.7.1 - move functions to query measurement results into the modules
 #
 
 find_package(Threads)
@@ -31,7 +32,7 @@ else (SIGNALS)
 endif (SIGNALS)
 
 set(SRC_COMMON_LIBRARY
-	interface.cpp mgmt.cpp list.cpp CThread.cpp CMutex.cpp CLogger.cpp CMgmt.cpp CSemaphore.cpp CMeasureThreadTimer.cpp CMeasureAbstractResource.cpp CMeasureAbstractThread.cpp CResourceLibraryHandler.cpp
+	mgmt.cpp list.cpp CThread.cpp CMutex.cpp CLogger.cpp CMgmt.cpp CSemaphore.cpp CMeasureThreadTimer.cpp CMeasureAbstractResource.cpp CMeasureAbstractThread.cpp CResourceLibraryHandler.cpp
 )
 
 # Full library

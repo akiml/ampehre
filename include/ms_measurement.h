@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.uni-paderborn.de)
  * created: 12/10/15
  * version: 0.7.0 - modularized measurement struct
+ *          0.7.1 - move functions to query measurement results into the modules
  */
 
 #ifndef __MS_MEASUREMENT_H__
@@ -27,6 +28,7 @@ extern "C" {
 #include "ms_driver.h"
 #include "ms_ipmiwrapper.h"
 #include "ms_version.h"
+#include "ms_list.h"
 #include "ms_cpu_intel_xeon_sandy.h"
 #include "ms_gpu_nvidia_tesla_kepler.h"
 #include "ms_fpga_maxeler_max3a.h"
@@ -35,13 +37,6 @@ extern "C" {
 
 // Value from kernel (2.6.38.8+mpss3.4.1) which may change with a new kernel version
 #define S_PER_JIFFY 0.01
-
-#define CPU		0x01
-#define GPU		0x02
-#define FPGA	0x04
-#define SYSTEM	0x08
-#define MIC 	0x10
-#define ALL		(CPU | GPU | FPGA | SYSTEM | MIC)
 		
 #ifdef CPU_LIB
 	#define CPU_LIB_NAME "libms_cpu_intel_xeon_sandy.so"
@@ -93,12 +88,6 @@ typedef struct __ms_config {
 	int32_t sys_enabled;
 } MS_CONFIG;
 
-typedef struct __ms_list {
-	int32_t resource_id;
-	void *ms_measurement;
-	struct __ms_list *next;
-} MS_LIST;
-
 typedef struct __ms_system{
 	void *mgmt;
 	MS_CONFIG *config;
@@ -123,110 +112,6 @@ void ms_join_measurement(MS_SYSTEM *ms_system);
 
 void ms_reg_sighandler_start(MS_SYSTEM *ms_system, void(*signal_handler)(int));
 void ms_reg_sighandler_stop(MS_SYSTEM *ms_system, void(*signal_handler)(int));
-
-//Functions for MS_LIST
-void appendList(MS_LIST **ms_list, int id);
-void *getMeasurement(MS_LIST **ms_list, int id);
-void deleteList(MS_LIST **ms_list);
-
-//TODO: This functions should be moved to the resource specific modules
-// CPU
-double cpu_time_total(MS_LIST *ms_list);
-double cpu_energy_total_pkg(MS_LIST *ms_list, int cpu);
-double cpu_energy_total_pp0(MS_LIST *ms_list, int cpu);
-double cpu_energy_total_dram(MS_LIST *ms_list, int cpu);
-double cpu_power_avg_pkg(MS_LIST *ms_list, int cpu);
-double cpu_power_avg_pp0(MS_LIST *ms_list, int cpu);
-double cpu_power_avg_dram(MS_LIST *ms_list, int cpu);
-uint32_t cpu_temp_max_pkg(MS_LIST *ms_list, int cpu);
-uint32_t cpu_temp_max_core(MS_LIST *ms_list, int cpu, int core);
-double cpu_freq_avg_core(MS_LIST *ms_list, int cpu, int core);
-double cpu_freq_eff_core(MS_LIST *ms_list, int cpu, int core);
-double cpu_active_avg_all(MS_LIST *ms_list);
-double cpu_idle_avg_all(MS_LIST *ms_list);
-double cpu_util_avg_all(MS_LIST *ms_list);
-uint32_t cpu_memory_total(MS_LIST *ms_list);
-uint32_t cpu_memory_used_max(MS_LIST *ms_list);
-uint32_t cpu_memory_free_max(MS_LIST *ms_list);
-uint32_t cpu_swap_total(MS_LIST *ms_list);
-uint32_t cpu_swap_used_max(MS_LIST *ms_list);
-uint32_t cpu_swap_free_max(MS_LIST *ms_list);
-
-// GPU
-double gpu_time_total(MS_LIST *ms_list);
-double gpu_energy_total(MS_LIST *ms_list);
-double gpu_power_avg(MS_LIST *ms_list);
-uint32_t gpu_temp_max(MS_LIST *ms_list);
-double gpu_freq_avg_graph(MS_LIST *ms_list);
-double gpu_freq_avg_sm(MS_LIST *ms_list);
-double gpu_freq_avg_mem(MS_LIST *ms_list);
-double gpu_util_avg_gpu(MS_LIST *ms_list);
-double gpu_util_avg_mem(MS_LIST *ms_list);
-uint32_t gpu_memory_total(MS_LIST *ms_list);
-uint32_t gpu_memory_used_max(MS_LIST *ms_list);
-uint32_t gpu_memory_free_max(MS_LIST *ms_list);
-
-// FPGA
-double fpga_time_total(MS_LIST *ms_list);
-double fpga_energy_total_vcc1v0_core(MS_LIST *ms_list);
-double fpga_energy_total_vcc1v5_ddr(MS_LIST *ms_list);
-double fpga_energy_total_vcc2v5_aux(MS_LIST *ms_list);
-double fpga_energy_total_imgt_1v0(MS_LIST *ms_list);
-double fpga_energy_total_imgt_1v2(MS_LIST *ms_list);
-double fpga_energy_total_mgt_1v0(MS_LIST *ms_list);
-double fpga_energy_total_mgt_1v2(MS_LIST *ms_list);
-double fpga_energy_total_power_usage(MS_LIST *ms_list);
-double fpga_power_avg_vcc1v0_core(MS_LIST *ms_list);
-double fpga_power_avg_vcc1v5_ddr(MS_LIST *ms_list);
-double fpga_power_avg_vcc2v5_aux(MS_LIST *ms_list);
-double fpga_power_avg_imgt_1v0(MS_LIST *ms_list);
-double fpga_power_avg_imgt_1v2(MS_LIST *ms_list);
-double fpga_power_avg_mgt_1v0(MS_LIST *ms_list);
-double fpga_power_avg_mgt_1v2(MS_LIST *ms_list);
-double fpga_power_avg_power_usage(MS_LIST *ms_list);
-double fpga_temp_max_ifpga(MS_LIST *ms_list);
-double fpga_temp_max_mfpga(MS_LIST *ms_list);
-double fpga_util_avg_comp(MS_LIST *ms_list);
-
-//MIC
-double mic_time_total(MS_LIST *ms_list);
-double mic_energy_total_pcie(MS_LIST *ms_list);
-double mic_energy_total_c2x3(MS_LIST *ms_list);
-double mic_energy_total_c2x4(MS_LIST *ms_list);
-double mic_energy_total_vccp(MS_LIST *ms_list);
-double mic_energy_total_vddg(MS_LIST *ms_list);
-double mic_energy_total_vddq(MS_LIST *ms_list);
-double mic_energy_total_power_usage(MS_LIST *ms_list);
-double mic_power_avg_pcie(MS_LIST *ms_list);
-double mic_power_avg_c2x3(MS_LIST *ms_list);
-double mic_power_avg_c2x4(MS_LIST *ms_list);
-double mic_power_avg_vccp(MS_LIST *ms_list);
-double mic_power_avg_vddg(MS_LIST *ms_list);
-double mic_power_avg_vddq(MS_LIST *ms_list);
-double mic_power_avg_power_usage(MS_LIST *ms_list);
-uint32_t mic_temp_max_die(MS_LIST *ms_list);
-uint32_t mic_temp_max_gddr(MS_LIST *ms_list);
-uint32_t mic_temp_max_fan_in(MS_LIST *ms_list);
-uint32_t mic_temp_max_fan_out(MS_LIST *ms_list);
-uint32_t mic_temp_max_vccp(MS_LIST *ms_list);
-uint32_t mic_temp_max_vddg(MS_LIST *ms_list);
-uint32_t mic_temp_max_vddq(MS_LIST *ms_list);
-double mic_freq_avg_mem(MS_LIST *ms_list);
-double mic_freq_avg_core(MS_LIST *ms_list);
-double mic_active_avg_all(MS_LIST *ms_list);
-double mic_idle_avg_all(MS_LIST *ms_list);
-double mic_util_avg_all(MS_LIST *ms_list);
-uint32_t mic_memory_total(MS_LIST *ms_list);
-uint32_t mic_memory_used_max(MS_LIST *ms_list);
-uint32_t mic_memory_free_max(MS_LIST *ms_list);
-
-// System
-double system_time_total(MS_LIST *ms_list);
-double system_energy_board(MS_LIST *ms_list);
-double system_power_board_avg(MS_LIST *ms_list);
-double system_temp_max(MS_LIST *ms_list);
-double system_energy_total(MS_LIST *ms_list);
-double system_power_avg(MS_LIST *ms_list);
 
 #ifdef __cplusplus
 }

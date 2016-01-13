@@ -23,8 +23,8 @@
  */
 #define MS_MAJOR_VERSION	0
 #define MS_MINOR_VERSION	7
-#define MS_REVISION_VERSION	0
-#define MS_VERSION_STRING	"0.7.0"
+#define MS_REVISION_VERSION	1
+#define MS_VERSION_STRING	"0.7.1"
 
 #ifndef BUILD_DRIVER
 #include <stdint.h>

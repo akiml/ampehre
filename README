@@ -64,3 +64,4 @@ History:
         and to select between the full or light library. 
 0.6.1 - add json printer to hettime
 0.7.0 - modularized measurement struct
+0.7.1 - move functions to query measurement results into the modules

@@ -21,6 +21,7 @@
 #          0.5.4 - add dynamic loading of resource specific libraries
 #          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
 #          0.5.8 - change project name to ampehre
+#          0.7.1 - move functions to query measurement results into the modules
 #
 
 cmake_minimum_required (VERSION 2.6)
@@ -111,7 +112,7 @@ else(CPU_INTEL_SANDY_SUPPORT)
 	message(STATUS "${BoldYellow}INFO: Compile with cpu  intel   xeon   sandy DISABLED.${ColourReset}")
 endif(CPU_INTEL_SANDY_SUPPORT)
 
-include_directories(${MS_LIBRARY_MODULE_PATH})
+include_directories(${MS_LIBRARY_MODULE_PATH} include/)
 
 add_subdirectory(cjson)
 #add_subdirectory(driver)
@@ -130,3 +131,4 @@ install(FILES include/ms_hetnodewrapper.h DESTINATION include)
 install(FILES include/ms_ipmiwrapper.h DESTINATION include)
 install(FILES include/ms_version.h DESTINATION include)
 install(FILES include/ms_plugin_interface.h DESTINATION include)
+install(FILES include/ms_list.h DESTINATION include)
