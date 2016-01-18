@@ -14,6 +14,7 @@
  * created: 12/2/15
  * version: 0.6.1 - add json printer to hettime
  *          0.7.0 - modularized measurement struct
+ *          0.7.2 - add real, user and sys time to hettime
  */
 
 #include "printer.h"
@@ -41,10 +42,12 @@ static void add_mic_temperature(cJSON *val_mic, MS_LIST *m);
 
 static void add_system_values(cJSON *values, MS_LIST *m);
 
+static void add_time_values(cJSON *values, EXEC_TIME *exec_time);
+
 static void add_json_leaf_to_object(cJSON *parent, const char *name, double value, const char *unit);
 static void add_json_leaf_to_array(cJSON *array, double value, const char *unit);
 
-void print_json(FILE *json, ARGUMENTS *settings, MS_LIST *m){
+void print_json(FILE *json, ARGUMENTS *settings, MS_LIST *m, EXEC_TIME *exec_time){
 	cJSON *root;
 	cJSON *config;
 	cJSON *values;
@@ -60,6 +63,7 @@ void print_json(FILE *json, ARGUMENTS *settings, MS_LIST *m){
 	add_fpga_values(values, m);
 	add_mic_values(values, m);
 	add_system_values(values, m);
+	add_time_values(values, exec_time);
 	
 	fprintf(json, cJSON_Print(root));
 	
@@ -452,4 +456,16 @@ static void add_system_values(cJSON *values, MS_LIST *m){
 	add_json_leaf_to_object(item, "total",	system_power_avg(m),		"W");
 	
 	add_json_leaf_to_object(val_sys, "temperature_max",	system_temp_max(m),	"\u00b0C");
+}
+
+static void add_time_values(cJSON *values, EXEC_TIME *exec_time) {
+	cJSON *val_time;
+	
+	cJSON_AddItemToArray(values, val_time = cJSON_CreateObject());
+	cJSON_AddStringToObject(val_time, "resource", "time");
+	
+	add_json_leaf_to_object(val_time, "real", exec_time->real, "s");
+	add_json_leaf_to_object(val_time, "user", exec_time->user, "s");
+	add_json_leaf_to_object(val_time, "sys", exec_time->sys, "s");
+	
 }

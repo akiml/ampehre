@@ -24,6 +24,7 @@
  *          0.4.0 - MIC integration into libmeasure
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.7.0 - modularized measurement struct
+ *          0.7.2 - add real, user and sys time to hettime
  */
 
 #include "printer.h"
@@ -33,6 +34,7 @@ static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MS_LIST *m);
 static void print_ostream_fpga(FILE *file, ARGUMENTS *settings, MS_LIST *m);
 static void print_ostream_mic(FILE *file, ARGUMENTS *settings, MS_LIST *m);
 static void print_ostream_system(FILE *file, ARGUMENTS *settings, MS_LIST *m);
+static void print_ostream_time(FILE *file, EXEC_TIME *exec_time);
 
 void print_ostream(FILE *file, ARGUMENTS *settings, MS_LIST *m, EXEC_TIME *exec_time) {
 	fprintf(file,
@@ -67,6 +69,11 @@ void print_ostream(FILE *file, ARGUMENTS *settings, MS_LIST *m, EXEC_TIME *exec_
 		"\nSystem:\n=======\n"
 	);
 	print_ostream_system(file, settings, m);
+	
+	fprintf(file,
+		"\nTime:\n=======\n"
+	);
+	print_ostream_time(file, exec_time);
 }
 
 static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
@@ -390,5 +397,16 @@ static void print_ostream_system(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 		system_power_board_avg(m),
 		system_power_avg(m),
 		system_temp_max(m)
+	);
+}
+
+static void print_ostream_time(FILE *file, EXEC_TIME *exec_time) {
+	fprintf(file,
+		"real                    [ s ]: %lf\n"
+		"user                    [ s ]: %lf\n"
+		"sys                     [ s ]: %lf\n",
+		 exec_time->real,
+		 exec_time->user,
+		 exec_time->sys
 	);
 }

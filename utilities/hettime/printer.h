@@ -33,6 +33,6 @@
 
 void print_ostream(FILE *file, ARGUMENTS* settings, MS_LIST *m, EXEC_TIME *exec_time);
 void print_csv(FILE *csv, ARGUMENTS* settings, MS_LIST *m, EXEC_TIME *exec_time);
-void print_json(FILE *json, ARGUMENTS *settings, MS_LIST *m);
+void print_json(FILE *json, ARGUMENTS *settings, MS_LIST *m, EXEC_TIME *exec_time);
 
 #endif /* __PRINTER_H__ */

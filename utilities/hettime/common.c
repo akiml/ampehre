@@ -13,11 +13,13 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 8/03/14
  * version: 0.1.10 - add child execution time measurement
+ *          0.7.2 - add real, user and sys time to hettime
  */
 
 #include "hettime.h"
 
 #include <sys/mman.h>
+#include <unistd.h>
 #include <string.h>
 
 void alloc_exec_time(EXEC_TIME **time) {
@@ -41,6 +43,7 @@ void get_current_time(struct timespec *time_cur) {
 }
 
 void calc_exec_time_diff(EXEC_TIME *time) {
+	int jiffies_per_second = sysconf(_SC_CLK_TCK);
 	if ((time->time_stop.tv_nsec - time->time_start.tv_nsec) < 0) {
 		time->time_diff.tv_sec	= 				time->time_stop.tv_sec	- time->time_start.tv_sec	- 1;
 		time->time_diff.tv_nsec	= 1000000000 + 	time->time_stop.tv_nsec	- time->time_start.tv_nsec;
@@ -49,4 +52,8 @@ void calc_exec_time_diff(EXEC_TIME *time) {
 		time->time_diff.tv_nsec	= time->time_stop.tv_nsec	- time->time_start.tv_nsec;
 	}
 	time->exec_time_diff	= (double)(time->time_diff.tv_sec) + ((double)(time->time_diff.tv_nsec) / 1000000000.0);
+	
+	time->real = (time->stop - time->start) / (double) jiffies_per_second;
+	time->user = (time->time_stop_tms.tms_cutime - time->time_start_tms.tms_utime) / (double) jiffies_per_second;
+	time->sys  = (time->time_stop_tms.tms_cstime - time->time_start_tms.tms_stime) / (double) jiffies_per_second;
 }
