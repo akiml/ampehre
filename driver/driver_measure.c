@@ -354,14 +354,14 @@ static int ipmi_request(int netfn, int cmd, unsigned char * msgdata, int size){
 		mutex_unlock(&ipmi_mutex);
 		return -rv;
 	}
-	rv = ipmi_request_settime(ipmi_data->user, &(ipmi_data->address), ipmi_data->msgid, &msg, ipmi_data, 0, 0, 0);
+	rv = ipmi_request_settime(ipmi_data->user, &(ipmi_data->address), ipmi_data->msgid, &msg, ipmi_data, 0, -1, 0);
 	if(rv){
 		printk("Measure: Error in IPMI request!\n");
 		mutex_unlock(&ipmi_mutex);
 		return -rv;
 	}
 	//The timeout value is in jiffies
-	rv = wait_for_completion_timeout(&ipmi_data->read_complete, IPMI_TIMEOUT);
+	rv = wait_for_completion_timeout(&ipmi_data->read_complete, msecs_to_jiffies(IPMI_TIMEOUT));
 	if(rv == 0){
 		printk("Measure: IPMI request time out.\n");
 		mutex_unlock(&ipmi_mutex);

@@ -35,12 +35,14 @@ typedef struct __arguments {
 	uint32_t sample_rate_cpu;
 	uint32_t sample_rate_gpu;
 	uint32_t sample_rate_fpga;
+	uint32_t sample_rate_mic;
 	uint32_t sample_rate_sys;
 	enum gpu_frequency gpu_freq;
 	enum cpu_governor cpu_gov;
 	uint32_t cpu_freq_min;
 	uint32_t cpu_freq_max;
 	uint32_t runtime;
+	uint32_t resources;
 } ARGUMENTS;
 
 void run(ARGUMENTS *settings);

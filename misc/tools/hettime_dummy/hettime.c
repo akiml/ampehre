@@ -66,6 +66,9 @@ int main(int argc, char **argv) {
 	if (settings->sample_rate_fpga <  50) {
 		LOG_WARN("FPGA sampling rate should be >= 50ms.");
 	}
+	if (settings->sample_rate_mic  < 100) {
+		LOG_WARN("MIC sampling rate should be >= 100ms.");
+	}
 	if (settings->sample_rate_sys  < 100) {
 		LOG_WARN("System sampling rate should be >= 100ms.");
 	}
@@ -99,14 +102,16 @@ static void init_settings(ARGUMENTS **settings) {
 	
 	// Please, set the default settings here
 	(*settings)->sample_rate_cpu	= 30;
-	(*settings)->sample_rate_gpu	= 50;
-	(*settings)->sample_rate_fpga	= 60;
+	(*settings)->sample_rate_gpu	= 40;
+	(*settings)->sample_rate_fpga	= 50;
+	(*settings)->sample_rate_mic	= 100;
 	(*settings)->sample_rate_sys	= 100;
 	(*settings)->gpu_freq			= GPU_FREQUENCY_CUR;
 	(*settings)->cpu_gov			= CPU_GOVERNOR_ONDEMAND;
 	(*settings)->cpu_freq_min		= 0;
 	(*settings)->cpu_freq_max		= 0;
 	(*settings)->runtime			= 0;
+	(*settings)->resources			= CPU | GPU | FPGA;
 }
 
 static void free_settings(ARGUMENTS **settings) {

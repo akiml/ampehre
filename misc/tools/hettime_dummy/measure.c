@@ -80,8 +80,9 @@ static void init_measuring_system(ARGUMENTS *settings, MSYSTEM **ms, MEASUREMENT
 	ms_set_timer(*m, CPU   , settings->sample_rate_cpu /1000, (settings->sample_rate_cpu %1000) * 1000000);
 	ms_set_timer(*m, GPU   , settings->sample_rate_gpu /1000, (settings->sample_rate_gpu %1000) * 1000000);
 	ms_set_timer(*m, FPGA  , settings->sample_rate_fpga/1000, (settings->sample_rate_fpga%1000) * 1000000);
+	ms_set_timer(*m, MIC   , settings->sample_rate_mic /1000, (settings->sample_rate_mic %1000) * 1000000);
 	ms_set_timer(*m, SYSTEM, settings->sample_rate_sys /1000, (settings->sample_rate_sys %1000) * 1000000);
-	ms_init_measurement(*ms, *m, ALL);
+	ms_init_measurement(*ms, *m, settings->resources);
 }
 
 static void start_measuring_system(MSYSTEM *ms, MEASUREMENT *m) {

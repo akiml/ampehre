@@ -64,7 +64,7 @@
 #include <asm/system.h>
 #endif /* KERNEL_CENTOS65 */
 
-#define IPMI_TIMEOUT 20
+#define IPMI_TIMEOUT 200
 
 #define CPU_STAT 0x0000000000000000
 #define MSR 0x0100000000000000
