@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 6/01/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __CMEASURESTUBTHREAD_HPP__
@@ -25,7 +26,7 @@
 namespace NLibMeasure {
 	class CMeasureStubThread : public CMeasureAbstractThread {
 		public:
-			CMeasureStubThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes);
+			CMeasureStubThread(CLogger& rLogger, CSemaphore& rStartSem, void* pMsMeasurement, CMeasureAbstractResource& rMeasureRes);
 			~CMeasureStubThread();
 			
 		public:

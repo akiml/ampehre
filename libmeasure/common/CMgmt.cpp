@@ -22,11 +22,14 @@
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.5.4 - add dynamic loading of resource specific libraries
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
+ *          0.7.0 - modularized measurement struct
  */
 
 #include "CMgmt.hpp"
 
-typedef void (*trigger_resource_custom_t)(void*);
+typedef void (*trigger_resource_custom_t)(void*, void*);
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,19 +41,21 @@ void emptySighandler(int signal) {
 }
 #endif /* __cplusplus */
 
-CMgmt::CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency) :
+CMgmt::CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency, uint64_t ipmi_timeout_setting, skip_ms_rate skip_ms_rate,  lib_variant variant) :
 	mLogger(),
 	mResources(),
-	mStartSem()
+	mStartSem(),
+	mLibVariant(variant)
 	{
-	uint64_t params_cpu[] = {cpuGovernor, cpuFrequencyMin, cpuFrequencyMax};
-	uint64_t params_gpu[] = {gpuFrequency};
+	uint64_t params_cpu[]	= {cpuGovernor, cpuFrequencyMin, cpuFrequencyMax};
+	uint64_t params_gpu[]	= {gpuFrequency};
+	uint64_t params_sys[]	= {ipmi_timeout_setting};
 	
-	mResources[CPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, CPU_LIB_NAME, params_cpu);
-	mResources[GPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, GPU_LIB_NAME, params_gpu);
-	mResources[FPGA] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, FPGA_LIB_NAME, NULL);
-	mResources[SYSTEM]	= new NLibMeasure::CResourceLibraryHandler(mLogger, SYS_LIB_NAME, NULL);
-	mResources[MIC] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, MIC_LIB_NAME, NULL);
+	mResources[CPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, CPU_LIB_NAME, mLibVariant, skip_ms_rate, (void*) params_cpu);
+	mResources[GPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, GPU_LIB_NAME, mLibVariant, skip_ms_rate, (void*) params_gpu);
+	mResources[FPGA] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, FPGA_LIB_NAME, mLibVariant, skip_ms_rate, NULL);
+	mResources[SYSTEM]	= new NLibMeasure::CResourceLibraryHandler(mLogger, SYS_LIB_NAME, mLibVariant, skip_ms_rate, (void*) params_sys);
+	mResources[MIC] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, MIC_LIB_NAME, mLibVariant, skip_ms_rate, NULL);
 	
 	mpActionStart	= NULL;
 	mpActionStop	= NULL;
@@ -67,26 +72,25 @@ CMgmt::~CMgmt() {
 		delete i.second;
 	}
 	
-	
-#ifndef LIGHT
 #ifdef SIGNALS
-	if (mpActionStart) {
-		sigaction(SIGUSR1, 0, 0);
-		delete mpActionStart;
-	}
-	if (mpActionStop) {
-		sigaction(SIGUSR2, 0, 0);
-		delete mpActionStop;
+	if(mLibVariant == VARIANT_FULL){
+		if (mpActionStart) {
+			sigaction(SIGUSR1, 0, 0);
+			delete mpActionStart;
+		}
+		if (mpActionStop) {
+			sigaction(SIGUSR2, 0, 0);
+			delete mpActionStop;
+		}
 	}
 #endif /* SIGNALS */
-#endif /* LIGHT */
 
 }
 
 void CMgmt::initMaxelerForceIdle (void) {
 	trigger_resource_custom_t maxeler_force_idle = (trigger_resource_custom_t)mResources[FPGA]->loadFunction("trigger_resource_custom");
 	
-	maxeler_force_idle(mResources[FPGA]->getResource());
+	maxeler_force_idle(mResources[FPGA]->getResource(), NULL);
 }
 
 void CMgmt::regSighandlerStart(void(*signal_handler)(int)) {
@@ -161,8 +165,8 @@ void CMgmt::postStartSem(int count){
 	mStartSem.post(count);
 }
 
-void CMgmt::initMeasureThread(int res, MEASUREMENT* pMeasurement) {
-	mResources[res]->initResourceThread(mStartSem, pMeasurement);
+void CMgmt::initMeasureThread(int res, MS_LIST* pMsList) {
+	mResources[res]->initResourceThread(mStartSem, pMsList);
 }
 
 void CMgmt::finiMeasureThread(int res) {

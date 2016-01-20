@@ -13,12 +13,13 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/22/15
  * version: 0.5.3 - add abstract measure and abstract measure thread
+ *          0.7.0 - modularized measurement struct
  */
 
 #include "CMeasureAbstractThread.hpp"
 
 namespace NLibMeasure {
-    CMeasureAbstractThread::CMeasureAbstractThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureResource):
+    CMeasureAbstractThread::CMeasureAbstractThread(CLogger& rLogger, CSemaphore& rStartSem, void *pMsMeasurement, CMeasureAbstractResource& rMeasureResource):
 		CThread(),
 		mThreadID(0),
 		mThreadNum(-1),
@@ -26,7 +27,7 @@ namespace NLibMeasure {
 		mThreadStateStop(true),
 		mrLog(rLogger),
 		mrStartSem(rStartSem),
-		mpMeasurement(pMeasurement),
+		mpMsMeasurement(pMsMeasurement),
 		mrMeasureResource(rMeasureResource),
 		mTimer(rLogger, rStartSem),
 		mMutexTimer(),

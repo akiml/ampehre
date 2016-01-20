@@ -33,7 +33,7 @@ static void correlation_preprocessing(DATA (*data)[N_CORRELATION], DATA* mean, D
 static void init_correlation_app(DATA **stddev, DATA **mean, DATA **symmat, DATA **data);
 static void fini_correlation_app(DATA **stddev, DATA **mean, DATA **symmat, DATA **data);
 
-static void print(ARGUMENTS *settings, MEASUREMENT *m);
+static void print(ARGUMENTS *settings, MS_LIST *m);
 
 static void init_array(DATA (*data)[N_CORRELATION]) {
 	int i, j;
@@ -141,7 +141,7 @@ void run(ARGUMENTS *settings) {
 #endif
 	
 	//MSYSTEM *ms		= NULL;
-	//MEASUREMENT *m	= NULL;
+	//MS_LIST *m	= NULL;
 	
 	DATA *stddev	= NULL;
 	DATA *mean		= NULL;
@@ -217,7 +217,7 @@ void run(ARGUMENTS *settings) {
 	//fini_measuring_system(&ms, &m);
 }
 
-static void print(ARGUMENTS *settings, MEASUREMENT *m) {
+static void print(ARGUMENTS *settings, MS_LIST *m) {
 	size_t size = 2047;
 	char filename[size+1];
 	memset(filename, 0, size+1);

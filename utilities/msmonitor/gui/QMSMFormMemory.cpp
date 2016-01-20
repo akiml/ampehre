@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/05/14
  * version: 0.5.0 - add cpu, gpu and mic memory information
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  */
 
 #include "QMSMFormMemory.hpp"
@@ -39,7 +40,7 @@ namespace Ui {
 		mpCurveMemoryGpu->setPen(mColorGpu);
 		mpCurveMemoryMic->setPen(mColorMic);
 		
-		setupCurves(mpDataHandler->getSettings().mNumberOfTicks);
+		setupCurves();
 		
 		mpCurveMemoryCpu->attach(qwtPlot);
 		mpCurveSwapCpu->attach(qwtPlot);
@@ -66,14 +67,14 @@ namespace Ui {
 		return spFormMemory;
 	}
 	
-	void QMSMFormMemory::setupCurves(uint32_t currentTick) {
+	void QMSMFormMemory::setupCurves() {
 		uint32_t ticks			= mpDataHandler->getSettings().mNumberOfTicks-1;
 		
-		double *x				= mpDataHandler->getMeasurement().mpX+currentTick;
-		double *y_memory_cpu	= mpDataHandler->getMeasurement().mpYMemoryCpu+currentTick;
-		double *y_swap_cpu		= mpDataHandler->getMeasurement().mpYSwapCpu+currentTick;
-		double *y_memory_gpu	= mpDataHandler->getMeasurement().mpYMemoryGpu+currentTick;
-		double *y_memory_mic	= mpDataHandler->getMeasurement().mpYMemoryMic+currentTick;
+		double *x				= mpDataHandler->getMeasurement().mpX->getDataPtr();
+		double *y_memory_cpu	= mpDataHandler->getMeasurement().mpYMemoryCpu->getDataPtr();
+		double *y_swap_cpu		= mpDataHandler->getMeasurement().mpYSwapCpu->getDataPtr();
+		double *y_memory_gpu	= mpDataHandler->getMeasurement().mpYMemoryGpu->getDataPtr();
+		double *y_memory_mic	= mpDataHandler->getMeasurement().mpYMemoryMic->getDataPtr();
 				
 		mpCurveMemoryCpu->setRawData(x, y_memory_cpu, ticks);
 		mpCurveSwapCpu->setRawData(x, y_swap_cpu, ticks);

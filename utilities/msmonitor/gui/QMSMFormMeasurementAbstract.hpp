@@ -15,6 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.4.1 - add MIC support to msmonitor
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  */
 
 #ifndef __QMSMFORMMEASUREMENTABSTRACT_HPP__
@@ -86,7 +87,7 @@ namespace Ui {
 		protected:
 			void createActions(void);
 			QwtText createTitle(QString title);
-			virtual void setupCurves(uint32_t currentTick) = 0;
+			virtual void setupCurves() = 0;
 			void scaleAxis(double xValue, double yValueMin, double yValueMax);
 			virtual double getMiddleOfYAxis(void) = 0;
 			

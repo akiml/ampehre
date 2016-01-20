@@ -13,7 +13,9 @@
 # author: Achim Lösch (achim.loesch@upb.de)
 # created: 8/05/14
 # version: 0.1.0 - initial cmake file
-#          0.5.1 - modularised libmeasure
+#          0.5.1 - modularized libmeasure
+#          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+#                  and to select between the full or light library.
 #
 
 # Full library
@@ -23,11 +25,3 @@ add_library(twmeasure SHARED
 target_link_libraries(twmeasure ${MS_LIBRARY})
 
 install(TARGETS twmeasure LIBRARY DESTINATION lib)
-
-# Light library
-add_library(twmeasurelight SHARED
-	ms_taskwrapper.c ms_taskwrapper_measure.c
-)
-target_link_libraries(twmeasurelight ${MS_LIBRARY_LIGHT})
-
-install(TARGETS twmeasurelight LIBRARY DESTINATION lib)

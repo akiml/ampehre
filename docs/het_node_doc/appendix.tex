@@ -1,5 +1,24 @@
+%
+% appendix.tex
+%
+% Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>
+% All rights reserved.
+%
+% This documentation may be modified and distributed under the terms
+% of the BSD license. See the LICENSE file for details.
+%
+% encoding: UTF-8
+% tab size: 4
+%
+% author: Christoph Knorr (cknorrh@mail.uni-paderborn.de)
+% created: 7/27/14
+% version: 0.5.8 - change project name to ampehre
+%          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+%                  and to select between the full or light library. 
+%
+
 \section{Recommended Sampling Rates} \label{app:A}
-Users must specify a sampling rate for each resource which is compiled as libmeasure module. The sampling rate defines how often measurement values are queried from the devices. Low sampling rates can produce substantial CPU load, since all the measurement threads are executed on the CPU. Hence, sampling rates have to be chosen carefully. Moreover, they have an impact on the accuracy of the measurement results and the CPU utilization. We have to find a trade-off between accuracy of the measurements and the CPU utilization which also leads to different CPU power consumption. Therefore we have methodically examined different sampling rate combinations using all five modules runnable on our heterogeneous system. We have measured the power consumption and utilization while all resources have been in idle state. The results are shown in Figure \ref{fig:CPUUtilization} and \ref{fig:CPUPower}. Obviously, the CPU utilization and power consumption is highly dependent on specific system configurations. We hope that our results are helpful anyway.\\
+Users must specify a sampling rate for each resource which is compiled as libmeasure module. The sampling rate defines how often measurement values are queried from the devices. Low sampling rates can produce substantial CPU load, since all the measurement threads are executed on the CPU. Hence, sampling rates have to be chosen carefully. Moreover, they have an impact on the accuracy of the measurement results and the CPU utilization. We have to find a trade-off between accuracy of the measurements and the CPU utilization which also leads to different CPU power consumption. Therefore we have methodically examined different sampling rate combinations using all five modules runnable on our heterogeneous system. We have used libmeasure in its \texttt{VARIANT\_FULL} (all sensors are sampled) with high accuracy (\texttt{skip\_ms\_rate} set to \texttt{SKIP\_NEVER}). We have measured the power consumption and utilization while all resources have been in idle state. The results are shown in Figure \ref{fig:CPUUtilization} and \ref{fig:CPUPower}. Obviously, the CPU utilization and power consumption is highly dependent on specific system configurations. We hope that our results are helpful anyway.\\
 
 Figure \ref{fig:CPUUtilization} shows the CPU utilization, sampling all sensors of all currently supported resources as specified in Section \ref{sec:hardware}. The lines indicate our recommendations to achieve utilizations below a specific thresholds. For example, the blue line indicates that the utilization induced by our measuring library loading all resource-specifc modules stays below 2 \%, if the sampling rates CPU: 40 ms, MIC: 50 ms, GPU: 40 ms, FPGA: 70 ms and System 100 ms or higher are used for the measurements.
 
@@ -22,77 +41,87 @@ Figure \ref{fig:CPUPower} shows the resulting CPU power consumption induced by s
 \end{figure}
 
 \clearpage
+\begin{landscape}
 \section{Utility usage}
 \label{app:manpage}
-Each of our tools can be run with the ``-h'' option to show a help message where eyery command line option is briefly explained. The help dialog of hettime is shown in the following Listing. 
-
-\begin{lstlisting}[language=sh,basicstyle=\tiny,stringstyle=\color{black},keywordstyle=\color{black}]
+Each of our tools can be run with the ``-h'' option to show a help message where eyery command line option is briefly explained. The help dialog of hettime is shown in the following Listing.
+\begin{lstlisting}[language=sh,stringstyle=\color{black},keywordstyle=\color{black}]
 $ hettime -h
 Usage:
-hettime [-h|-?|-i|-c SAMPLE_CPU|-g SAMPLE_GPU|-f SAMPLE_FPGA|-s SAMPLE_SYS|
-         -G FREQUENCY|-C GOVERNOR|-L FREQUENCY|-H FREQUENCY|-o RESULT_FILE|
-         -v CSV_FILE|-u] -e EXECUTABLE [-a "ARGS"]
-
--c SAMPLE_CPU  | Sampling rate for CPU power/temp measurements in 
-			   | ms.
-               | Default: 100ms. Recommended minimum: 20ms.
--g SAMPLE_GPU  | Sampling rate for GPU power/temp measurements in
-			   | ms.
-               | Default: 100ms. Recommended minimum: 30ms.
--f SAMPLE_FPGA | Sampling rate for FPGA power/temp measurements in
-			   | ms.
-               | Default: 100ms. Recommended minimum: 50ms.
--m SAMPLE_MIC  | Sampling rate for MIC power/temp measurements in
-			   | ms.
-               | Default: 100ms. Recommended minimum: 20ms.
--s SAMPLE_SYS  | Sampling rate for system-wide power/temp
-			   | measurements in ms.
-               | Default: 100ms. Recommended minimum: 100ms.
--e EXECUTABLE  | Name of the executable. This option is mandatory.
--a "ARGS"      | Specify the arguments for executable EXECUTABLE
-			   | with this option.
-               | Note that the arguments have to be seperated by
-               | spaces. The arguments must be surrounded by
-               | quotation marks! Note that the ARGS option
-               | has to be the last in the argument list!
--G FREQUENCY   | Set a GPU frequency before the child application
-			   | get started.
-               | Possible frequency settings are:
-               | min, MIN, minimum, MINIMUM
-               |    Set GPU frequency to its minimum value.
-               | max, MAX, maximum, MAXIMUM
-               |    Set GPU frequency to its maximum value.
-               | cur, CUR, current, CURRENT
-               |    Don't set GPU frequency.
-               |	Leave the current setting untouched.
-               | Default: cur.
--C GOVERNOR    | Set a CPU frequency scaling governor for the
-			   | 'acpi-cpufreq' driver.
-               | Possible governors are:
-               | save, SAVE, powersave, POWERSAVE
-               |    Force CPU to use the lowest possible frequency.
-               | dmnd, DMND, ondemand, ONDEMAND
-               |    Dynamic frequency scaling. Aggresive strategy.
-               | cons, CONS, conservative, CONSERVATIVE
-               |    Dynamic frequency scaling.
-               | Conservative strategy.
-               | perf, PERF, performance, PERFORMANCE
-               |    Force CPU to use the highest possible 
-               | 	frequency.
-               | Default: dmnd.
--L FREQUENCY   | Set the lowest permitted CPU frequency in MHz.
--H FREQUENCY   | Set the highest permitted CPU frequency in MHz.
--o RESULT_FILE | Save results in a file instead of printing
-			   | to stdout.
--v CSV_FILE    | Save results in a CSV table file.
--u             | Use UNIX socket handler library to communicate
-			   | with msmonitor.
--i             | Forcing FPGA to idle after measuring system
-			   | initialization.
--h             | Print this help message.
--?             | Print this help message.
+hettime [-h|-?|-i|-c "SAMPLE_CPU, CHECK_EXIT_INTER_CPU"|-g "SAMPLE_GPU, CHECK_EXIT_INTER_GPU"|
+		 -f "SAMPLE_FPGA, CHECK_EXIT_INTER_FPGA"| -m "SAMPLE_MIC, CHECK_EXIT_INTER_MIC"|
+		 -s "SAMPLE_SYS, CHECK_EXIT_INTER_SYS"|-G FREQUENCY|-C GOVERNOR|-L FREQUENCY| -H FREQUENCY|
+		 -o RESULT_FILE|-v CSV_FILE|-u] -e EXECUTABLE [-a "ARGS"]
+-c "SAMPLE_CPU,            | Sampling rate for CPU power/temp measurements in ms.
+    CHECK_EXIT_INTER_CPU"  | Check for exit interrupts defines how often it is checked whether the measurement
+                           | should be stopped between two measurement points.
+                           | Default: 100ms, 1. Recommended minimum: 20ms.
+-g "SAMPLE_GPU,            | Sampling rate for GPU power/temp measurements in ms.
+    CHECK_EXIT_INTER_GPU"  | Check for exit interrupts defines how often it is checked whether the measurement
+                           | should be stopped between two measurement points.
+                           | Default: 100ms, 1. Recommended minimum: 30ms.
+-f "SAMPLE_FPGA,           | Sampling rate for FPGA power/temp measurements in ms.
+    CHECK_EXIT_INTER_FPGA" | Check for exit interrupts defines how often it is checked whether the measurement
+                           | should be stopped between two measurement points.
+                           | Default: 100ms, 1. Recommended minimum: 50ms.
+-m "SAMPLE_MIC,            | Sampling rate for MIC power/temp measurements in ms.
+    CHECK_EXIT_INTER_MIC"  | Check for exit interrupts defines how often it is checked whether the measurement
+                           | should be stopped between two measurement points.
+                           | Default: 100ms, 1. Recommended minimum: 20ms.
+-s "SAMPLE_SYS             | Sampling rate for system-wide power/temp measurements in ms.
+    CHECK_EXIT_INTER_SYS"  |  Check for exit interrupts defines how often it is checked whether the measurement
+                           | should be stopped between two measurement points.
+                           | Default: 100ms, 1. Recommended minimum: 100ms.
+-S SKIP_MS_RATE            | Skip measurement rate defines how often certain measurements
+                           | are performed.
+                           | Possible settings are:
+                           | periodic, PERIODIC, Periodic
+                           |    Temperature and memory information are measured only at every 10th measuring point.
+                           | never, NEVER, Never
+                           |    Temperature and memory information are measured at every measuring point.
+                           | Default: never.
+-e EXECUTABLE              | Name of the executable. This option is mandatory.
+-a "ARGS"                  | Specify the arguments for executable EXECUTABLE with this option.
+                           | Note that the arguments have to be seperated by spaces.
+                           | The arguments must be surrounded by quotation marks!
+                           | Note that the ARGS option has to be the last in the argument list!
+-G FREQUENCY               | Set a GPU frequency before the child application get started.
+                           | Possible frequency settings are:
+                           | min, MIN, minimum, MINIMUM
+                           |    Set GPU frequency to its minimum value.
+                           | max, MAX, maximum, MAXIMUM
+                           |    Set GPU frequency to its maximum value.
+                           | cur, CUR, current, CURRENT
+                           |    Don't set GPU frequency. Leave the current setting untouched.
+                           | Default: cur.
+-C GOVERNOR                | Set a CPU frequency scaling governor for the 'acpi-cpufreq' driver.
+                           | Possible governors are:
+                           | save, SAVE, powersave, POWERSAVE
+                           |    Force CPU to use the lowest possible frequency.
+                           | dmnd, DMND, ondemand, ONDEMAND
+                           |    Dynamic frequency scaling. Aggresive strategy.
+                           | cons, CONS, conservative, CONSERVATIVE
+                           |    Dynamic frequency scaling. Conservative strategy.
+                           | perf, PERF, performance, PERFORMANCE
+                           |    Force CPU to use the highest possible frequency.
+                           | Default: dmnd.
+-L FREQUENCY               | Set the lowest permitted CPU frequency in MHz.
+-H FREQUENCY               | Set the highest permitted CPU frequency in MHz.
+-V LIB_VARIANT             | Defines the variant of the measuring library which is used.
+                           | Possible variants are:
+                           | light, LIGHT, Light
+                           |    Not all possible values are measured and therefore the CPU utilization is lower.
+                           | high, HIGH, High
+                           |    All values are measured.
+                           | Default: full.
+-o RESULT_FILE             | Save results in a file instead of printing to stdout.
+-v CSV_FILE                | Save results in a CSV table file.
+-u                         | Use UNIX socket handler library to communicate with msmonitor.
+-i                         | Forcing FPGA to idle after measuring system initialization.
+-h                         | Print this help message.
+-?                         | Print this help message.
 
 Example:
-hettime -c 90 -i -G min -C conservative -e /usr/bin/find 
-		-a "/usr -iname lib*"
+hettime -c "90, 10" -i -G min -C conservative -e /usr/bin/find -a "/usr -iname lib*"
 \end{lstlisting}
+\end{landscape}

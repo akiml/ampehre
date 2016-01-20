@@ -16,8 +16,11 @@
  *          0.1.13 - make GPU frequency settable
  *          0.2.3 - add gpu_management tool and use the tool in the libmeasure
  *          0.5.0 - add cpu, gpu and mic memory information
- *          0.5.1 - modularised libmeasure
+ *          0.5.1 - modularized libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __CMEASURENVML_HPP__
@@ -30,6 +33,7 @@
 #include <nvml.h>
 
 namespace NLibMeasure {
+	template <int TSkipMs, int TVariant>
 	class CMeasureNVML : public CMeasureAbstractResource {
 		private:
 			nvmlDevice_t mDevice;
@@ -46,9 +50,12 @@ namespace NLibMeasure {
 			int exec_gpu_mgmt(char* args[]);
 			
 		public:
-			void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
-			void read_memory_total(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
+			void measure(void *pMsMeasurement, int32_t& rThreadNum);
+			void read_memory_total(void *pMsMeasurement, int32_t& rThreadNum);
+			int getVariant();
 	};
 }
+
+#include "CMeasureNVML.cpp"
 
 #endif /* __CMEASURENVML_HPP__ */

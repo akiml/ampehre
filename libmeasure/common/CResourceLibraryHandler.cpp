@@ -13,26 +13,27 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 6/11/15
  * version: 0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+ *          0.7.0 - modularized measurement struct
  */
 
 #include "CResourceLibraryHandler.hpp"
 
-typedef void* (*init_res_t)(void*, uint64_t*);
+typedef void* (*init_res_t)(void*, lib_variant, skip_ms_rate, void*);
 typedef void (*fini_res_t)(void*);
 
-typedef void* (*init_measure_thread_t)(void*, void*, MEASUREMENT*, void* pMeasureRes);
+typedef void* (*init_measure_thread_t)(void*, void*, MS_LIST*, void* pMeasureRes);
 typedef void (*fini_measure_thread_t)(void*);
 
 namespace NLibMeasure{
-	CResourceLibraryHandler::CResourceLibraryHandler(CLogger& rLogger, std::string libname, uint64_t* pParams):
+	CResourceLibraryHandler::CResourceLibraryHandler(CLogger& rLogger,const std::string& rLibname, lib_variant variant, skip_ms_rate skip_ms, void* pParams):
 		mpLibhandler(0),
 		mpResource(0),
 		mpResourceThread(0),
 		mMutexStartResource(),
 		mrLog(rLogger)
 		{
-			mpLibhandler = openLibrary(libname);
-			initResource(pParams);
+			mpLibhandler = openLibrary(rLibname);
+			initResource(variant, skip_ms, pParams);
 	}
 
 	CResourceLibraryHandler::~CResourceLibraryHandler() {
@@ -52,17 +53,17 @@ namespace NLibMeasure{
 		return mpResource;
 	}
 	
-	void CResourceLibraryHandler::initResource(uint64_t* pParams) {
+	void CResourceLibraryHandler::initResource(lib_variant variant, skip_ms_rate skip_ms, void* pParams) {
 		init_res_t init_resource = (init_res_t) loadFunction("init_resource");
 		
-		mpResource = (NLibMeasure::CMeasureAbstractResource*) init_resource((void*)(&mrLog), pParams);
+		mpResource = (NLibMeasure::CMeasureAbstractResource*) init_resource((void*)(&mrLog), variant, skip_ms, pParams);
 	}
 
     
-	void CResourceLibraryHandler::initResourceThread(CSemaphore& rStartSem, MEASUREMENT* pMeasurement) {
+	void CResourceLibraryHandler::initResourceThread(CSemaphore& rStartSem, MS_LIST* pMsList) {
 		init_measure_thread_t init_thread = (init_measure_thread_t) loadFunction("init_resource_thread");
 		
-		mpResourceThread = (CMeasureAbstractThread*) init_thread((void*) &mrLog, (void*) &rStartSem, pMeasurement, (void*) mpResource);
+		mpResourceThread = (CMeasureAbstractThread*) init_thread((void*) &mrLog, (void*) &rStartSem, pMsList, (void*) mpResource);
 	}
 
 	void CResourceLibraryHandler::finiResourceThread() {
@@ -73,13 +74,13 @@ namespace NLibMeasure{
 		mpResourceThread = 0;
 	}
 	
-	void* CResourceLibraryHandler::loadFunction(std::string functionname) {
-		void* function = (void*) dlsym(mpLibhandler, functionname.c_str());
+	void* CResourceLibraryHandler::loadFunction(const std::string& rFunctionname) {
+		void* function = (void*) dlsym(mpLibhandler, rFunctionname.c_str());
 		char* dlsym_error = dlerror();
 		if(dlsym_error){
 			mrLog.lock();
 			mrLog()
-			<< "!!! 'mgmt' (thread main): Error: Cannot load symbol " << functionname << ": " << dlsym_error << " (file: " << __FILE__ << ", line: " << __LINE__ << ")." << std::endl
+			<< "!!! 'mgmt' (thread main): Error: Cannot load symbol " << rFunctionname << ": " << dlsym_error << " (file: " << __FILE__ << ", line: " << __LINE__ << ")." << std::endl
 			<< std::endl;
 			mrLog.unlock();
 			exit(EXIT_FAILURE);
@@ -94,12 +95,12 @@ namespace NLibMeasure{
 		fini_resource((void*)mpResource);
 	}
 	
-	void* CResourceLibraryHandler::openLibrary(std::string libname) {
-		void* handler = dlopen(libname.c_str() , RTLD_LAZY | RTLD_LOCAL);
+	void* CResourceLibraryHandler::openLibrary(const std::string& rLibname) {
+		void* handler = dlopen(rLibname.c_str() , RTLD_LAZY | RTLD_LOCAL);
 		if (NULL == handler) {
 			mrLog.lock();
 			mrLog()
-			<< "!!! 'mgmt' (thread main): Error: Cannot open library " << libname << ": " << dlerror() << " (file: " << __FILE__ << ", line: " << __LINE__ << ")." << std::endl
+			<< "!!! 'mgmt' (thread main): Error: Cannot open library " << rLibname << ": " << dlerror() << " (file: " << __FILE__ << ", line: " << __LINE__ << ")." << std::endl
 			<< std::endl;
 			mrLog.unlock();
 			exit(EXIT_FAILURE);

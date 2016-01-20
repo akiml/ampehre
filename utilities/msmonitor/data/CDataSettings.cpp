@@ -15,6 +15,9 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.0 - add cpu, gpu and mic memory information
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
  */
 
 #include "CDataSettings.hpp"
@@ -28,9 +31,19 @@ namespace NData {
 		mFPGASamplingRate(60),
 		mMICSamplingRate(60),
 		mSystemSamplingRate(100),
+				
+		mCPUCheckForExitInterrupts(1),
+		mGPUCheckForExitInterrupts(1),
+		mFPGACheckForExitInterrupts(1),
+		mMICCheckForExitInterrupts(1),
+		mSystemCheckForExitInterrupts(1),
+		
+		mSkipMsRate(SKIP_NEVER),
 		
 		mDataSamplingRate(30),
-		mGUIRefreshRate(250),
+		mGUIRefreshRate(500),
+		
+		mWriteResultsToCsv(false),
 		
 		mTimeToBufferData(180000),
 		mTimeToShowData(60000),
@@ -53,7 +66,9 @@ namespace NData {
 		mCpuGovernor(CPU_GOVERNOR_ONDEMAND),
 		mCpuFrequencyMinimum(0),
 		mCpuFrequencyMaximum(0),
-		mGpuFrequency(GPU_FREQUENCY_CUR)
+		mGpuFrequency(GPU_FREQUENCY_CUR),
+		
+		mLibVariant(VARIANT_FULL)
 		{
 		
 		// nothing todo

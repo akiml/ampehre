@@ -15,6 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.4.1 - add MIC support to msmonitor
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  */
 
 #include "QMSMFormTemperature.hpp"
@@ -47,7 +48,7 @@ namespace Ui {
 		mpCurveTempMic->setPen(mColorMic);
 		mpCurveTempSystem->setPen(mColorSystem);
 		
-		setupCurves(mpDataHandler->getSettings().mNumberOfTicks);
+		setupCurves();
 		
 		mpCurveTempCpu0->attach(qwtPlot);
 		mpCurveTempCpu1->attach(qwtPlot);
@@ -80,17 +81,17 @@ namespace Ui {
 		return spFormTemp;
 	}
 	
-	void QMSMFormTemperature::setupCurves(uint32_t currentTick) {
+	void QMSMFormTemperature::setupCurves() {
 		uint32_t ticks			= mpDataHandler->getSettings().mNumberOfTicks-1;
 		
-		double *x				= mpDataHandler->getMeasurement().mpX+currentTick;
-		double *y_temp_cpu_0	= mpDataHandler->getMeasurement().mpYTempCpu0+currentTick;
-		double *y_temp_cpu_1	= mpDataHandler->getMeasurement().mpYTempCpu1+currentTick;
-		double *y_temp_gpu		= mpDataHandler->getMeasurement().mpYTempGpu+currentTick;
-		double *y_temp_fpga_m	= mpDataHandler->getMeasurement().mpYTempFpgaM+currentTick;
-		double *y_temp_fpga_i	= mpDataHandler->getMeasurement().mpYTempFpgaI+currentTick;
-		double *y_temp_mic		= mpDataHandler->getMeasurement().mpYTempMicDie+currentTick;
-		double *y_temp_system	= mpDataHandler->getMeasurement().mpYTempSystem+currentTick;
+		double *x				= mpDataHandler->getMeasurement().mpX->getDataPtr();
+		double *y_temp_cpu_0	= mpDataHandler->getMeasurement().mpYTempCpu0->getDataPtr();
+		double *y_temp_cpu_1	= mpDataHandler->getMeasurement().mpYTempCpu1->getDataPtr();
+		double *y_temp_gpu		= mpDataHandler->getMeasurement().mpYTempGpu->getDataPtr();
+		double *y_temp_fpga_m	= mpDataHandler->getMeasurement().mpYTempFpgaM->getDataPtr();
+		double *y_temp_fpga_i	= mpDataHandler->getMeasurement().mpYTempFpgaI->getDataPtr();
+		double *y_temp_mic		= mpDataHandler->getMeasurement().mpYTempMicDie->getDataPtr();
+		double *y_temp_system	= mpDataHandler->getMeasurement().mpYTempSystem->getDataPtr();
 		
 		mpCurveTempCpu0->setRawData(x, y_temp_cpu_0, ticks);
 		mpCurveTempCpu1->setRawData(x, y_temp_cpu_1, ticks);

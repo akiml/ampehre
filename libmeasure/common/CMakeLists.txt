@@ -12,9 +12,13 @@
 #
 # author: Christoph Knorr (cknorr@mail.upb.de)
 # created: 5/12/15
-# version: 0.5.1 - modularised libmeasure
+# version: 0.5.1 - modularized libmeasure
 #          0.5.3 - add abstract measure and abstract measure thread
 #          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+#          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+#                  and to select between the full or light library.
+#          0.7.0 - modularized measurement struct
+#          0.7.1 - move functions to query measurement results into the modules
 #
 
 find_package(Threads)
@@ -28,7 +32,7 @@ else (SIGNALS)
 endif (SIGNALS)
 
 set(SRC_COMMON_LIBRARY
-	interface.cpp mgmt.cpp CThread.cpp CMutex.cpp CLogger.cpp CMgmt.cpp CSemaphore.cpp CMeasureThreadTimer.cpp CMeasureAbstractResource.cpp CMeasureAbstractThread.cpp CResourceLibraryHandler.cpp
+	mgmt.cpp list.cpp CThread.cpp CMutex.cpp CLogger.cpp CMgmt.cpp CSemaphore.cpp CMeasureThreadTimer.cpp CMeasureAbstractResource.cpp CMeasureAbstractThread.cpp CResourceLibraryHandler.cpp
 )
 
 # Full library
@@ -36,10 +40,3 @@ add_library(ms_common SHARED ${SRC_COMMON_LIBRARY})
 target_link_libraries(ms_common ${CMAKE_THREAD_LIBS_INIT} -lrt -lm -ldl)
 
 install(TARGETS ms_common LIBRARY DESTINATION lib)
-
-# Light library
-add_library(ms_common_light SHARED ${SRC_COMMON_LIBRARY})
-target_link_libraries(ms_common_light ${CMAKE_THREAD_LIBS_INIT} -lrt -lm -ldl)
-set_target_properties(ms_common_light PROPERTIES COMPILE_DEFINITIONS "LIGHT")
-
-install(TARGETS ms_common_light LIBRARY DESTINATION lib)

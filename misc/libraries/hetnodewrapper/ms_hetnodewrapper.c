@@ -14,6 +14,7 @@
  * created: 9/02/14
  * version: 0.1.16 - add wrapper for heterogenous Node and test tool
  *          0.2.4 - add version check functionality to library, wrappers, and tools
+ *          0.7.0 - modularized measurement struct
  */
 
 #include "ms_hetnodewrapper_internal.h"
@@ -61,10 +62,10 @@ void mshnw_init(MS_VERSION *version, HN_MEASUREMENT *measurements, int measureme
 	}
 
 	//Initialize Measurementsystem
-	mintern->global_ms = ms_init(version, measurements->cpu_gov, measurements->cpu_freq_min, measurements->cpu_freq_max, measurements->gpu_freq);
+	mintern->global_ms = ms_init(version, measurements->cpu_gov, measurements->cpu_freq_min, measurements->cpu_freq_max, measurements->gpu_freq, IOC_SET_IPMI_TIMEOUT, SKIP_NEVER, VARIANT_FULL);
 
 	//Initialize global Measurement
-	mintern->global_m = ms_alloc_measurement();
+	mintern->global_m = ms_alloc_measurement(mintern->global_ms);
 
 	mintern->sample_rate_cpu	= measurements->sample_rate_cpu;
 	mintern->sample_rate_gpu	= measurements->sample_rate_gpu;
@@ -81,26 +82,26 @@ void mshnw_init(MS_VERSION *version, HN_MEASUREMENT *measurements, int measureme
 	}
 
 	// Set timer for  global measurement
-	ms_set_timer(mintern->global_m, CPU   , mintern->sample_rate_cpu / 1000, (mintern->sample_rate_cpu % 1000) * 1000000);
-	ms_set_timer(mintern->global_m, GPU   , mintern->sample_rate_gpu / 1000, (mintern->sample_rate_gpu % 1000) * 1000000);
-	ms_set_timer(mintern->global_m, FPGA  , mintern->sample_rate_fpga / 1000, (mintern->sample_rate_fpga % 1000) * 1000000);
-	ms_set_timer(mintern->global_m, SYSTEM, mintern->sample_rate_sys / 1000, (mintern->sample_rate_sys % 1000) * 1000000);
+	ms_set_timer(mintern->global_m, CPU   , mintern->sample_rate_cpu / 1000, (mintern->sample_rate_cpu % 1000) * 1000000, 1);
+	ms_set_timer(mintern->global_m, GPU   , mintern->sample_rate_gpu / 1000, (mintern->sample_rate_gpu % 1000) * 1000000, 1);
+	ms_set_timer(mintern->global_m, FPGA  , mintern->sample_rate_fpga / 1000, (mintern->sample_rate_fpga % 1000) * 1000000, 1);
+	ms_set_timer(mintern->global_m, SYSTEM, mintern->sample_rate_sys / 1000, (mintern->sample_rate_sys % 1000) * 1000000, 1);
 	
 	ms_init_measurement(mintern->global_ms, mintern->global_m, mintern->resources);
 }
 
 void mshnw_start() {
 	// Start measuring system
-	ms_start_measurement(mintern->global_ms, mintern->global_m);
+	ms_start_measurement(mintern->global_ms);
 }
 
 void mshnw_shutdown() {
 	// Stop measuring system
-	ms_stop_measurement(mintern->global_ms, mintern->global_m);
+	ms_stop_measurement(mintern->global_ms);
 
 	// Join measurement threads and remove thread objects
-	ms_join_measurement(mintern->global_ms, mintern->global_m);
-	ms_fini_measurement(mintern->global_ms, mintern->global_m);
+	ms_join_measurement(mintern->global_ms);
+	ms_fini_measurement(mintern->global_ms);
 
 }
 

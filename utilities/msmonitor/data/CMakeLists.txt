@@ -13,7 +13,7 @@
 # author: Achim Lösch (achim.loesch@upb.de)
 # created: 1/26/14
 # version: 0.3.0 - extend libmeasure and add application for online monitoring
-#          0.5.1 - modularised libmeasure
+#          0.5.1 - modularized libmeasure
 #
 
 set(DATA_SOURCES

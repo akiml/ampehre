@@ -14,12 +14,13 @@
  * created: 9/02/14
  * version: 0.1.16 - add wrapper for heterogenous Node and test tool
  *          0.2.4 - add version check functionality to library, wrappers, and tools
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __MS_HETNODEWRAPPER_H__
 #define __MS_HETNODEWRAPPER_H__
 
-#include "measurement.h"
+#include "ms_measurement.h"
 
 /**
  * Struct for the measurement results.

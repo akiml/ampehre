@@ -19,9 +19,12 @@
  *          0.2.4 - add version check functionality to library, wrappers, and tools
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.4.0 - MIC integration into libmeasure
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
+ *          0.6.1 - add json printer to hettime
+ *          0.7.0 - modularized measurement struct
  */
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -34,23 +37,23 @@
 
 #include "../../include/ushmsmonitor.h"
 
-static int exec_app(ARGUMENTS *settings, MSYSTEM *ms, MEASUREMENT *m, EXEC_TIME *time);
-static void init_measuring_system(ARGUMENTS *settings, MSYSTEM **ms, MEASUREMENT **m);
-static void start_measuring_system(MSYSTEM *ms, MEASUREMENT *m);
-static void stop_measuring_system(MSYSTEM *ms, MEASUREMENT *m);
-static void fini_measuring_system(MSYSTEM **ms, MEASUREMENT **m);
-static void print(ARGUMENTS *settings, MEASUREMENT *m, EXEC_TIME *time);
+static int exec_app(ARGUMENTS *settings, MS_SYSTEM *ms, EXEC_TIME *time);
+static void init_measuring_system(ARGUMENTS *settings, MS_SYSTEM **ms, MS_LIST **m);
+static void start_measuring_system(MS_SYSTEM *ms);
+static void stop_measuring_system(MS_SYSTEM *ms);
+static void fini_measuring_system(MS_SYSTEM **ms, MS_LIST **m);
+static void print(ARGUMENTS *settings, MS_LIST *m, EXEC_TIME *time);
 
 int run(ARGUMENTS *settings) {
 	int status_child	= 1;
-	MSYSTEM *ms			= NULL;
-	MEASUREMENT *m		= NULL;
+	MS_SYSTEM *ms			= NULL;
+	MS_LIST *m		= NULL;
 	EXEC_TIME *time		= NULL;
 	
 	alloc_exec_time(&time);
 	init_measuring_system(settings, &ms, &m);
 	
-	status_child = exec_app(settings, ms, m, time);
+	status_child = exec_app(settings, ms, time);
 	
 	calc_exec_time_diff(time);
 	
@@ -62,43 +65,43 @@ int run(ARGUMENTS *settings) {
 	return status_child;
 }
 
-static void init_measuring_system(ARGUMENTS *settings, MSYSTEM **ms, MEASUREMENT **m) {
+static void init_measuring_system(ARGUMENTS *settings, MS_SYSTEM **ms, MS_LIST **m) {
 	// Initialize library and measuring system
 	MS_VERSION version = { .major = MS_MAJOR_VERSION, .minor = MS_MINOR_VERSION, .revision = MS_REVISION_VERSION };
-	*ms	= ms_init(&version, settings->cpu_gov, settings->cpu_freq_min, settings->cpu_freq_max, settings->gpu_freq);
+	*ms	= ms_init(&version, settings->cpu_gov, settings->cpu_freq_min, settings->cpu_freq_max, settings->gpu_freq, settings->ipmi_timeout_setting, settings->skip_ms, settings->variant);
 	
 	// Forcing FPGA to idle if desired
 	if (settings->force_idle_fpga) {
 		ms_init_fpga_force_idle(*ms);
 	}
 	
-	// Allocate and initialize measurement structs
-	*m	= ms_alloc_measurement();
+	// Allocate and initialize list of measurement structs
+	*m	= ms_alloc_measurement(*ms);
 	
 	// Set timer for measurement m
-	ms_set_timer(*m, CPU   , settings->sample_rate_cpu /1000, (settings->sample_rate_cpu %1000) * 1000000);
-	ms_set_timer(*m, GPU   , settings->sample_rate_gpu /1000, (settings->sample_rate_gpu %1000) * 1000000);
-	ms_set_timer(*m, FPGA  , settings->sample_rate_fpga/1000, (settings->sample_rate_fpga%1000) * 1000000);
-	ms_set_timer(*m, MIC   , settings->sample_rate_mic/1000, (settings->sample_rate_mic%1000) * 1000000);
-	ms_set_timer(*m, SYSTEM, settings->sample_rate_sys /1000, (settings->sample_rate_sys %1000) * 1000000);
+	ms_set_timer(*m, CPU   , settings->sample_rate_cpu /1000, (settings->sample_rate_cpu %1000) * 1000000, settings->check_for_exit_interrupts_cpu);
+	ms_set_timer(*m, GPU   , settings->sample_rate_gpu /1000, (settings->sample_rate_gpu %1000) * 1000000, settings->check_for_exit_interrupts_gpu);
+	ms_set_timer(*m, FPGA  , settings->sample_rate_fpga/1000, (settings->sample_rate_fpga%1000) * 1000000, settings->check_for_exit_interrupts_fpga);
+	ms_set_timer(*m, MIC   , settings->sample_rate_mic/1000, (settings->sample_rate_mic%1000) * 1000000, settings->check_for_exit_interrupts_mic);
+	ms_set_timer(*m, SYSTEM, settings->sample_rate_sys /1000, (settings->sample_rate_sys %1000) * 1000000, settings->check_for_exit_interrupts_sys);
 	ms_init_measurement(*ms, *m, ALL);
 }
 
-static void start_measuring_system(MSYSTEM *ms, MEASUREMENT *m) {
+static void start_measuring_system(MS_SYSTEM *ms) {
 	// Start measuring system
-	ms_start_measurement(ms, m);
+	ms_start_measurement(ms);
 }
 
-static void stop_measuring_system(MSYSTEM *ms, MEASUREMENT *m) {
+static void stop_measuring_system(MS_SYSTEM *ms) {
 	// Stop all measuring procedures
-	ms_stop_measurement(ms, m);
+	ms_stop_measurement(ms);
 	
 	// Join measurement threads and remove thread objects
-	ms_join_measurement(ms, m);
-	ms_fini_measurement(ms, m);
+	ms_join_measurement(ms);
+	ms_fini_measurement(ms);
 }
 
-static void fini_measuring_system(MSYSTEM **ms, MEASUREMENT **m) {
+static void fini_measuring_system(MS_SYSTEM **ms, MS_LIST **m) {
 	// Cleanup the environment before exiting the program
 	ms_free_measurement(*m);
 	ms_fini(*ms);
@@ -107,7 +110,7 @@ static void fini_measuring_system(MSYSTEM **ms, MEASUREMENT **m) {
 	*m	= NULL;
 }
 
-static int exec_app(ARGUMENTS *settings, MSYSTEM *ms, MEASUREMENT *m, EXEC_TIME *time) {
+static int exec_app(ARGUMENTS *settings, MS_SYSTEM *ms, EXEC_TIME *time) {
 	pid_t new_pid, child_pid, parent_pid;
 	int status				= 0;
 	int status_child		= 1;
@@ -162,12 +165,12 @@ static int exec_app(ARGUMENTS *settings, MSYSTEM *ms, MEASUREMENT *m, EXEC_TIME 
 			ushms_client_stop(client);
 		}
 		
-		start_measuring_system(ms, m);
+		start_measuring_system(ms);
 		sem_post(sync);
 		wait(&status_child);
 		get_current_time(&(time->time_stop));
 		fprintf(stderr, "====================================\n");
-		stop_measuring_system(ms, m);
+		stop_measuring_system(ms);
 		
 		if (settings->ush_client) {
 			ushms_client_start(client);
@@ -192,7 +195,7 @@ static int exec_app(ARGUMENTS *settings, MSYSTEM *ms, MEASUREMENT *m, EXEC_TIME 
 	return status_child;
 }
 
-static void print(ARGUMENTS *settings, MEASUREMENT *m, EXEC_TIME *time) {
+static void print(ARGUMENTS *settings, MS_LIST *m, EXEC_TIME *time) {
 	if (NULL != settings->csv_filename) {
 		FILE *csv = fopen(settings->csv_filename, "a");
 		if (NULL == csv) {
@@ -204,6 +207,19 @@ static void print(ARGUMENTS *settings, MEASUREMENT *m, EXEC_TIME *time) {
 		
 		fflush(csv);
 		fclose(csv);
+	}
+	
+	if (NULL != settings->json_filename) {
+		FILE *json = fopen(settings->json_filename, "w");
+		if (NULL == json) {
+			LOG_ERROR("Cannot open file to write.");
+			return;
+		}
+		
+		print_json(json, settings, m);
+		
+		fflush(json);
+		fclose(json);
 	}
 	
 	if (NULL == settings->ostream_filename) {

@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 1/11/15
  * version: 0.2.5 - add gaussblur example application
+ *          0.7.0 - modularized measurement struct
  */
 
 #include "gaussblur.h"
@@ -25,7 +26,7 @@
 static void init_gaussblur_app(DATA **image_out, DATA **image_in, ARGUMENTS *settings);
 static void exec_gaussblur_app(DATA *image_out, DATA *image_in, ARGUMENTS *settings);
 static void fini_gaussblur_app(DATA **image_out, DATA **image_in, ARGUMENTS *settings);
-static void print(ARGUMENTS *settings, MEASUREMENT *m);
+static void print(ARGUMENTS *settings, MS_LIST *m);
 
 static void init_gaussblur_app(DATA **image_out, DATA **image_in, ARGUMENTS *settings) {
 	size_t size_in_bytes = settings->size*settings->size*(PIXEL_CHANNELS*sizeof(DATA));
@@ -86,8 +87,8 @@ static void fini_gaussblur_app(DATA **image_out, DATA **image_in, ARGUMENTS *set
 }
 
 void run(ARGUMENTS *settings) {
-	MSYSTEM *ms		= NULL;
-	MEASUREMENT *m	= NULL;
+	MS_SYSTEM *ms	= NULL;
+	MS_LIST *m		= NULL;
 	
 	DATA *image_in	= NULL;
 	DATA *image_out	= NULL;
@@ -96,9 +97,9 @@ void run(ARGUMENTS *settings) {
 	
 	init_gaussblur_app(&image_out, &image_in, settings);
 	
-	start_measuring_system(ms, m);
+	start_measuring_system(ms);
 	exec_gaussblur_app(image_out, image_in, settings);
-	stop_measuring_system(ms, m);
+	stop_measuring_system(ms);
 	
 	fini_gaussblur_app(&image_out, &image_in, settings);
 	
@@ -107,7 +108,7 @@ void run(ARGUMENTS *settings) {
 	fini_measuring_system(&ms, &m);
 }
 
-static void print(ARGUMENTS *settings, MEASUREMENT *m) {
+static void print(ARGUMENTS *settings, MS_LIST *m) {
 	FILE *file = fopen("/usr/ampehre/share/gaussblur_2048_original.json", "w");
 	if (NULL == file) {
 		LOG_ERROR("Cannot open json file.");

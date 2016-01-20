@@ -31,7 +31,8 @@
  * signal handlers you need to set the two function pointers.
  * Use NULL to utilize the empty signal handler of the library.
  */
-void mshetsched_init(MS_VERSION *version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max, enum gpu_frequency gpu_freq,
+void mshetsched_init(MS_VERSION *version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max,
+					 enum gpu_frequency gpu_freq,  uint64_t ipmi_timeout_setting, enum skip_ms_rate skip_ms, enum lib_variant variant,
 					 void(*signal_handler_start)(int), void(*signal_handler_stop)(int));
 // Stop measuring system and free unneeded memory
 void mshetsched_destroy(void);

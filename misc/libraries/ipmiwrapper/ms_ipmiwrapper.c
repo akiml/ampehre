@@ -14,6 +14,8 @@
  * created: 10/28/14
  * version: 0.2.1 - add support for IPMI to the measure driver
  *          0.2.4 - add version check functionality to library, wrappers, and tools
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
  */
 
 #include "ms_ipmiwrapper_internal.h"
@@ -23,8 +25,8 @@ static int fd = 0;
 void init_ipmi_wrapper(MS_VERSION* version){
 	
 	if((version->major != MS_MAJOR_VERSION) || (version->minor != MS_MINOR_VERSION) || (version->revision != MS_REVISION_VERSION)){
-			printf("Error in IPMI wrapper: Wrong version number! IPMI wrapper version %d.%d.%d is called from tool with version %d.%d.%d.\n", MS_MAJOR_VERSION, MS_MINOR_VERSION, MS_REVISION_VERSION, version->major, version->minor, version->revision);
-			exit(EXIT_FAILURE);
+		printf("Error in IPMI wrapper: Wrong version number! IPMI wrapper version %d.%d.%d is called from tool with version %d.%d.%d.\n", MS_MAJOR_VERSION, MS_MINOR_VERSION, MS_REVISION_VERSION, version->major, version->minor, version->revision);
+		exit(EXIT_FAILURE);
 	}
 	
 	char *driver = "/dev/measure";
@@ -71,9 +73,13 @@ int dellCumulativeEnergy(uint32_t* time, uint32_t* result_energy){
 	int size;
 	*time = 0;
 	*result_energy  =  0;
+	errno = 0;
 	lseek(fd, IPMI_DELL_CUMULATIVE_ENERGY, ipmi);
 	size = read(fd, datarc, MAX_MSG_LENGTH);
 	if(datarc[0] != 0 || size != 25){
+		if(errno == ETIMEDOUT){
+			return -ETIMEDOUT;
+		}
 		fprintf(stderr, "Error in IPMI wrapper at dellCumulativeEnergy!\n");
 		return -1;
 	}
@@ -95,9 +101,13 @@ int dellCurrentPower(uint16_t* current_power){
 	unsigned char datarc[MAX_MSG_LENGTH];
 	int size;
 	*current_power = 0;
+	errno = 0;
 	lseek(fd, IPMI_DELL_CURRENT_POWER, ipmi);
 	size = read(fd, datarc, MAX_MSG_LENGTH);
 	if(datarc[0] != 0 || size != 8){
+		if(errno == ETIMEDOUT){
+			return -ETIMEDOUT;
+		}
 		fprintf(stderr, "Error in IPMI wrapper at dellCurrentPower!\n");
 		return -1;
 	}
@@ -120,6 +130,9 @@ int getTemperature(int record_id){
 	unsigned char* sdr = malloc(sizeof(unsigned char)*length);
 	int size = getSDR(record_id, sdr, length);
 	if(size < 2){
+		if(size == -ETIMEDOUT){
+			return -ETIMEDOUT;
+		}
 		fprintf(stderr, "Error in IPMI wrapper at getTemperature, getSDR.\n");
 		free(sdr);
 		return -1;
@@ -129,6 +142,9 @@ int getTemperature(int record_id){
 	unsigned char sensorReading[4];
 	size = getSensorReading(sensor_id, sensorReading, 4);
 	if(size < 2){
+		if(size == -ETIMEDOUT){
+			return -ETIMEDOUT;
+		}
 		fprintf(stderr, "Error in IPMI wrapper at getTemperature, getSensorReading.\n");
 		free(sdr);
 		return -1;
@@ -177,6 +193,9 @@ double getPower(int record_id){
 	unsigned char* sdr = malloc(sizeof(unsigned char)*length);
 	int size = getSDR(record_id, sdr, length);
 	if(size < 2){
+		if(size == -ETIMEDOUT){
+			return -ETIMEDOUT;
+		}
 		fprintf(stderr, "Error in IPMI wrapper at getPower, getSDR.\n");
 		free(sdr);
 		return -1;
@@ -185,6 +204,9 @@ double getPower(int record_id){
 	unsigned char sensorReading[4];
 	size = getSensorReading(sensor_id, sensorReading, 4);
 	if(size < 2){
+		if(size == -ETIMEDOUT){
+			return -ETIMEDOUT;
+		}
 		fprintf(stderr, "Error in IPMI wrapper at getPower, getSensorReading.\n");
 		free(sdr);
 		return -1;
@@ -220,22 +242,49 @@ double getPower(int record_id){
 	return power;
 }
 
+int getIPMITimeout(){
+	int rv;
+	unsigned long ipmi_timeout;
+	
+	rv = ioctl(fd, IOC_GET_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		fprintf(stderr, "Error in IPMI wrapper couldn't get IPMI timeout.\n");
+		return -1;
+	}
+	
+	return ipmi_timeout;
+}
+
+int setIPMITimeoutIOCTL(uint64_t mode, uint32_t ipmi_timeout){
+	int rv;
+	unsigned long timeout = ipmi_timeout;
+	
+	rv = ioctl(fd, mode, &timeout);
+	if(rv < 0){
+		fprintf(stderr, "Error in IPMI wrapper couldn't set IPMI timeout.\n");
+	}
+	
+	return rv;
+}
+
 int getSDR(int record_id, unsigned char* datarc, int size){
 	int rv;
+	errno = 0;
 	lseek(fd, IPMI_GET_SDR | record_id, ipmi);
 	rv = read(fd, datarc, size);
 	if(rv < 1){
-		return -1;
+		return -errno;
 	}
 	return rv;
 }
 
 int getSensorReading(int sensor_id, unsigned char* datarc, int size){
 	int rv;
+	errno = 0;
 	lseek(fd, IPMI_GET_SENSOR_READING | sensor_id, ipmi);
 	rv = read(fd, datarc, size);
 	if(rv < 1){
-		return -1;
+		return -errno;
 	}
 	return rv;
 }

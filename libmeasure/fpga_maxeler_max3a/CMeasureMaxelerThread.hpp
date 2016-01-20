@@ -17,24 +17,31 @@
  *          0.2.2 - add semaphore to synchronize the start of the measurements
  *          0.5.2 - delete different ThreadTimer classes in libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __CMEASUREMAXELERTHREAD_HPP__
 #define __CMEASUREMAXELERTHREAD_HPP__
 
-#include "../common/CMeasureAbstractThread.hpp"
+#include <iomanip>
 
+#include "../common/CMeasureAbstractThread.hpp"
 #include "CMeasureMaxeler.hpp"
 
 namespace NLibMeasure {
+	template <int TVariant>
 	class CMeasureMaxelerThread : public CMeasureAbstractThread {
 		public:
-			CMeasureMaxelerThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureRes);
+			CMeasureMaxelerThread(CLogger& rLogger, CSemaphore& rStartSem, void *pMsMeasurement, CMeasureAbstractResource& rMeasureRes);
 			~CMeasureMaxelerThread();
 			
 		private:
 			void run(void);
 	};
 }
+
+#include "CMeasureMaxelerThread.cpp"
 
 #endif /* __CMEASUREMAXELERTHREAD_HPP__ */

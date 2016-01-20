@@ -16,55 +16,56 @@
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.0 - add cpu, gpu and mic memory information
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  */
 
 #ifndef __CDATAMEASUREMENT_HPP__
 #define __CDATAMEASUREMENT_HPP__
 
 #include "CDataSettings.hpp"
+#include "../common/CRingBuffer.hpp"
 
 namespace NData {
 	class CDataMeasurement {
 		private:
 			CDataSettings& mrSettings;
 			uint32_t mNumberOfTicks;
-			uint32_t mTick;
 			
 		public:
-			double *mpX;
+			NCommon::CRingBuffer<double> *mpX;
 			
-			double *mpYPowerCpu0;
-			double *mpYPowerCpu1;
-			double *mpYPowerGpu;
-			double *mpYPowerFpga;
-			double *mpYPowerMic;
-			double *mpYPowerSystem;
+			NCommon::CRingBuffer<double> *mpYPowerCpu0;
+			NCommon::CRingBuffer<double> *mpYPowerCpu1;
+			NCommon::CRingBuffer<double> *mpYPowerGpu;
+			NCommon::CRingBuffer<double> *mpYPowerFpga;
+			NCommon::CRingBuffer<double> *mpYPowerMic;
+			NCommon::CRingBuffer<double> *mpYPowerSystem;
 			
-			double *mpYTempCpu0;
-			double *mpYTempCpu1;
-			double *mpYTempGpu;
-			double *mpYTempFpgaM;
-			double *mpYTempFpgaI;
-			double *mpYTempMicDie;
-			double *mpYTempSystem;
+			NCommon::CRingBuffer<double> *mpYTempCpu0;
+			NCommon::CRingBuffer<double> *mpYTempCpu1;
+			NCommon::CRingBuffer<double> *mpYTempGpu;
+			NCommon::CRingBuffer<double> *mpYTempFpgaM;
+			NCommon::CRingBuffer<double> *mpYTempFpgaI;
+			NCommon::CRingBuffer<double> *mpYTempMicDie;
+			NCommon::CRingBuffer<double> *mpYTempSystem;
 			
-			double *mpYClockCpu0;
-			double *mpYClockCpu1;
-			double *mpYClockGpuCore;
-			double *mpYClockGpuMem;
-			double *mpYClockMicCore;
-			double *mpYClockMicMem;
+			NCommon::CRingBuffer<double> *mpYClockCpu0;
+			NCommon::CRingBuffer<double> *mpYClockCpu1;
+			NCommon::CRingBuffer<double> *mpYClockGpuCore;
+			NCommon::CRingBuffer<double> *mpYClockGpuMem;
+			NCommon::CRingBuffer<double> *mpYClockMicCore;
+			NCommon::CRingBuffer<double> *mpYClockMicMem;
 			
-			double *mpYUtilCpu;
-			double *mpYUtilGpuCore;
-			double *mpYUtilGpuMem;
-			double *mpYUtilFpga;
-			double *mpYUtilMic;
+			NCommon::CRingBuffer<double> *mpYUtilCpu;
+			NCommon::CRingBuffer<double> *mpYUtilGpuCore;
+			NCommon::CRingBuffer<double> *mpYUtilGpuMem;
+			NCommon::CRingBuffer<double> *mpYUtilFpga;
+			NCommon::CRingBuffer<double> *mpYUtilMic;
 			
-			double *mpYMemoryCpu;
-			double *mpYSwapCpu;
-			double *mpYMemoryGpu;
-			double *mpYMemoryMic;
+			NCommon::CRingBuffer<double> *mpYMemoryCpu;
+			NCommon::CRingBuffer<double> *mpYSwapCpu;
+			NCommon::CRingBuffer<double> *mpYMemoryGpu;
+			NCommon::CRingBuffer<double> *mpYMemoryMic;
 			
 		public:
 			CDataMeasurement(CDataSettings& rSettings);
@@ -72,14 +73,11 @@ namespace NData {
 			
 			void reset(void);
 			
-			uint32_t getTick(void);
-			void incTick(void);
-			
 			double getTime(void);
 			
 		private:
-			void allocArrays(void);
-			void freeArrays(void);
+			void allocRingBuffers(void);
+			void freeRingBuffers(void);
 	};
 }
 

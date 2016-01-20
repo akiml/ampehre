@@ -13,7 +13,7 @@
 # author: Achim Lösch (achim.loesch@upb.de)
 # created: 8/05/14
 # version: 0.1.0 - initial cmake file
-#          0.5.1 - modularised libmeasure
+#          0.5.1 - modularized libmeasure
 #
 
 add_executable(example_ms

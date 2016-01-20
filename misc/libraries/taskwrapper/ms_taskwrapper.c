@@ -17,16 +17,17 @@
  *          0.1.13 - make GPU frequency settable
  *          0.1.15 - make CPU frequency settable
  *          0.2.4 - add version check functionality to library, wrappers, and tools
+ *          0.7.0 - modularized measurement struct
  */
 
 #include "ms_taskwrapper_internal.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 
 static MINTERNAL *minternal = NULL;
 
-void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max, enum gpu_frequency gpu_freq) {
+void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max,
+			   enum gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting, enum skip_ms_rate skip_ms, enum lib_variant variant) {
 	
 	if((version->major != MS_MAJOR_VERSION) || (version->minor != MS_MINOR_VERSION) || (version->revision != MS_REVISION_VERSION)){
 		printf("Error in taskwrapper: Wrong version number! taskwrapper version %d.%d.%d is called from tool with version %d.%d.%d.\n", MS_MAJOR_VERSION, MS_MINOR_VERSION, MS_REVISION_VERSION, version->major, version->minor, version->revision);
@@ -51,25 +52,33 @@ void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, ui
 	minternal->sample_rate_mic	= 100;
 	minternal->sample_rate_sys	= 100;
 	
+	// Please set the default number of skipped measurement points
+	minternal->check_for_exit_interrupts_cpu	= 1;
+	minternal->check_for_exit_interrupts_gpu	= 1;
+	minternal->check_for_exit_interrupts_fpga	= 1;
+	minternal->check_for_exit_interrupts_mic	= 1;
+	minternal->check_for_exit_interrupts_sys	= 1;
+	
 	minternal->resources		= resources;
 	
 	// Initialize library and measuring system
-	minternal->global_ms		= ms_init(version, cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq);
+	minternal->global_ms		= ms_init(version, cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq, ipmi_timeout_setting, skip_ms, variant);
 	
 	// Forcing FPGA to idle if desired
-#ifndef LIGHT
-	ms_init_fpga_force_idle(minternal->global_ms);
-#endif /* LIGHT */
+	
+	if(variant == VARIANT_FULL){
+		ms_init_fpga_force_idle(minternal->global_ms);
+	}
 	
 	// Allocate and initialize measurement structs
-	minternal->global_m		= ms_alloc_measurement();
+	minternal->global_m		= ms_alloc_measurement(minternal->global_ms);
 	
 	// Set timer for measurement m
-	ms_set_timer(minternal->global_m, CPU   , minternal->sample_rate_cpu /1000, (minternal->sample_rate_cpu %1000) * 1000000);
-	ms_set_timer(minternal->global_m, GPU   , minternal->sample_rate_gpu /1000, (minternal->sample_rate_gpu %1000) * 1000000);
-	ms_set_timer(minternal->global_m, FPGA  , minternal->sample_rate_fpga/1000, (minternal->sample_rate_fpga%1000) * 1000000);
-	ms_set_timer(minternal->global_m, MIC   , minternal->sample_rate_mic /1000, (minternal->sample_rate_mic %1000) * 1000000);
-	ms_set_timer(minternal->global_m, SYSTEM, minternal->sample_rate_sys /1000, (minternal->sample_rate_sys %1000) * 1000000);
+	ms_set_timer(minternal->global_m, CPU   , minternal->sample_rate_cpu /1000, (minternal->sample_rate_cpu %1000) * 1000000, minternal->check_for_exit_interrupts_cpu);
+	ms_set_timer(minternal->global_m, GPU   , minternal->sample_rate_gpu /1000, (minternal->sample_rate_gpu %1000) * 1000000, minternal->check_for_exit_interrupts_gpu);
+	ms_set_timer(minternal->global_m, FPGA  , minternal->sample_rate_fpga/1000, (minternal->sample_rate_fpga%1000) * 1000000, minternal->check_for_exit_interrupts_fpga);
+	ms_set_timer(minternal->global_m, MIC   , minternal->sample_rate_mic /1000, (minternal->sample_rate_mic %1000) * 1000000, minternal->check_for_exit_interrupts_mic);
+	ms_set_timer(minternal->global_m, SYSTEM, minternal->sample_rate_sys /1000, (minternal->sample_rate_sys %1000) * 1000000, minternal->check_for_exit_interrupts_sys);
 	ms_init_measurement(minternal->global_ms, minternal->global_m, resources);
 }
 
@@ -84,16 +93,16 @@ void mstw_free(void) {
 
 void mstw_start(void) {
 	// Start measuring system
-	ms_start_measurement(minternal->global_ms, minternal->global_m);
+	ms_start_measurement(minternal->global_ms);
 }
 
 void mstw_stop(void) {
 	// Stop all measuring procedures
-	ms_stop_measurement(minternal->global_ms, minternal->global_m);
+	ms_stop_measurement(minternal->global_ms);
 	
 	// Join measurement threads and remove thread objects
-	ms_join_measurement(minternal->global_ms, minternal->global_m);
-	ms_fini_measurement(minternal->global_ms, minternal->global_m);
+	ms_join_measurement(minternal->global_ms);
+	ms_fini_measurement(minternal->global_ms);
 }
 
 void mstw_reg_sighandler_start(void(*signal_handler)(int)) {

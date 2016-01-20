@@ -18,10 +18,13 @@
  *          0.1.15 - make CPU frequency settable
  *          0.2.2 - add semaphore to synchronize the start of the measurements
  *          0.4.0 - MIC integration into libmeasure
- *          0.5.1 - modularised libmeasure
+ *          0.5.1 - modularized libmeasure
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.5.4 - add dynamic loading of resource specific libraries
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __CMGMT_HPP__
@@ -37,7 +40,7 @@
 #include "CMeasureAbstractResource.hpp"
 #include "CMeasureAbstractThread.hpp"
 #include "CResourceLibraryHandler.hpp"
-#include "../../include/measurement.h"
+#include "../../include/ms_measurement.h"
 #include "CMutex.hpp"
 
 typedef std::map<int , NLibMeasure::CResourceLibraryHandler*> map_type;
@@ -53,8 +56,10 @@ class CMgmt {
 		struct sigaction *mpActionStart;
 		struct sigaction *mpActionStop;
 		
+		lib_variant mLibVariant;
+		
 	public:
-		CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency);
+		CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency, uint64_t ipmi_timeout_setting, skip_ms_rate skip_ms_rate,  lib_variant variant);
 		~CMgmt();
 		
 		void initMaxelerForceIdle(void);
@@ -65,7 +70,7 @@ class CMgmt {
 		void lockResourceMutexStart(int res);
 		void unlockResourceMutexStart(int res);
 		void postStartSem(int count);
-		void initMeasureThread(int res, MEASUREMENT* pMeasurement);
+		void initMeasureThread(int res, MS_LIST* pMsList);
 		void finiMeasureThread(int res);
 		void startMeasureThread(int res);
 		void stopMeasureThread(int res);

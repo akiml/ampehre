@@ -19,6 +19,8 @@
  *          0.2.1 - add support for IPMI to the measure driver
  *          0.3.3 - add cpu memory info to measure driver
  *          0.5.7 - add automatic detection of ipmi device to measure driver
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
  */
 
 #include "driver_measure.h"
@@ -33,6 +35,7 @@ MODULE_SUPPORTED_DEVICE("none");
 MODULE_VERSION(MS_VERSION_STRING);
 
 static DEFINE_MUTEX(ipmi_mutex);
+static DEFINE_MUTEX(ioctl_mutex);
 
 static struct file* proc_meminfo_file = NULL;
 
@@ -40,6 +43,9 @@ static IPMI_DATA *ipmi_data = NULL;
 
 //count how many times the driver is opened
 static int opened = 0;
+
+static unsigned long ipmi_timeout = IPMI_MAX_TIMEOUT;
+static int ipmi_timeout_locked = 0;
 
 static int ipmi_supported = 0;
 
@@ -57,6 +63,11 @@ static struct file_operations fileops = {
 	.read		= driver_read,
 	.write		= driver_write,
 	.open		= driver_open,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35))
+	.ioctl		= driver_ioctl,
+#else
+	.unlocked_ioctl = driver_ioctl,
+#endif
 	.release	= driver_close
 };
 
@@ -361,9 +372,10 @@ static int ipmi_request(int netfn, int cmd, unsigned char * msgdata, int size){
 		return -rv;
 	}
 	//The timeout value is in jiffies
-	rv = wait_for_completion_timeout(&ipmi_data->read_complete, msecs_to_jiffies(IPMI_TIMEOUT));
+	rv = wait_for_completion_timeout(&ipmi_data->read_complete, msecs_to_jiffies(ipmi_timeout));
 	if(rv == 0){
 		printk("Measure: IPMI request time out.\n");
+		ipmi_data->msgid++;
 		mutex_unlock(&ipmi_mutex);
 		return -ETIMEDOUT;
 	}
@@ -460,7 +472,7 @@ static ssize_t driver_read(struct file *fileptr, char __user *user_buffer, size_
 		err = ipmi_request(ipmi_netfn, ipmi_cmd, ipmi_msg_data, msg_data_size);
 		if(err){
 			printk("Measure: Error in IPMI Request: %d\n", err);
-			return -EIO;
+			return err;
 		}
 		err = ipmi_data->datarc_length;
 				
@@ -538,6 +550,65 @@ static void ipmi_msg_handler(struct ipmi_recv_msg *msg, void *user_msg_data){
 	ipmi_free_recv_msg(msg);	
 }
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35))
+static int driver_ioctl(struct inode *inode, struct file *file, unsigned int request, unsigned long arg)
+#else
+static long driver_ioctl(struct file *f, unsigned int request, unsigned long arg)
+#endif
+{	
+	unsigned long new_timeout;
+	if(!ipmi_supported){
+		printk("Measure: ERROR no ioctl calls are supported!\n");
+		return -EINVAL;
+	}
+	
+	switch(request){
+		case IOC_GET_IPMI_TIMEOUT:
+			if (copy_to_user((unsigned long*)arg, &ipmi_timeout, sizeof(unsigned long))){
+				return -EACCES;
+			}
+			break;
+		case IOC_SET_IPMI_TIMEOUT:
+			if(ipmi_timeout_locked){
+				return ERROR_IPMI_TIMEOUT_LOCKED;
+			}
+			mutex_lock(&ioctl_mutex);
+			if (copy_from_user(&new_timeout, (unsigned long *)arg, sizeof(unsigned long))) {
+				mutex_unlock(&ioctl_mutex);
+				return -EACCES;
+			}
+			if(new_timeout > IPMI_MAX_TIMEOUT || new_timeout == 0){
+				ipmi_timeout = IPMI_MAX_TIMEOUT;
+				return ERROR_IPMI_TIMEOUT_MAX;
+				mutex_unlock(&ioctl_mutex);
+			} else {
+				ipmi_timeout = new_timeout;
+			}
+			break;
+		case IOC_SET_AND_LOCK_IPMI_TIMEOUT:
+			mutex_lock(&ioctl_mutex);
+			ipmi_timeout_locked = 1;
+			if (copy_from_user(&new_timeout, (unsigned long *)arg, sizeof(unsigned long))) {
+				mutex_unlock(&ioctl_mutex);
+				return -EACCES;
+			}
+			if(new_timeout > IPMI_MAX_TIMEOUT || new_timeout == 0){
+				ipmi_timeout = IPMI_MAX_TIMEOUT;
+				mutex_unlock(&ioctl_mutex);
+				return ERROR_IPMI_TIMEOUT_MAX;
+			} else {
+				ipmi_timeout = new_timeout;
+			}
+			break;
+		default:
+			printk("Measure: Error not supported ioctl request code!\n");
+			return -EINVAL;
+	}
+	mutex_unlock(&ioctl_mutex);
+	
+	return 0;
+}
+
 /* Open File*/
 static struct file* file_open(const char* path, int flags, int rights) {
 	struct file* filp = NULL;
@@ -606,6 +677,9 @@ static int driver_open(struct inode *device, struct file *fileptr) {
 		ipmi_data->address.addr_type = IPMI_SYSTEM_INTERFACE_ADDR_TYPE;
 		ipmi_data->address.channel = IPMI_BMC_CHANNEL;
 		ipmi_data->address.data[0] = 0;
+		if(!ipmi_timeout_locked){
+ 			ipmi_timeout = IPMI_MAX_TIMEOUT;
+		}
 	}
 	
 	proc_meminfo_file = file_open("/proc/meminfo",0, O_RDONLY);
@@ -623,6 +697,7 @@ static int driver_close(struct inode *device, struct file *fileptr) {
 				return rv;
 			kfree(ipmi_data);
 			ipmi_data = NULL;
+			ipmi_timeout_locked = 0;
 		}		
 		file_close(proc_meminfo_file);
 		proc_meminfo_file = NULL;

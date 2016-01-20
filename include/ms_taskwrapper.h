@@ -17,12 +17,13 @@
  *          0.1.13 - make GPU frequency settable
  *          0.1.15 - make CPU frequency settable
  *          0.2.4 - add version check functionality to library, wrappers, and tools
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __MS_TASKWRAPPER_H__
 #define __MS_TASKWRAPPER_H__
 
-#include "measurement.h"
+#include "ms_measurement.h"
 
 // Please define the relevant measurements in this struct!
 typedef struct __mrel_measurement {
@@ -71,7 +72,8 @@ typedef struct __mtask {
  * Init measuring system. Call the function like this (if you want to measure CPU, GPU and FPGA)
  * mstw_init(CPU | GPU | FPGA, CPU_GOVERNOR_ONDEMAND, 2000, 2500, GPU_FREQUENCY_CUR);
  */
-void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max, enum gpu_frequency gpu_freq);
+void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max,
+			   enum gpu_frequency gpu_freq,  uint64_t ipmi_timeout_setting, enum skip_ms_rate skip_ms, enum lib_variant variant);
 // Start measuring system
 void mstw_start(void);
 // Stop measuring system

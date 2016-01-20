@@ -14,7 +14,7 @@
 #
 # created: 9/02/14
 # version: 0.1.16 - add wrapper for heterogenous Node and test tool
-#          0.5.1 - modularised libmeasure
+#          0.5.1 - modularized libmeasure
 #
 
 # Full library

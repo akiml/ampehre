@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 6/11/15
  * version: 0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __CRESOURCELIBRARYHANDLER_HPP__
@@ -26,12 +27,12 @@
 namespace NLibMeasure {
 	class CResourceLibraryHandler{
 		public:
-			CResourceLibraryHandler(CLogger& rLogger, std::string libname, uint64_t *pParams);
+			CResourceLibraryHandler(CLogger& rLogger,const std::string& rLibname, lib_variant variant, skip_ms_rate skip_ms, void* pParams);
 			~CResourceLibraryHandler();
 			
-			void* loadFunction(std::string functionname);
+			void* loadFunction(const std::string& rFunctionname);
 			
-			void initResourceThread(CSemaphore& rStartSem, MEASUREMENT* pMeasurement);
+			void initResourceThread(CSemaphore& rStartSem, MS_LIST* MsList);
 			CMeasureAbstractThread* getResourceThread();
 			void finiResourceThread();
 			
@@ -47,9 +48,9 @@ namespace NLibMeasure {
 			CLogger& mrLog;
 			
 		private:
-			void initResource(uint64_t *pParams);
+			void initResource(lib_variant variant, skip_ms_rate skip_ms, void* pParams);
 			void finiResource();
-			void* openLibrary(std::string libname);
+			void* openLibrary(const std::string& rLibname);
 			void closeLibrary(void **handler);
 	};
 }

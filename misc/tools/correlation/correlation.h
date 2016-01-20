@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 2/04/15
  * version: 0.3.1 - add correlation example application
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __CORRELATION_H__
@@ -24,7 +25,7 @@
 #include <string.h>
 #include <limits.h>
 
-#include "../../../include/measurement.h"
+#include "../../../include/ms_measurement.h"
 
 #undef LOG_ERROR
 #undef LOG_WARN
@@ -39,15 +40,22 @@ typedef struct __arguments {
 	uint32_t sample_rate_gpu;
 	uint32_t sample_rate_fpga;
 	uint32_t sample_rate_sys;
+	uint32_t check_for_exit_interrupts_cpu;
+	uint32_t check_for_exit_interrupts_gpu;
+	uint32_t check_for_exit_interrupts_fpga;
+	uint32_t check_for_exit_interrupts_sys;
 	enum gpu_frequency gpu_freq;
 	enum cpu_governor cpu_gov;
 	uint32_t cpu_freq_min;
 	uint32_t cpu_freq_max;
 	uint32_t granularity;
+	uint64_t ipmi_timeout_setting;
+	enum skip_ms_rate skip_ms;
+	enum lib_variant variant;
 } ARGUMENTS;
 
 void run(ARGUMENTS *settings);
 
-void print_ostream(FILE *file, ARGUMENTS* settings, MEASUREMENT *m);
+void print_ostream(FILE *file, ARGUMENTS* settings, MS_LIST *m);
 
 #endif /* __CORRELATION_H__ */

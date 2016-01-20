@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 2/04/15
  * version: 0.3.1 - add correlation example application
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __PRINTER_H__
@@ -20,6 +21,6 @@
 
 #include "correlation.h"
 
-void print_json(FILE *file, ARGUMENTS *settings, MEASUREMENT *m);
+void print_json(FILE *file, ARGUMENTS *settings, MS_LIST *m);
 
 #endif /* __PRINTER_H__ */

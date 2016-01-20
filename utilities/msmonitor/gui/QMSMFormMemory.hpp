@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/05/14
  * version: 0.5.0 - add cpu, gpu and mic memory information
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  */
 
 #ifndef __QMSMFORMMEMORY_HPP__
@@ -45,7 +46,7 @@ namespace Ui {
 			static QMSMFormMemory* construct(QWidget *pParent, NData::CDataHandler *pDataHandler);
 			
 		protected:
-			void setupCurves(uint32_t currentTick);
+			void setupCurves();
 			double getMiddleOfYAxis(void);
 	};
 }

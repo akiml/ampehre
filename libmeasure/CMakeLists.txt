@@ -18,7 +18,7 @@
 #          0.2.1 - add support for IPMI to the measure driver
 #          0.2.2 - add semaphore to synchronize the start of the measurements
 #          0.4.0 - MIC integration into libmeasure
-#          0.5.1 - modularised libmeasure
+#          0.5.1 - modularized libmeasure
 #          0.5.4 - add dynamic loading of resource specific libraries
 #          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
 #

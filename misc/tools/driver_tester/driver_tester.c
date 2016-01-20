@@ -18,6 +18,8 @@
  *          0.2.1 - add support for IPMI to the measure driver
  *          0.2.4 - add version check functionality to library, wrappers, and tools
  *          0.3.3 - add cpu memory info to measure driver
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
  */
 
 #include <fcntl.h>
@@ -28,6 +30,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <sys/ioctl.h>
 
 #include "../../../include/ms_driver.h"
 #include "../../../include/ms_ipmiwrapper.h"
@@ -404,9 +407,70 @@ void ipmi_wrapper_test(){
 	clock_gettime(CLOCK_REALTIME, &ts_end);
 	printf("Dell Cumulative Energy: %u Time: %u Error Code: %d\n",time, energy, rv);
 	printf("Needed %.2f ms for ipmi request. \n", (double)(ts_end.tv_nsec - ts_start.tv_nsec)/1000000);
-
-	close_ipmi_wrapper();
 	
+	rv = getIPMITimeout();
+	if(rv < 0){
+		printf("Error in getIPMITImeout!\n");
+	}
+	printf("Current IPMI timeout: %d.\n", rv);
+	
+	uint32_t new_timeout=100;
+	rv = setIPMITimeoutIOCTL(IOC_SET_IPMI_TIMEOUT, new_timeout);
+	if(rv == ERROR_IPMI_TIMEOUT_LOCKED){
+		printf("Error IPMI timeout is locked!\n");
+	} else if(rv == ERROR_IPMI_TIMEOUT_MAX){
+		printf("Error IPMI timeout is to large. Set timeout to default!\n");
+	} else if(rv){
+		printf("Error couldn't set IPMI timeout!\n");
+	} else {
+		printf("Set IPMI timeout: %d.\n", new_timeout);
+	}
+	
+	new_timeout = 150;
+	rv = setIPMITimeoutIOCTL(IOC_SET_AND_LOCK_IPMI_TIMEOUT, new_timeout);
+	if(rv == ERROR_IPMI_TIMEOUT_MAX){
+		printf("Error IPMI timeout is to large. Set timeout to default!\n");
+	} else if(rv){
+		printf("Error couldn't set IPMI timeout!\n");
+	} else {
+		printf("Set and locked IPMI timeout to: %d.\n", new_timeout);
+	}
+	
+	new_timeout=100;
+	rv = setIPMITimeoutIOCTL(IOC_SET_IPMI_TIMEOUT, new_timeout);
+	if(rv == ERROR_IPMI_TIMEOUT_LOCKED){
+		printf("Error IPMI timeout is locked!\n");
+	} else if(rv == ERROR_IPMI_TIMEOUT_MAX){
+		printf("Error IPMI timeout is to large. Set timeout to default!\n");
+	} else if(rv){
+		printf("Error couldn't set IPMI timeout!\n");
+	} else {
+		printf("Set IPMI timeout: %d.\n", new_timeout);
+	}
+	
+	rv = getIPMITimeout();
+	if(rv < 0){
+		printf("Error in getIPMITImeout!\n");
+	}
+	printf("Current IPMI timeout: %d.\n", rv);
+	
+	new_timeout = 200;
+	rv = setIPMITimeoutIOCTL(IOC_SET_AND_LOCK_IPMI_TIMEOUT, new_timeout);
+	if(rv == ERROR_IPMI_TIMEOUT_MAX){
+		printf("Error IPMI timeout is to large. Set timeout to default!\n");
+	} else if(rv){
+		printf("Error couldn't set IPMI timeout!\n");
+	} else {
+		printf("Set and locked IPMI timeout to: %d.\n", new_timeout);
+	}
+	
+	rv = getIPMITimeout();
+	if(rv < 0){
+		printf("Error in getIPMITImeout!\n");
+	}
+	printf("Current IPMI timeout: %d.\n", rv);
+	
+	close_ipmi_wrapper();
 }
 
 void cpu_meminfo_test(int fildes, size_t size){
@@ -483,6 +547,53 @@ void cpu_meminfo_test(int fildes, size_t size){
 	printf("Used Swap: \t %8lu MiB\n", meminfo[CPU_MEM_SWAP_USED] >> 10);	
 }
 
+void ipmi_timeout_test(int fildes){
+	unsigned long ipmi_timeout;
+	int rv;
+	printf("==IPMI SET/GET TIMEOUT TEST==\n");
+	
+	rv = ioctl(fildes, IOC_GET_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		printf("Error couldn't get IPMI timeout.");
+	}
+	printf("Current IPMI timeout: %lu\n", ipmi_timeout);
+	
+	ipmi_timeout = 100;
+	rv = ioctl(fildes, IOC_SET_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		printf("Set IPMI timeout error code: %d \n", rv);
+	}
+	rv = ioctl(fildes, IOC_GET_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		printf("Error couldn't get IPMI timeout.");
+	}
+	printf("Current IPMI timeout: %lu\n", ipmi_timeout);
+	
+	ipmi_timeout = 150;
+	rv = ioctl(fildes, IOC_SET_AND_LOCK_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		printf("Set and lock IPMI timeout error code: %d \n", rv);
+	}
+	
+	rv = ioctl(fildes, IOC_GET_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		printf("Error couldn't get IPMI timeout.");
+	}
+	printf("Current IPMI timeout: %lu\n", ipmi_timeout);
+	
+	ipmi_timeout = 100;
+	rv = ioctl(fildes, IOC_SET_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		printf("Set IPMI timeout error code: %d \n", rv);
+	}
+	
+	rv = ioctl(fildes, IOC_GET_IPMI_TIMEOUT, &ipmi_timeout);
+	if(rv){
+		printf("Error couldn't get IPMI timeout.");
+	}
+	printf("Current IPMI timeout: %lu\n", ipmi_timeout);
+}
+
 int main(int argc, char **argv) {
 	char *driver = "/dev/measure";
 	
@@ -506,6 +617,8 @@ int main(int argc, char **argv) {
 	ipmi_wrapper_test();
 	
 	cpu_meminfo_test(fildes, 8192);
+	
+	ipmi_timeout_test(fildes);
 	
 	close(fildes);		
 	return EXIT_SUCCESS;

@@ -15,12 +15,14 @@
  * version: 0.4.0 - MIC integration into libmeasure
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
+ *          0.7.0 - modularized measurement struct 
  */
 
-#include "CMeasureMIC.hpp"
-
 namespace NLibMeasure {
-	CMeasureMIC::CMeasureMIC(CLogger& rLogger):
+	template <int TSkipMs, int TVariant>
+	CMeasureMIC<TSkipMs, TVariant>::CMeasureMIC(CLogger& rLogger):
 		CMeasureAbstractResource(rLogger),
 		mpMicDevice(0),
 		mpMicUtilization(0)
@@ -29,18 +31,20 @@ namespace NLibMeasure {
 		init();
 	}
 	
-	CMeasureMIC::~CMeasureMIC() {
+	template <int TSkipMs, int TVariant>
+	CMeasureMIC<TSkipMs, TVariant>::~CMeasureMIC() {
 		destroy();
 	}
 	
-	void CMeasureMIC::init(void) {	
-#ifdef LIGHT
-		mrLog()
-		<< ">>> 'mic' (light version)" << std::endl;
-#else
-		mrLog()
-		<< ">>> 'mic' (full version)" << std::endl;
-#endif
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::init(void) {	
+		if(TVariant == VARIANT_FULL) {
+			mrLog()
+			<< ">>> 'mic' (full version)" << std::endl;
+		} else {
+			mrLog()
+			<< ">>> 'mic' (light version)" << std::endl;
+		}
 		
 		int32_t status							= E_MIC_SUCCESS;
 		int32_t num_of_mic_devices				= 0;
@@ -316,7 +320,8 @@ namespace NLibMeasure {
 		
 	}
 	
-	void CMeasureMIC::destroy(void) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::destroy(void) {
 		int32_t status	= E_MIC_SUCCESS;
 		
 		// Close MIC device.
@@ -338,7 +343,14 @@ namespace NLibMeasure {
 		
 	}
 	
-	void CMeasureMIC::read_memory_total(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	int CMeasureMIC<TSkipMs, TVariant>::getVariant() {
+		return TVariant;
+	}
+	
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::read_memory_total(void *pMsMeasurement, int32_t& rThreadNum) {
+		MS_MEASUREMENT_MIC *pMsMeasurementMic = (MS_MEASUREMENT_MIC *) pMsMeasurement;
 		int32_t status								= E_MIC_SUCCESS;
 		struct mic_memory_util_info *memory_info	= NULL;
 				
@@ -350,7 +362,7 @@ namespace NLibMeasure {
 		}
 		
 		// Get total memory size according to MIC OS.
-		status = mic_get_total_memory_size(memory_info, &(pMeasurement->mic_memory_total));
+		status = mic_get_total_memory_size(memory_info, &(pMsMeasurementMic->mic_memory_total));
 		if (E_MIC_SUCCESS != status) {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC total memory size. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
@@ -365,22 +377,24 @@ namespace NLibMeasure {
 		
 	}
 	
-	void CMeasureMIC::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
-		mMutex.lock();
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::measure(void* pMsMeasurement, int32_t& rThreadNum) {
+		MS_MEASUREMENT_MIC *pMsMeasurementMic = (MS_MEASUREMENT_MIC *) pMsMeasurement;
+		micGetPower(pMsMeasurementMic, rThreadNum);
+		micGetUtil(pMsMeasurementMic, rThreadNum);
 		
-		micGetPower(pMeasurement, rThreadNum);
-		micGetUtil(pMeasurement, rThreadNum);
+		if(TVariant == VARIANT_FULL) {
+			micGetFrequency(pMsMeasurementMic, rThreadNum);
+			if(!(mMeasureCounter++ % TSkipMs)) {
+				micGetMemory(pMsMeasurementMic, rThreadNum);
+				micGetTemperature(pMsMeasurementMic, rThreadNum);
+			}
+		}
 		
-#ifndef LIGHT
-		micGetMemory(pMeasurement, rThreadNum);
-		micGetFrequency(pMeasurement, rThreadNum);
-		micGetTemperature(pMeasurement, rThreadNum);
-#endif /* LIGHT */
-		
-		mMutex.unlock();
 	}
 	
-	void CMeasureMIC::micGetFrequency(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::micGetFrequency(MS_MEASUREMENT_MIC *pMsMeasurementMic, int32_t& rThreadNum) {
 		int32_t status						= E_MIC_SUCCESS;
 		uint32_t temp						= 0;
 		struct mic_cores_info *cores_info	= NULL;
@@ -393,28 +407,13 @@ namespace NLibMeasure {
 			exit(EXIT_FAILURE);
 		}
 		
-		// Get information about the MIC memory.
-		status = mic_get_memory_info(mpMicDevice, &memory_info);
-		if (E_MIC_SUCCESS != status) {
-			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC memory information structure. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-			exit(EXIT_FAILURE);
-		}
-		
 		// Get current frequency of the MIC cores.
 		status = mic_get_cores_frequency(cores_info, &temp);
 		if (E_MIC_SUCCESS != status) {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC core frequency. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->mic_freq_core_cur = temp / 1000;
-		
-		// Get current frequency of the MIC memory.
-		status = mic_get_memory_frequency(memory_info, &temp);
-		if (E_MIC_SUCCESS != status) {
-			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC memory frequency. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-			exit(EXIT_FAILURE);
-		}
-		pMeasurement->mic_freq_mem_cur = temp / 1000;
+		pMsMeasurementMic->mic_freq_core_cur = temp / 1000;
 		
 		// Free struct storing the MIC on-die core info.
 		status = mic_free_cores_info(cores_info);
@@ -423,15 +422,33 @@ namespace NLibMeasure {
 			exit(EXIT_FAILURE);
 		}
 		
-		// Free struct storing the MIC memory info.
-		status = mic_free_memory_info(memory_info);
-		if (E_MIC_SUCCESS != status) {
-			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot free MIC memory information structure. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
-			exit(EXIT_FAILURE);
+		if(!(mMeasureCounter % TSkipMs)) {
+			// Get information about the MIC memory.
+			status = mic_get_memory_info(mpMicDevice, &memory_info);
+			if (E_MIC_SUCCESS != status) {
+				mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC memory information structure. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+				exit(EXIT_FAILURE);
+			}
+			
+			// Get current frequency of the MIC memory.
+			status = mic_get_memory_frequency(memory_info, &temp);
+			if (E_MIC_SUCCESS != status) {
+				mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC memory frequency. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+				exit(EXIT_FAILURE);
+			}
+			pMsMeasurementMic->mic_freq_mem_cur = temp / 1000;
+			
+			// Free struct storing the MIC memory info.
+			status = mic_free_memory_info(memory_info);
+			if (E_MIC_SUCCESS != status) {
+				mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot free MIC memory information structure. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+				exit(EXIT_FAILURE);
+			}
 		}
 	}
 	
-	void CMeasureMIC::micGetPower(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::micGetPower(MS_MEASUREMENT_MIC *pMsMeasurementMic, int32_t& rThreadNum) {
 		int32_t status						= E_MIC_SUCCESS;
 		uint32_t temp						= 0;
 		struct mic_power_util_info *power	= NULL;
@@ -449,7 +466,7 @@ namespace NLibMeasure {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC power consumption via PCIe slot. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->mic_power_cur[MIC_PCIE] = temp / 1000;
+		pMsMeasurementMic->mic_power_cur[MIC_PCIE] = temp / 1000;
 				
 		// Get power consumed 2x3 (max. 75W) power connector.
 		status = mic_get_c2x3_power_readings(power,  &temp);
@@ -457,7 +474,7 @@ namespace NLibMeasure {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC power consumption via 2x3 power connector. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->mic_power_cur[MIC_C2X3] = temp / 1000;
+		pMsMeasurementMic->mic_power_cur[MIC_C2X3] = temp / 1000;
 		
 		// Get power consumed 2x4 (max. 100W) power connector.
 		status = mic_get_c2x4_power_readings(power, &temp);
@@ -465,7 +482,7 @@ namespace NLibMeasure {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC power consumption via 2x4 power connector. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->mic_power_cur[MIC_C2X4] = temp / 1000;
+		pMsMeasurementMic->mic_power_cur[MIC_C2X4] = temp / 1000;
 		
 		// Get core power rail power consumption.
 		status = mic_get_vccp_power_readings(power, &temp);
@@ -473,7 +490,7 @@ namespace NLibMeasure {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC core power rail power consumption. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->mic_power_cur[MIC_VCCP] = temp / 1000;
+		pMsMeasurementMic->mic_power_cur[MIC_VCCP] = temp / 1000;
 		
 		// Get uncore power rail power consumption.
 		status = mic_get_vddg_power_readings(power, &temp);
@@ -481,7 +498,7 @@ namespace NLibMeasure {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC uncore power rail power consumption. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->mic_power_cur[MIC_VDDG] = temp / 1000;
+		pMsMeasurementMic->mic_power_cur[MIC_VDDG] = temp / 1000;
 		
 		// Get memory subsystem power rail power consumption.
 		status = mic_get_vddq_power_readings(power, &temp);
@@ -489,10 +506,10 @@ namespace NLibMeasure {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC memory subsystem power rail power consumption. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->mic_power_cur[MIC_VDDQ] = temp / 1000;
+		pMsMeasurementMic->mic_power_cur[MIC_VDDQ] = temp / 1000;
 		
 		// Calculate total power consumption
-		pMeasurement->mic_power_cur[MIC_POWER] = pMeasurement->mic_power_cur[MIC_PCIE] + pMeasurement->mic_power_cur[MIC_C2X3] + pMeasurement->mic_power_cur[MIC_C2X4];
+		pMsMeasurementMic->mic_power_cur[MIC_POWER] = pMsMeasurementMic->mic_power_cur[MIC_PCIE] + pMsMeasurementMic->mic_power_cur[MIC_C2X3] + pMsMeasurementMic->mic_power_cur[MIC_C2X4];
 		
 		// Free power info struct.
 		status = mic_free_power_utilization_info(power);
@@ -502,7 +519,8 @@ namespace NLibMeasure {
 		}
 	}
 	
-	void CMeasureMIC::micGetTemperature(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::micGetTemperature(MS_MEASUREMENT_MIC *pMsMeasurementMic, int32_t& rThreadNum) {
 		int32_t status						= E_MIC_SUCCESS;
 		struct mic_thermal_info *thermal	= NULL;
 		uint16_t temp						= 0;
@@ -515,7 +533,7 @@ namespace NLibMeasure {
 		}
 		
 		// Get die temperature.
-		status = mic_get_die_temp(thermal, &(pMeasurement->mic_temperature_cur[MIC_DIE_TEMP]));
+		status = mic_get_die_temp(thermal, &(pMsMeasurementMic->mic_temperature_cur[MIC_DIE_TEMP]));
 		if (E_MIC_SUCCESS != status) {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC die temperature. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
@@ -527,7 +545,7 @@ namespace NLibMeasure {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC GDDR RAM temperature. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->mic_temperature_cur[MIC_GDDR_TEMP] = temp;
+		pMsMeasurementMic->mic_temperature_cur[MIC_GDDR_TEMP] = temp;
 		
 		// Get fan-in temperature.
 		status = mic_get_fanin_temp(thermal, &temp);
@@ -535,7 +553,7 @@ namespace NLibMeasure {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC fan-in temperature. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->mic_temperature_cur[MIC_FAN_IN_TEMP] = temp;
+		pMsMeasurementMic->mic_temperature_cur[MIC_FAN_IN_TEMP] = temp;
 		
 		// Get fan-out temperature.
 		status = mic_get_fanout_temp(thermal, &temp);
@@ -543,7 +561,7 @@ namespace NLibMeasure {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC fan-out temperature. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->mic_temperature_cur[MIC_FAN_OUT_TEMP] = temp;
+		pMsMeasurementMic->mic_temperature_cur[MIC_FAN_OUT_TEMP] = temp;
 		
 		// Get core power rail (vccp) temperature.
 		status = mic_get_vccp_temp(thermal, &temp);
@@ -551,7 +569,7 @@ namespace NLibMeasure {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC core power rail temperature. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->mic_temperature_cur[MIC_VCCP_TEMP] = temp;
+		pMsMeasurementMic->mic_temperature_cur[MIC_VCCP_TEMP] = temp;
 		
 		// Get uncore power rail (vddg) temperature.
 		status = mic_get_vddg_temp(thermal, &temp);
@@ -559,7 +577,7 @@ namespace NLibMeasure {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC uncore power rail temperature. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->mic_temperature_cur[MIC_VDDG_TEMP] = temp;
+		pMsMeasurementMic->mic_temperature_cur[MIC_VDDG_TEMP] = temp;
 		
 		// Get memory subsystem power rail (vddq) temperature.
 		status = mic_get_vddq_temp(thermal, &temp);
@@ -567,7 +585,7 @@ namespace NLibMeasure {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain MIC memory power rail temperature. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		pMeasurement->mic_temperature_cur[MIC_VDDQ_TEMP] = temp;
+		pMsMeasurementMic->mic_temperature_cur[MIC_VDDQ_TEMP] = temp;
 		
 		// Free thermal info struct.
 		status = mic_free_thermal_info(thermal);
@@ -577,7 +595,8 @@ namespace NLibMeasure {
 		}
 	}	
 	
-	void CMeasureMIC::micGetUtil(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {  
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::micGetUtil(MS_MEASUREMENT_MIC *pMsMeasurementMic, int32_t& rThreadNum) {  
 		int32_t status					= E_MIC_SUCCESS;
 		
 		// Update core utilization struct.
@@ -588,35 +607,36 @@ namespace NLibMeasure {
 		}
 		
 		// Get sum of idle time (in jiffies) of all cores.
-		status = mic_get_idle_sum(mpMicUtilization, &(pMeasurement->internal.mic_util_cur[IDLE_SUM]));
+		status = mic_get_idle_sum(mpMicUtilization, &(pMsMeasurementMic->internal.mic_util_cur[IDLE_SUM]));
 		if (E_MIC_SUCCESS != status) {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain sum of idle time of all cores. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 		
 		// Get sum of system time (in jiffies) of all cores.
-		status = mic_get_sys_sum(mpMicUtilization, &(pMeasurement->internal.mic_util_cur[SYS_SUM]));
+		status = mic_get_sys_sum(mpMicUtilization, &(pMsMeasurementMic->internal.mic_util_cur[SYS_SUM]));
 		if (E_MIC_SUCCESS != status) {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain sum of system time of all cores. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 		
 		// Get sum of nice time (in jiffies) of all cores.
-		status = mic_get_nice_sum(mpMicUtilization, &(pMeasurement->internal.mic_util_cur[NICE_SUM]));
+		status = mic_get_nice_sum(mpMicUtilization, &(pMsMeasurementMic->internal.mic_util_cur[NICE_SUM]));
 		if (E_MIC_SUCCESS != status) {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain sum of nice time of all cores. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 		
 		// Get sum of user time (in jiffies) of all cores.
-		status = mic_get_user_sum(mpMicUtilization, &(pMeasurement->internal.mic_util_cur[USER_SUM]));
+		status = mic_get_user_sum(mpMicUtilization, &(pMsMeasurementMic->internal.mic_util_cur[USER_SUM]));
 		if (E_MIC_SUCCESS != status) {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain sum of user time of all cores. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 	}
 	
-	void CMeasureMIC::micGetMemory(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+	template <int TSkipMs, int TVariant>
+	void CMeasureMIC<TSkipMs, TVariant>::micGetMemory(MS_MEASUREMENT_MIC *pMsMeasurementMic, int32_t& rThreadNum) {
 		int32_t status								= E_MIC_SUCCESS;
 		struct mic_memory_util_info *memory_info	= NULL;
 		
@@ -628,13 +648,13 @@ namespace NLibMeasure {
 		}
 		
 		// Get size of free memory according to MIC OS.
-		status = mic_get_available_memory_size(memory_info, &(pMeasurement->mic_memory_free_cur));
+		status = mic_get_available_memory_size(memory_info, &(pMsMeasurementMic->mic_memory_free_cur));
 		if (E_MIC_SUCCESS != status) {
 			mrLog(CLogger::scErr) << "!!! 'mic' (thread #" << rThreadNum << "): Error: cannot obtain size of free MIC memory. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 		
-		pMeasurement->mic_memory_used_cur = pMeasurement->mic_memory_total - pMeasurement->mic_memory_free_cur;
+		pMsMeasurementMic->mic_memory_used_cur = pMsMeasurementMic->mic_memory_total - pMsMeasurementMic->mic_memory_free_cur;
 		
 		// Free information struct about the MIC memory utilization.
 		status = mic_free_memory_utilization_info(memory_info);

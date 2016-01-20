@@ -17,46 +17,49 @@
  *          0.1.15 - make CPU frequency settable
  *          0.2.4 - add version check functionality to library, wrappers, and tools
  *          0.4.0 - MIC integration into libmeasure
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
+ *          0.7.0 - modularized measurement struct
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 
-#include "../../../include/measurement.h"
+#include "../../../include/ms_measurement.h"
 
 int main(int argc, char **argv) {
 	// Initialize library and measurement system
 	MS_VERSION version = { .major = MS_MAJOR_VERSION, .minor = MS_MINOR_VERSION, .revision = MS_REVISION_VERSION };
-	MSYSTEM *ms = ms_init(&version, CPU_GOVERNOR_ONDEMAND, 2000000, 2500000, GPU_FREQUENCY_CUR);
+	MS_SYSTEM *ms = ms_init(&version, CPU_GOVERNOR_ONDEMAND, 2000000, 2500000, GPU_FREQUENCY_CUR, IOC_SET_IPMI_TIMEOUT, SKIP_PERIODIC, VARIANT_FULL);
 	
-	// Allocate measurement structs
-	MEASUREMENT *m1 = ms_alloc_measurement();
+	// Allocate measurement list
+	MS_LIST *m1 = ms_alloc_measurement(ms);
 	
-	// Set timer for m1. Measurements perform every 10ms/30ms.
-	ms_set_timer(m1, CPU , 0, 10000000);
-	ms_set_timer(m1, GPU , 0, 30000000);
-	ms_set_timer(m1, FPGA , 0, 30000000);
-	ms_set_timer(m1, SYSTEM , 0, 100000000);
-	ms_set_timer(m1, MIC , 0, 30000000);
+	// Set timer for m1. Measurements perform every (10ms/30ms)*10 = 100ms/300ms.
+	ms_set_timer(m1, CPU , 0, 10000000, 10);
+	ms_set_timer(m1, GPU , 0, 30000000, 10);
+	ms_set_timer(m1, FPGA , 0, 30000000, 10);
+	ms_set_timer(m1, SYSTEM , 0, 100000000, 10);
+	ms_set_timer(m1, MIC , 0, 30000000, 10);
 	ms_init_measurement(ms, m1, ALL);
 	
 	// Start measurements
-	ms_start_measurement(ms, m1);
+	ms_start_measurement(ms);
 	sleep(10);
 	
 	// Stop all measurement procedures.
-	ms_stop_measurement(ms, m1);
+	ms_stop_measurement(ms);
 	
 	// Join measurement threads and remove thread objects.
-	ms_join_measurement(ms, m1);
-	ms_fini_measurement(ms, m1);
+	ms_join_measurement(ms);
+	ms_fini_measurement(ms);
 	
 	// Print some measured data to stdout.
 	printf("consumed energy of cpu 1 dram bank : %.2lf mWs\n", cpu_energy_total_dram(m1, 1));
 	printf("maximum temperature of gpu         : %u \u00b0C\n", gpu_temp_max(m1));
 	printf("total time of mic measuring        : %.2lf s\n", mic_time_total(m1));
 	printf("mic temperature max die            : %u \u00b0C\n", mic_temp_max_die(m1));
+	printf("consumed energy of the fpga        : %lf mWs\n", fpga_energy_total_power_usage(m1));
 	
 	// Cleanup the environment before exiting the program
 	ms_free_measurement(m1);

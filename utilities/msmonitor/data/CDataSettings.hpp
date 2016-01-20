@@ -15,6 +15,10 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.0 - add cpu, gpu and mic memory information
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __CDATASETTINGS_HPP__
@@ -22,7 +26,7 @@
 
 #include "../common/CMutex.hpp"
 
-#include "../../../include/measurement.h"
+#include "../../../include/ms_measurement.h"
 
 // TODO: This is a non-C++ hack!
 #include <stdint.h>
@@ -36,8 +40,18 @@ namespace NData {
 			uint32_t mMICSamplingRate;
 			uint32_t mSystemSamplingRate;
 			
+			uint32_t mCPUCheckForExitInterrupts;
+			uint32_t mGPUCheckForExitInterrupts;
+			uint32_t mFPGACheckForExitInterrupts;
+			uint32_t mMICCheckForExitInterrupts;
+			uint32_t mSystemCheckForExitInterrupts;
+			
+			skip_ms_rate mSkipMsRate;
+			
 			uint32_t mDataSamplingRate;
 			uint32_t mGUIRefreshRate;
+			
+			bool mWriteResultsToCsv;
 			
 			uint32_t mTimeToBufferData;
 			uint32_t mTimeToShowData;
@@ -61,6 +75,8 @@ namespace NData {
 			uint64_t mCpuFrequencyMinimum;
 			uint64_t mCpuFrequencyMaximum;
 			enum gpu_frequency mGpuFrequency;
+			
+			lib_variant mLibVariant;
 			
 		public:
 			CDataSettings(void);

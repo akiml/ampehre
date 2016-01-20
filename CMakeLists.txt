@@ -17,10 +17,11 @@
 #          0.2.1 - add support for IPMI to the measure driver
 #          0.2.4 - add version check functionality to library, wrappers, and tools
 #          0.3.2 - add a networking component to show influence of a task to measurements in GUI
-#          0.5.1 - modularised libmeasure
+#          0.5.1 - modularized libmeasure
 #          0.5.4 - add dynamic loading of resource specific libraries
 #          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
 #          0.5.8 - change project name to ampehre
+#          0.7.1 - move functions to query measurement results into the modules
 #
 
 cmake_minimum_required (VERSION 2.6)
@@ -67,6 +68,14 @@ set(MS_LIBRARY_LIGHT
 	ms_common_light
 )
 
+set(MS_LIBRARY_MODULE_PATH
+	libmeasure/cpu_intel_xeon_sandy
+	libmeasure/gpu_nvidia_tesla_kepler
+	libmeasure/fpga_maxeler_max3a
+	libmeasure/mic_intel_knc
+	libmeasure/sys_dell_idrac7
+)
+
 option(DEBUG_SYMS "Compile library and applications with debug symbols." OFF)
 if (DEBUG_SYMS)
 	message(STATUS "${Yellow}INFO: Compile with debug symbols ENABLED.${ColourReset}")
@@ -103,6 +112,8 @@ else(CPU_INTEL_SANDY_SUPPORT)
 	message(STATUS "${BoldYellow}INFO: Compile with cpu  intel   xeon   sandy DISABLED.${ColourReset}")
 endif(CPU_INTEL_SANDY_SUPPORT)
 
+include_directories(${MS_LIBRARY_MODULE_PATH} include/)
+
 add_subdirectory(cjson)
 #add_subdirectory(driver)
 add_subdirectory(libmeasure)
@@ -111,7 +122,7 @@ add_subdirectory(misc)
 
 install(FILES include/unixsockethandler.h DESTINATION include)
 install(FILES include/ushmsmonitor.h DESTINATION include)
-install(FILES include/measurement.h DESTINATION include)
+install(FILES include/ms_measurement.h DESTINATION include)
 install(FILES include/ms_taskwrapper.h DESTINATION include)
 install(FILES include/ms_hetschedwrapper.h DESTINATION include)
 install(FILES include/ms_hetschedwrapper_client.h DESTINATION include)
@@ -120,3 +131,4 @@ install(FILES include/ms_hetnodewrapper.h DESTINATION include)
 install(FILES include/ms_ipmiwrapper.h DESTINATION include)
 install(FILES include/ms_version.h DESTINATION include)
 install(FILES include/ms_plugin_interface.h DESTINATION include)
+install(FILES include/ms_list.h DESTINATION include)

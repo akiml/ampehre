@@ -13,18 +13,31 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/22/15
  * version: 0.5.3 - add abstract measure and abstract measure thread
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
+ *          0.7.0 - modularized measurement struct
  */
 #include "CMeasureAbstractResource.hpp"
 
+#include <iostream>
+
 namespace NLibMeasure {
-    CMeasureAbstractResource::CMeasureAbstractResource(CLogger & rLogger):
+	CMeasureAbstractResource::CMeasureAbstractResource(CLogger & rLogger):
 		mrLog(rLogger),
-		mMutex()
+		mMeasureCounter(0)
 		{
 		// nothing todo
-    }
-    
-    CMeasureAbstractResource::~CMeasureAbstractResource() {
+	}
+	
+	CMeasureAbstractResource::~CMeasureAbstractResource() {
 		// nothing todo
-    }
+	}
+	
+	void CMeasureAbstractResource::read_memory_total(void *pMsMeasurement, int32_t& rThreadNum) {
+		// nothing todo; concrete implementation in subclasses
+	}
+	
+	void CMeasureAbstractResource::trigger_resource_custom(void* pParams){
+		// nothing todo
+	}
 }

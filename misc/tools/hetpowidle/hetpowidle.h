@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 10/27/14
  * version: 0.1.19 - add a hettime based idle power measurement tool
+ *          0.7.0 - modularized measurement struct 
  */
 
 #ifndef __HETPOWIDLE_H__
@@ -22,7 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../../../include/measurement.h"
+#include "../../../include/ms_measurement.h"
 
 #define LOG_ERROR(msg) \
 	fprintf(stderr, "Error (file: %s, line: %i): %s\n", (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__), __LINE__, msg)
@@ -45,10 +46,18 @@ typedef struct __arguments {
 	uint32_t sample_rate_fpga;
 	uint32_t sample_rate_mic;
 	uint32_t sample_rate_sys;
+	uint32_t check_for_exit_interrupts_cpu;
+	uint32_t check_for_exit_interrupts_gpu;
+	uint32_t check_for_exit_interrupts_fpga;
+	uint32_t check_for_exit_interrupts_sys;
+	uint32_t check_for_exit_interrupts_mic;
 	enum gpu_frequency gpu_freq;
 	enum cpu_governor cpu_gov;
+	uint64_t ipmi_timeout_setting;
 	uint32_t cpu_freq_min;
 	uint32_t cpu_freq_max;
+	enum skip_ms_rate skip_ms;
+	enum lib_variant variant;
 	char *hostname;
 	size_t hostname_size;
 	char *jsonfile;

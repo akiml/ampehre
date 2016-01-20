@@ -16,7 +16,6 @@
  *          0.1.18 - hettime dummy tool can be used similar to ordinary "sleep" command
  */
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -101,17 +100,25 @@ static void init_settings(ARGUMENTS **settings) {
 	}
 	
 	// Please, set the default settings here
-	(*settings)->sample_rate_cpu	= 30;
-	(*settings)->sample_rate_gpu	= 40;
-	(*settings)->sample_rate_fpga	= 50;
-	(*settings)->sample_rate_mic	= 100;
-	(*settings)->sample_rate_sys	= 100;
-	(*settings)->gpu_freq			= GPU_FREQUENCY_CUR;
-	(*settings)->cpu_gov			= CPU_GOVERNOR_ONDEMAND;
-	(*settings)->cpu_freq_min		= 0;
-	(*settings)->cpu_freq_max		= 0;
-	(*settings)->runtime			= 0;
-	(*settings)->resources			= CPU | GPU | FPGA;
+	(*settings)->sample_rate_cpu				= 30;
+	(*settings)->sample_rate_gpu				= 40;
+	(*settings)->sample_rate_fpga				= 50;
+	(*settings)->sample_rate_mic				= 100;
+	(*settings)->sample_rate_sys				= 100;
+	(*settings)->check_for_exit_interrupts_cpu	= 1;
+	(*settings)->check_for_exit_interrupts_gpu	= 1;
+	(*settings)->check_for_exit_interrupts_fpga	= 1;
+	(*settings)->check_for_exit_interrupts_mic	= 1;
+	(*settings)->check_for_exit_interrupts_sys	= 1;
+	(*settings)->gpu_freq						= GPU_FREQUENCY_CUR;
+	(*settings)->cpu_gov						= CPU_GOVERNOR_ONDEMAND;
+	(*settings)->cpu_freq_min					= 0;
+	(*settings)->cpu_freq_max					= 0;
+	(*settings)->runtime						= 0;
+	(*settings)->resources						= CPU | GPU | FPGA;
+	(*settings)->ipmi_timeout_setting			= IOC_SET_IPMI_TIMEOUT;
+	(*settings)->skip_ms						= SKIP_NEVER;
+	(*settings)->variant						= VARIANT_LIGHT;
 }
 
 static void free_settings(ARGUMENTS **settings) {

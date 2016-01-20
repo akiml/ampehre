@@ -20,11 +20,14 @@
  *          0.2.2 - add semaphore to synchronize the start of the measurements
  *          0.2.4 - add version check functionality to library, wrappers, and tools
  *          0.4.0 - MIC integration into libmeasure
- *          0.5.1 - modularised libmeasure
+ *          0.5.1 - modularized libmeasure
  *          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
+ *          0.7.0 - modularized measurement struct
  */
 
-#include "../../include/measurement.h"
+#include "../../include/ms_measurement.h"
 #include "CMgmt.hpp"
 
 #include <iostream>
@@ -34,74 +37,141 @@
 #include <sys/types.h>
 #include <signal.h>
 
-#define UINT64_MAX (0xffffffffffffffff)
+static void divide_sampling_rates(struct timespec *time_wait, uint64_t sec, uint64_t nsec, uint32_t check_for_exit_interrupts);
 
-MSYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max, gpu_frequency gpu_freq) {
+MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max,
+				 gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting, enum skip_ms_rate skip_ms_rate, enum lib_variant variant) {
 	
 	if((version->major != MS_MAJOR_VERSION) || (version->minor != MS_MINOR_VERSION) || (version->revision != MS_REVISION_VERSION)){
 		std::cout << "!!! 'mgmt' (thread main): Error: Wrong version number! libmeasure version " << MS_MAJOR_VERSION << "." << MS_MINOR_VERSION << "." << MS_REVISION_VERSION  << " is called from tool with version" << version->major << "." << version->minor << "." << version->revision  << " (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	
-	CMgmt *mgmt = new CMgmt(cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq);
+	CMgmt *mgmt = new CMgmt(cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq, ipmi_timeout_setting, skip_ms_rate, variant);
 	
-	return (MSYSTEM *)mgmt;
+	MS_SYSTEM *ms_system = new MS_SYSTEM;
+	
+	ms_system->mgmt = (void*) mgmt;
+	
+	ms_system->config = new MS_CONFIG;
+	
+#ifdef CPU_LIB
+	ms_system->config->cpu_enabled = 1;
+#else
+	ms_system->config->cpu_enabled = 0;
+#endif
+	
+#ifdef GPU_LIB
+	ms_system->config->gpu_enabled = 1;
+#else
+	ms_system->config->gpu_enabled = 0;
+#endif
+	
+#ifdef FPGA_LIB
+	ms_system->config->fpga_enabled = 1;
+#else
+	ms_system->config->fpga_enabled = 0;
+#endif
+
+#ifdef SYS_LIB
+	ms_system->config->sys_enabled = 1;
+#else
+	ms_system->config->sys_enabled = 0;
+#endif
+
+#ifdef MIC_LIB
+	ms_system->config->mic_enabled = 1;
+#else
+	ms_system->config->mic_enabled = 0;
+#endif
+	
+	return ms_system;
 }
 
-void ms_init_fpga_force_idle(MSYSTEM *mgmt) {
-	CMgmt *ms = (CMgmt *)mgmt;
+void ms_init_fpga_force_idle(MS_SYSTEM *ms_system) {
+	CMgmt *mgmt = (CMgmt *)ms_system->mgmt;
 	
-	ms->initMaxelerForceIdle();
+	mgmt->initMaxelerForceIdle();
 }
 
-void ms_fini(MSYSTEM *mgmt) {
-	delete (CMgmt *)mgmt;
+void ms_fini(MS_SYSTEM *ms_system) {
+	delete ms_system->config;
+	delete (CMgmt *)ms_system->mgmt;
+	delete ms_system;
 }
 
-MEASUREMENT* ms_alloc_measurement(void) {
-	MEASUREMENT *measurement = new MEASUREMENT;
+MS_LIST *ms_alloc_measurement(MS_SYSTEM *ms_system) {
+	MS_LIST *ms_list = NULL;
+	MS_CONFIG *config = ms_system->config;
 	
-	memset(measurement, 0, sizeof(MEASUREMENT));
+	if(config->cpu_enabled) {
+		appendList(&ms_list, CPU);
+	}
 	
-	measurement->msr_time_wait.tv_sec		= UINT64_MAX;
-	measurement->msr_time_wait.tv_nsec		= UINT64_MAX;
-	measurement->nvml_time_wait.tv_sec		= UINT64_MAX;
-	measurement->nvml_time_wait.tv_nsec		= UINT64_MAX;
-	measurement->maxeler_time_wait.tv_sec	= UINT64_MAX;
-	measurement->maxeler_time_wait.tv_nsec	= UINT64_MAX;
-	measurement->ipmi_time_wait.tv_sec		= UINT64_MAX;
-	measurement->ipmi_time_wait.tv_nsec		= UINT64_MAX;
-	measurement->mic_time_wait.tv_sec		= UINT64_MAX;
-	measurement->mic_time_wait.tv_nsec		= UINT64_MAX;
+	if(config->gpu_enabled) {
+		appendList(&ms_list, GPU);
+	}
 	
-	return measurement;
+	if(config->fpga_enabled) {
+		appendList(&ms_list, FPGA);
+	}
+	
+	if(config->sys_enabled) {
+		appendList(&ms_list, SYSTEM);
+	}
+	
+	if(config->mic_enabled) {
+		appendList(&ms_list, MIC);
+	}
+	
+	return ms_list;
 }
 
-void ms_free_measurement(MEASUREMENT* measurement) {
-	delete measurement;
+void ms_free_measurement(MS_LIST *ms_list) {
+	deleteList(&ms_list);
 }
 
-void ms_set_timer(MEASUREMENT* measurement, int flag, uint64_t sec, uint64_t nsec) {
-	switch (flag) {
+void ms_set_timer(MS_LIST *ms_list, int flag, uint64_t sec, uint64_t nsec, uint32_t check_for_exit_interrupts) {
+	if(check_for_exit_interrupts <= 0){
+		check_for_exit_interrupts = 1;
+	}
+	void* ms_measurement = NULL;
+	
+	switch(flag) {
 		case CPU:
-			measurement->msr_time_wait.tv_sec		= sec;
-			measurement->msr_time_wait.tv_nsec		= nsec;
+			ms_measurement = getMeasurement(&ms_list, CPU);
+			if(ms_measurement!=NULL) {
+				divide_sampling_rates(&(((MS_MEASUREMENT_CPU *)ms_measurement)->msr_time_wait), sec, nsec, check_for_exit_interrupts);
+				((MS_MEASUREMENT_CPU *)ms_measurement)->msr_check_for_exit_interrupts = check_for_exit_interrupts;
+			}
 			break;
 		case GPU:
-			measurement->nvml_time_wait.tv_sec		= sec;
-			measurement->nvml_time_wait.tv_nsec		= nsec;
+			ms_measurement = getMeasurement(&ms_list, GPU);
+			if(ms_measurement!=NULL) {
+				divide_sampling_rates(&(((MS_MEASUREMENT_GPU *)ms_measurement)->nvml_time_wait), sec, nsec, check_for_exit_interrupts);
+				((MS_MEASUREMENT_GPU *)ms_measurement)->nvml_check_for_exit_interrupts = check_for_exit_interrupts;
+			}
 			break;
 		case FPGA:
-			measurement->maxeler_time_wait.tv_sec	= sec;
-			measurement->maxeler_time_wait.tv_nsec	= nsec;
-			break;
-		case SYSTEM:
-			measurement->ipmi_time_wait.tv_sec		= sec;
-			measurement->ipmi_time_wait.tv_nsec		= nsec;
+			ms_measurement = getMeasurement(&ms_list, FPGA);
+			if(ms_measurement!=NULL) {
+				divide_sampling_rates(&(((MS_MEASUREMENT_FPGA *)ms_measurement)->maxeler_time_wait), sec, nsec, check_for_exit_interrupts);
+				((MS_MEASUREMENT_FPGA *)ms_measurement)->maxeler_check_for_exit_interrupts = check_for_exit_interrupts;
+			}
 			break;
 		case MIC:
-			measurement->mic_time_wait.tv_sec		= sec;
-			measurement->mic_time_wait.tv_nsec		= nsec;
+			ms_measurement = getMeasurement(&ms_list, MIC);
+			if(ms_measurement!=NULL) {
+				divide_sampling_rates(&(((MS_MEASUREMENT_MIC *)ms_measurement)->mic_time_wait), sec, nsec, check_for_exit_interrupts);
+				((MS_MEASUREMENT_MIC *)ms_measurement)->mic_check_for_exit_interrupts = check_for_exit_interrupts;
+			}
+			break;
+		case SYSTEM:
+			ms_measurement = getMeasurement(&ms_list, SYSTEM);
+			if(ms_measurement!=NULL) {
+				divide_sampling_rates(&(((MS_MEASUREMENT_SYS *)ms_measurement)->ipmi_time_wait), sec, nsec, check_for_exit_interrupts);
+				((MS_MEASUREMENT_SYS *)ms_measurement)->ipmi_check_for_exit_interrupts = check_for_exit_interrupts;
+			}
 			break;
 		default:
 			std::cout << "!!! 'mgmt' (thread main): Error: cannot set measurement timer. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
@@ -109,53 +179,53 @@ void ms_set_timer(MEASUREMENT* measurement, int flag, uint64_t sec, uint64_t nse
 	}
 }
 
-void ms_init_measurement(MSYSTEM *msystem, MEASUREMENT* measurement, int flags) {
-	CMgmt *ms = (CMgmt *)msystem;
+void ms_init_measurement(MS_SYSTEM *ms_system, MS_LIST *ms_list, int flags) {
+	CMgmt *mgmt = (CMgmt *)ms_system->mgmt;
 	
 	if (flags & CPU) {
-		ms->initMeasureThread(CPU, measurement);
+		mgmt->initMeasureThread(CPU, ms_list);
 	}
 	
 	if (flags & GPU) {
-		ms->initMeasureThread(GPU, measurement);
+		mgmt->initMeasureThread(GPU, ms_list);
 	}
 	
 	if (flags & FPGA) {
-		ms->initMeasureThread(FPGA, measurement);
+		mgmt->initMeasureThread(FPGA, ms_list);
 	}
 	
 	if (flags & SYSTEM) {
-		ms->initMeasureThread(SYSTEM, measurement);
+		mgmt->initMeasureThread(SYSTEM, ms_list);
 	}
 	
 	if (flags & MIC) {
-		ms->initMeasureThread(MIC, measurement);
+		mgmt->initMeasureThread(MIC, ms_list);
 	}
 }
 
-void ms_fini_measurement(MSYSTEM *msystem, MEASUREMENT* measurement) {
-	CMgmt *ms = (CMgmt *)msystem;
+void ms_fini_measurement(MS_SYSTEM *ms_system) {
+	CMgmt *mgmt = (CMgmt *)ms_system->mgmt;
 	
 	for(int i = 0; i < (log2(ALL+1)); i++) {
-		ms->finiMeasureThread(1<<i);
+		mgmt->finiMeasureThread(1<<i);
 	}
 }
 
-void ms_start_measurement(MSYSTEM *msystem, MEASUREMENT* measurement) {
-	CMgmt *ms = (CMgmt *)msystem;
+void ms_start_measurement(MS_SYSTEM *ms_system) {
+	CMgmt *mgmt = (CMgmt *)ms_system->mgmt;
 	
 	// start threads
 	for(int i = 0; i < (log2(ALL+1)); i++) {
-		ms->lockResourceMutexStart(1<<i);
-		ms->startMeasureThread(1<<i);
+		mgmt->lockResourceMutexStart(1<<i);
+		mgmt->startMeasureThread(1<<i);
 	}
 	
 	// synchronize threads by mutex locks
 	for(int i = 0; i < (log2(ALL+1)); i++) {
-		ms->lockResourceMutexStart(1<<i);
+		mgmt->lockResourceMutexStart(1<<i);
 	}
 	
-	ms->postStartSem(2*log2(ALL+1));
+	mgmt->postStartSem(2*log2(ALL+1));
 	
 #ifdef SIGNALS
 	if (kill(getpid(), SIGUSR1)) {
@@ -165,12 +235,12 @@ void ms_start_measurement(MSYSTEM *msystem, MEASUREMENT* measurement) {
 	
 	// unlock after signal raise
 	for(int i = 0; i < (log2(ALL+1)); i++) {
-		ms->unlockResourceMutexStart(1<<i);
+		mgmt->unlockResourceMutexStart(1<<i);
 	}
 }
 
-void ms_stop_measurement(MSYSTEM *msystem, MEASUREMENT* measurement) {
-	CMgmt *ms = (CMgmt *)msystem;
+void ms_stop_measurement(MS_SYSTEM *ms_system) {
+	CMgmt *mgmt = (CMgmt *)ms_system->mgmt;
 	
 #ifdef SIGNALS
 	if (kill(getpid(), SIGUSR2)) {
@@ -179,34 +249,40 @@ void ms_stop_measurement(MSYSTEM *msystem, MEASUREMENT* measurement) {
 #endif /* SIGNALS */
 	
 	for(int i = 0; i < (log2(ALL+1)); i++) {
-		ms->stopMeasureThread(1<<i);
+		mgmt->stopMeasureThread(1<<i);
 	}
 }
 
-void ms_join_measurement(MSYSTEM *msystem, MEASUREMENT* measurement) {
-	CMgmt *ms = (CMgmt *)msystem;
+void ms_join_measurement(MS_SYSTEM *ms_system) {
+	CMgmt *mgmt = (CMgmt *)ms_system->mgmt;
 	
 	for(int i = 0; i < (log2(ALL+1)); i++) {
-		ms->joinMeasureThread(1<<i);
+		mgmt->joinMeasureThread(1<<i);
 	}
 }
 
-void ms_reg_sighandler_start(MSYSTEM *mgmt, void(*signal_handler)(int)) {
+void ms_reg_sighandler_start(MS_SYSTEM *ms_system, void(*signal_handler)(int)) {
 #ifdef SIGNALS
-	CMgmt *ms = (CMgmt *)mgmt;
+	CMgmt *mgmt = (CMgmt *)ms_system->mgmt;
 	
-	ms->regSighandlerStart(signal_handler);
+	mgmt->regSighandlerStart(signal_handler);
 #else /* NOT(SIGNALS) */
 	std::cout << "!!! 'mgmt' (thread main): Warning: You attempt to add signal handlers to a libmeasure compiled without this feature. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 #endif /* SIGNALS */
 }
 
-void ms_reg_sighandler_stop(MSYSTEM *mgmt, void(*signal_handler)(int)) {
+void ms_reg_sighandler_stop(MS_SYSTEM *ms_system, void(*signal_handler)(int)) {
 #ifdef SIGNALS
-	CMgmt *ms = (CMgmt *)mgmt;
+	CMgmt *mgmt = (CMgmt *)ms_system->mgmt;
 	
-	ms->regSighandlerStart(signal_handler);
+	mgmt->regSighandlerStart(signal_handler);
 #else /* NOT(SIGNALS) */
 	std::cout << "!!! 'mgmt' (thread main): Warning: You attempt to add signal handlers to a libmeasure compiled without this feature. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 #endif /* SIGNALS */
+}
+
+static void divide_sampling_rates(struct timespec *time_wait, uint64_t sec, uint64_t nsec, uint32_t check_for_exit_interrupts) {
+	time_wait->tv_sec = sec / check_for_exit_interrupts;
+	time_wait->tv_nsec = ((double)sec / check_for_exit_interrupts - time_wait->tv_sec) * 1000000000 + nsec / check_for_exit_interrupts;
+	
 }

@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 8/05/14
  * version: 0.1.0 - initial implementation
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __MS_TASKWRAPPER_INTERNAL_H__
@@ -28,14 +29,19 @@
 #define NUM_OF_RESOURCES 5
 
 typedef struct __minternal {
-	MSYSTEM *global_ms;
-	MEASUREMENT *global_m;
+	MS_SYSTEM *global_ms;
+	MS_LIST *global_m;
 	int	resources;
 	uint32_t sample_rate_cpu;
 	uint32_t sample_rate_gpu;
 	uint32_t sample_rate_fpga;
 	uint32_t sample_rate_mic;
 	uint32_t sample_rate_sys;
+	uint32_t check_for_exit_interrupts_cpu;
+	uint32_t check_for_exit_interrupts_gpu;
+	uint32_t check_for_exit_interrupts_fpga;
+	uint32_t check_for_exit_interrupts_sys;
+	uint32_t check_for_exit_interrupts_mic;
 } MINTERNAL;
 
 void mstw_init_rel_measurement(MREL_MEASUREMENT *m);

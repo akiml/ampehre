@@ -20,6 +20,9 @@
  *          0.2.0 - add support for msr registers to the measure driver
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __CMEASUREMSR_HPP__
@@ -31,6 +34,7 @@
 #define NUM_OF_CORES CPUS*CORES
 
 namespace NLibMeasure {
+	template <int TSkipMs, int TVariant>
 	class CMeasureMSR : public CMeasureAbstractResource {
 		private:
 			int32_t mFildesMeasure;
@@ -74,8 +78,11 @@ namespace NLibMeasure {
 			void measureGetMemInfo(int32_t& rThreadNum, uint64_t* pMeasureMemInfo);
 			
 		public:
-			void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
+			void measure(void *pMsMeasurement, int32_t& rThreadNum);
+			int getVariant();
 	};
 }
+
+#include "CMeasureMSR.cpp"
 
 #endif /* __CMEASUREMSR_HPP__ */

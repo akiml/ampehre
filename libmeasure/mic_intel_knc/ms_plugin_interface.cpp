@@ -13,6 +13,9 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/29/15
  * version: 0.5.4 - add dynamic loading of resource specific libraries
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library. 
+ *          0.7.0 - modularized measurement struct 
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -21,31 +24,57 @@
 #include "CMeasureMICThread.hpp"
 
 extern "C" {
-	void* init_resource(void* pLogger, uint64_t* pParams){
-		NLibMeasure::CMeasureMIC* pMIC =  new NLibMeasure::CMeasureMIC(*((NLibMeasure::CLogger*)pLogger));
-		
+	void* init_resource(void* pLogger, lib_variant variant, skip_ms_rate skip_ms, void* pParams){
+		NLibMeasure::CMeasureAbstractResource* pMIC;
+	
+		if(variant == VARIANT_FULL) {
+			switch(skip_ms){
+				case SKIP_PERIODIC:
+					pMIC =  new NLibMeasure::CMeasureMIC<10, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger));
+					break;
+				case SKIP_NEVER:
+				default:
+					pMIC =  new NLibMeasure::CMeasureMIC<1, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger));
+			}
+		} else {
+			switch(skip_ms){
+				case SKIP_PERIODIC:
+					pMIC =  new NLibMeasure::CMeasureMIC<10, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger));
+					break;
+				case SKIP_NEVER:
+				default:
+					pMIC =  new NLibMeasure::CMeasureMIC<1, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger));
+			}
+		}
 		return  (void*) pMIC;
 	}
 	
 	void fini_resource(void* pMeasureRes){
-		NLibMeasure::CMeasureMIC* pMIC = (NLibMeasure::CMeasureMIC*) pMeasureRes;
+		NLibMeasure::CMeasureAbstractResource* pMIC = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
 		
 		delete pMIC;
 	}
 	
-	void* init_resource_thread(void* pLogger, void* pStartSem, MEASUREMENT* pMeasurement, void* pMeasureRes){
-		NLibMeasure::CMeasureMICThread* pMICThread =  new NLibMeasure::CMeasureMICThread(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), pMeasurement, *((NLibMeasure::CMeasureAbstractResource*)pMeasureRes));
+	void* init_resource_thread(void* pLogger, void* pStartSem, MS_LIST* pMs_List, void* pMeasureRes){
+		NLibMeasure::CMeasureAbstractThread* pMICThread;
+		NLibMeasure::CMeasureAbstractResource* pMIC = (NLibMeasure::CMeasureAbstractResource*) pMeasureRes;
+		
+		if(pMIC->getVariant() == VARIANT_FULL) {
+			pMICThread =  new NLibMeasure::CMeasureMICThread<VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), getMeasurement(&pMs_List, MIC), *pMIC);
+		} else {
+			pMICThread =  new NLibMeasure::CMeasureMICThread<VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((NLibMeasure::CSemaphore*)pStartSem), getMeasurement(&pMs_List, MIC), *pMIC);
+		}
 		
 		return (void*) pMICThread;
 	}
 	
 	void fini_resource_thread(void* pMeasureResThread) {
-		NLibMeasure::CMeasureMICThread* pMICThread = (NLibMeasure::CMeasureMICThread*) pMeasureResThread;
+		NLibMeasure::CMeasureAbstractThread* pMICThread = (NLibMeasure::CMeasureAbstractThread*) pMeasureResThread;
 		
 		delete pMICThread;
 	}
 	
-	void trigger_resource_custom(void* pMeasureRes){
+	void trigger_resource_custom(void* pMeasureRes, void* pParams) {
 		// No additional custom function for this resource.
 	}
 }

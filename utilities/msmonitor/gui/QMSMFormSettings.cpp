@@ -14,6 +14,7 @@
  * created: 1/26/14
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.4.1 - add MIC support to msmonitor
+ *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  */
 
 #include "QMSMFormSettings.hpp"
@@ -89,6 +90,7 @@ namespace Ui {
 		mrDataSettings.mDataSamplingRate	= 10*horizontalSliderData->value();
 		mrDataSettings.mNumberOfTicks		= mrDataSettings.mTimeToBufferData/mrDataSettings.mDataSamplingRate;
 		mrDataSettings.mGUIRefreshRate		= 50*horizontalSliderGUI->value();
+		mrDataSettings.mWriteResultsToCsv	= checkBoxPrintToCsv->isChecked();
 		mrDataSettings.unlock();
 		
 		close();

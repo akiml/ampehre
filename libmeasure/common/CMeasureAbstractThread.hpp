@@ -13,6 +13,9 @@
  * author: Christoph Knorr (cknorr@mail.upb.de)
  * created: 5/22/15
  * version: 0.5.3 - add abstract measure and abstract measure thread
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __CMEASUREABSTRACTTHREAD_HPP__
@@ -30,7 +33,7 @@
 #include "CMutex.hpp"
 #include "CSemaphore.hpp"
 
-#include "../../include/measurement.h"
+#include "../../include/ms_measurement.h"
 
 namespace NLibMeasure {
 	class CMeasureAbstractThread : protected CThread {
@@ -44,7 +47,7 @@ namespace NLibMeasure {
 			
 			CSemaphore& mrStartSem;
 			
-			MEASUREMENT* mpMeasurement;
+			void *mpMsMeasurement;
 			CMeasureAbstractResource& mrMeasureResource;
 			CMeasureThreadTimer mTimer;
 			CMutex mMutexTimer;
@@ -53,15 +56,15 @@ namespace NLibMeasure {
 			
 			std::string mThreadType;
 			
-		protected:
-			CMeasureAbstractThread(CLogger& rLogger, CSemaphore& rStartSem, MEASUREMENT* pMeasurement, CMeasureAbstractResource& rMeasureResource);
-			~CMeasureAbstractThread();
-			void calcTimeDiff(struct timespec* time_cur, struct timespec* time_temp, struct timespec* time_diff, double* time_diff_double);
+		public:
+			CMeasureAbstractThread(CLogger& rLogger, CSemaphore& rStartSem, void *pMsMeasurement, CMeasureAbstractResource& rMeasureResource);
+			virtual ~CMeasureAbstractThread();
 			
 		private:
 			virtual void run(void) = 0;
 			
 		public:
+			static void calcTimeDiff(struct timespec* time_cur, struct timespec* time_temp, struct timespec* time_diff, double* time_diff_double);
 			static void* startThread(void* pThreadObject);
 			virtual void start(CMutex *pMutexStart = 0);
 			virtual void stop(void);

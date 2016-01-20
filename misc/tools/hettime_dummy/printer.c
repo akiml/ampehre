@@ -14,17 +14,18 @@
  * created: 10/13/14
  * version: 0.1.17 - add a hettime dummy executable for some hetsched measurements
  *          0.1.18 - hettime dummy tool can be used similar to ordinary "sleep" command
+ *          0.7.0 - modularized measurement struct
  */
 
 #include <stdio.h>
 
 #include "hettime.h"
 
-static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MEASUREMENT *m);
-static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MEASUREMENT *m);
-static void print_ostream_fpga(FILE *file, ARGUMENTS *settings, MEASUREMENT *m);
+static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MS_LIST *m);
+static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MS_LIST *m);
+static void print_ostream_fpga(FILE *file, ARGUMENTS *settings, MS_LIST *m);
 
-void print_ostream(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
+void print_ostream(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 	fprintf(file,
 		"RESULTS:\n========\n"
 	);
@@ -45,7 +46,7 @@ void print_ostream(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
 	print_ostream_fpga(file, settings, m);
 }
 
-static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
+static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 	fprintf(file,
 		"energy total cpu 0 pkg  [mWs]: %lf\n"
 		"energy total cpu 0 dram [mWs]: %lf\n"
@@ -69,7 +70,7 @@ static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
 	);
 }
 
-static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
+static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 	fprintf(file,
 		"energy total gpu        [mWs]: %lf\n"
 		"power  avg   gpu        [mW ]: %lf\n",
@@ -78,7 +79,7 @@ static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
 	);
 }
 
-static void print_ostream_fpga(FILE *file, ARGUMENTS *settings, MEASUREMENT *m) {
+static void print_ostream_fpga(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 	fprintf(file,
 		"energy total fpga       [mWs]: %lf\n"
 		"power  avg   fpga       [mW ]: %lf\n",

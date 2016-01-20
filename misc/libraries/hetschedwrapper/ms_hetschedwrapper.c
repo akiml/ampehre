@@ -23,13 +23,14 @@
 #include <stdio.h>
 
 
-void mshetsched_init(MS_VERSION *version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max, enum gpu_frequency gpu_freq,
+void mshetsched_init(MS_VERSION *version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max,
+					 enum gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting, enum skip_ms_rate skip_ms, enum lib_variant variant,
 					 void(*signal_handler_start)(int), void(*signal_handler_stop)(int)) {
 	if((version->major != MS_MAJOR_VERSION) || (version->minor != MS_MINOR_VERSION) || (version->revision != MS_REVISION_VERSION)){
 		printf("Error in hetschedwrapper: Wrong version number! hetschedwrapper version %d.%d.%d is called from tool with version %d.%d.%d.\n", MS_MAJOR_VERSION, MS_MINOR_VERSION, MS_REVISION_VERSION, version->major, version->minor, version->revision);
 		exit(EXIT_FAILURE);
 	}
-	mstw_init(version, CPU | GPU | FPGA, cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq);
+	mstw_init(version, CPU | GPU | FPGA, cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq, ipmi_timeout_setting, skip_ms, variant);
 	
 	if (signal_handler_start) {
 		mstw_reg_sighandler_start(signal_handler_start);

@@ -16,14 +16,25 @@
  *          0.1.1 - add functionality to force FPGA to idle
  *          0.1.9 - add FPGA utilization measurements
  *          0.5.3 - add abstract measure and abstract measure thread
+ *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
+ *                  and to select between the full or light library.
+ *          0.7.0 - modularized measurement struct
  */
 
 #ifndef __CMEASUREMAXELER_HPP__
 #define __CMEASUREMAXELER_HPP__
 
+#define FORCE_IDLE 1
+#define POWER_NAME 2
+#define TEMP_NAME 3
+
+#include "maxdsd.h"
+
+#include "../../cjson/cJSON.h"
 #include "../common/CMeasureAbstractResource.hpp"
 
 namespace NLibMeasure {
+	template <int TSkipMs, int TVariant>
 	class CMeasureMaxeler : public CMeasureAbstractResource {
 		private:
 			int mMaxDaemonFildes;
@@ -38,16 +49,17 @@ namespace NLibMeasure {
 		private:
 			void init(void);
 			void destroy(void);
-			void measurePower(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
-			void measureTemperature(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
-			void measureUtilization(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
+			void measurePower(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, int32_t& rThreadNum);
+			void measureTemperature(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, int32_t& rThreadNum);
+			void measureUtilization(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, int32_t& rThreadNum);
 			
 		public:
-			void measure(MEASUREMENT *pMeasurement, int32_t& rThreadNum);
-			const std::string& getPowerName(enum maxeler_power name) const;
-			const std::string& getTemperatureName(enum maxeler_temperature name) const;
-			void forceIdle(void);
+			void measure(void *pMsMeasurement, int32_t& rThreadNum);
+			void trigger_resource_custom(void* pParams);
+			int getVariant();
 	};
 }
+
+#include "CMeasureMaxeler.cpp"
 
 #endif /* __CMEASUREMAXELER_HPP__ */
