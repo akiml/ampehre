@@ -19,6 +19,7 @@
 #                  and to select between the full or light library.
 #          0.7.0 - modularized measurement struct
 #          0.7.1 - move functions to query measurement results into the modules
+#          0.7.2 - bugfixing result query functions
 #
 
 find_package(Threads)
@@ -33,6 +34,11 @@ endif (SIGNALS)
 
 set(SRC_COMMON_LIBRARY
 	mgmt.cpp list.cpp CThread.cpp CMutex.cpp CLogger.cpp CMgmt.cpp CSemaphore.cpp CMeasureThreadTimer.cpp CMeasureAbstractResource.cpp CMeasureAbstractThread.cpp CResourceLibraryHandler.cpp
+	../cpu_intel_xeon_sandy/ms_cpu_intel_xeon_sandy.c
+	../gpu_nvidia_tesla_kepler/ms_gpu_nvidia_tesla_kepler.c
+	../fpga_maxeler_max3a/ms_fpga_maxeler_max3a.c
+	../mic_intel_knc/ms_mic_intel_knc.c
+	../sys_dell_idrac7/ms_sys_dell_idrac7.c
 )
 
 # Full library

@@ -22,6 +22,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#include <stdint.h>
+
 #define CPU		0x01
 #define GPU		0x02
 #define FPGA	0x04

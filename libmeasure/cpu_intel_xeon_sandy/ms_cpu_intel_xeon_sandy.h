@@ -14,6 +14,7 @@
  * created: 12/10/15
  * version: 0.7.0 - modularized measurement struct
  *          0.7.1 - move functions to query measurement results into the modules
+ *          0.7.2 - bugfixing result query functions
  */
 
 #ifndef __MS_CPU_INTEL_XEON_SANDY_H__
@@ -23,9 +24,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#include "ms_list.h"
-
 #include <time.h>
+
+#include "ms_list.h"
+#include "ms_driver.h"
 
 #define CPUS 2
 #define CORES 4
@@ -106,145 +108,26 @@ typedef struct __ms_measurement_cpu {
 	uint32_t measure_swap_used_max;
 } MS_MEASUREMENT_CPU;
 
-inline double cpu_time_total(MS_LIST *ms_list) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->msr_time_runtime;
-}
-
-inline double cpu_energy_total_pkg(MS_LIST *ms_list, int cpu) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->msr_energy_acc[cpu][PKG];
-}
-
-inline double cpu_energy_total_pp0(MS_LIST *ms_list, int cpu) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->msr_energy_acc[cpu][PP0];
-}
-
-inline double cpu_energy_total_dram(MS_LIST *ms_list, int cpu) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->msr_energy_acc[cpu][DRAM];
-}
-
-inline double cpu_power_avg_pkg(MS_LIST *ms_list, int cpu) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->msr_power_avg[cpu][PKG];
-}
-
-inline double cpu_power_avg_pp0(MS_LIST *ms_list, int cpu) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->msr_power_avg[cpu][PP0];
-}
-
-inline double cpu_power_avg_dram(MS_LIST *ms_list, int cpu) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->msr_power_avg[cpu][DRAM];
-}
-
-inline uint32_t cpu_temp_max_pkg(MS_LIST *ms_list, int cpu) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->msr_temperature_pkg_max[cpu];
-}
-
-inline uint32_t cpu_temp_max_core(MS_LIST *ms_list, int cpu, int core) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->msr_temperature_core_max[cpu][core];
-}
-
-inline double cpu_freq_avg_core(MS_LIST *ms_list, int cpu, int core) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->msr_freq_core_avg[cpu][core];
-}
-
-inline double cpu_freq_eff_core(MS_LIST *ms_list, int cpu, int core) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->msr_freq_core_eff_avg[cpu][core];
-}
-
-inline double cpu_active_avg_all(MS_LIST *ms_list) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->measure_util_active_avg;
-}
-
-inline double cpu_idle_avg_all(MS_LIST *ms_list) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->measure_util_idle_avg;
-}
-
-inline double cpu_util_avg_all(MS_LIST *ms_list) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->measure_util_avg;
-}
-
-inline uint32_t cpu_memory_total(MS_LIST *ms_list) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return (uint32_t) ms_measurement_cpu->measure_memory_cur[CPU_MEM_RAM_TOTAL];
-}
-
-inline uint32_t cpu_memory_used_max(MS_LIST *ms_list) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->measure_memory_used_max;
-}
-
-inline uint32_t cpu_memory_free_max(MS_LIST *ms_list) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->measure_memory_free_max;
-}
-
-inline uint32_t cpu_swap_total(MS_LIST *ms_list) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return (uint32_t) ms_measurement_cpu->measure_memory_cur[CPU_MEM_SWAP_TOTAL];
-}
-
-inline uint32_t cpu_swap_used_max(MS_LIST *ms_list) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->measure_swap_used_max;
-}
-
-inline uint32_t cpu_swap_free_max(MS_LIST *ms_list) {
-	MS_MEASUREMENT_CPU *ms_measurement_cpu = (MS_MEASUREMENT_CPU *) getMeasurement(&ms_list, CPU);
-	NULL_CHECK(ms_measurement_cpu);
-	
-	return ms_measurement_cpu->measure_swap_free_max;
-}
+double cpu_time_total(MS_LIST *ms_list);
+double cpu_energy_total_pkg(MS_LIST *ms_list, int cpu);
+double cpu_energy_total_pp0(MS_LIST *ms_list, int cpu);
+double cpu_energy_total_dram(MS_LIST *ms_list, int cpu);
+double cpu_power_avg_pkg(MS_LIST *ms_list, int cpu);
+double cpu_power_avg_pp0(MS_LIST *ms_list, int cpu);
+double cpu_power_avg_dram(MS_LIST *ms_list, int cpu);
+uint32_t cpu_temp_max_pkg(MS_LIST *ms_list, int cpu);
+uint32_t cpu_temp_max_core(MS_LIST *ms_list, int cpu, int core);
+double cpu_freq_avg_core(MS_LIST *ms_list, int cpu, int core);
+double cpu_freq_eff_core(MS_LIST *ms_list, int cpu, int core);
+double cpu_active_avg_all(MS_LIST *ms_list);
+double cpu_idle_avg_all(MS_LIST *ms_list);
+double cpu_util_avg_all(MS_LIST *ms_list);
+uint32_t cpu_memory_total(MS_LIST *ms_list);
+uint32_t cpu_memory_used_max(MS_LIST *ms_list);
+uint32_t cpu_memory_free_max(MS_LIST *ms_list);
+uint32_t cpu_swap_total(MS_LIST *ms_list);
+uint32_t cpu_swap_used_max(MS_LIST *ms_list);
+uint32_t cpu_swap_free_max(MS_LIST *ms_list);
 
 #ifdef __cplusplus
 }
