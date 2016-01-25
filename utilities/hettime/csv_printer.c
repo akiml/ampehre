@@ -15,6 +15,7 @@
  * version: 0.1.11 - add a seperate csv printer file to hettime tool
  *          0.5.6 - extended hettime csv printer
  *          0.7.0 - modularized measurement struct
+ *          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
  */
 
 #include "printer.h"
@@ -24,6 +25,7 @@ static void print_csv_gpu(FILE *csv, char* captions, int* cur_caption_pos, char*
 static void print_csv_fpga(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
 static void print_csv_mic(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
 static void print_csv_system(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
+static void print_csv_time(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, EXEC_TIME *exec_time);
 static void print_csv_settings(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, ARGUMENTS* settings);
 
 void print_csv(FILE *csv, ARGUMENTS* settings, MS_LIST *m, EXEC_TIME *exec_time) {
@@ -49,6 +51,7 @@ void print_csv(FILE *csv, ARGUMENTS* settings, MS_LIST *m, EXEC_TIME *exec_time)
 	print_csv_fpga(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
 	print_csv_mic(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
 	print_csv_system(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
+	print_csv_time(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, exec_time);
 	print_csv_settings(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, settings);
 		
 	if (ftell(csv) == 0) {
@@ -358,6 +361,21 @@ static void print_csv_system(FILE *csv, char* captions, int* cur_caption_pos, ch
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "temp_max_system;");
 	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;", system_temp_max(m));
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"\u00b0C;");
+}
+
+static void print_csv_time(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, EXEC_TIME *exec_time) {
+	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "TIME;");
+	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, ";");
+	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,";");
+	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "real;");
+	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;", exec_time->real);
+	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"s;");
+	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "user;");
+	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;", exec_time->user);
+	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"s;");
+	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "sys;");
+	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;", exec_time->sys);
+	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"s;");
 }
 
 static void print_csv_settings(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, ARGUMENTS* settings){

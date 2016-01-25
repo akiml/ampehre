@@ -19,7 +19,7 @@
 #                  and to select between the full or light library.
 #          0.7.0 - modularized measurement struct
 #          0.7.1 - move functions to query measurement results into the modules
-#          0.7.2 - bugfixing result query functions
+#          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
 #
 
 find_package(Threads)

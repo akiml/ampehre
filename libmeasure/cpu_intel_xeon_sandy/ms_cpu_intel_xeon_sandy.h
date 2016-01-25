@@ -14,7 +14,7 @@
  * created: 12/10/15
  * version: 0.7.0 - modularized measurement struct
  *          0.7.1 - move functions to query measurement results into the modules
- *          0.7.2 - bugfixing result query functions
+ *          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
  */
 
 #ifndef __MS_CPU_INTEL_XEON_SANDY_H__

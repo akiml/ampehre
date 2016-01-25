@@ -23,6 +23,7 @@
  *                  and to select between the full or light library.
  *          0.6.1 - add json printer to hettime
  *          0.7.0 - modularized measurement struct
+ *          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
  */
 
 #include <stdio.h>
@@ -31,6 +32,7 @@
 #include <sys/wait.h>
 #include <semaphore.h>
 #include <sys/mman.h>
+#include <sys/times.h>
 
 #include "hettime.h"
 #include "printer.h"
@@ -145,6 +147,7 @@ static int exec_app(ARGUMENTS *settings, MS_SYSTEM *ms, EXEC_TIME *time) {
 		
 		sem_wait(sync);
 		fprintf(stderr, "=== CHILD'S STANDARD I/O STREAMS ===\n");
+		time->start = times(&(time->time_start_tms));
 		get_current_time(&(time->time_start));
 		execvp(settings->child_filename, settings->child_args);
 		
@@ -169,6 +172,7 @@ static int exec_app(ARGUMENTS *settings, MS_SYSTEM *ms, EXEC_TIME *time) {
 		sem_post(sync);
 		wait(&status_child);
 		get_current_time(&(time->time_stop));
+		time->stop = times(&(time->time_stop_tms));
 		fprintf(stderr, "====================================\n");
 		stop_measuring_system(ms);
 		
@@ -216,7 +220,7 @@ static void print(ARGUMENTS *settings, MS_LIST *m, EXEC_TIME *time) {
 			return;
 		}
 		
-		print_json(json, settings, m);
+		print_json(json, settings, m, time);
 		
 		fflush(json);
 		fclose(json);

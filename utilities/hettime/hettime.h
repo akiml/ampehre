@@ -22,6 +22,7 @@
  *                  and to select between the full or light library.
  *          0.6.1 - add json printer to hettime
  *          0.7.0 - modularized measurement struct
+ *          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
  */
 
 #ifndef __HETTIME_H__
@@ -31,6 +32,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include <sys/times.h>
 
 #include "../../include/ms_measurement.h"
 
@@ -44,6 +46,13 @@ typedef struct __exec_time {
 	struct timespec time_stop;
 	struct timespec time_diff;
 	double exec_time_diff;
+	struct tms time_start_tms;
+	struct tms time_stop_tms;
+	clock_t start;
+	clock_t stop;
+	double real;
+	double user;
+	double sys;
 } EXEC_TIME;
 
 typedef struct __arguments {
