@@ -15,6 +15,7 @@
  * version: 0.1.17 - add a hettime dummy executable for some hetsched measurements
  *          0.1.18 - hettime dummy tool can be used similar to ordinary "sleep" command
  *          0.7.0 - modularized measurement struct
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #ifndef __HETTIME_H__
@@ -49,7 +50,7 @@ typedef struct __arguments {
 	uint32_t cpu_freq_max;
 	uint32_t runtime;
 	uint32_t resources;
-	uint64_t ipmi_timeout_setting;
+	enum ipmi_timeout_setting timeout_setting;
 	enum skip_ms_rate skip_ms;
 	enum lib_variant variant;
 } ARGUMENTS;

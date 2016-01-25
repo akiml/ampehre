@@ -18,6 +18,7 @@
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
  *          0.7.0 - modularized measurement struct
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #ifndef __CMEASUREIPMI_HPP__
@@ -32,9 +33,9 @@ namespace NLibMeasure {
 	template <int TSkipMs, int TVariant>
 	class CMeasureIPMI : public CMeasureAbstractResource{
 		private: 
-			uint64_t mTimeoutSetting;
+			ipmi_timeout_setting mTimeoutSetting;
 		public:
-			CMeasureIPMI(CLogger& rLogger, uint64_t ipmi_timeout_setting);
+			CMeasureIPMI(CLogger& rLogger, ipmi_timeout_setting timeout_setting);
 			~CMeasureIPMI();
 			
 		private:

@@ -17,6 +17,7 @@
  *          0.1.13 - make GPU frequency settable
  *          0.1.15 - make CPU frequency settable
  *          0.2.4 - add version check functionality to library, wrappers, and tools
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #include "../../../include/ms_hetschedwrapper.h"
@@ -24,13 +25,13 @@
 
 
 void mshetsched_init(MS_VERSION *version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max,
-					 enum gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting, enum skip_ms_rate skip_ms, enum lib_variant variant,
+					 enum gpu_frequency gpu_freq, enum ipmi_timeout_setting timeout_setting, enum skip_ms_rate skip_ms, enum lib_variant variant,
 					 void(*signal_handler_start)(int), void(*signal_handler_stop)(int)) {
 	if((version->major != MS_MAJOR_VERSION) || (version->minor != MS_MINOR_VERSION) || (version->revision != MS_REVISION_VERSION)){
 		printf("Error in hetschedwrapper: Wrong version number! hetschedwrapper version %d.%d.%d is called from tool with version %d.%d.%d.\n", MS_MAJOR_VERSION, MS_MINOR_VERSION, MS_REVISION_VERSION, version->major, version->minor, version->revision);
 		exit(EXIT_FAILURE);
 	}
-	mstw_init(version, CPU | GPU | FPGA, cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq, ipmi_timeout_setting, skip_ms, variant);
+	mstw_init(version, CPU | GPU | FPGA, cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq, timeout_setting, skip_ms, variant);
 	
 	if (signal_handler_start) {
 		mstw_reg_sighandler_start(signal_handler_start);

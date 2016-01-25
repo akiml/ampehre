@@ -59,7 +59,7 @@ class CMgmt {
 		lib_variant mLibVariant;
 		
 	public:
-		CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency, uint64_t ipmi_timeout_setting, skip_ms_rate skip_ms_rate,  lib_variant variant);
+		CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFrequencyMax, gpu_frequency gpuFrequency, ipmi_timeout_setting timeout_setting, skip_ms_rate skip_ms_rate,  lib_variant variant);
 		~CMgmt();
 		
 		void initMaxelerForceIdle(void);

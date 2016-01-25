@@ -23,6 +23,7 @@
  *          0.6.1 - add json printer to hettime
  *          0.7.0 - modularized measurement struct
  *          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #ifndef __HETTIME_H__
@@ -78,7 +79,7 @@ typedef struct __arguments {
 	uint64_t cpu_freq_min;
 	uint64_t cpu_freq_max;
 	int ush_client;
-	uint64_t ipmi_timeout_setting;
+	enum ipmi_timeout_setting timeout_setting;
 	enum skip_ms_rate skip_ms;
 	enum lib_variant variant;
 } ARGUMENTS;

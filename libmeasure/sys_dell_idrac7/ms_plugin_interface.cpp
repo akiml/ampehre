@@ -16,6 +16,7 @@
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library. 
  *          0.7.0 - modularized measurement struct
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #include "../../include/ms_plugin_interface.h"
@@ -30,20 +31,20 @@ extern "C" {
 		if(variant == VARIANT_FULL) {
 			switch(skip_ms){
 				case SKIP_PERIODIC:
-					pIPMI =  new NLibMeasure::CMeasureIPMI<10, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+					pIPMI =  new NLibMeasure::CMeasureIPMI<10, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((ipmi_timeout_setting*)pParams));
 					break;
 				case SKIP_NEVER:
 				default:
-					pIPMI =  new NLibMeasure::CMeasureIPMI<1, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+					pIPMI =  new NLibMeasure::CMeasureIPMI<1, VARIANT_FULL>(*((NLibMeasure::CLogger*)pLogger), *((ipmi_timeout_setting*)pParams));
 			}
 		} else {
 			switch(skip_ms){
 				case SKIP_PERIODIC:
-					pIPMI =  new NLibMeasure::CMeasureIPMI<10, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+					pIPMI =  new NLibMeasure::CMeasureIPMI<10, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((ipmi_timeout_setting*)pParams));
 					break;
 				case SKIP_NEVER:
 				default:
-					pIPMI =  new NLibMeasure::CMeasureIPMI<1, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((uint64_t*)pParams));
+					pIPMI =  new NLibMeasure::CMeasureIPMI<1, VARIANT_LIGHT>(*((NLibMeasure::CLogger*)pLogger), *((ipmi_timeout_setting*)pParams));
 			}
 		}
 		return  (void*) pIPMI;

@@ -95,7 +95,7 @@ typedef struct __ms_system{
 
 // Library management functions
 MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max,
-				 enum gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting, enum skip_ms_rate skip_ms, enum lib_variant variant);
+				 enum gpu_frequency gpu_freq, enum ipmi_timeout_setting timeout_setting, enum skip_ms_rate skip_ms, enum lib_variant variant);
 void ms_init_fpga_force_idle(MS_SYSTEM *ms_system);
 void ms_fini(MS_SYSTEM *ms_system);
 

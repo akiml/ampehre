@@ -15,6 +15,7 @@
  * version: 0.1.16 - add wrapper for heterogenous Node and test tool
  *          0.2.4 - add version check functionality to library, wrappers, and tools
  *          0.7.0 - modularized measurement struct
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #include "ms_hetnodewrapper_internal.h"
@@ -62,7 +63,7 @@ void mshnw_init(MS_VERSION *version, HN_MEASUREMENT *measurements, int measureme
 	}
 
 	//Initialize Measurementsystem
-	mintern->global_ms = ms_init(version, measurements->cpu_gov, measurements->cpu_freq_min, measurements->cpu_freq_max, measurements->gpu_freq, IOC_SET_IPMI_TIMEOUT, SKIP_NEVER, VARIANT_FULL);
+	mintern->global_ms = ms_init(version, measurements->cpu_gov, measurements->cpu_freq_min, measurements->cpu_freq_max, measurements->gpu_freq, IPMI_SET_TIMEOUT, SKIP_NEVER, VARIANT_FULL);
 
 	//Initialize global Measurement
 	mintern->global_m = ms_alloc_measurement(mintern->global_ms);

@@ -13,6 +13,7 @@
 # author: Achim Lösch (achim.loesch@upb.de)
 # created: 1/11/14
 # version: 0.2.5 - add gaussblur example application
+#          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
 #
 
 PGCC=pgcc
@@ -22,6 +23,14 @@ CFLAGS=-O3
 PGFLAGS=-acc -ta=tesla,cuda6.0 -Minfo
 
 BASE_DIR=/usr/ampehre
+
+INCLUDE_FILES = \
+	-I../../../libmeasure/cpu_intel_xeon_sandy \
+	-I../../../libmeasure/gpu_nvidia_tesla_kepler \
+	-I../../../libmeasure/fpga_maxeler_max3a \
+	-I../../../libmeasure/mic_intel_knc \
+	-I../../../libmeasure/sys_dell_idrac7\
+	-I../../../include
 
 SOURCES_CPU= \
 	main.c \
@@ -42,10 +51,10 @@ build: $(OBJECTS_CPU) $(OBJECTS_GPU)
 	$(PGCC) $(CFLAGS) $(PGFLAGS) $? -L$(BASE_DIR)/lib -lms_common -lrt -lcjson -o gaussblur_original
 
 $(OBJECTS_CPU): %.o : %.c
-	$(CC) $(CFLAGS) $< -c -I../../include -o $@
+	$(CC) $(CFLAGS) $< -c ${INCLUDE_FILES} -o $@
 
 $(OBJECTS_GPU): %.o : %.c
-	$(PGCC) $(CFLAGS) $(PGFLAGS) $< -c -I../../include -o $@
+	$(PGCC) $(CFLAGS) $(PGFLAGS) $< -c ${INCLUDE_FILES} -o $@
 
 install: build
 	rm -f $(BASE_DIR)/bin/gaussblur_original

@@ -13,7 +13,8 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 10/27/14
  * version: 0.1.19 - add a hettime based idle power measurement tool
- *          0.7.0 - modularized measurement struct 
+ *          0.7.0 - modularized measurement struct
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #ifndef __HETPOWIDLE_H__
@@ -53,7 +54,7 @@ typedef struct __arguments {
 	uint32_t check_for_exit_interrupts_mic;
 	enum gpu_frequency gpu_freq;
 	enum cpu_governor cpu_gov;
-	uint64_t ipmi_timeout_setting;
+	enum ipmi_timeout_setting timeout_setting;
 	uint32_t cpu_freq_min;
 	uint32_t cpu_freq_max;
 	enum skip_ms_rate skip_ms;

@@ -13,6 +13,7 @@
 # author: Achim Lösch (achim.loesch@upb.de)
 # created: 2/04/15
 # version: 0.3.1 - add correlation example application
+#          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
 #
 
 NVCC=nvcc
@@ -27,6 +28,14 @@ GCCFLAGS=$(CFLAGS) -Wall
 NVCCFLAGS=$(CFLAGS) -gencode=arch=compute_35,code=compute_35
 
 BASE_DIR=/usr/ampehre
+
+INCLUDE_FILES = \
+	-I../../../libmeasure/cpu_intel_xeon_sandy \
+	-I../../../libmeasure/gpu_nvidia_tesla_kepler \
+	-I../../../libmeasure/fpga_maxeler_max3a \
+	-I../../../libmeasure/mic_intel_knc \
+	-I../../../libmeasure/sys_dell_idrac7\
+	-I../../../include
 
 SOURCES_CPU= \
 	main.c \
@@ -58,10 +67,10 @@ msg:
 	@echo ""
 
 $(OBJECTS_CPU): %.o : %.c
-	$(CC) $(GCCFLAGS) $< -c -I../../include -o $@
+	$(CC) $(GCCFLAGS) $< -c ${INCLUDE_FILES} -o $@
 
 $(OBJECTS_GPU): %.o : %.cu
-	$(NVCC) $(NVCCFLAGS) $< -c -I../../include -o $@
+	$(NVCC) $(NVCCFLAGS) $< -c ${INCLUDE_FILES} -o $@
 
 install: build
 	rm -f $(BASE_DIR)/bin/correlation_original

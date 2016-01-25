@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 2/04/15
  * version: 0.3.1 - add correlation example application
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #include <stdlib.h>
@@ -111,7 +112,7 @@ static void init_settings(ARGUMENTS **settings) {
 	(*settings)->cpu_freq_min					= 0;
 	(*settings)->cpu_freq_max					= 0;
 	(*settings)->granularity					= 1;
-	(*settings)->ipmi_timeout_setting			= IOC_SET_IPMI_TIMEOUT;
+	(*settings)->timeout_setting				= IPMI_SET_TIMEOUT;
 	(*settings)->skip_ms						= SKIP_NEVER;
 	(*settings)->variant						= VARIANT_LIGHT;
 }

@@ -14,6 +14,7 @@
  * created: 10/13/14
  * version: 0.1.17 - add a hettime dummy executable for some hetsched measurements
  *          0.1.18 - hettime dummy tool can be used similar to ordinary "sleep" command
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #include <stdio.h>
@@ -116,7 +117,7 @@ static void init_settings(ARGUMENTS **settings) {
 	(*settings)->cpu_freq_max					= 0;
 	(*settings)->runtime						= 0;
 	(*settings)->resources						= CPU | GPU | FPGA;
-	(*settings)->ipmi_timeout_setting			= IOC_SET_IPMI_TIMEOUT;
+	(*settings)->timeout_setting				= IPMI_SET_TIMEOUT;
 	(*settings)->skip_ms						= SKIP_NEVER;
 	(*settings)->variant						= VARIANT_LIGHT;
 }

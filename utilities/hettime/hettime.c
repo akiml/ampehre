@@ -20,6 +20,7 @@
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
  *          0.6.1 - add json printer to hettime
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #include <stdio.h>
@@ -455,7 +456,7 @@ static void init_settings(ARGUMENTS **std_settings, ARGUMENTS **cur_settings) {
 	(*std_settings)->cpu_freq_min					= 0;
 	(*std_settings)->cpu_freq_max					= 0;
 	(*std_settings)->ush_client						= 0;
-	(*std_settings)->ipmi_timeout_setting			= IOC_SET_IPMI_TIMEOUT;
+	(*std_settings)->timeout_setting				= IPMI_SET_TIMEOUT;
 	(*std_settings)->skip_ms						= SKIP_NEVER;
 	(*std_settings)->variant						= VARIANT_FULL;
 	

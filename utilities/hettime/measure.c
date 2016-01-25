@@ -24,6 +24,7 @@
  *          0.6.1 - add json printer to hettime
  *          0.7.0 - modularized measurement struct
  *          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #include <stdio.h>
@@ -70,7 +71,7 @@ int run(ARGUMENTS *settings) {
 static void init_measuring_system(ARGUMENTS *settings, MS_SYSTEM **ms, MS_LIST **m) {
 	// Initialize library and measuring system
 	MS_VERSION version = { .major = MS_MAJOR_VERSION, .minor = MS_MINOR_VERSION, .revision = MS_REVISION_VERSION };
-	*ms	= ms_init(&version, settings->cpu_gov, settings->cpu_freq_min, settings->cpu_freq_max, settings->gpu_freq, settings->ipmi_timeout_setting, settings->skip_ms, settings->variant);
+	*ms	= ms_init(&version, settings->cpu_gov, settings->cpu_freq_min, settings->cpu_freq_max, settings->gpu_freq, settings->timeout_setting, settings->skip_ms, settings->variant);
 	
 	// Forcing FPGA to idle if desired
 	if (settings->force_idle_fpga) {

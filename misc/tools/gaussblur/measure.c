@@ -14,6 +14,7 @@
  * created: 1/11/15
  * version: 0.2.5 - add gaussblur example application
  *          0.7.0 - modularized measurement struct
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #include "measure.h"
@@ -21,7 +22,7 @@
 void init_measuring_system(ARGUMENTS *settings, MS_SYSTEM **ms, MS_LIST **m) {
 	// Initialize library and measuring system
 	MS_VERSION version = { .major = MS_MAJOR_VERSION, .minor = MS_MINOR_VERSION, .revision = MS_REVISION_VERSION };
-	*ms	= ms_init(&version, settings->cpu_gov, settings->cpu_freq_min, settings->cpu_freq_max, settings->gpu_freq, settings->ipmi_timeout_setting, settings->skip_ms, settings->variant);
+	*ms	= ms_init(&version, settings->cpu_gov, settings->cpu_freq_min, settings->cpu_freq_max, settings->gpu_freq, settings->timeout_setting, settings->skip_ms, settings->variant);
 	
 	// Allocate and initialize measurement structs
 	*m	= ms_alloc_measurement(*ms);

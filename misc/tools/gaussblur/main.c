@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 1/11/15
  * version: 0.2.5 - add gaussblur example application
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #include <stdlib.h>
@@ -143,7 +144,7 @@ static void init_settings(ARGUMENTS **settings) {
 	(*settings)->checkpoints					= GAUSS_T;
 	(*settings)->size							= GAUSS_N;
 	(*settings)->energy_loops					= GAUSS_T_ENERGY_LOOPS;
-	(*settings)->ipmi_timeout_setting			= IOC_SET_IPMI_TIMEOUT;
+	(*settings)->timeout_setting			= IPMI_SET_TIMEOUT;
 	(*settings)->skip_ms						= SKIP_NEVER;
 	(*settings)->variant						= VARIANT_LIGHT;
 }

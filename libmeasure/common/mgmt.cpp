@@ -40,14 +40,14 @@
 static void divide_sampling_rates(struct timespec *time_wait, uint64_t sec, uint64_t nsec, uint32_t check_for_exit_interrupts);
 
 MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max,
-				 gpu_frequency gpu_freq, uint64_t ipmi_timeout_setting, enum skip_ms_rate skip_ms_rate, enum lib_variant variant) {
+				 gpu_frequency gpu_freq, enum ipmi_timeout_setting timeout_setting, enum skip_ms_rate skip_ms_rate, enum lib_variant variant) {
 	
 	if((version->major != MS_MAJOR_VERSION) || (version->minor != MS_MINOR_VERSION) || (version->revision != MS_REVISION_VERSION)){
 		std::cout << "!!! 'mgmt' (thread main): Error: Wrong version number! libmeasure version " << MS_MAJOR_VERSION << "." << MS_MINOR_VERSION << "." << MS_REVISION_VERSION  << " is called from tool with version" << version->major << "." << version->minor << "." << version->revision  << " (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	
-	CMgmt *mgmt = new CMgmt(cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq, ipmi_timeout_setting, skip_ms_rate, variant);
+	CMgmt *mgmt = new CMgmt(cpu_gov, cpu_freq_min, cpu_freq_max, gpu_freq, timeout_setting, skip_ms_rate, variant);
 	
 	MS_SYSTEM *ms_system = new MS_SYSTEM;
 	

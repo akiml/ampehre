@@ -17,6 +17,7 @@
  *          0.1.13 - make GPU frequency settable
  *          0.1.15 - make CPU frequency settable
  *          0.2.4 - add version check functionality to library, wrappers, and tools
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #include <stdio.h>
@@ -38,7 +39,7 @@ void pseudo_task(TASK_CONTEXT *ctxt);
 int main(int argc, char **argv) {
 	// Init measuring system
 	MS_VERSION version = { .major = MS_MAJOR_VERSION, .minor = MS_MINOR_VERSION, .revision = MS_REVISION_VERSION };
-	mshetsched_init(&version, CPU_GOVERNOR_ONDEMAND, 2000000, 2500000, GPU_FREQUENCY_CUR, IOC_SET_IPMI_TIMEOUT, SKIP_NEVER, VARIANT_FULL, NULL, NULL);
+	mshetsched_init(&version, CPU_GOVERNOR_ONDEMAND, 2000000, 2500000, GPU_FREQUENCY_CUR, IPMI_SET_TIMEOUT, SKIP_NEVER, VARIANT_FULL, NULL, NULL);
 	
 	// Task data container
 	TASK_CONTEXT ctxt;

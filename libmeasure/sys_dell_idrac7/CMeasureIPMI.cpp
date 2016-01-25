@@ -18,14 +18,15 @@
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library. 
- *          0.7.0 - modularized measurement struct 
+ *          0.7.0 - modularized measurement struct
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 namespace NLibMeasure {
 	template <int TSkipMs, int TVariant>
-	CMeasureIPMI<TSkipMs, TVariant>::CMeasureIPMI(CLogger& rLogger, uint64_t ipmi_timeout_setting) :
+	CMeasureIPMI<TSkipMs, TVariant>::CMeasureIPMI(CLogger& rLogger, ipmi_timeout_setting timeout_setting) :
 		CMeasureAbstractResource(rLogger),
-		mTimeoutSetting(ipmi_timeout_setting)
+		mTimeoutSetting(timeout_setting)
 		{
 		init();
 	}
@@ -247,7 +248,13 @@ namespace NLibMeasure {
 	template <int TSkipMs, int TVariant>
     void CMeasureIPMI<TSkipMs, TVariant>::setIPMITimeout(uint32_t& timeout, uint32_t& rThreadNum) {
 		int rv;
-		rv = setIPMITimeoutIOCTL(mTimeoutSetting, timeout);
+		uint64_t timeout_setting;
+		if(mTimeoutSetting == IPMI_SET_AND_LOCK_TIMEOUT) {
+			timeout_setting = IOC_SET_AND_LOCK_IPMI_TIMEOUT;
+		} else {
+			timeout_setting =  IOC_SET_IPMI_TIMEOUT;
+		}
+		rv = setIPMITimeoutIOCTL(timeout_setting, timeout);
 		
 		if(rv == ERROR_IPMI_TIMEOUT_LOCKED){
 			mrLog.lock();

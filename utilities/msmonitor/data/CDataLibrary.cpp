@@ -66,7 +66,7 @@ namespace NData {
 										  mrSettings.mCpuFrequencyMaximum,
 										  mrSettings.mCpuFrequencyMaximum,
 										  mrSettings.mGpuFrequency,
-										  IOC_SET_AND_LOCK_IPMI_TIMEOUT,
+										  IPMI_SET_AND_LOCK_TIMEOUT,
 										  mrSettings.mSkipMsRate,
 										  mrSettings.mLibVariant
  										);

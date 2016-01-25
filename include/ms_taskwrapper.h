@@ -73,7 +73,7 @@ typedef struct __mtask {
  * mstw_init(CPU | GPU | FPGA, CPU_GOVERNOR_ONDEMAND, 2000, 2500, GPU_FREQUENCY_CUR);
  */
 void mstw_init(MS_VERSION *version, int resources, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max,
-			   enum gpu_frequency gpu_freq,  uint64_t ipmi_timeout_setting, enum skip_ms_rate skip_ms, enum lib_variant variant);
+			   enum gpu_frequency gpu_freq, enum ipmi_timeout_setting timeout_setting, enum skip_ms_rate skip_ms, enum lib_variant variant);
 // Start measuring system
 void mstw_start(void);
 // Stop measuring system

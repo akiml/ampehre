@@ -14,6 +14,7 @@
  * created: 2/04/15
  * version: 0.3.1 - add correlation example application
  *          0.7.0 - modularized measurement struct
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #ifndef __CORRELATION_H__
@@ -49,7 +50,7 @@ typedef struct __arguments {
 	uint32_t cpu_freq_min;
 	uint32_t cpu_freq_max;
 	uint32_t granularity;
-	uint64_t ipmi_timeout_setting;
+	enum ipmi_timeout_setting timeout_setting;
 	enum skip_ms_rate skip_ms;
 	enum lib_variant variant;
 } ARGUMENTS;
