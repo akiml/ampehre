@@ -18,6 +18,7 @@
  *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #include "CDataSettings.hpp"
@@ -41,6 +42,7 @@ namespace NData {
 		mSkipMsRate(SKIP_NEVER),
 		
 		mDataSamplingRate(30),
+		mHeatmapSamplingRate(150),
 		mGUIRefreshRate(500),
 		
 		mWriteResultsToCsv(false),

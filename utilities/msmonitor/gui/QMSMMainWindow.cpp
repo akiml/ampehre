@@ -15,6 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.5.0 - add cpu, gpu and mic memory information
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #include "QMSMMainWindow.hpp"
@@ -29,6 +30,7 @@
 #include "QMSMFormClock.hpp"
 #include "QMSMFormUtilization.hpp"
 #include "QMSMFormMemory.hpp"
+#include "QMSMFormHeatmapUtilization.hpp"
 
 namespace Ui {
 	QMSMMainWindow::QMSMMainWindow(QWidget* pParent, NData::CDataHandler& rDataHandler, QApplication* pApplication) :
@@ -43,6 +45,7 @@ namespace Ui {
 		mpFormClock(0),
 		mpFormUtilization(0),
 		mpFormMemory(0),
+		mpFormHeatmapUtilization(0),
 		mGuiMarker(this)
 		{
 		
@@ -65,13 +68,14 @@ namespace Ui {
 		createActions();
 		createShortcuts();
 		
-		mpFormInfo			= QMSMFormInfo::construct(this);
-		mpFormSettings		= QMSMFormSettings::construct(this, mrDataHandler.getSettings());
-		mpFormPower			= QMSMFormPower::construct(this, &mrDataHandler);
-		mpFormTemperature	= QMSMFormTemperature::construct(this, &mrDataHandler);
-		mpFormClock			= QMSMFormClock::construct(this, &mrDataHandler);
-		mpFormUtilization	= QMSMFormUtilization::construct(this, &mrDataHandler);
-		mpFormMemory		= QMSMFormMemory::construct(this, &mrDataHandler);
+		mpFormInfo					= QMSMFormInfo::construct(this);
+		mpFormSettings				= QMSMFormSettings::construct(this, mrDataHandler.getSettings());
+		mpFormPower					= QMSMFormPower::construct(this, &mrDataHandler);
+		mpFormTemperature			= QMSMFormTemperature::construct(this, &mrDataHandler);
+		mpFormClock					= QMSMFormClock::construct(this, &mrDataHandler);
+		mpFormUtilization			= QMSMFormUtilization::construct(this, &mrDataHandler);
+		mpFormMemory				= QMSMFormMemory::construct(this, &mrDataHandler);
+		mpFormHeatmapUtilization	= QMSMFormHeatmapUtilization::construct(this, &mrDataHandler);
 		
 		mdiArea->addSubWindow(mpFormInfo);
 		mdiArea->addSubWindow(mpFormSettings);
@@ -80,6 +84,7 @@ namespace Ui {
 		mdiArea->addSubWindow(mpFormClock);
 		mdiArea->addSubWindow(mpFormUtilization);
 		mdiArea->addSubWindow(mpFormMemory);
+		mdiArea->addSubWindow(mpFormHeatmapUtilization);
 		
 		mpFormInfo->hide();
 		mpFormSettings->hide();
@@ -88,6 +93,7 @@ namespace Ui {
 		mpFormClock->hide();
 		mpFormUtilization->hide();
 		mpFormMemory->hide();
+		mpFormHeatmapUtilization->hide();
 		
 		QString status_message("Listening on socket \"");
 		status_message += mGuiMarker.getSocketName();
@@ -115,6 +121,7 @@ namespace Ui {
 		connect(actionClock, SIGNAL(triggered(bool)), this, SLOT(showClock()));
 		connect(actionUtilization, SIGNAL(triggered(bool)), this, SLOT(showUtilization()));
 		connect(actionMemory, SIGNAL(triggered(bool)), this, SLOT(showMemory()));
+		connect(actionHeatmap_Utilization, SIGNAL(triggered(bool)), this, SLOT(showHeatmapUtilization()));
 		
 		connect(pushButtonStart, SIGNAL(clicked(bool)), this, SLOT(pressStart()));
 		connect(pushButtonStop, SIGNAL(clicked(bool)), this, SLOT(pressStop()));
@@ -131,6 +138,7 @@ namespace Ui {
 		actionClock->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_C));
 		actionUtilization->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_U));
 		actionMemory->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
+		actionHeatmap_Utilization->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_H));
 		
 		pushButtonStart->setShortcut(QKeySequence(Qt::Key_PageUp));
 		pushButtonStop->setShortcut(QKeySequence(Qt::Key_PageDown));
@@ -169,6 +177,8 @@ namespace Ui {
 		mpFormUtilization->startTimer();
 		mpFormMemory->startTimer();
 		
+		mpFormHeatmapUtilization->startTimer();
+		
 		mGuiMarker.start();
 	}
 	
@@ -182,12 +192,14 @@ namespace Ui {
 		mpFormUtilization->stopTimer();
 		mpFormClock->stopTimer();
 		mpFormMemory->stopTimer();
+		mpFormHeatmapUtilization->stopTimer();
 		
 		mpFormPower->joinTimer();
 		mpFormTemperature->joinTimer();
 		mpFormClock->joinTimer();
 		mpFormUtilization->joinTimer();
 		mpFormMemory->joinTimer();
+		mpFormHeatmapUtilization->joinTimer();
 		
 		mrDataHandler.stopCollectData();
 		
@@ -222,6 +234,10 @@ namespace Ui {
 	void QMSMMainWindow::showMemory(void) {
 		mpFormMemory->show();
 	}
+	
+    void QMSMMainWindow::showHeatmapUtilization(void) {
+		mpFormHeatmapUtilization->show();
+    }
 	
 	bool QMSMMainWindow::event(QEvent *pEvent) {
 		if (pEvent->type() == QEvent::ToolTip) {

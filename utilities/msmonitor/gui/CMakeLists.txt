@@ -15,6 +15,7 @@
 # version: 0.3.0 - extend libmeasure and add application for online monitoring
 #          0.3.2 - add a networking component to show influence of a task to measurements in GUI
 #          0.5.0 - add cpu, gpu and mic memory information
+#          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
 #
 
 find_package(Qt4 REQUIRED)
@@ -31,12 +32,14 @@ find_library(QWT_LIBRARY
 	NAMES qwt qwt-qt3 qwt-qt4 qwt-qt5
 )
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${QWT_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${QWT_INCLUDE_DIR})
 
 set(MSMONITOR_OTHER
 	CGuiBuilder.cpp
 	CGuiTimer.cpp
 	CGuiMarker.cpp
+	CHeatmapTimer.cpp
+	CHeatmapData.cpp
 )
 
 set(MSMONITOR_FORMS
@@ -44,6 +47,7 @@ set(MSMONITOR_FORMS
 	ui/forminfo.ui
 	ui/formsettings.ui
 	ui/formmeasurement.ui
+	ui/formheatmap.ui
 )
 
 set(MSMONITOR_RESOURCES
@@ -60,6 +64,9 @@ set(MSMONITOR_HEADERS
 	QMSMFormClock.hpp
 	QMSMFormUtilization.hpp
 	QMSMFormMemory.hpp
+	QMSMFormHeatmapAbstract.hpp
+	QMSMFormHeatmapUtilization.hpp
+	CHeatmap.hpp
 )
 
 set(MSMONITOR_SOURCES
@@ -72,6 +79,9 @@ set(MSMONITOR_SOURCES
 	QMSMFormClock.cpp
 	QMSMFormUtilization.cpp
 	QMSMFormMemory.cpp
+	QMSMFormHeatmapAbstract.cpp
+	QMSMFormHeatmapUtilization.cpp
+	CHeatmap.cpp
 )
 
 qt4_wrap_ui(MSMONITOR_FORMS_HEADERS ${MSMONITOR_FORMS})

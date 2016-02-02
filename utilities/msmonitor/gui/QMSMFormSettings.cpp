@@ -15,6 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #include "QMSMFormSettings.hpp"
@@ -44,6 +45,7 @@ namespace Ui {
 		horizontalSliderMIC->setValue(mrDataSettings.mMICSamplingRate/10);
 		horizontalSliderSystem->setValue(mrDataSettings.mSystemSamplingRate/10);
 		horizontalSliderData->setValue(mrDataSettings.mDataSamplingRate/10);
+		horizontalSliderHeatmap->setValue(mrDataSettings.mHeatmapSamplingRate/30);
 		horizontalSliderGUI->setValue(mrDataSettings.mGUIRefreshRate/50);
 		
 		updateValues();
@@ -68,16 +70,17 @@ namespace Ui {
 	}
 	
 	void QMSMFormSettings::createActions(void) {
-		connect(pushButtonOK          , SIGNAL(clicked(bool))    , this, SLOT(storeSettings()));
-		connect(pushButtonCancel      , SIGNAL(clicked(bool))    , this, SLOT(close()));
+		connect(pushButtonOK           , SIGNAL(clicked(bool))    , this, SLOT(storeSettings()));
+		connect(pushButtonCancel       , SIGNAL(clicked(bool))    , this, SLOT(close()));
 		
-		connect(horizontalSliderCPU   , SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
-		connect(horizontalSliderGPU   , SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
-		connect(horizontalSliderFPGA  , SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
-		connect(horizontalSliderMIC   , SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
-		connect(horizontalSliderSystem, SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
-		connect(horizontalSliderData, SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
-		connect(horizontalSliderGUI, SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
+		connect(horizontalSliderCPU    , SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
+		connect(horizontalSliderGPU    , SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
+		connect(horizontalSliderFPGA   , SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
+		connect(horizontalSliderMIC    , SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
+		connect(horizontalSliderSystem , SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
+		connect(horizontalSliderData   , SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
+		connect(horizontalSliderHeatmap, SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
+		connect(horizontalSliderGUI    , SIGNAL(valueChanged(int)), this, SLOT(updateValues()));
 	}
 	
 	void QMSMFormSettings::storeSettings(void) {
@@ -88,6 +91,7 @@ namespace Ui {
 		mrDataSettings.mMICSamplingRate		= 10*horizontalSliderMIC->value();
 		mrDataSettings.mSystemSamplingRate	= 10*horizontalSliderSystem->value();
 		mrDataSettings.mDataSamplingRate	= 10*horizontalSliderData->value();
+		mrDataSettings.mHeatmapSamplingRate	= 30*horizontalSliderHeatmap->value();
 		mrDataSettings.mNumberOfTicks		= mrDataSettings.mTimeToBufferData/mrDataSettings.mDataSamplingRate;
 		mrDataSettings.mGUIRefreshRate		= 50*horizontalSliderGUI->value();
 		mrDataSettings.mWriteResultsToCsv	= checkBoxPrintToCsv->isChecked();
@@ -103,6 +107,7 @@ namespace Ui {
 		labelSamplingMICCurrent->setNum(10*horizontalSliderMIC->value());
 		labelSamplingSystemCurrent->setNum(10*horizontalSliderSystem->value());
 		labelSamplingDataCurrent->setNum(10*horizontalSliderData->value());
+		labelSamplingHeatmapCurrent->setNum(30*horizontalSliderHeatmap->value());
 		labelRefreshGUICurrent->setNum(50*horizontalSliderGUI->value());
 		
 		if (10*horizontalSliderCPU->value() < 20) {
@@ -151,6 +156,14 @@ namespace Ui {
 		} else {
 			labelSamplingDataCurrent->setPalette(mTextBlack);
 			labelDataMs->setPalette(mTextBlack);
+		}
+		
+		if (30*horizontalSliderHeatmap->value() < 30) {
+			labelSamplingHeatmapCurrent->setPalette(mTextRed);
+			labelHeatmapMs->setPalette(mTextRed);
+		} else {
+			labelSamplingHeatmapCurrent->setPalette(mTextBlack);
+			labelHeatmapMs->setPalette(mTextBlack);
 		}
 		
 		if (50*horizontalSliderGUI->value() < 150) {

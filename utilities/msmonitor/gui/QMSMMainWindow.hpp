@@ -15,6 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.5.0 - add cpu, gpu and mic memory information
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 #ifndef __QMSMMAINWINDOW_HPP__
@@ -30,6 +31,7 @@ namespace Ui {
 	class QMSMFormInfo;
 	class QMSMFormSettings;
 	class QMSMFormMeasurementAbstract;
+	class QMSMFormHeatmapAbstract;
 	
 	class QMSMMainWindow : public QMainWindow, private MainWindow {
 		Q_OBJECT
@@ -45,6 +47,8 @@ namespace Ui {
 			QMSMFormMeasurementAbstract* mpFormClock;
 			QMSMFormMeasurementAbstract* mpFormUtilization;
 			QMSMFormMeasurementAbstract* mpFormMemory;
+			
+			QMSMFormHeatmapAbstract *mpFormHeatmapUtilization;
 			
 			CGuiMarker mGuiMarker;
 			
@@ -67,6 +71,7 @@ namespace Ui {
 			void showClock(void);
 			void showUtilization(void);
 			void showMemory(void);
+			void showHeatmapUtilization(void);
 			bool event(QEvent *pEvent);
 			
 		private:
