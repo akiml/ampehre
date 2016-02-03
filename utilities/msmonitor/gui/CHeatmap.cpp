@@ -22,7 +22,7 @@ namespace Ui {
 		QwtPlot(parent){
 		mpSpectrogram = new QwtPlotSpectrogram();
 		mpHeatmapData = new HeatmapData();
-		mpColorMap = new QwtLinearColorMap(Qt::darkCyan, Qt::red);
+		mpColorMap = new QwtLinearColorMap(Qt::blue, Qt::red);
 		
 		mpColorMap->addColorStop(0.3, Qt::cyan);
 		mpColorMap->addColorStop(0.5, Qt::green);

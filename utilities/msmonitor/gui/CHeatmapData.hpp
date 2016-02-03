@@ -27,10 +27,10 @@ namespace Ui {
 			
 		public:
 			HeatmapData();
-			HeatmapData(double *data, uint32_t size, uint32_t mMinX, uint32_t mMaxX);
+			HeatmapData(double *data, uint32_t size, int32_t minX, int32_t maxX);
 			
 			void setDataPtr(double *data, uint32_t size);
-			void setXInterval(double minX, double maxX);	
+			void setXInterval(int32_t minX, int32_t maxX);	
 			
 			virtual QwtRasterData *copy() const;	
 			virtual QwtDoubleInterval range() const;		
@@ -40,8 +40,8 @@ namespace Ui {
 		private:
 			double *mpData;
 			uint32_t mSize;
-			uint32_t mMinX;
-			uint32_t mMaxX;
+			int32_t mMinX;
+			int32_t mMaxX;
 	};
 }
 

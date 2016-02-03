@@ -21,7 +21,7 @@
 #include "QMSMFormHeatmapAbstract.hpp"
 #include "../data/CDataHandler.hpp"
 #include <qwt_scale_engine.h>
-#include <iostream>
+#include <cmath>
 
 namespace NData {
 	class CDataHandler;
@@ -46,8 +46,13 @@ namespace Ui {
 			double *mpFPGAData;
 			double *mpMICData;
 			
+			uint32_t mBufferSize;
+			double mCurrentX;
+			
 		private:
 			explicit QMSMFormHeatmapUtilization(QWidget *pParent, NData::CDataHandler *pDataHandler);
+			void updateHeatmapData();
+			double calcMean(double *data, uint32_t size);
 			
 		public:
 			~QMSMFormHeatmapUtilization(void);

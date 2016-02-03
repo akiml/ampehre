@@ -25,15 +25,16 @@ namespace Ui {
 		mpHeatmapGPUCore(addHeatmap("GPU\nCore")),
 		mpHeatmapGPUMemory(addHeatmap("GPU\nMemory")),
 		mpHeatmapFPGA(addHeatmap("Compute\nFPGA")),
-		mpHeatmapMIC(addHeatmap("MIC\n"))
+		mpHeatmapMIC(addHeatmap("MIC\n")),
+		mCurrentX(0)
 		{
 		//only one minute is stored here
-		uint32_t size = mpDataHandler->getSettings().mTimeToShowData / mpDataHandler->getSettings().mHeatmapSamplingRate;
-		mpCPUData		= (double *)malloc(size * sizeof(double));
-		mpGPUCoreData	= (double *)malloc(size * sizeof(double));
-		mpGPUMemoryData	= (double *)malloc(size * sizeof(double));
-		mpFPGAData		= (double *)malloc(size * sizeof(double));
-		mpMICData		= (double *)malloc(size * sizeof(double));
+		mBufferSize = mpDataHandler->getSettings().mTimeToShowData / mpDataHandler->getSettings().mHeatmapSamplingRate;
+		mpCPUData		= (double *)malloc(mBufferSize * sizeof(double));
+		mpGPUCoreData	= (double *)malloc(mBufferSize * sizeof(double));
+		mpGPUMemoryData	= (double *)malloc(mBufferSize * sizeof(double));
+		mpFPGAData		= (double *)malloc(mBufferSize * sizeof(double));
+		mpMICData		= (double *)malloc(mBufferSize * sizeof(double));
 		
 		setWindowTitle(QApplication::translate("FormMeasurement", "Utilization", 0, QApplication::UnicodeUTF8));
 		
@@ -59,49 +60,89 @@ namespace Ui {
 	}
 	
 	void QMSMFormHeatmapUtilization::setupHeatmaps() {
-		uint32_t ticks			= mpDataHandler->getSettings().mNumberOfTicks-1;
+		updateHeatmapData();
 		
-		double *x				= mpDataHandler->getMeasurement().mpX->getDataPtr();
-		double *y_util_cpu		= mpDataHandler->getMeasurement().mpYUtilCpu->getDataPtr();
-		double *y_util_gpu_core	= mpDataHandler->getMeasurement().mpYUtilGpuCore->getDataPtr();
-		double *y_util_gpu_mem	= mpDataHandler->getMeasurement().mpYUtilGpuMem->getDataPtr();
-		double *y_util_fpga		= mpDataHandler->getMeasurement().mpYUtilFpga->getDataPtr();
-		double *y_util_mic		= mpDataHandler->getMeasurement().mpYUtilMic->getDataPtr();
+		mpHeatmapCPU->setData(mpCPUData, mBufferSize);
+		mpHeatmapCPU->setXInterval(mCurrentX-50, mCurrentX+10);
 		
-		//TODO
+		mpHeatmapGPUCore->setData(mpGPUCoreData, mBufferSize);
+		mpHeatmapGPUCore->setXInterval(mCurrentX-50, mCurrentX+10);
 		
-		y_util_cpu += 4000;
-		mpHeatmapCPU->setData(y_util_cpu, 2000);
-		mpHeatmapCPU->setXInterval(0, 60);
+		mpHeatmapGPUMemory->setData(mpGPUMemoryData, mBufferSize);
+		mpHeatmapGPUMemory->setXInterval(mCurrentX-50, mCurrentX+10);
 		
-		y_util_gpu_core += 4000;
-		mpHeatmapGPUCore->setData(y_util_gpu_core, 2000);
-		mpHeatmapGPUCore->setXInterval(0, 60);
+		mpHeatmapFPGA->setData(mpFPGAData, mBufferSize);
+		mpHeatmapFPGA->setXInterval(mCurrentX-50, mCurrentX+10);
 		
-		y_util_gpu_mem += 4000;
-		mpHeatmapGPUMemory->setData(y_util_gpu_mem, 2000);
-		mpHeatmapGPUMemory->setXInterval(0, 60);
-		
-		y_util_fpga += 4000;
-		mpHeatmapFPGA->setData(y_util_fpga, 2000);
-		mpHeatmapFPGA->setXInterval(0, 60);
-		
-		y_util_mic += 4000;
-		mpHeatmapMIC->setData(y_util_mic, 2000);
-		mpHeatmapMIC->setXInterval(0, 60);
-		/**std::cout << "x: ";
-		for (int i = 0; i< 6000; i++){
-			std::cout << x[i] << " ";
-		}*/
-		//std::cout<< std::endl;
-		/**y_util_gpu_core += 4000;
-		heatmapGPU->setData(y_util_gpu_core, 2000);
-		heatmapGPU->setXInterval(0, 60);
-		y_util_fpga += 4000;
-		heatmapFPGA->setData(y_util_fpga, 2000);
-		heatmapFPGA->setXInterval(0, 60);
-		y_util_mic += 4000;
-		heatmapMIC->setData(y_util_mic, 2000);
-		heatmapMIC->setXInterval(0, 60);*/
+		mpHeatmapMIC->setData(mpMICData, mBufferSize);
+		mpHeatmapMIC->setXInterval(mCurrentX-50, mCurrentX+10);
 	}
+	
+    void QMSMFormHeatmapUtilization::updateHeatmapData() {
+		uint32_t factorDataToHeatmapSamplingRate = mpDataHandler->getSettings().mHeatmapSamplingRate / mpDataHandler->getSettings().mDataSamplingRate;
+		uint32_t bufferedSamples = ((mpDataHandler->getSettings().mTimeToBufferData - mpDataHandler->getSettings().mTimeToShowData) /
+									mpDataHandler->getSettings().mDataSamplingRate)-1;
+		uint32_t showSamples = (mpDataHandler->getSettings().mTimeToShowData / mpDataHandler->getSettings().mDataSamplingRate) - 1;
+		uint32_t indexCurrentX = 0;
+		uint32_t indexStartX = 0;
+		
+		double *x = mpDataHandler->getMeasurement().mpX->getDataPtr() +bufferedSamples;
+		
+		//shift x axis every 10 s
+		if(x[showSamples] - mCurrentX > 10) {
+			mCurrentX += 10;
+		}
+		
+		//reset x axis if necessary 
+		if(x[showSamples] < mCurrentX) {
+			mCurrentX = 0;
+		}
+		
+		//search the index corresponding to mCurrentX
+		for (int i = showSamples; i >= 0; i--) {
+			if(x[i] <= (mCurrentX + ((double) mpDataHandler->getSettings().mDataSamplingRate/1000/3))){
+				 indexCurrentX = i;
+				 break;
+			}
+		}
+		
+		//calculate the index of the first element
+		indexStartX = indexCurrentX - (mpDataHandler->getSettings().mTimeToShowData -10000) / mpDataHandler->getSettings().mDataSamplingRate;
+		
+		double *util_cpu		= mpDataHandler->getMeasurement().mpYUtilCpu->getDataPtr() + bufferedSamples + indexStartX;
+		double *util_gpu_core	= mpDataHandler->getMeasurement().mpYUtilGpuCore->getDataPtr() + bufferedSamples + indexStartX;
+		double *util_gpu_mem	= mpDataHandler->getMeasurement().mpYUtilGpuMem->getDataPtr() + bufferedSamples + indexStartX;
+		double *util_fpga		= mpDataHandler->getMeasurement().mpYUtilFpga->getDataPtr() + bufferedSamples + indexStartX;
+		double *util_mic		= mpDataHandler->getMeasurement().mpYUtilMic->getDataPtr() + bufferedSamples + indexStartX;
+		
+		//calculate the mean and fill the rest with 0
+		for (uint32_t i = 0; i < (mBufferSize); i++) {
+			if(i < mBufferSize-(indexStartX/factorDataToHeatmapSamplingRate)) {
+				mpCPUData[i]		= calcMean(util_cpu, factorDataToHeatmapSamplingRate);
+				mpGPUCoreData[i]	= calcMean(util_gpu_core, factorDataToHeatmapSamplingRate);
+				mpGPUMemoryData[i]	= calcMean(util_gpu_mem, factorDataToHeatmapSamplingRate);
+				mpFPGAData[i]		= calcMean(util_fpga, factorDataToHeatmapSamplingRate);
+				mpMICData[i]		= calcMean(util_mic, factorDataToHeatmapSamplingRate);
+				util_cpu		+= factorDataToHeatmapSamplingRate;
+				util_gpu_core	+= factorDataToHeatmapSamplingRate;
+				util_gpu_mem	+= factorDataToHeatmapSamplingRate;
+				util_fpga		+= factorDataToHeatmapSamplingRate;
+				util_mic		+= factorDataToHeatmapSamplingRate;
+			} else {
+				mpCPUData[i]		= 0;
+				mpGPUCoreData[i]	= 0;
+				mpGPUMemoryData[i]	= 0;
+				mpFPGAData[i]		= 0;
+				mpMICData[i]		= 0;
+			}
+		}
+    }
+    
+    double QMSMFormHeatmapUtilization::calcMean(double* data, uint32_t size) {
+		double sum = 0;
+		for (uint32_t i = 0; i < size; i++) {
+			sum += data[i];
+		}
+		return sum / size;
+    }
 }

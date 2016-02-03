@@ -16,15 +16,14 @@
  */
 
 #include "CHeatmapData.hpp"
-//TODO delete
-#include <iostream>
+
 namespace Ui {
 	HeatmapData::HeatmapData():
 		 mpData(0), mSize(0), mMinX(0), mMaxX(0) {
 
 	}
 
-	HeatmapData::HeatmapData(double *data, uint32_t size, uint32_t minX, uint32_t maxX):
+	HeatmapData::HeatmapData(double *data, uint32_t size, int32_t minX, int32_t maxX):
 		QwtRasterData(QwtDoubleRect(0, minX, minX+size, 1.0)),
 		mpData(data),
 		mSize(size),
@@ -42,10 +41,9 @@ namespace Ui {
 	}
 			
 	double HeatmapData::value(double x, double y) const {
-		//TODO not correct at the moment
 		double interval = (mMaxX-mMinX);
-		int index = (x/(double)interval*mSize);
-		//std::cout << "x: " << x << "index: " << index << std::endl;
+		int index = ((x-mMinX)/(double)interval*mSize);
+		
 		return mpData[index];
 	}
 
@@ -58,7 +56,7 @@ namespace Ui {
 		mSize = size;
 	}
 
-	void HeatmapData::setXInterval(double minX, double maxX) {
+	void HeatmapData::setXInterval(int32_t minX, int32_t maxX) {
 		mMinX = minX;
 		mMaxX = maxX;
 	}
