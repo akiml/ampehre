@@ -46,6 +46,13 @@ namespace Ui {
 		plotLayout()->setAlignCanvasToScales(true);
 		replot();
 	}
+	
+    Heatmap::~Heatmap() {
+		delete mpSpectrogram;
+		delete mpHeatmapData;
+		delete mpColorMap;
+		delete mpRightAxis;
+    }
 
 	void Heatmap::setTitle(const std::string &name) {
 		QwtText label = QwtText(name.c_str());

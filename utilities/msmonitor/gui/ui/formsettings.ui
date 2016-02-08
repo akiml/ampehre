@@ -96,6 +96,9 @@
        <layout class="QVBoxLayout" name="verticalLayoutLabelValues">
         <item>
          <widget class="QSlider" name="horizontalSliderCPU">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="minimum">
            <number>1</number>
           </property>
@@ -127,6 +130,9 @@
         </item>
         <item>
          <widget class="QSlider" name="horizontalSliderGPU">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="minimum">
            <number>1</number>
           </property>
@@ -152,6 +158,9 @@
         </item>
         <item>
          <widget class="QSlider" name="horizontalSliderFPGA">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="minimum">
            <number>1</number>
           </property>
@@ -177,6 +186,9 @@
         </item>
         <item>
          <widget class="QSlider" name="horizontalSliderMIC">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="minimum">
            <number>1</number>
           </property>
@@ -196,6 +208,9 @@
         </item>
         <item>
          <widget class="QSlider" name="horizontalSliderSystem">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="minimum">
            <number>1</number>
           </property>
@@ -406,6 +421,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QSlider" name="horizontalSliderData">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>
@@ -428,6 +446,9 @@
       </item>
       <item row="1" column="1">
        <widget class="QSlider" name="horizontalSliderHeatmap">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>
@@ -496,6 +517,9 @@
       </item>
       <item>
        <widget class="QSlider" name="horizontalSliderGUI">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>

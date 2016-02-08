@@ -19,25 +19,14 @@
 #define __QMSMFORMHEATMAPABSTRACT_HPP__
 
 #include <vector>
-#include <iostream>
-
 #include <QWidget>
 #include <QMdiSubWindow>
 #include <QCloseEvent>
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_legend.h>
-#include <qwt_plot_magnifier.h>
-#include <qwt_plot_panner.h>
-#include <qwt_plot_printfilter.h>
-#include <qwt_plot_grid.h>
-#include <qwt_symbol.h>
-#include <qwt_plot_marker.h>
 
 #include "ui_formheatmap.h"
 
 #include "../data/CDataHandler.hpp"
-#include "CHeatmapTimer.hpp"
+#include "CGuiTimer.hpp"
 #include "CHeatmap.hpp"
 
 namespace NData {
@@ -55,7 +44,7 @@ namespace Ui {
 			
 			NData::CDataHandler* mpDataHandler;
 			
-			CHeatmapTimer mTimer;
+			CGuiTimer<QMSMFormHeatmapAbstract> mTimer;
 			
 			std::vector<Ui::Heatmap*> mHeatmaps;
 			

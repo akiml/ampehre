@@ -121,7 +121,7 @@ namespace Ui {
 		connect(actionClock, SIGNAL(triggered(bool)), this, SLOT(showClock()));
 		connect(actionUtilization, SIGNAL(triggered(bool)), this, SLOT(showUtilization()));
 		connect(actionMemory, SIGNAL(triggered(bool)), this, SLOT(showMemory()));
-		connect(actionHeatmap_Utilization, SIGNAL(triggered(bool)), this, SLOT(showHeatmapUtilization()));
+		connect(actionHeatmapUtilization, SIGNAL(triggered(bool)), this, SLOT(showHeatmapUtilization()));
 		
 		connect(pushButtonStart, SIGNAL(clicked(bool)), this, SLOT(pressStart()));
 		connect(pushButtonStop, SIGNAL(clicked(bool)), this, SLOT(pressStop()));
@@ -138,7 +138,7 @@ namespace Ui {
 		actionClock->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_C));
 		actionUtilization->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_U));
 		actionMemory->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
-		actionHeatmap_Utilization->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_H));
+		actionHeatmapUtilization->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_H));
 		
 		pushButtonStart->setShortcut(QKeySequence(Qt::Key_PageUp));
 		pushButtonStop->setShortcut(QKeySequence(Qt::Key_PageDown));

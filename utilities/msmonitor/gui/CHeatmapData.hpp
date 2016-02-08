@@ -28,6 +28,7 @@ namespace Ui {
 		public:
 			HeatmapData();
 			HeatmapData(double *data, uint32_t size, int32_t minX, int32_t maxX);
+            ~HeatmapData();
 			
 			void setDataPtr(double *data, uint32_t size);
 			void setXInterval(int32_t minX, int32_t maxX);	

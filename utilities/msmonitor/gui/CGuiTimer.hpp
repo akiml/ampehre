@@ -23,12 +23,13 @@
 namespace Ui {
 	class QMSMFormMeasurementAbstract;
 	
+	template<typename TAbstractGUI>
 	class CGuiTimer : public NCommon::CAbstractTimer {
 		private:
-			QMSMFormMeasurementAbstract *mpFormPlot;
+			TAbstractGUI *mpFormAbstract;
 		
 		public:
-			CGuiTimer(uint32_t samplingRate, QMSMFormMeasurementAbstract *pFormPlot);
+			CGuiTimer(uint32_t samplingRate, TAbstractGUI *pFormAbstract);
 			~CGuiTimer(void);
 			
 		protected:
@@ -44,5 +45,7 @@ namespace Ui {
 			static void* startThread(void* pThreadObject);
 	};
 }
+
+#include "CGuiTimer.cpp"
 
 #endif /* __CGUITIMER_HPP__ */

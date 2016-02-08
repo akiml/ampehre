@@ -15,27 +15,26 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  */
 
-#include "CGuiTimer.hpp"
-
-#include "QMSMFormMeasurementAbstract.hpp"
-
 namespace Ui {
-	CGuiTimer::CGuiTimer(uint32_t samplingRate, QMSMFormMeasurementAbstract *pFormPlot) :
+	template<typename TAbstractGUI>
+	CGuiTimer<TAbstractGUI>::CGuiTimer(uint32_t samplingRate, TAbstractGUI *pFormAbstract) :
 		CAbstractTimer(samplingRate),
-		mpFormPlot(pFormPlot)
+		mpFormAbstract(pFormAbstract)
 		{
 		
 		// nothing todo
 	}
 	
-	CGuiTimer::~CGuiTimer(void) {
+	template<typename TAbstractGUI>
+	CGuiTimer<TAbstractGUI>::~CGuiTimer(void) {
 		if (mThreadStateRun == true) {
 			stopTimer();
 			joinTimer();
 		}
 	}
 	
-	void *CGuiTimer::startThread(void *pThreadObject) {
+	template<typename TAbstractGUI>
+	void *CGuiTimer<TAbstractGUI>::startThread(void *pThreadObject) {
 		CGuiTimer* thread = static_cast<CGuiTimer*>(pThreadObject);
 		
 		thread->run();
@@ -43,32 +42,37 @@ namespace Ui {
 		return 0;
 	}
 	
-	void CGuiTimer::start(void) {
+	template<typename TAbstractGUI>
+	void CGuiTimer<TAbstractGUI>::start(void) {
 		pthread_create(&mThreadID, NULL, &startThread, (void *)this);
 	}
 	
-	void CGuiTimer::run(void) {
+	template<typename TAbstractGUI>
+	void CGuiTimer<TAbstractGUI>::run(void) {
 		mThreadStateRun		= true;
 		mThreadStateStop	= false;
 		
 		while (!mThreadStateStop) {
 			nanosleep(&mTimer, NULL);
 			
-			mpFormPlot->refreshGui();
+			mpFormAbstract->refreshGui();
 		}
 		
 		exit();
 	}
 	
-	void CGuiTimer::startTimer(void) {
+	template<typename TAbstractGUI>
+	void CGuiTimer<TAbstractGUI>::startTimer(void) {
 		start();
 	}
 	
-	void CGuiTimer::stopTimer(void) {
+	template<typename TAbstractGUI>
+	void CGuiTimer<TAbstractGUI>::stopTimer(void) {
 		stop();
 	}
 	
-	void CGuiTimer::joinTimer(void) {
+	template<typename TAbstractGUI>
+	void CGuiTimer<TAbstractGUI>::joinTimer(void) {
 		join();
 	}
 }

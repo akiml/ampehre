@@ -89,29 +89,7 @@ namespace Ui {
 	}
 	
 	void QMSMFormHeatmapAbstract::saveImage(void) {
-		//TODO
-/*		const char *home_directory = getenv("HOME");
-		
-		QString filename(home_directory);
-		filename += "/plot_";
-		filename += QString::number(sNumberOfImages++);
-		filename += ".png";
-		
-		QPixmap pixmap(mpDataHandler->getSettings().mImageSizeX, mpDataHandler->getSettings().mImageSizeY);
-		
-		
-		QwtPlotPrintFilter filter;*/
-		//filter.color(Qt::white, QwtPlotPrintFilter::CanvasBackground);
-		//filter.setOptions(QwtPlotPrintFilter::PrintBackground);
-		/*filter.setOptions(QwtPlotPrintFilter::PrintAll);
-		
-		qwtPlot->print(pixmap, filter);
-		
-		if (pixmap.save(filename, "png")) {
-			std::cout << "INFO : Image stored as '" << qPrintable(filename) << "'." << std::endl;
-		} else {
-			std::cerr << "ERROR: Could not store '" << qPrintable(filename) << "'!" << std::endl;
-		}*/
+		//TODO needs to be implemented
 	}
 	
 	void QMSMFormHeatmapAbstract::startTimer(void) {
@@ -136,6 +114,7 @@ namespace Ui {
 		verticalLayoutMeasurement->insertWidget(mHeatmaps.size(), heatmap);
 		
 		mHeatmaps.push_back(heatmap);
+		resize(650, 50 + 110 * mHeatmaps.size());
 		
 		return heatmap;
 	}

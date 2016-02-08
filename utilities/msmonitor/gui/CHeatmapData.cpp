@@ -31,7 +31,12 @@ namespace Ui {
 		mMaxX(maxX) {
 
 	}
-			
+	
+    HeatmapData::~HeatmapData() {
+		//nothing todo
+    }
+
+	
 	QwtRasterData * HeatmapData::copy() const {
 		return new HeatmapData(mpData, mSize, mMinX, mMaxX);
 	}

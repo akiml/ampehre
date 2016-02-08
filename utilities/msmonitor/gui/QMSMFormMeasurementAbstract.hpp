@@ -56,7 +56,7 @@ namespace Ui {
 			
 			NData::CDataHandler* mpDataHandler;
 			
-			CGuiTimer mTimer;
+			CGuiTimer<QMSMFormMeasurementAbstract> mTimer;
 			
 			QColor mColorCpu;
 			QColor mColorCpuAlternative;

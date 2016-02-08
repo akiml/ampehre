@@ -99,12 +99,24 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
-    <addaction name="actionPower"/>
-    <addaction name="actionTemperature"/>
-    <addaction name="actionClock"/>
-    <addaction name="actionUtilization"/>
-    <addaction name="actionMemory"/>
-    <addaction name="actionHeatmap_Utilization"/>
+    <widget class="QMenu" name="menuCurves">
+     <property name="title">
+      <string>Curves</string>
+     </property>
+     <addaction name="actionPower"/>
+     <addaction name="actionTemperature"/>
+     <addaction name="actionClock"/>
+     <addaction name="actionUtilization"/>
+     <addaction name="actionMemory"/>
+    </widget>
+    <widget class="QMenu" name="menuHeatmaps">
+     <property name="title">
+      <string>Heatmaps</string>
+     </property>
+     <addaction name="actionHeatmapUtilization"/>
+    </widget>
+    <addaction name="menuCurves"/>
+    <addaction name="menuHeatmaps"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -127,6 +139,11 @@
     <string>Quit</string>
    </property>
   </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
   <action name="actionPower">
    <property name="text">
     <string>Power</string>
@@ -147,19 +164,14 @@
     <string>Utilization</string>
    </property>
   </action>
-  <action name="actionAbout">
-   <property name="text">
-    <string>About</string>
-   </property>
-  </action>
   <action name="actionMemory">
    <property name="text">
     <string>Memory</string>
    </property>
   </action>
-  <action name="actionHeatmap_Utilization">
+  <action name="actionHeatmapUtilization">
    <property name="text">
-    <string>Heatmap Utilization</string>
+    <string>Utilization</string>
    </property>
   </action>
  </widget>

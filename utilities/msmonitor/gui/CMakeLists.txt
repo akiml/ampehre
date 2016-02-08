@@ -36,9 +36,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${QW
 
 set(MSMONITOR_OTHER
 	CGuiBuilder.cpp
-	CGuiTimer.cpp
 	CGuiMarker.cpp
-	CHeatmapTimer.cpp
 	CHeatmapData.cpp
 )
 

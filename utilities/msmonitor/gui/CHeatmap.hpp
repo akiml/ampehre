@@ -31,6 +31,7 @@ namespace Ui {
 
 		public:
 			Heatmap(QWidget * = NULL);
+			~Heatmap();
 			
 			void setTitle(const std::string &name);
 			void setColorMap(QwtLinearColorMap *colorMap);

@@ -20,8 +20,6 @@
 
 #include "QMSMFormHeatmapAbstract.hpp"
 #include "../data/CDataHandler.hpp"
-#include <qwt_scale_engine.h>
-#include <cmath>
 
 namespace NData {
 	class CDataHandler;
