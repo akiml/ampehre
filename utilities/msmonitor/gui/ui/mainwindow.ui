@@ -114,6 +114,7 @@
       <string>Heatmaps</string>
      </property>
      <addaction name="actionHeatmapUtilization"/>
+     <addaction name="actionHeatmapTemperature"/>
     </widget>
     <addaction name="menuCurves"/>
     <addaction name="menuHeatmaps"/>
@@ -172,6 +173,11 @@
   <action name="actionHeatmapUtilization">
    <property name="text">
     <string>Utilization</string>
+   </property>
+  </action>
+  <action name="actionHeatmapTemperature">
+   <property name="text">
+    <string>Temperature</string>
    </property>
   </action>
  </widget>

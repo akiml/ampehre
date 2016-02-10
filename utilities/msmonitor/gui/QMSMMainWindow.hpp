@@ -49,6 +49,7 @@ namespace Ui {
 			QMSMFormMeasurementAbstract* mpFormMemory;
 			
 			QMSMFormHeatmapAbstract *mpFormHeatmapUtilization;
+			QMSMFormHeatmapAbstract *mpFormHeatmapTemperature;
 			
 			CGuiMarker mGuiMarker;
 			
@@ -72,6 +73,7 @@ namespace Ui {
 			void showUtilization(void);
 			void showMemory(void);
 			void showHeatmapUtilization(void);
+			void showHeatmapTemperature(void);
 			bool event(QEvent *pEvent);
 			
 		private:

@@ -16,13 +16,15 @@
  */
 
 #include "CHeatmap.hpp"
-
+#include <qwt_scale_draw.h>
 namespace Ui {
 	Heatmap::Heatmap(QWidget *parent):
-		QwtPlot(parent){
-		mpSpectrogram = new QwtPlotSpectrogram();
-		mpHeatmapData = new HeatmapData();
-		mpColorMap = new QwtLinearColorMap(Qt::blue, Qt::red);
+		QwtPlot(parent),
+		mpSpectrogram(new QwtPlotSpectrogram()),
+		mpColorMap(new QwtLinearColorMap(Qt::blue, Qt::red)),
+		mpHeatmapData(new HeatmapData()) {
+
+		QwtScaleDraw *scale = new QwtScaleDraw();
 		
 		mpColorMap->addColorStop(0.3, Qt::cyan);
 		mpColorMap->addColorStop(0.5, Qt::green);
@@ -30,17 +32,15 @@ namespace Ui {
 		
 		mpSpectrogram->setColorMap(*mpColorMap);
 		mpSpectrogram->setData(*mpHeatmapData);
-		
 		mpSpectrogram->attach(this);
 		
 		enableAxis(QwtPlot::yLeft, false);
-		
 		mpRightAxis = axisWidget(QwtPlot::yRight);
 		mpRightAxis->setColorBarEnabled(true);
 		mpRightAxis->setColorMap(mpSpectrogram->data().range(),mpSpectrogram->colorMap());
-
-		setAxisScale(QwtPlot::yRight, mpSpectrogram->data().range().minValue(),
-					mpSpectrogram->data().range().maxValue());
+		scale->setMinimumExtent(40);
+		mpRightAxis->setScaleDraw(scale);
+		updateYAxis();
 		enableAxis(QwtPlot::yRight);
 		
 		plotLayout()->setAlignCanvasToScales(true);
@@ -73,7 +73,22 @@ namespace Ui {
 		mpHeatmapData->setXInterval(minX, maxX);
 		setAxisScale(QwtPlot::xBottom, minX, maxX);
 	}
-
+	
+    void Heatmap::setYInterval(double minY, double maxY) {
+		mpHeatmapData->setYInterval(minY, maxY);
+		mpSpectrogram->setData(*mpHeatmapData);
+		updateYAxis();
+	}
+	
+	void Heatmap::updateYAxis() {
+		double minY = mpHeatmapData->range().minValue();
+		double maxY = mpHeatmapData->range().maxValue();
+		int interval = (maxY - minY)/5;
+		int stepSize = interval + 4 - (interval - 1) % 5;
+		setAxisScale(QwtPlot::yRight, minY, maxY, stepSize);
+		mpRightAxis->setColorMap(mpSpectrogram->data().range(),mpSpectrogram->colorMap());
+	}
+	
 	void Heatmap::refresh() {
 		mpSpectrogram->setData(*mpHeatmapData);
 		replot();

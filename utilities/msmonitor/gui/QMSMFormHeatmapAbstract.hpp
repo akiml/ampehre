@@ -62,7 +62,7 @@ namespace Ui {
 			void startTimer(void);
 			void stopTimer(void);
 			void joinTimer(void);
-			Ui::Heatmap* addHeatmap(const std::string &title);
+			Ui::Heatmap* addHeatmap(const QString &title);
 			
 		protected slots:
 			void slotRefreshGui(void);

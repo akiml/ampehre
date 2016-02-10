@@ -37,6 +37,7 @@ namespace Ui {
 			void setColorMap(QwtLinearColorMap *colorMap);
 			void setData(double *data, uint32_t size);
 			void setXInterval(double minX, double maxX);
+			void setYInterval(double minY, double maxY);
 			void refresh();
 			
 
@@ -45,6 +46,9 @@ namespace Ui {
 			QwtScaleWidget *mpRightAxis;
 			QwtLinearColorMap *mpColorMap;
 			HeatmapData *mpHeatmapData;
+			
+		private:
+			void updateYAxis();
 	};
 }
 #endif /* __CHEATMAP_H__ */

@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 1/29/14
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
+ *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
  */
 
 namespace Ui {

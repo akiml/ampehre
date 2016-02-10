@@ -31,6 +31,7 @@
 #include "QMSMFormUtilization.hpp"
 #include "QMSMFormMemory.hpp"
 #include "QMSMFormHeatmapUtilization.hpp"
+#include "QMSMFormHeatmapTemperature.hpp"
 
 namespace Ui {
 	QMSMMainWindow::QMSMMainWindow(QWidget* pParent, NData::CDataHandler& rDataHandler, QApplication* pApplication) :
@@ -46,6 +47,7 @@ namespace Ui {
 		mpFormUtilization(0),
 		mpFormMemory(0),
 		mpFormHeatmapUtilization(0),
+		mpFormHeatmapTemperature(0),
 		mGuiMarker(this)
 		{
 		
@@ -76,6 +78,7 @@ namespace Ui {
 		mpFormUtilization			= QMSMFormUtilization::construct(this, &mrDataHandler);
 		mpFormMemory				= QMSMFormMemory::construct(this, &mrDataHandler);
 		mpFormHeatmapUtilization	= QMSMFormHeatmapUtilization::construct(this, &mrDataHandler);
+		mpFormHeatmapTemperature	= QMSMFormHeatmapTemperature::construct(this, &mrDataHandler);
 		
 		mdiArea->addSubWindow(mpFormInfo);
 		mdiArea->addSubWindow(mpFormSettings);
@@ -85,6 +88,7 @@ namespace Ui {
 		mdiArea->addSubWindow(mpFormUtilization);
 		mdiArea->addSubWindow(mpFormMemory);
 		mdiArea->addSubWindow(mpFormHeatmapUtilization);
+		mdiArea->addSubWindow(mpFormHeatmapTemperature);
 		
 		mpFormInfo->hide();
 		mpFormSettings->hide();
@@ -94,6 +98,7 @@ namespace Ui {
 		mpFormUtilization->hide();
 		mpFormMemory->hide();
 		mpFormHeatmapUtilization->hide();
+		mpFormHeatmapTemperature->hide();
 		
 		QString status_message("Listening on socket \"");
 		status_message += mGuiMarker.getSocketName();
@@ -122,6 +127,7 @@ namespace Ui {
 		connect(actionUtilization, SIGNAL(triggered(bool)), this, SLOT(showUtilization()));
 		connect(actionMemory, SIGNAL(triggered(bool)), this, SLOT(showMemory()));
 		connect(actionHeatmapUtilization, SIGNAL(triggered(bool)), this, SLOT(showHeatmapUtilization()));
+		connect(actionHeatmapTemperature, SIGNAL(triggered(bool)), this, SLOT(showHeatmapTemperature()));
 		
 		connect(pushButtonStart, SIGNAL(clicked(bool)), this, SLOT(pressStart()));
 		connect(pushButtonStop, SIGNAL(clicked(bool)), this, SLOT(pressStop()));
@@ -138,7 +144,8 @@ namespace Ui {
 		actionClock->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_C));
 		actionUtilization->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_U));
 		actionMemory->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
-		actionHeatmapUtilization->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_H));
+		actionHeatmapUtilization->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_U));
+		actionHeatmapTemperature->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_T));
 		
 		pushButtonStart->setShortcut(QKeySequence(Qt::Key_PageUp));
 		pushButtonStop->setShortcut(QKeySequence(Qt::Key_PageDown));
@@ -178,6 +185,7 @@ namespace Ui {
 		mpFormMemory->startTimer();
 		
 		mpFormHeatmapUtilization->startTimer();
+		mpFormHeatmapTemperature->startTimer();
 		
 		mGuiMarker.start();
 	}
@@ -193,6 +201,7 @@ namespace Ui {
 		mpFormClock->stopTimer();
 		mpFormMemory->stopTimer();
 		mpFormHeatmapUtilization->stopTimer();
+		mpFormHeatmapTemperature->stopTimer();
 		
 		mpFormPower->joinTimer();
 		mpFormTemperature->joinTimer();
@@ -200,6 +209,7 @@ namespace Ui {
 		mpFormUtilization->joinTimer();
 		mpFormMemory->joinTimer();
 		mpFormHeatmapUtilization->joinTimer();
+		mpFormHeatmapTemperature->joinTimer();
 		
 		mrDataHandler.stopCollectData();
 		
@@ -238,6 +248,11 @@ namespace Ui {
     void QMSMMainWindow::showHeatmapUtilization(void) {
 		mpFormHeatmapUtilization->show();
     }
+    
+    void QMSMMainWindow::showHeatmapTemperature(void) {
+		mpFormHeatmapTemperature->show();
+    }
+
 	
 	bool QMSMMainWindow::event(QEvent *pEvent) {
 		if (pEvent->type() == QEvent::ToolTip) {

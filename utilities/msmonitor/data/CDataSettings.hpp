@@ -73,6 +73,17 @@ namespace NData {
 			uint32_t mYAxisMemoryMin;
 			uint32_t mYAxisMemoryMax;
 			
+			double mHeatmapTempCPUMinY;
+			double mHeatmapTempCPUMaxY;
+			double mHeatmapTempGPUMinY;
+			double mHeatmapTempGPUMaxY;
+			double mHeatmapTempFPGAMinY;
+			double mHeatmapTempFPGAMaxY;
+			double mHeatmapTempMICMinY;
+			double mHeatmapTempMICMaxY;
+			double mHeatmapTempSYSMinY;
+			double mHeatmapTempSYSMaxY;
+			
 			enum cpu_governor mCpuGovernor;
 			uint64_t mCpuFrequencyMinimum;
 			uint64_t mCpuFrequencyMaximum;

@@ -64,6 +64,7 @@ set(MSMONITOR_HEADERS
 	QMSMFormMemory.hpp
 	QMSMFormHeatmapAbstract.hpp
 	QMSMFormHeatmapUtilization.hpp
+	QMSMFormHeatmapTemperature.hpp
 	CHeatmap.hpp
 )
 
@@ -79,6 +80,7 @@ set(MSMONITOR_SOURCES
 	QMSMFormMemory.cpp
 	QMSMFormHeatmapAbstract.cpp
 	QMSMFormHeatmapUtilization.cpp
+	QMSMFormHeatmapTemperature.cpp
 	CHeatmap.cpp
 )
 

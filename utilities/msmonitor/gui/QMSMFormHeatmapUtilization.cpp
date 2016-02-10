@@ -21,11 +21,11 @@ namespace Ui {
 	
 	QMSMFormHeatmapUtilization::QMSMFormHeatmapUtilization(QWidget *pParent, NData::CDataHandler *pDataHandler) :
 		QMSMFormHeatmapAbstract(pParent, pDataHandler),
-		mpHeatmapCPU(addHeatmap("CPU\n")),
-		mpHeatmapGPUCore(addHeatmap("GPU\nCore")),
-		mpHeatmapGPUMemory(addHeatmap("GPU\nMemory")),
-		mpHeatmapFPGA(addHeatmap("Compute\nFPGA")),
-		mpHeatmapMIC(addHeatmap("MIC\n")),
+		mpHeatmapCPU(addHeatmap("CPU\n\n[%]")),
+		mpHeatmapGPUCore(addHeatmap("GPU\nCore\n[%]")),
+		mpHeatmapGPUMemory(addHeatmap("GPU\nMemory\n[%]")),
+		mpHeatmapFPGA(addHeatmap("Compute\nFPGA\n[%]")),
+		mpHeatmapMIC(addHeatmap("MIC\n\n[%]")),
 		mCurrentX(0)
 		{
 		//only one minute is stored here
@@ -36,7 +36,7 @@ namespace Ui {
 		mpFPGAData		= (double *)malloc(mBufferSize * sizeof(double));
 		mpMICData		= (double *)malloc(mBufferSize * sizeof(double));
 		
-		setWindowTitle(QApplication::translate("FormMeasurement", "Utilization", 0, QApplication::UnicodeUTF8));
+		setWindowTitle(QApplication::translate("FormHeatmap", "Utilization", 0, QApplication::UnicodeUTF8));
 		
 		setupHeatmaps();
 	}

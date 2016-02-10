@@ -104,13 +104,13 @@ namespace Ui {
 		mTimer.joinTimer();
 	}
 	
-    Heatmap* QMSMFormHeatmapAbstract::addHeatmap(const std::string &title) {
+    Heatmap* QMSMFormHeatmapAbstract::addHeatmap(const QString &title) {
 		Ui::Heatmap *heatmap = new Heatmap(this);
 		
-		heatmap->setObjectName(QString::fromUtf8(title.c_str()));
+		heatmap->setObjectName(title);
 		heatmap->setFrameShape(QFrame::NoFrame);
 		heatmap->setFrameShadow(QFrame::Raised);
-		heatmap->setTitle(title);
+		heatmap->setTitle(title.toStdString());
 		verticalLayoutMeasurement->insertWidget(mHeatmaps.size(), heatmap);
 		
 		mHeatmaps.push_back(heatmap);

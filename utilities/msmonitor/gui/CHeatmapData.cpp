@@ -19,16 +19,23 @@
 
 namespace Ui {
 	HeatmapData::HeatmapData():
-		 mpData(0), mSize(0), mMinX(0), mMaxX(0) {
+		 mpData(0),
+		 mSize(0),
+		 mMinX(0),
+		 mMaxX(0),
+		 mMinY(0),
+		 mMaxY(100) {
 
 	}
 
-	HeatmapData::HeatmapData(double *data, uint32_t size, int32_t minX, int32_t maxX):
+	HeatmapData::HeatmapData(double *data, uint32_t size, int32_t minX, int32_t maxX, double minY, double maxY):
 		QwtRasterData(QwtDoubleRect(0, minX, minX+size, 1.0)),
 		mpData(data),
 		mSize(size),
 		mMinX(minX),
-		mMaxX(maxX) {
+		mMaxX(maxX),
+		mMinY(minY),
+		mMaxY(maxY) {
 
 	}
 	
@@ -38,11 +45,11 @@ namespace Ui {
 
 	
 	QwtRasterData * HeatmapData::copy() const {
-		return new HeatmapData(mpData, mSize, mMinX, mMaxX);
+		return new HeatmapData(mpData, mSize, mMinX, mMaxX, mMinY, mMaxY);
 	}
 		
 	QwtDoubleInterval HeatmapData::range() const {
-		return QwtDoubleInterval(0.0, 100.0);
+		return QwtDoubleInterval(mMinY, mMaxY);
 	}
 			
 	double HeatmapData::value(double x, double y) const {
@@ -65,6 +72,11 @@ namespace Ui {
 		mMinX = minX;
 		mMaxX = maxX;
 	}
+	
+    void HeatmapData::setYInterval(double minY, double maxY) {
+		mMinY = minY;
+		mMaxY = maxY;
+    }
 }
 
 
