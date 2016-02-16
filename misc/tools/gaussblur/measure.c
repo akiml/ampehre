@@ -14,7 +14,7 @@
  * created: 1/11/15
  * version: 0.2.5 - add gaussblur example application
  *          0.7.0 - modularized measurement struct
- *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
+ *          0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
  */
 
 #include "measure.h"

@@ -12,7 +12,7 @@
  * 
  * author: Christoph Knorr (cknorr@mail.uni-paderborn.de)
  * created: 02/09/16
- * version: 0.7.3 - add enum for ipmi_timeout_setting in libmeasure
+ * version: 0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
  */
 
 #ifndef __QMSMFORMHEATMAPTEMPERATURE_HPP__

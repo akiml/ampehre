@@ -13,7 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 2/04/15
  * version: 0.3.1 - add correlation example application
- *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
+ *          0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
  */
 
 #include "measure.h"

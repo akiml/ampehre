@@ -15,7 +15,7 @@
  * version: 0.7.0 - modularized measurement struct
  *          0.7.1 - move functions to query measurement results into the modules
  *          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
- *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
+ *          0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
  */
 
 #ifndef __MS_SYS_DELL_IDRAC7_H__

@@ -24,7 +24,7 @@
  *          0.6.1 - add json printer to hettime
  *          0.7.0 - modularized measurement struct
  *          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
- *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
+ *          0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
  */
 
 #include <stdio.h>

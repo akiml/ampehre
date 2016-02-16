@@ -15,7 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.5.0 - add cpu, gpu and mic memory information
- *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
+ *          0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
  */
 
 #ifndef __QMSMMAINWINDOW_HPP__

@@ -15,7 +15,7 @@
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
- *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
+ *          0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
  */
 
 #include "QMSMFormSettings.hpp"

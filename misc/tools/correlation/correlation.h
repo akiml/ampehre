@@ -14,7 +14,7 @@
  * created: 2/04/15
  * version: 0.3.1 - add correlation example application
  *          0.7.0 - modularized measurement struct
- *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
+ *          0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
  */
 
 #ifndef __CORRELATION_H__

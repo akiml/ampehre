@@ -14,7 +14,7 @@
  * created: 10/13/14
  * version: 0.1.17 - add a hettime dummy executable for some hetsched measurements
  *          0.1.18 - hettime dummy tool can be used similar to ordinary "sleep" command
- *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
+ *          0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
  */
 
 #include <stdio.h>

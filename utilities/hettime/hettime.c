@@ -20,7 +20,7 @@
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
  *          0.6.1 - add json printer to hettime
- *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
+ *          0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
  */
 
 #include <stdio.h>

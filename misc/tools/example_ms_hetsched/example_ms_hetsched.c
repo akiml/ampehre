@@ -17,7 +17,7 @@
  *          0.1.13 - make GPU frequency settable
  *          0.1.15 - make CPU frequency settable
  *          0.2.4 - add version check functionality to library, wrappers, and tools
- *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
+ *          0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
  */
 
 #include <stdio.h>

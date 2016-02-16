@@ -13,7 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 10/27/14
  * version: 0.1.19 - add a hettime based idle power measurement tool
- *          0.7.3 - add enum for ipmi_timeout_setting in libmeasure
+ *          0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
  */
 
 #include <stdlib.h>
