@@ -17,91 +17,142 @@
 
 #include "ms_fpga_maxeler_max3a.h"
 
-inline static MS_MEASUREMENT_FPGA *get_measurement_fpga(MS_LIST *ms_list);
-
-inline static MS_MEASUREMENT_FPGA *get_measurement_fpga(MS_LIST *ms_list) {
+double fpga_time_total(MS_LIST *ms_list) {
 	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
 	NULL_CHECK(ms_measurement_fpga);
 	
-	return ms_measurement_fpga;
-}
-
-double fpga_time_total(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_time_runtime);
+	return ms_measurement_fpga->maxeler_time_runtime;
 }
 
 double fpga_energy_total_vcc1v0_core(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_energy_acc[VCC10]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_energy_acc[VCC10];
 }
 
 double fpga_energy_total_vcc1v5_ddr(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_energy_acc[VCC15]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_energy_acc[VCC15];
 }
 
 double fpga_energy_total_vcc2v5_aux(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_energy_acc[VCC25]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_energy_acc[VCC25];
 }
 
 double fpga_energy_total_imgt_1v0(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_energy_acc[IMGT10]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_energy_acc[IMGT10];
 }
 
 double fpga_energy_total_imgt_1v2(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_energy_acc[IMGT12]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_energy_acc[IMGT12];
 }
 
 double fpga_energy_total_mgt_1v0(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_energy_acc[MGT10]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_energy_acc[MGT10];
 }
 
 double fpga_energy_total_mgt_1v2(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_energy_acc[MGT12]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_energy_acc[MGT12];
 }
 
 double fpga_energy_total_power_usage(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_energy_acc[POWER]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_energy_acc[POWER];
 }
 
 double fpga_power_avg_vcc1v0_core(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_power_avg[VCC10]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_power_avg[VCC10];
 }
 
 double fpga_power_avg_vcc1v5_ddr(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_power_avg[VCC15]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_power_avg[VCC15];
 }
 
 double fpga_power_avg_vcc2v5_aux(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_power_avg[VCC25]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_power_avg[VCC25];
 }
 
 double fpga_power_avg_imgt_1v0(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_power_avg[IMGT10]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_power_avg[IMGT10];
 }
 
 double fpga_power_avg_imgt_1v2(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_power_avg[IMGT12]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_power_avg[IMGT12];
 }
 
 double fpga_power_avg_mgt_1v0(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_power_avg[MGT10]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_power_avg[MGT10];
 }
 
 double fpga_power_avg_mgt_1v2(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_power_avg[MGT12]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_power_avg[MGT12];
 }
 
 double fpga_power_avg_power_usage(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_power_avg[POWER]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_power_avg[POWER];
 }
 
 double fpga_temp_max_ifpga(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_temperature_max[ITEMP]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_temperature_max[ITEMP];
 }
 
 double fpga_temp_max_mfpga(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_temperature_max[MTEMP]);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_temperature_max[MTEMP];
 }
 
 double fpga_util_avg_comp(MS_LIST *ms_list) {
-	return (get_measurement_fpga(ms_list)->maxeler_util_comp_avg);
+	MS_MEASUREMENT_FPGA *ms_measurement_fpga = (MS_MEASUREMENT_FPGA *) getMeasurement(&ms_list, FPGA);
+	NULL_CHECK(ms_measurement_fpga);
+	
+	return ms_measurement_fpga->maxeler_util_comp_avg;
 }
