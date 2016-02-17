@@ -19,6 +19,7 @@
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
  *          0.7.0 - modularized measurement struct
+ *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
  */
 
 #ifndef __CMEASUREMAXELER_HPP__
@@ -50,8 +51,10 @@ namespace NLibMeasure {
 			void init(void);
 			void destroy(void);
 			void measurePower(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, int32_t& rThreadNum);
-			void measureTemperature(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, int32_t& rThreadNum);
+			void measureTemperatureAndActiveProcesses(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, int32_t& rThreadNum);
 			void measureUtilization(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, int32_t& rThreadNum);
+			void extractTemperature(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, char* response);
+			void extractActiveProceses(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, char* response);
 			
 		public:
 			void measure(void *pMsMeasurement, int32_t& rThreadNum);

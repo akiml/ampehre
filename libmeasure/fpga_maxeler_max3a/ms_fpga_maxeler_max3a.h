@@ -15,6 +15,7 @@
  * version: 0.7.0 - modularized measurement struct
  *          0.7.1 - move functions to query measurement results into the modules
  *          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
+ *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
  */
 
 #ifndef __MS_FPGA_MAXELER_MAX3A_H__
@@ -31,6 +32,7 @@ extern "C" {
 
 #define MAX_NUM_POWER 8
 #define MAX_NUM_TEMPERATURE 2
+#define MAXELER_BUFFER_SIZE 128
 
 enum maxeler_power {
 	VCC10,
@@ -75,6 +77,10 @@ typedef struct __ms_measurement_fpga {
 	double maxeler_util_comp_cur;
 	double maxeler_util_comp_acc;
 	double maxeler_util_comp_avg;
+	
+	uint32_t maxeler_active_processes_pid;
+	char maxeler_active_process_name[MAXELER_BUFFER_SIZE];
+	char maxeler_active_process_user[MAXELER_BUFFER_SIZE];
 } MS_MEASUREMENT_FPGA;
 
 double fpga_time_total(MS_LIST *ms_list);

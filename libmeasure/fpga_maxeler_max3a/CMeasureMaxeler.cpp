@@ -19,6 +19,7 @@
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library. 
  *          0.7.0 - modularized measurement struct
+ *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
  */
 
 namespace NLibMeasure {
@@ -93,7 +94,7 @@ namespace NLibMeasure {
 		measurePower(pMsMeasurementFpga, rThreadNum);
 		if(TVariant==VARIANT_FULL) {
 			if(!(mMeasureCounter++ % TSkipMs)) {
-				measureTemperature(pMsMeasurementFpga, rThreadNum);
+				measureTemperatureAndActiveProcesses(pMsMeasurementFpga, rThreadNum);
 			}
 			measureUtilization(pMsMeasurementFpga, rThreadNum);
 		}
@@ -158,16 +159,25 @@ namespace NLibMeasure {
 	}
 	
 	template <int TSkipMs, int TVariant>
-	void CMeasureMaxeler<TSkipMs, TVariant>::measureTemperature(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, int32_t& rThreadNum) {
+	void CMeasureMaxeler<TSkipMs, TVariant>::measureTemperatureAndActiveProcesses(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, int32_t& rThreadNum) {
 		char *response;
 		max_daemon_device_hw_monitor(mMaxDaemonFildes, 0, &response);
 		
 #if 0
 		for (int i=0; i<strlen(response); ++i) if (response[i] == ',') response[i] = '\n';
 		printf("%s\n", response);
-		max_daemon_device_hw_monitor(fildes, 0, &response);
+		max_daemon_device_hw_monitor(mMaxDaemonFildes, 0, &response);
 #endif
 		
+		extractTemperature(pMsMeasurementFpga, response);
+		
+		extractActiveProceses(pMsMeasurementFpga, response);
+				
+		free(response);
+	}
+	
+	template <int TSkipMs, int TVariant>
+	void CMeasureMaxeler<TSkipMs, TVariant>::extractTemperature(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, char* response) {
 		char *mfpga	= strstr(response, "MAIN_FPGA_TEMPERATURE=");
 		char *meq	= strchr(mfpga, '=');
 		char *mend	= strchr(meq++, ',');
@@ -181,8 +191,43 @@ namespace NLibMeasure {
 		
 		sscanf(meq, "%lf", pMsMeasurementFpga->maxeler_temperature_cur+MTEMP);
 		sscanf(ieq, "%lf", pMsMeasurementFpga->maxeler_temperature_cur+ITEMP);
+	}
+	
+	template <int TSkipMs, int TVariant>
+	void CMeasureMaxeler<TSkipMs, TVariant>::extractActiveProceses(MS_MEASUREMENT_FPGA *pMsMeasurementFpga, char* response) {
+		char *pid		= strstr(response, "ALLOC_PID=");
+		char *pid_eq	= strchr(pid, '=');
+		char *pid_end	= strchr(pid_eq++, ',');
 		
-		free(response);
+		char *puser		= strstr(response, "ALLOC_USER=");
+		char *puser_eq	= strchr(puser, '=');
+		char *puser_end	= strchr(puser_eq++, ',');
+		uint32_t puser_size	= puser_end - puser_eq + 1;
+		if(puser_size > MAXELER_BUFFER_SIZE) {
+			puser_size = MAXELER_BUFFER_SIZE;
+		}
+		
+		char *pname		= strstr(response, "ALLOC_CMD=");
+		char *pname_eq	= strchr(pname, '=');
+		char *pname_end	= strchr(pname_eq++, ',');
+		uint32_t pname_size	= pname_end - pname_eq + 1;
+		if(pname_size > MAXELER_BUFFER_SIZE) {
+			pname_size = MAXELER_BUFFER_SIZE;
+		}
+		
+		*pid_end	= '\0';
+		*puser_end	= '\0';
+		*pname_end	= '\0';
+		
+		sscanf(pid_eq, "%u", &(pMsMeasurementFpga->maxeler_active_processes_pid));
+		strncpy(pMsMeasurementFpga->maxeler_active_process_user, puser_eq, puser_size);
+		strncpy(pMsMeasurementFpga->maxeler_active_process_name, pname_eq, pname_size);
+
+#if 0
+		std::cout << "Process name: " << pMsMeasurementFpga->maxeler_active_process_name << std::endl;
+		std::cout << "User: " << pMsMeasurementFpga->maxeler_active_process_user << std::endl;
+		std::cout << "Active process id: " << pMsMeasurementFpga->maxeler_active_processes_pid << std::endl;
+#endif
 	}
 	
 	template <int TSkipMs, int TVariant>

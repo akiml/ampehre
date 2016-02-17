@@ -21,7 +21,8 @@
  *          0.5.3 - add abstract measure and abstract measure thread
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library. 
- *          0.7.0 - modularized measurement struct 
+ *          0.7.0 - modularized measurement struct
+ *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
  */
 
 namespace NLibMeasure {
@@ -402,6 +403,36 @@ namespace NLibMeasure {
 			
 			pMsMeasurementGpu->nvml_util_gpu_cur	= utilization.gpu;
 			pMsMeasurementGpu->nvml_util_mem_cur	= utilization.memory;
+			
+			uint32_t infoCount = MAX_PROCESS_COUNT;
+			nvmlProcessInfo_t process_info[infoCount];
+			result = nvmlDeviceGetComputeRunningProcesses(mDevice, &infoCount, process_info);
+			if (NVML_SUCCESS != result) {
+				mrLog.lock();
+				mrLog(CLogger::scErr) << "!!! 'nvml thread' (thread #" << rThreadNum << "): Error: cannot obtain active process count. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+				mrLog.unlock();
+				exit(EXIT_FAILURE);
+			}
+			pMsMeasurementGpu->nvml_active_processes_count = infoCount;
+			
+			if(pMsMeasurementGpu->nvml_active_processes_count > 0) {
+				for(uint32_t i = 0; i < pMsMeasurementGpu->nvml_active_processes_count; i++) {
+					pMsMeasurementGpu->nvml_active_processes_pid[i] = process_info[i].pid;
+					result = nvmlSystemGetProcessName(pMsMeasurementGpu->nvml_active_processes_pid[i],
+														pMsMeasurementGpu->nvml_active_processes_name[i],
+														NVML_BUFFER_SIZE);
+					if (NVML_SUCCESS != result) {
+						memset(pMsMeasurementGpu->nvml_active_processes_name[i], 0, NVML_BUFFER_SIZE);
+					}
+				}
+			}
+#if 0
+			std::cout << "Result: " << result << "Active process count: " << pMsMeasurementGpu->nvml_active_processes_count << std::endl;
+			for(uint32_t i = 0; i < pMsMeasurementGpu->nvml_active_processes_count; i++) {
+				std::cout << "Process id: " << pMsMeasurementGpu->nvml_active_processes_pid[i] << std::endl;
+				std::cout << "Process name: "<< pMsMeasurementGpu->nvml_active_processes_name[i] << std::endl;
+			}
+#endif
 		}
 		
 	}

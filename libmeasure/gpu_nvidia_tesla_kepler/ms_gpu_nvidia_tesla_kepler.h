@@ -15,6 +15,7 @@
  * version: 0.7.0 - modularized measurement struct
  *          0.7.1 - move functions to query measurement results into the modules
  *          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
+ *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
  */
 
 #ifndef __MS_GPU_NVIDIA_TESLA_KEPLER_H__
@@ -29,6 +30,9 @@ extern "C" {
 #include "ms_list.h"
 #include "ms_driver.h"
 
+#define MAX_PROCESS_COUNT 128
+#define NVML_BUFFER_SIZE 128
+	
 enum gpu_frequency {
 	GPU_FREQUENCY_MIN,
 	GPU_FREQUENCY_CUR,
@@ -83,6 +87,10 @@ typedef struct __ms_measurement_gpu {
 	uint32_t nvml_memory_free_max;
 	uint32_t nvml_memory_used_max;
 	uint32_t nvml_memory_total;
+	
+	uint32_t nvml_active_processes_count;
+	uint32_t nvml_active_processes_pid[MAX_PROCESS_COUNT];
+	char nvml_active_processes_name[MAX_PROCESS_COUNT][NVML_BUFFER_SIZE];
 } MS_MEASUREMENT_GPU;
 
 double gpu_time_total(MS_LIST *ms_list);
