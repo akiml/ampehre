@@ -413,10 +413,14 @@ namespace NLibMeasure {
 				mrLog.unlock();
 				exit(EXIT_FAILURE);
 			}
-			pMsMeasurementGpu->nvml_active_processes_count = infoCount;
+			pMsMeasurementGpu->nvml_active_processes_count_cur = infoCount;
 			
-			if(pMsMeasurementGpu->nvml_active_processes_count > 0) {
-				for(uint32_t i = 0; i < pMsMeasurementGpu->nvml_active_processes_count; i++) {
+			if(infoCount > pMsMeasurementGpu->nvml_active_processes_count_max) {
+				pMsMeasurementGpu->nvml_active_processes_count_max = infoCount;
+			}
+			
+			if(pMsMeasurementGpu->nvml_active_processes_count_cur > 0) {
+				for(uint32_t i = 0; i < pMsMeasurementGpu->nvml_active_processes_count_cur; i++) {
 					pMsMeasurementGpu->nvml_active_processes_pid[i] = process_info[i].pid;
 					result = nvmlSystemGetProcessName(pMsMeasurementGpu->nvml_active_processes_pid[i],
 														pMsMeasurementGpu->nvml_active_processes_name[i],
@@ -427,8 +431,9 @@ namespace NLibMeasure {
 				}
 			}
 #if 0
-			std::cout << "Result: " << result << "Active process count: " << pMsMeasurementGpu->nvml_active_processes_count << std::endl;
-			for(uint32_t i = 0; i < pMsMeasurementGpu->nvml_active_processes_count; i++) {
+			std::cout << "Max active process count: " << pMsMeasurementGpu->nvml_active_processes_count_max << std::endl;
+			std::cout << "Active process count: " << pMsMeasurementGpu->nvml_active_processes_count_cur << std::endl;
+			for(uint32_t i = 0; i < pMsMeasurementGpu->nvml_active_processes_count_cur; i++) {
 				std::cout << "Process id: " << pMsMeasurementGpu->nvml_active_processes_pid[i] << std::endl;
 				std::cout << "Process name: "<< pMsMeasurementGpu->nvml_active_processes_name[i] << std::endl;
 			}

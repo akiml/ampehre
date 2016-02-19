@@ -88,7 +88,8 @@ typedef struct __ms_measurement_gpu {
 	uint32_t nvml_memory_used_max;
 	uint32_t nvml_memory_total;
 	
-	uint32_t nvml_active_processes_count;
+	uint32_t nvml_active_processes_count_cur;
+	uint32_t nvml_active_processes_count_max;
 	uint32_t nvml_active_processes_pid[MAX_PROCESS_COUNT];
 	char nvml_active_processes_name[MAX_PROCESS_COUNT][NVML_BUFFER_SIZE];
 } MS_MEASUREMENT_GPU;
@@ -105,6 +106,7 @@ double gpu_util_avg_mem(MS_LIST *ms_list);
 uint32_t gpu_memory_total(MS_LIST *ms_list);
 uint32_t gpu_memory_used_max(MS_LIST *ms_list);
 uint32_t gpu_memory_free_max(MS_LIST *ms_list);
+uint32_t gpu_active_processes_max(MS_LIST *ms_list);
 
 #ifdef __cplusplus
 }

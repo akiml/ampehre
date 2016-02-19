@@ -219,14 +219,14 @@ namespace NLibMeasure {
 		*puser_end	= '\0';
 		*pname_end	= '\0';
 		
-		sscanf(pid_eq, "%u", &(pMsMeasurementFpga->maxeler_active_processes_pid));
+		sscanf(pid_eq, "%u", &(pMsMeasurementFpga->maxeler_active_process_pid));
 		strncpy(pMsMeasurementFpga->maxeler_active_process_user, puser_eq, puser_size);
 		strncpy(pMsMeasurementFpga->maxeler_active_process_name, pname_eq, pname_size);
 
 #if 0
 		std::cout << "Process name: " << pMsMeasurementFpga->maxeler_active_process_name << std::endl;
 		std::cout << "User: " << pMsMeasurementFpga->maxeler_active_process_user << std::endl;
-		std::cout << "Active process id: " << pMsMeasurementFpga->maxeler_active_processes_pid << std::endl;
+		std::cout << "Active process id: " << pMsMeasurementFpga->maxeler_active_process_pid << std::endl;
 #endif
 	}
 	

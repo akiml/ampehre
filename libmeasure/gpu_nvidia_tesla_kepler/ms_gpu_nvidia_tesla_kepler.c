@@ -13,6 +13,7 @@
  * author: Achim Lösch
  * created: 01/25/16
  * version: 0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
+ *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
  */
 
 #include "ms_gpu_nvidia_tesla_kepler.h"
@@ -100,3 +101,11 @@ uint32_t gpu_memory_free_max(MS_LIST *ms_list) {
 	
 	return ms_measurement_gpu->nvml_memory_free_max;
 }
+
+uint32_t gpu_active_processes_max ( MS_LIST* ms_list ) {
+	MS_MEASUREMENT_GPU *ms_measurement_gpu = (MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU);
+	NULL_CHECK(ms_measurement_gpu);
+	
+	return ms_measurement_gpu->nvml_active_processes_count_max;
+}
+

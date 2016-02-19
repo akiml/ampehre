@@ -78,7 +78,7 @@ typedef struct __ms_measurement_fpga {
 	double maxeler_util_comp_acc;
 	double maxeler_util_comp_avg;
 	
-	uint32_t maxeler_active_processes_pid;
+	uint32_t maxeler_active_process_pid;
 	char maxeler_active_process_name[MAXELER_BUFFER_SIZE];
 	char maxeler_active_process_user[MAXELER_BUFFER_SIZE];
 } MS_MEASUREMENT_FPGA;

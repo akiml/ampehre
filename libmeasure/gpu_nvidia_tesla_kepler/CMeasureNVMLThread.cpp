@@ -23,6 +23,7 @@
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library. 
  *          0.7.0 - modularized measurement struct
+ *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
  */
 
 namespace NLibMeasure {
@@ -59,16 +60,18 @@ namespace NLibMeasure {
 		mMutexTimer.lock();
 		
 		// initialize some values
-		pMsMeasurementGpu->nvml_time_runtime		= 0.0;
-		pMsMeasurementGpu->nvml_energy_acc			= 0.0;
-		pMsMeasurementGpu->nvml_temperature_max		= 0;
-		pMsMeasurementGpu->nvml_clock_graphics_acc	= 0.0;
-		pMsMeasurementGpu->nvml_clock_sm_acc		= 0.0;
-		pMsMeasurementGpu->nvml_clock_mem_acc		= 0.0;
-		pMsMeasurementGpu->nvml_util_gpu_acc		= 0.0;
-		pMsMeasurementGpu->nvml_util_mem_acc		= 0.0;
-		pMsMeasurementGpu->nvml_memory_used_max		= 0.0;
-		pMsMeasurementGpu->nvml_memory_free_max		= 0.0;
+		pMsMeasurementGpu->nvml_time_runtime				= 0.0;
+		pMsMeasurementGpu->nvml_energy_acc					= 0.0;
+		pMsMeasurementGpu->nvml_temperature_max				= 0;
+		pMsMeasurementGpu->nvml_clock_graphics_acc			= 0.0;
+		pMsMeasurementGpu->nvml_clock_sm_acc				= 0.0;
+		pMsMeasurementGpu->nvml_clock_mem_acc				= 0.0;
+		pMsMeasurementGpu->nvml_util_gpu_acc				= 0.0;
+		pMsMeasurementGpu->nvml_util_mem_acc				= 0.0;
+		pMsMeasurementGpu->nvml_memory_used_max				= 0.0;
+		pMsMeasurementGpu->nvml_memory_free_max				= 0.0;
+		pMsMeasurementGpu->nvml_active_processes_count_cur	= 0;
+		pMsMeasurementGpu->nvml_active_processes_count_max	= 0;
 		
 		mrMeasureResource.read_memory_total(mpMsMeasurement, mThreadNum);
 		
