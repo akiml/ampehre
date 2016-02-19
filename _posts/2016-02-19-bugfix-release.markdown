@@ -7,17 +7,17 @@ brief: Ampehre v0.7.3 with new heatmaps in msmonitor is now available.
 --- 
 ---
 
-####Description:
+#### Description:
 
 Ampehre, v0.7.3 is now available at our github repository [github.com/akiml/ampehre](https://github.com/akiml/ampehre).
 
 ---
 
-####Bugfixes:
+#### Bugfixes:
 - Add enum for ipmi timeout settings to libmeasure.
 - Fix bug if ampehre is not compiled with support for all resources.
 
-####Feature improvements:
+#### Feature improvements:
 - Add heatmaps for resource utilization to msmonitor.
 - Add heatmaps for resource temperature to msmonitor.
 - Improved msmonitor menu.

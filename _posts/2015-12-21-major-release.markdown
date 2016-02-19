@@ -7,16 +7,16 @@ brief: Ampehre v0.6.1 with lower overhead is now available.
 --- 
 ---
 
-####Description:
+#### Description:
 
 Ampehre, v0.6.1 and the updated documentation, is now available at our github repository [github.com/akiml/ampehre](https://github.com/akiml/ampehre).
 
 ---
 
-####Bugfixes:
+#### Bugfixes:
 - libmeasure does not abort anymore because of IPMI timeouts.
 
-####Feature improvements:
+#### Feature improvements:
 - New json-printer in hettime to print results into json files.
 - Add ioctl call to measure driver to set the IPMI timeout at the start of the measuring system.
 - Add C++ template to select light or full library variant.

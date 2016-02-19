@@ -7,16 +7,16 @@ brief: Ampehre v0.7.1 is now available.
 --- 
 ---
 
-####Description:
+#### Description:
 
 Ampehre, v0.7.1 is now available at our github repository [github.com/akiml/ampehre](https://github.com/akiml/ampehre).
 
 ---
 
-####Bugfixes:
+#### Bugfixes:
 - Moved all functions to query measurement results from libms_common into the corresponding plugins.
 
-####Feature improvements:
+#### Feature improvements:
 - Finished modularization of libmeasure, all resource specific functions are defined in the plugins.
 
 ---

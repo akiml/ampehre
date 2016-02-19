@@ -7,17 +7,17 @@ brief: Ampehre v0.7.2 is now available.
 --- 
 ---
 
-####Description:
+#### Description:
 
 Ampehre, v0.7.2 is now available at our github repository [github.com/akiml/ampehre](https://github.com/akiml/ampehre).
 
 ---
 
-####Bugfixes:
+#### Bugfixes:
 - Add MIC support to hettime_dummy tool.
 - Fix result query functions.
 
-####Feature improvements:
+#### Feature improvements:
 - Add default resource usage/time information as known from UNIX "time" tool.
 
 ---
