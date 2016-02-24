@@ -21,9 +21,8 @@
 #          0.5.1 - modularized libmeasure
 #          0.5.4 - add dynamic loading of resource specific libraries
 #          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
+#          0.7.4 - add support for Odroid XU4 systems
 #
-
-
 
 if(DELL_IDRAC7_SUPPORT)
 	add_definitions(-DSYS_LIB)
@@ -49,6 +48,11 @@ if(CPU_INTEL_SANDY_SUPPORT)
 	add_definitions(-DCPU_LIB)
 	add_subdirectory(cpu_intel_xeon_sandy)
 endif(CPU_INTEL_SANDY_SUPPORT)
+
+if(ODROID_HARDKERNEL_XU4_SUPPORT)
+	add_definitions(-DODROID_LIB)
+	add_subdirectory(odroid_hardkernel_xu4)
+endif(ODROID_HARDKERNEL_XU4_SUPPORT)
 
 add_subdirectory(common)
 add_subdirectory(stub)

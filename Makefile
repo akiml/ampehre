@@ -20,8 +20,10 @@
 #
 
 BASE_DIR=/usr/ampehre/
-GCC=/usr/bin/gcc-4.6
-GXX=/usr/bin/g++-4.6
+#GCC=/usr/bin/gcc-4.6
+#GXX=/usr/bin/g++-4.6
+GCC=/usr/bin/gcc
+GXX=/usr/bin/g++
 
 .PHONY: all install debug clean driver driver_install gaussblur gaussblur_install correlation correlation_install mic_start docs
 
@@ -35,12 +37,12 @@ debug:
 
 install: all
 	sudo mkdir -p $(BASE_DIR) $(BASE_DIR)/bin $(BASE_DIR)/lib $(BASE_DIR)/include $(BASE_DIR)/share $(BASE_DIR)/share/data
-	sudo chown root:user $(BASE_DIR) $(BASE_DIR)/bin $(BASE_DIR)/lib $(BASE_DIR)/include $(BASE_DIR)/share $(BASE_DIR)/share/data
-	sudo chmod 775 $(BASE_DIR) $(BASE_DIR)/bin $(BASE_DIR)/lib $(BASE_DIR)/include $(BASE_DIR)/share $(BASE_DIR)/share/data
-	sudo rm -f $(BASE_DIR)/bin/gpu_management
+	sudo chown root:root $(BASE_DIR) $(BASE_DIR)/bin $(BASE_DIR)/lib $(BASE_DIR)/include $(BASE_DIR)/share $(BASE_DIR)/share/data
+	sudo chmod 777 $(BASE_DIR) $(BASE_DIR)/bin $(BASE_DIR)/lib $(BASE_DIR)/include $(BASE_DIR)/share $(BASE_DIR)/share/data
+	#sudo rm -f $(BASE_DIR)/bin/gpu_management
 	cd build && make install
-	sudo chown root:root $(BASE_DIR)/bin/gpu_management
-	sudo chmod 4755 $(BASE_DIR)/bin/gpu_management
+	#sudo chown root:root $(BASE_DIR)/bin/gpu_management
+	#sudo chmod 4755 $(BASE_DIR)/bin/gpu_management
 	sudo ldconfig
 
 clean:

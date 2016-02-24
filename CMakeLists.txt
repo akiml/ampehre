@@ -29,14 +29,15 @@ cmake_minimum_required (VERSION 2.6)
 project(ampehre)
 
 # Please set support flags to ON if the corresponding device should be enabled for measuring.
-option(DELL_IDRAC7_SUPPORT "build library with dell idrac7 support" ON)
-option(MIC_INTEL_KNC_SUPPORT "build library with mic intel knc support" ON)
-option(GPU_NVIDIA_TESLA_SUPPORT "build library with gpu nvidia tesla support" ON)
-option(FPGA_MAXELER_MAX3A_SUPPORT "build library with fpga maxeler max3a support" ON)
-option(CPU_INTEL_SANDY_SUPPORT "build library with cpu intel xeon sandy support" ON)
+option(DELL_IDRAC7_SUPPORT "build library with dell idrac7 support" OFF)
+option(MIC_INTEL_KNC_SUPPORT "build library with mic intel knc support" OFF)
+option(GPU_NVIDIA_TESLA_SUPPORT "build library with gpu nvidia tesla support" OFF)
+option(FPGA_MAXELER_MAX3A_SUPPORT "build library with fpga maxeler max3a support" OFF)
+option(CPU_INTEL_SANDY_SUPPORT "build library with cpu intel xeon sandy support" OFF)
+option(ODROID_HARDKERNEL_XU4_SUPPORT "build library with odroid hardkernel xu4 support" ON)
 
-set(CMAKE_C_FLAGS "-O3 -Wall -std=gnu99")
-set(CMAKE_CXX_FLAGS "-O3 -Wall -std=gnu++98")
+set(CMAKE_C_FLAGS "-O3 -g -Wall -std=gnu99")
+set(CMAKE_CXX_FLAGS "-O3 -g -Wall -std=gnu++98")
 #set(CMAKE_C_FLAGS "-O3 -Wall -DDEBUG")
 #set(CMAKE_CXX_FLAGS "-O3 -Wall -DDEBUG")
 
@@ -101,16 +102,24 @@ if(GPU_NVIDIA_TESLA_SUPPORT)
 else(GPU_NVIDIA_TESLA_SUPPORT)
 	message(STATUS "${BoldYellow}INFO: Compile with gpu  nvidia  tesla        DISABLED.${ColourReset}")
 endif(GPU_NVIDIA_TESLA_SUPPORT)
+
 if(FPGA_MAXELER_MAX3A_SUPPORT)
 	message(STATUS "${BoldYellow}INFO: Compile with fpga maxeler max3a        ENABLED.${ColourReset}")
 else(FPGA_MAXELER_MAX3A_SUPPORT)
 	message(STATUS "${BoldYellow}INFO: Compile with fpga maxeler max3a        DISABLED.${ColourReset}")
 endif(FPGA_MAXELER_MAX3A_SUPPORT)
+
 if(CPU_INTEL_SANDY_SUPPORT)
 	message(STATUS "${BoldYellow}INFO: Compile with cpu  intel   xeon   sandy ENABLED.${ColourReset}")
 else(CPU_INTEL_SANDY_SUPPORT)
 	message(STATUS "${BoldYellow}INFO: Compile with cpu  intel   xeon   sandy DISABLED.${ColourReset}")
 endif(CPU_INTEL_SANDY_SUPPORT)
+
+if(ODROID_HARDKERNEL_XU4_SUPPORT)
+	message(STATUS "${BoldYellow}INFO: Compile with odroid hardkernel   xu4   ENABLED.${ColourReset}")
+else(ODROID_HARDKERNEL_XU4_SUPPORT)
+	message(STATUS "${BoldYellow}INFO: Compile with odroid hardkernel   xu4   DISABLED.${ColourReset}")
+endif(ODROID_HARDKERNEL_XU4_SUPPORT)
 
 include_directories(${MS_LIBRARY_MODULE_PATH} include/)
 
