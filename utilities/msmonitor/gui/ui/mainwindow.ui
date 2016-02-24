@@ -118,6 +118,7 @@
     </widget>
     <addaction name="menuCurves"/>
     <addaction name="menuHeatmaps"/>
+    <addaction name="actionSystemOverview"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -178,6 +179,11 @@
   <action name="actionHeatmapTemperature">
    <property name="text">
     <string>Temperature</string>
+   </property>
+  </action>
+  <action name="actionSystemOverview">
+   <property name="text">
+    <string>System Overview</string>
    </property>
   </action>
  </widget>

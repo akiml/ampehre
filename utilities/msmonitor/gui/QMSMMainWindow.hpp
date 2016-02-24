@@ -16,6 +16,7 @@
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
+ *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
  */
 
 #ifndef __QMSMMAINWINDOW_HPP__
@@ -32,6 +33,7 @@ namespace Ui {
 	class QMSMFormSettings;
 	class QMSMFormMeasurementAbstract;
 	class QMSMFormHeatmapAbstract;
+	class QMSMFormSystemOverview;
 	
 	class QMSMMainWindow : public QMainWindow, private MainWindow {
 		Q_OBJECT
@@ -40,6 +42,7 @@ namespace Ui {
 			QApplication* mpApplication;
 			QMSMFormInfo* mpFormInfo;
 			QMSMFormSettings* mpFormSettings;
+			QMSMFormSystemOverview* mpFormSystemOverview;
 			NData::CDataHandler& mrDataHandler;
 			
 			QMSMFormMeasurementAbstract* mpFormPower;
@@ -74,6 +77,7 @@ namespace Ui {
 			void showMemory(void);
 			void showHeatmapUtilization(void);
 			void showHeatmapTemperature(void);
+			void showSystemOverview(void);
 			bool event(QEvent *pEvent);
 			
 		private:

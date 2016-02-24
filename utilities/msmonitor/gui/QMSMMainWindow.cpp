@@ -16,6 +16,7 @@
  *          0.3.2 - add a networking component to show influence of a task to measurements in GUI
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
+ *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
  */
 
 #include "QMSMMainWindow.hpp"
@@ -32,6 +33,7 @@
 #include "QMSMFormMemory.hpp"
 #include "QMSMFormHeatmapUtilization.hpp"
 #include "QMSMFormHeatmapTemperature.hpp"
+#include "QMSMFormSystemOverview.hpp"
 
 namespace Ui {
 	QMSMMainWindow::QMSMMainWindow(QWidget* pParent, NData::CDataHandler& rDataHandler, QApplication* pApplication) :
@@ -40,6 +42,7 @@ namespace Ui {
 		mpApplication(pApplication),
 		mpFormInfo(0),
 		mpFormSettings(0),
+		mpFormSystemOverview(0),
 		mrDataHandler(rDataHandler),
 		mpFormPower(0),
 		mpFormTemperature(0),
@@ -72,6 +75,7 @@ namespace Ui {
 		
 		mpFormInfo					= QMSMFormInfo::construct(this);
 		mpFormSettings				= QMSMFormSettings::construct(this, mrDataHandler.getSettings());
+		mpFormSystemOverview		= QMSMFormSystemOverview::construct(this, &mrDataHandler);
 		mpFormPower					= QMSMFormPower::construct(this, &mrDataHandler);
 		mpFormTemperature			= QMSMFormTemperature::construct(this, &mrDataHandler);
 		mpFormClock					= QMSMFormClock::construct(this, &mrDataHandler);
@@ -82,6 +86,7 @@ namespace Ui {
 		
 		mdiArea->addSubWindow(mpFormInfo);
 		mdiArea->addSubWindow(mpFormSettings);
+		mdiArea->addSubWindow(mpFormSystemOverview);
 		mdiArea->addSubWindow(mpFormPower);
 		mdiArea->addSubWindow(mpFormTemperature);
 		mdiArea->addSubWindow(mpFormClock);
@@ -92,6 +97,7 @@ namespace Ui {
 		
 		mpFormInfo->hide();
 		mpFormSettings->hide();
+		mpFormSystemOverview->hide();
 		mpFormPower->hide();
 		mpFormTemperature->hide();
 		mpFormClock->hide();
@@ -129,6 +135,8 @@ namespace Ui {
 		connect(actionHeatmapUtilization, SIGNAL(triggered(bool)), this, SLOT(showHeatmapUtilization()));
 		connect(actionHeatmapTemperature, SIGNAL(triggered(bool)), this, SLOT(showHeatmapTemperature()));
 		
+		connect(actionSystemOverview, SIGNAL(triggered(bool)), this, SLOT(showSystemOverview()));
+		
 		connect(pushButtonStart, SIGNAL(clicked(bool)), this, SLOT(pressStart()));
 		connect(pushButtonStop, SIGNAL(clicked(bool)), this, SLOT(pressStop()));
 		connect(pushButtonReset, SIGNAL(clicked(bool)), this, SLOT(pressReset()));
@@ -146,6 +154,8 @@ namespace Ui {
 		actionMemory->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
 		actionHeatmapUtilization->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_U));
 		actionHeatmapTemperature->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_T));
+		
+		actionSystemOverview->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
 		
 		pushButtonStart->setShortcut(QKeySequence(Qt::Key_PageUp));
 		pushButtonStop->setShortcut(QKeySequence(Qt::Key_PageDown));
@@ -187,6 +197,8 @@ namespace Ui {
 		mpFormHeatmapUtilization->startTimer();
 		mpFormHeatmapTemperature->startTimer();
 		
+		mpFormSystemOverview->startTimer();
+		
 		mGuiMarker.start();
 	}
 	
@@ -202,6 +214,7 @@ namespace Ui {
 		mpFormMemory->stopTimer();
 		mpFormHeatmapUtilization->stopTimer();
 		mpFormHeatmapTemperature->stopTimer();
+		mpFormSystemOverview->stopTimer();
 		
 		mpFormPower->joinTimer();
 		mpFormTemperature->joinTimer();
@@ -210,6 +223,7 @@ namespace Ui {
 		mpFormMemory->joinTimer();
 		mpFormHeatmapUtilization->joinTimer();
 		mpFormHeatmapTemperature->joinTimer();
+		mpFormSystemOverview->joinTimer();
 		
 		mrDataHandler.stopCollectData();
 		
@@ -252,7 +266,10 @@ namespace Ui {
     void QMSMMainWindow::showHeatmapTemperature(void) {
 		mpFormHeatmapTemperature->show();
     }
-
+    
+    void QMSMMainWindow::showSystemOverview(void) {
+		mpFormSystemOverview->show();
+    }
 	
 	bool QMSMMainWindow::event(QEvent *pEvent) {
 		if (pEvent->type() == QEvent::ToolTip) {

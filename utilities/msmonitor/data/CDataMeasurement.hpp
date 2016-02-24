@@ -17,6 +17,7 @@
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
+ *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
  */
 
 #ifndef __CDATAMEASUREMENT_HPP__
@@ -24,6 +25,7 @@
 
 #include "CDataSettings.hpp"
 #include "../common/CRingBuffer.hpp"
+#include <string>
 
 namespace NData {
 	class CDataMeasurement {
@@ -66,6 +68,14 @@ namespace NData {
 			NCommon::CRingBuffer<double> *mpYSwapCpu;
 			NCommon::CRingBuffer<double> *mpYMemoryGpu;
 			NCommon::CRingBuffer<double> *mpYMemoryMic;
+			
+			uint32_t mMaxelerActiveProcessPid;
+			std::string mMaxelerActiveProcessName;
+			std::string mMaxelerActiveProcessUser;
+			
+			uint32_t mNVMLActiveProcessesCount;
+			uint32_t mNVMLActiveProcessesPid[MAX_PROCESS_COUNT];
+			std::string mNVMLActiveProcessesName[MAX_PROCESS_COUNT];
 			
 		public:
 			CDataMeasurement(CDataSettings& rSettings);

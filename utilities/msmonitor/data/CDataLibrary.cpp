@@ -19,6 +19,7 @@
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
  *          0.7.0 - modularized measurement struct
+ *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
  */
 
 #include "CDataLibrary.hpp"
@@ -221,6 +222,16 @@ namespace NData {
 			mrMeasurement.mpYSwapCpu->push_back(pMsMeasurementCpu->measure_memory_cur[CPU_MEM_SWAP_USED]>>10);
 			mrMeasurement.mpYMemoryGpu->push_back(pMsMeasurementGpu->nvml_memory_used_cur>>10);
 			mrMeasurement.mpYMemoryMic->push_back(pMsMeasurementMic->mic_memory_used_cur>>10);
+			
+			mrMeasurement.mMaxelerActiveProcessPid = pMsMeasurementFpga->maxeler_active_process_pid;
+			mrMeasurement.mMaxelerActiveProcessName = pMsMeasurementFpga->maxeler_active_process_name;
+			mrMeasurement.mMaxelerActiveProcessUser = pMsMeasurementFpga->maxeler_active_process_user;
+			
+			mrMeasurement.mNVMLActiveProcessesCount = pMsMeasurementGpu->nvml_active_processes_count_cur;
+			for(int i = 0; i < mrMeasurement.mNVMLActiveProcessesCount; i++) {
+				mrMeasurement.mNVMLActiveProcessesPid[i] = pMsMeasurementGpu->nvml_active_processes_pid[i];
+				mrMeasurement.mNVMLActiveProcessesName[i] = pMsMeasurementGpu->nvml_active_processes_name[i];
+			}
 			
 			if(mrSettings.mWriteResultsToCsv) {
 				printValues(csv_file);
