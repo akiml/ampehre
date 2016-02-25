@@ -39,6 +39,7 @@ set(SRC_COMMON_LIBRARY
 	../fpga_maxeler_max3a/ms_fpga_maxeler_max3a.c
 	../mic_intel_knc/ms_mic_intel_knc.c
 	../sys_dell_idrac7/ms_sys_dell_idrac7.c
+	../odroid_hardkernel_xu4/ms_odroid_hardkernel_xu4.c
 )
 
 # Full library

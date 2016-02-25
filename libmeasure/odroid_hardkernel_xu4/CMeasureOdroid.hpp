@@ -14,3 +14,59 @@
  * created: 2/24/16
  * version: 0.7.4 - add support for Odroid XU4 systems
  */
+
+#ifndef __CMEASUREODROID_HPP__
+#define __CMEASUREODROID_HPP__
+
+#include "../common/CMeasureAbstractResource.hpp"
+
+#include "odroid.h"
+
+namespace NLibMeasure {
+	class CMeasureOdroid : public CMeasureAbstractResource {
+		private:
+			ODROID_SENSOR *mpSensorDevFSARM;
+			ODROID_SENSOR *mpSensorDevFSMEM;
+			ODROID_SENSOR *mpSensorDevFSG3D;
+			ODROID_SENSOR *mpSensorDevFSKFC;
+			
+			FILE *mpSensorSysFSTemp;
+			
+			FILE *mpSensorSysFSFreqA7;
+			FILE *mpSensorSysFSFreqA15;
+			FILE *mpSensorSysFSFreqMali;
+			
+		public:
+			CMeasureOdroid(CLogger& rLogger);
+			~CMeasureOdroid();
+			
+		private:
+			void init(void);
+			void destroy(void);
+			
+			ODROID_SENSOR *initSensorPower(const char* pSensorDevFSFileName);
+			void destroySensorPower(ODROID_SENSOR *pSensorDevFSStruct);
+			double readSensorPower(ODROID_SENSOR *pSensorDevFSStruct);
+			
+			FILE *initSensorTemp(const char *pSensorSysFSFileName);
+			void destroySensorTemp(FILE *pSensorSysFSFile);
+			uint32_t readSensorTemp(FILE *pSensorSysFSFile, odroid_temp sensorTempType, int32_t& rThreadNum);
+			
+			FILE *initSensorFreq(const char *pSensorSysFSFileName);
+			void destroySensorFreq(FILE *pSensorSysFSFile);
+			uint32_t readSensorFreq(FILE *pSensorSysFSFile, odroid_freq sensorFreqType, int32_t& rThreadNum);
+			
+			void measurePower(MS_MEASUREMENT_ODROID *pMsMeasurementOdroid, int32_t& rThreadNum);
+			void measureTemperature(MS_MEASUREMENT_ODROID *pMsMeasurementOdroid, int32_t& rThreadNum);
+			void measureUtilization(MS_MEASUREMENT_ODROID *pMsMeasurementOdroid, int32_t& rThreadNum);
+			void measureFrequency(MS_MEASUREMENT_ODROID *pMsMeasurementOdroid, int32_t& rThreadNum);
+			
+		public:
+			void measure(void *pMsMeasurement, int32_t& rThreadNum);
+			int getVariant();
+	};
+}
+
+#include "CMeasureOdroid.cpp"
+
+#endif /* __CMEASUREODROID_HPP__ */

@@ -75,6 +75,7 @@ set(MS_LIBRARY_MODULE_PATH
 	libmeasure/fpga_maxeler_max3a
 	libmeasure/mic_intel_knc
 	libmeasure/sys_dell_idrac7
+	libmeasure/odroid_hardkernel_xu4
 )
 
 option(DEBUG_SYMS "Compile library and applications with debug symbols." OFF)

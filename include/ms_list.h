@@ -13,6 +13,7 @@
  * author: Christoph Knorr (cknorr@mail.uni-paderborn.de)
  * created: 01/11/16
  * version: 0.7.1 - move functions to query measurement results into the modules
+ *          0.7.4 - add support for Odroid XU4 systems
  */
 
 #ifndef __MS_LIST_H__
@@ -29,6 +30,7 @@ extern "C" {
 #define FPGA	0x04
 #define SYSTEM	0x08
 #define MIC 	0x10
+#define ODROID	0x20
 #define ALL		(CPU | GPU | FPGA | SYSTEM | MIC)
 	
 #define NULL_CHECK(val)  if(NULL == val) return 0;

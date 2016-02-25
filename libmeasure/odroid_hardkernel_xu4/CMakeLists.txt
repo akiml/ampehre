@@ -15,4 +15,13 @@
 # version: 0.7.4 - add support for Odroid XU4 systems
 #
 
+set(SRC_ODROID_LIBRARY
+	ms_plugin_interface.cpp
+)
 
+# Full library
+add_library(ms_odroid_hardkernel_xu4 SHARED ${SRC_ODROID_LIBRARY})
+target_link_libraries(ms_odroid_hardkernel_xu4 ms_common)
+
+install(TARGETS ms_odroid_hardkernel_xu4 LIBRARY DESTINATION lib)
+install(FILES ms_odroid_hardkernel_xu4.h DESTINATION include)

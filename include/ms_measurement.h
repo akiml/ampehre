@@ -34,6 +34,7 @@ extern "C" {
 #include "ms_fpga_maxeler_max3a.h"
 #include "ms_mic_intel_knc.h"
 #include "ms_sys_dell_idrac7.h"
+#include "ms_odroid_hardkernel_xu4.h"
 
 // Value from kernel (2.6.38.8+mpss3.4.1) which may change with a new kernel version
 #define S_PER_JIFFY 0.01
@@ -68,6 +69,12 @@ extern "C" {
 	#define MIC_LIB_NAME "libms_stub.so"
 #endif
 
+#ifdef ODROID_LIB
+	#define ODROID_LIB_NAME "libms_odroid_hardkernel_xu4.so"
+#else
+	#define ODROID_LIB_NAME "libms_stub.so"
+#endif
+
 enum skip_ms_rate {
 	SKIP_PERIODIC,
 	SKIP_NEVER,
@@ -86,6 +93,7 @@ typedef struct __ms_config {
 	int32_t fpga_enabled;
 	int32_t mic_enabled;
 	int32_t sys_enabled;
+	int32_t odroid_enabled;
 } MS_CONFIG;
 
 typedef struct __ms_system{

@@ -85,6 +85,12 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
 	ms_system->config->mic_enabled = 0;
 #endif
 	
+#ifdef ODROID_LIB
+	ms_system->config->odroid_enabled = 1;
+#else
+	ms_system->config->odroid_enabled = 0;
+#endif
+	
 	return ms_system;
 }
 
@@ -122,6 +128,10 @@ MS_LIST *ms_alloc_measurement(MS_SYSTEM *ms_system) {
 	
 	if(config->mic_enabled) {
 		appendList(&ms_list, MIC);
+	}
+	
+	if(config->odroid_enabled) {
+		appendList(&ms_list, ODROID);
 	}
 	
 	return ms_list;
@@ -173,6 +183,15 @@ void ms_set_timer(MS_LIST *ms_list, int flag, uint64_t sec, uint64_t nsec, uint3
 				((MS_MEASUREMENT_SYS *)ms_measurement)->ipmi_check_for_exit_interrupts = check_for_exit_interrupts;
 			}
 			break;
+		case ODROID:
+			ms_measurement = getMeasurement(&ms_list, ODROID);
+#if 0
+			if(ms_measurement!=NULL) {
+				divide_sampling_rates(&(((MS_MEASUREMENT_ODROID *)ms_measurement)->odroid_time_wait), sec, nsec, check_for_exit_interrupts);
+				((MS_MEASUREMENT_ODROID *)ms_measurement)->odroid_check_for_exit_interrupts = check_for_exit_interrupts;
+			}
+#endif
+			break;
 		default:
 			std::cout << "!!! 'mgmt' (thread main): Error: cannot set measurement timer. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);
@@ -200,6 +219,10 @@ void ms_init_measurement(MS_SYSTEM *ms_system, MS_LIST *ms_list, int flags) {
 	
 	if (flags & MIC) {
 		mgmt->initMeasureThread(MIC, ms_list);
+	}
+	
+	if (flags & ODROID) {
+		mgmt->initMeasureThread(ODROID, ms_list);
 	}
 }
 
@@ -284,5 +307,4 @@ void ms_reg_sighandler_stop(MS_SYSTEM *ms_system, void(*signal_handler)(int)) {
 static void divide_sampling_rates(struct timespec *time_wait, uint64_t sec, uint64_t nsec, uint32_t check_for_exit_interrupts) {
 	time_wait->tv_sec = sec / check_for_exit_interrupts;
 	time_wait->tv_nsec = ((double)sec / check_for_exit_interrupts - time_wait->tv_sec) * 1000000000 + nsec / check_for_exit_interrupts;
-	
 }

@@ -20,6 +20,9 @@
 #include <iostream>
 #include <cstring>
 
+#ifdef UINT64_MAX
+#undef UINT64_MAX
+#endif
 #define UINT64_MAX (0xffffffffffffffff)
 
 static void* allocMeasurement(int id);
