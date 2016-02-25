@@ -63,6 +63,9 @@ typedef struct __ms_measurement_odroid {
 	// onyl for internal usage
 	MEASUREMENT_INTERNAL_ODROID internal;
 	
+	struct timespec odroid_time_wait;
+	uint32_t odroid_check_for_exit_interrupts;
+	
 	double odroid_time_runtime;
 	
 	double odroid_power_cur[ODROID_NUM_POWER];
@@ -73,7 +76,7 @@ typedef struct __ms_measurement_odroid {
 	uint32_t odroid_temperature_max[ODROID_NUM_TEMP];
 	
 	uint32_t odroid_clock_cur[ODROID_NUM_FREQ];
-	uint32_t odroid_clock_avg[ODROID_NUM_FREQ];
+	double odroid_clock_avg[ODROID_NUM_FREQ];
 	double odroid_clock_acc[ODROID_NUM_FREQ];
 } MS_MEASUREMENT_ODROID;
 
@@ -86,6 +89,11 @@ double odroid_power_avg_a15(MS_LIST *ms_list);
 double odroid_power_avg_a7(MS_LIST *ms_list);
 double odroid_power_avg_mali(MS_LIST *ms_list);
 double odroid_power_avg_mem(MS_LIST *ms_list);
+uint32_t odroid_temp_max_a15(MS_LIST *ms_list, int core);
+uint32_t odroid_temp_max_mali(MS_LIST *ms_list);
+double odroid_freq_avg_a15(MS_LIST *ms_list);
+double odroid_freq_avg_a7(MS_LIST *ms_list);
+double odroid_freq_avg_mali(MS_LIST *ms_list);
 
 #ifdef __cplusplus
 }

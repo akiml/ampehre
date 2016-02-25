@@ -185,12 +185,10 @@ void ms_set_timer(MS_LIST *ms_list, int flag, uint64_t sec, uint64_t nsec, uint3
 			break;
 		case ODROID:
 			ms_measurement = getMeasurement(&ms_list, ODROID);
-#if 0
 			if(ms_measurement!=NULL) {
 				divide_sampling_rates(&(((MS_MEASUREMENT_ODROID *)ms_measurement)->odroid_time_wait), sec, nsec, check_for_exit_interrupts);
 				((MS_MEASUREMENT_ODROID *)ms_measurement)->odroid_check_for_exit_interrupts = check_for_exit_interrupts;
 			}
-#endif
 			break;
 		default:
 			std::cout << "!!! 'mgmt' (thread main): Error: cannot set measurement timer. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;

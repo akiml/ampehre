@@ -55,3 +55,23 @@ double odroid_power_avg_mali(MS_LIST* ms_list) {
 double odroid_power_avg_mem(MS_LIST* ms_list) {
 	return MEASUREMENT_ODROID->odroid_power_avg[ODROID_POWER_MEM];
 }
+
+uint32_t odroid_temp_max_a15(MS_LIST* ms_list, int core) {
+	return MEASUREMENT_ODROID->odroid_temperature_max[ODROID_TEMP_A15_CORE_0+core];
+}
+
+uint32_t odroid_temp_max_mali(MS_LIST* ms_list) {
+	return MEASUREMENT_ODROID->odroid_temperature_max[ODROID_TEMP_MALI];
+}
+
+double odroid_freq_avg_a15(MS_LIST* ms_list) {
+	return MEASUREMENT_ODROID->odroid_clock_avg[ODROID_FREQ_A15];
+}
+
+double odroid_freq_avg_a7(MS_LIST* ms_list) {
+	return MEASUREMENT_ODROID->odroid_clock_avg[ODROID_FREQ_A7];
+}
+
+double odroid_freq_avg_mali(MS_LIST* ms_list) {
+	return MEASUREMENT_ODROID->odroid_clock_avg[ODROID_FREQ_MALI];
+}

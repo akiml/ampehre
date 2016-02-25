@@ -218,7 +218,7 @@ namespace NLibMeasure {
 	}
 	
 	void CMeasureOdroid::measureUtilization(MS_MEASUREMENT_ODROID* pMsMeasurementOdroid, int32_t& rThreadNum) {
-		
+		/* TODO: Works like Intel/AMD CPUs but with /proc/stat instead of dedicated kernel driver */
 	}
 	
 	void CMeasureOdroid::measure(void* pMsMeasurement, int32_t& rThreadNum) {
