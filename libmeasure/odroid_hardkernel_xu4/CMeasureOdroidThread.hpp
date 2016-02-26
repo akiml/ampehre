@@ -18,9 +18,8 @@
 #ifndef __CMEASUREODROIDTHREAD_HPP__
 #define __CMEASUREODROIDTHREAD_HPP__
 
-#include "CMeasureOdroid.hpp"
-
 #include "../common/CMeasureAbstractThread.hpp"
+#include "CMeasureOdroid.hpp"
 
 namespace NLibMeasure {
 	class CMeasureOdroidThread : public CMeasureAbstractThread {

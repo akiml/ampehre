@@ -153,7 +153,7 @@ namespace NLibMeasure {
 		<< "     time period    : " << pMsMeasurementGpu->nvml_time_runtime << " s" << std::endl
 		<< "     consumed energy: " << pMsMeasurementGpu->nvml_energy_acc << " mWs" << std::endl
 		<< "     average power  : " << pMsMeasurementGpu->nvml_power_avg << " mW" << std::endl
-		<< "     max temperature: " << pMsMeasurementGpu->nvml_temperature_cur << " \u00b0C" << std::endl
+		<< "     max temperature: " << pMsMeasurementGpu->nvml_temperature_max << " \u00b0C" << std::endl
 		<< "     avg graphics f : " << pMsMeasurementGpu->nvml_clock_graphics_avg << " MHz" << std::endl
 		<< "     avg util gpu   : " << pMsMeasurementGpu->nvml_util_gpu_avg << " %%" << std::endl
 		<< "     avg util memory: " << pMsMeasurementGpu->nvml_util_mem_avg << " %%" << std::endl;
