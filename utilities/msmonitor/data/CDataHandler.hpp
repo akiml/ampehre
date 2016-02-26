@@ -13,6 +13,7 @@
  * author: Achim Lösch (achim.loesch@upb.de)
  * created: 1/26/14
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
+ *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
  */
 
 #ifndef __CDATAHANDLER_HPP__
@@ -37,6 +38,7 @@ namespace NData {
 			
 			CDataSettings& getSettings(void);
 			CDataMeasurement& getMeasurement(void);
+			CDataLibrary& getLibrary(void);
 			
 			void startCollectData(void);
 			void stopCollectData(void);

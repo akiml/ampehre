@@ -49,7 +49,6 @@ namespace Ui {
 			double *mpSysboardData;
 			
 			uint32_t mBufferSize;
-			double mCurrentX;
 			
 		private:
 			explicit QMSMFormHeatmapTemperature(QWidget *pParent, NData::CDataHandler *pDataHandler);

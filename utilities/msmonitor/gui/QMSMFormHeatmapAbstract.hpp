@@ -48,6 +48,9 @@ namespace Ui {
 			
 			std::vector<Ui::Heatmap*> mHeatmaps;
 			
+			double mCurrentX;
+			uint32_t mIndexCurrentX;
+			
 		public:
 			explicit QMSMFormHeatmapAbstract(QWidget* pParent, NData::CDataHandler* pDataHandler);
 			~QMSMFormHeatmapAbstract(void);
@@ -55,6 +58,7 @@ namespace Ui {
 		protected:
 			void createActions(void);
 			QwtText createTitle(QString title);
+			void updateCurrentX(void);
 			virtual void setupHeatmaps() = 0;
 			
 		public:

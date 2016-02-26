@@ -45,7 +45,6 @@ namespace Ui {
 			double *mpMICData;
 			
 			uint32_t mBufferSize;
-			double mCurrentX;
 			
 		private:
 			explicit QMSMFormHeatmapUtilization(QWidget *pParent, NData::CDataHandler *pDataHandler);

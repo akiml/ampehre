@@ -25,11 +25,10 @@ namespace Ui {
 		mpHeatmapGPUCore(addHeatmap("GPU\nCore\n[%]")),
 		mpHeatmapGPUMemory(addHeatmap("GPU\nMemory\n[%]")),
 		mpHeatmapFPGA(addHeatmap("Compute\nFPGA\n[%]")),
-		mpHeatmapMIC(addHeatmap("MIC\n\n[%]")),
-		mCurrentX(0)
+		mpHeatmapMIC(addHeatmap("MIC\n\n[%]"))
 		{
 		//only one minute is stored here
-		mBufferSize = mpDataHandler->getSettings().mTimeToShowData / mpDataHandler->getSettings().mHeatmapSamplingRate;
+		mBufferSize		= mpDataHandler->getSettings().mTimeToShowData / mpDataHandler->getSettings().mHeatmapSamplingRate;
 		mpCPUData		= (double *)malloc(mBufferSize * sizeof(double));
 		mpGPUCoreData	= (double *)malloc(mBufferSize * sizeof(double));
 		mpGPUMemoryData	= (double *)malloc(mBufferSize * sizeof(double));
@@ -82,32 +81,12 @@ namespace Ui {
 		uint32_t factorDataToHeatmapSamplingRate = mpDataHandler->getSettings().mHeatmapSamplingRate / mpDataHandler->getSettings().mDataSamplingRate;
 		uint32_t bufferedSamples = ((mpDataHandler->getSettings().mTimeToBufferData - mpDataHandler->getSettings().mTimeToShowData) /
 									mpDataHandler->getSettings().mDataSamplingRate)-1;
-		uint32_t showSamples = (mpDataHandler->getSettings().mTimeToShowData / mpDataHandler->getSettings().mDataSamplingRate) - 1;
-		uint32_t indexCurrentX = 0;
 		uint32_t indexStartX = 0;
 		
-		double *x = mpDataHandler->getMeasurement().mpX->getDataPtr() +bufferedSamples;
-		
-		//shift x axis every 10 s
-		if(x[showSamples] - mCurrentX > 10) {
-			mCurrentX += 10;
-		}
-		
-		//reset x axis if necessary 
-		if(x[showSamples] < mCurrentX) {
-			mCurrentX = 0;
-		}
-		
-		//search the index corresponding to mCurrentX
-		for (int i = showSamples; i >= 0; i--) {
-			if(x[i] <= (mCurrentX + ((double) mpDataHandler->getSettings().mDataSamplingRate/1000/3))){
-				 indexCurrentX = i;
-				 break;
-			}
-		}
+		updateCurrentX();
 		
 		//calculate the index of the first element
-		indexStartX = indexCurrentX - (mpDataHandler->getSettings().mTimeToShowData -10000) / mpDataHandler->getSettings().mDataSamplingRate;
+		indexStartX = mIndexCurrentX - (mpDataHandler->getSettings().mTimeToShowData -10000) / mpDataHandler->getSettings().mDataSamplingRate;
 		
 		double *util_cpu		= mpDataHandler->getMeasurement().mpYUtilCpu->getDataPtr() + bufferedSamples + indexStartX;
 		double *util_gpu_core	= mpDataHandler->getMeasurement().mpYUtilGpuCore->getDataPtr() + bufferedSamples + indexStartX;
@@ -117,7 +96,7 @@ namespace Ui {
 		
 		//calculate the mean and fill the rest with 0
 		for (uint32_t i = 0; i < (mBufferSize); i++) {
-			if(i < mBufferSize-(indexStartX/factorDataToHeatmapSamplingRate)) {
+			if(i < mBufferSize-(indexStartX/factorDataToHeatmapSamplingRate) - 1) {
 				mpCPUData[i]		= calcMean(util_cpu, factorDataToHeatmapSamplingRate);
 				mpGPUCoreData[i]	= calcMean(util_gpu_core, factorDataToHeatmapSamplingRate);
 				mpGPUMemoryData[i]	= calcMean(util_gpu_mem, factorDataToHeatmapSamplingRate);

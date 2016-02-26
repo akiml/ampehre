@@ -28,28 +28,62 @@ namespace Ui {
 		mTimer(mpDataHandler->getSettings().mGUIRefreshRate, this),
 		mGPUProcessList()
 		{
-
-		setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint | Qt::MSWindowsFixedSizeDialogHint);
+		
+		setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint);
+		
+		this->setFixedHeight(640);
+		this->setMinimumWidth(510);
 		
 		setupUi(mpFormSystemOverview);
 		
 		setWidget(mpFormSystemOverview);
-			
+		
+		initGUI();
+		
+		createActions();
+	}
+
+	QMSMFormSystemOverview::~QMSMFormSystemOverview() {
+		delete mpPixmapFPGAActivity;
+		delete mpPixmapGPUActivity;
+		
+		delete mpPixmapCPUUtilization;
+		delete mpPixmapGPUCoreUtilization;
+		delete mpPixmapGPUMemUtilization;
+		delete mpPixmapFPGAUtilization;
+		delete mpPixmapMICUtilization;
+		
+		delete mpPixmapCPU0Temperature;
+		delete mpPixmapCPU1Temperature;
+		delete mpPixmapGPUTemperature;
+		delete mpPixmapFPGAComputeTemperature;
+		delete mpPixmapFPGAInterfaceTemperature;
+		delete mpPixmapMICTemperature;
+		
+		delete mpColorMap;
+		delete mpFormSystemOverview;
+	}
+	
+    void QMSMFormSystemOverview::initGUI(void) {
+		MS_CONFIG* pConfig = mpDataHandler->getLibrary().getMS_CONFIG();
+		
 		mpPainter = new QPainter();
-		mpPixmapGPUActivity = new QPixmap(35, 35);
-		mpPixmapFPGAActivity = new QPixmap(35, 35);
 		
-		mpPixmapCPU0Utilization = new QPixmap(60, 35);
-		mpPixmapCPU1Utilization = new QPixmap(60, 35);
-		mpPixmapGPUUtilization = new QPixmap(60, 35);
-		mpPixmapFPGAUtilization = new QPixmap(60, 35);
-		mpPixmapMICUtilization = new QPixmap(60, 35);
+		mpPixmapGPUActivity		= new QPixmap(35, 35);
+		mpPixmapFPGAActivity	= new QPixmap(35, 35);
 		
-		mpPixmapCPU0Temperature = new QPixmap(60, 35);
-		mpPixmapCPU1Temperature = new QPixmap(60, 35);
-		mpPixmapGPUTemperature = new QPixmap(60, 35);
-		mpPixmapFPGATemperature = new QPixmap(60, 35);
-		mpPixmapMICTemperature = new QPixmap(60, 35);
+		mpPixmapCPUUtilization		= new QPixmap(60, 35);
+		mpPixmapGPUCoreUtilization	= new QPixmap(60, 35);
+		mpPixmapGPUMemUtilization	= new QPixmap(60, 35);
+		mpPixmapFPGAUtilization		= new QPixmap(60, 35);
+		mpPixmapMICUtilization		= new QPixmap(60, 35);
+		
+		mpPixmapCPU0Temperature			= new QPixmap(60, 35);
+		mpPixmapCPU1Temperature			= new QPixmap(60, 35);
+		mpPixmapGPUTemperature			= new QPixmap(60, 35);
+		mpPixmapFPGAComputeTemperature 	= new QPixmap(60, 35);
+		mpPixmapFPGAInterfaceTemperature= new QPixmap(60, 35);
+		mpPixmapMICTemperature			= new QPixmap(60, 35);
 		
 		mpColorMap = new QwtLinearColorMap(Qt::blue, Qt::red);
 		mpColorMap->addColorStop(0.3, Qt::cyan);
@@ -59,17 +93,18 @@ namespace Ui {
 		setActivity(mpPixmapGPUActivity, labelGPUActivity, false);
 		setActivity(mpPixmapFPGAActivity, labelFPGAActivity, false);
 		
-		setUtilization(mpPixmapCPU0Utilization, labelCPU0PixmapUtiliziation, 0);
-		setUtilization(mpPixmapCPU1Utilization, labelCPU1PixmapUtilization, 0);
-		setUtilization(mpPixmapGPUUtilization, labelGPUPixmapUtilization, 0);
+		setUtilization(mpPixmapCPUUtilization, labelCPUPixmapUtiliziation, 0);
+		setUtilization(mpPixmapGPUCoreUtilization, labelGPUCorePixmapUtilization, 0);
+		setUtilization(mpPixmapGPUMemUtilization, labelGPUMemPixmapUtilization, 0);
 		setUtilization(mpPixmapFPGAUtilization, labelFPGAPixmapUtilization,0);
 		setUtilization(mpPixmapMICUtilization, labelMICPixmapUtilization,  0);
 		
-		setTemperature(mpPixmapCPU0Temperature, labelCPU0PixmapTemperature, 0);
-		setTemperature(mpPixmapCPU1Temperature, labelCPU1PixmapTemperature, 0);
-		setTemperature(mpPixmapGPUTemperature, labelGPUPixmapTemperature, 0);
-		setTemperature(mpPixmapFPGATemperature, labelFPGAPixmapTemperature, 0);
-		setTemperature(mpPixmapMICTemperature, labelMICPixmapTemperature, 0);
+		setTemperature(mpPixmapCPU0Temperature, labelCPU0PixmapTemperature, 0, 100, 0);
+		setTemperature(mpPixmapCPU1Temperature, labelCPU1PixmapTemperature, 0, 100, 0);
+		setTemperature(mpPixmapGPUTemperature, labelGPUPixmapTemperature, 0, 100, 0);
+		setTemperature(mpPixmapFPGAComputeTemperature, labelFPGAComputePixmapTemperature, 0, 100, 0);
+		setTemperature(mpPixmapFPGAInterfaceTemperature, labelFPGAInterfacePixmapTemperature, 0, 100, 0);
+		setTemperature(mpPixmapMICTemperature, labelMICPixmapTemperature, 0, 100, 0);
 		
 		tableWidgetGPUProcesses->verticalHeader()->hide();
 		tableWidgetGPUProcesses->setRowCount(MAX_VISIBLE_GPU_PROCSSES);
@@ -90,28 +125,20 @@ namespace Ui {
 		tableWidgetFPGAProcesses->setEditTriggers(QAbstractItemView::NoEditTriggers);
 		tableWidgetFPGAProcesses->horizontalHeader()->setStretchLastSection(true);
 		
-		createActions();
-	}
+		if(!(pConfig->cpu_enabled)) {
+			groupBoxCPU->setEnabled(false);
+		}
+		if(!(pConfig->gpu_enabled)) {
+			groupBoxGPU->setEnabled(false);
+		}
+		if(!(pConfig->fpga_enabled)) {
+			groupBoxFPGA->setEnabled(false);
+		}
+		if(!(pConfig->mic_enabled)) {
+			groupBoxMIC->setEnabled(false);
+		}
+    }
 
-	QMSMFormSystemOverview::~QMSMFormSystemOverview() {
-		delete mpPixmapFPGAActivity;
-		delete mpPixmapGPUActivity;
-		
-		delete mpPixmapCPU0Utilization;
-		delete mpPixmapCPU1Utilization;
-		delete mpPixmapGPUUtilization;
-		delete mpPixmapFPGAUtilization;
-		delete mpPixmapMICUtilization;
-		
-		delete mpPixmapCPU0Temperature;
-		delete mpPixmapCPU1Temperature;
-		delete mpPixmapGPUTemperature;
-		delete mpPixmapFPGATemperature;
-		delete mpPixmapMICTemperature;
-		
-		delete mpColorMap;
-		delete mpFormSystemOverview;
-	}
 	
 	void QMSMFormSystemOverview::refreshGui(void) {
 		emit signalRefreshGui();
@@ -142,8 +169,11 @@ namespace Ui {
 	}
 	
 	void QMSMFormSystemOverview::slotRefreshGui(void) {
-		updateActiveProcesses();
-		updateUtilization();
+		if(isVisible()){
+			updateActiveProcesses();
+			updateUtilization();
+			updateTemperature();
+		}
 	}
 	
     void QMSMFormSystemOverview::createActions(void) {
@@ -201,12 +231,53 @@ namespace Ui {
 		double utilFPGA		= calcMean(util_fpga, factorDataToHeatmapSamplingRate);
 		double utilMIC		= calcMean(util_mic, factorDataToHeatmapSamplingRate);
 		
-		setUtilization(mpPixmapCPU0Utilization, labelCPU0PixmapUtiliziation, utilCPU);
-		setUtilization(mpPixmapCPU1Utilization, labelCPU1PixmapUtilization, utilGPUMem);
-		setUtilization(mpPixmapGPUUtilization, labelGPUPixmapUtilization, utilGPUCore);
+		setUtilization(mpPixmapCPUUtilization, labelCPUPixmapUtiliziation, utilCPU);
+		setUtilization(mpPixmapGPUCoreUtilization, labelGPUCorePixmapUtilization, utilGPUCore);
+		setUtilization(mpPixmapGPUMemUtilization, labelGPUMemPixmapUtilization, utilGPUMem);
 		setUtilization(mpPixmapFPGAUtilization, labelFPGAPixmapUtilization, utilFPGA);
 		setUtilization(mpPixmapMICUtilization, labelMICPixmapUtilization,  utilMIC);
     }
+    
+    void QMSMFormSystemOverview::updateTemperature(void) {
+		uint32_t factorDataToHeatmapSamplingRate = mpDataHandler->getSettings().mHeatmapSamplingRate / 
+													mpDataHandler->getSettings().mDataSamplingRate;
+													
+		double *temp_cpu_0	= mpDataHandler->getMeasurement().mpYTempCpu0->getDataPtr()
+								+ mpDataHandler->getSettings().mNumberOfTicks - factorDataToHeatmapSamplingRate -1;
+		double *temp_cpu_1	= mpDataHandler->getMeasurement().mpYTempCpu1->getDataPtr()
+								+ mpDataHandler->getSettings().mNumberOfTicks - factorDataToHeatmapSamplingRate -1;
+		double *temp_gpu	= mpDataHandler->getMeasurement().mpYTempGpu->getDataPtr()
+								+ mpDataHandler->getSettings().mNumberOfTicks - factorDataToHeatmapSamplingRate -1;
+		double *temp_fpga_m	= mpDataHandler->getMeasurement().mpYTempFpgaM->getDataPtr()
+								+ mpDataHandler->getSettings().mNumberOfTicks - factorDataToHeatmapSamplingRate -1;
+		double *temp_fpga_i	= mpDataHandler->getMeasurement().mpYTempFpgaI->getDataPtr()
+								+ mpDataHandler->getSettings().mNumberOfTicks - factorDataToHeatmapSamplingRate -1;
+		double *temp_mic	= mpDataHandler->getMeasurement().mpYTempMicDie->getDataPtr()
+								+ mpDataHandler->getSettings().mNumberOfTicks - factorDataToHeatmapSamplingRate -1;
+		
+		double tempCPU0		= calcMean(temp_cpu_0, factorDataToHeatmapSamplingRate);
+		double tempCPU1		= calcMean(temp_cpu_1, factorDataToHeatmapSamplingRate);
+		double tempGPU 		= calcMean(temp_gpu, factorDataToHeatmapSamplingRate);
+		double tempFPGAm	= calcMean(temp_fpga_m, factorDataToHeatmapSamplingRate);
+		double tempFPGAi	= calcMean(temp_fpga_i, factorDataToHeatmapSamplingRate);
+		double tempMIC		= calcMean(temp_mic, factorDataToHeatmapSamplingRate);
+		
+		NData::CDataSettings &rSettings = mpDataHandler->getSettings();
+		
+		setTemperature(mpPixmapCPU0Temperature, labelCPU0PixmapTemperature,
+					   rSettings.mHeatmapTempCPUMinY, rSettings.mHeatmapTempCPUMaxY, round(tempCPU0));
+		setTemperature(mpPixmapCPU1Temperature, labelCPU1PixmapTemperature,
+					   rSettings.mHeatmapTempCPUMinY, rSettings.mHeatmapTempCPUMaxY, round(tempCPU1));
+		setTemperature(mpPixmapGPUTemperature, labelGPUPixmapTemperature,
+					   rSettings.mHeatmapTempGPUMinY, rSettings.mHeatmapTempGPUMaxY, round(tempGPU));
+		setTemperature(mpPixmapFPGAComputeTemperature, labelFPGAComputePixmapTemperature,
+					   rSettings.mHeatmapTempFPGAMinY, rSettings.mHeatmapTempFPGAMaxY, round(tempFPGAm));
+		setTemperature(mpPixmapFPGAInterfaceTemperature, labelFPGAInterfacePixmapTemperature,
+					   rSettings.mHeatmapTempFPGAMinY, rSettings.mHeatmapTempFPGAMaxY, round(tempFPGAi));
+		setTemperature(mpPixmapMICTemperature, labelMICPixmapTemperature,
+					   rSettings.mHeatmapTempMICMinY, rSettings.mHeatmapTempMICMaxY, round(tempMIC));
+    }
+
 
 	void QMSMFormSystemOverview::setActivity(QPixmap* pPixmap, QLabel* pLabel, bool active) {
 		pPixmap->fill(this, 0, 0);
@@ -243,14 +314,14 @@ namespace Ui {
 		pLabel->setPixmap(*pPixmap);
 	}
 
-	void QMSMFormSystemOverview::setTemperature(QPixmap* pPixmap, QLabel* pLabel, double value) {
+	void QMSMFormSystemOverview::setTemperature(QPixmap* pPixmap, QLabel* pLabel, double minVal, double maxVal, double value) {
 		pPixmap->fill(this, 0, 0);
 		mpPainter->begin(pPixmap);
 		mpPainter->setRenderHint(QPainter::Antialiasing);
 		mpPainter->setPen(Qt::black);
 		QRect rect = QRect(1, 1, 58, 33);
 		mpPainter->drawRect(rect);
-		mpPainter->fillRect(rect, mpColorMap->color(QwtDoubleInterval(0,100), value));
+		mpPainter->fillRect(rect, mpColorMap->color(QwtDoubleInterval(minVal, maxVal), value));
 		std::ostringstream sstream;
 		sstream << value << " \u00b0C";
 		mpPainter->drawText(1 ,1, 58, 33, Qt::AlignCenter, QString::fromUtf8(sstream.str().c_str()));

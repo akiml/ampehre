@@ -26,7 +26,9 @@ namespace Ui {
 		mpFormHeatmapAbstract(new QWidget(pParent)),
 		mpDataHandler(pDataHandler),
 		mTimer(mpDataHandler->getSettings().mGUIRefreshRate, this),
-		mHeatmaps()
+		mHeatmaps(),
+		mCurrentX(0),
+		mIndexCurrentX(0)
 		{
 		
 		//setAttribute(Qt::WA_DeleteOnClose);
@@ -60,6 +62,32 @@ namespace Ui {
 		return qTitle;
 	}
 	
+	void QMSMFormHeatmapAbstract::updateCurrentX(void) {
+		uint32_t bufferedSamples = ((mpDataHandler->getSettings().mTimeToBufferData - mpDataHandler->getSettings().mTimeToShowData) /
+									mpDataHandler->getSettings().mDataSamplingRate)-1;
+		uint32_t showSamples = (mpDataHandler->getSettings().mTimeToShowData / mpDataHandler->getSettings().mDataSamplingRate) - 1;
+		double *x = mpDataHandler->getMeasurement().mpX->getDataPtr() + bufferedSamples;
+		
+		//shift x axis every 10 s
+		if(x[showSamples] - mCurrentX > 10) {
+			mCurrentX += 10;
+		}
+		
+		//reset x axis if necessary 
+		if(x[showSamples] < mCurrentX) {
+			mCurrentX = 0;
+		}
+		
+		//search the index corresponding to mCurrentX
+		mIndexCurrentX = 0;
+		for (int i = showSamples; i >= 0; i--) {
+			if(x[i] <= (mCurrentX + ((double) mpDataHandler->getSettings().mDataSamplingRate/1000/3))){
+				 mIndexCurrentX = i;
+				 break;
+			}
+		}
+	}
+	
 	void QMSMFormHeatmapAbstract::close(void) {
 		hide();
 	}
@@ -81,10 +109,14 @@ namespace Ui {
 	}
 	
 	void QMSMFormHeatmapAbstract::slotRefreshGui(void) {
-		setupHeatmaps();
-		
-		for(std::vector<Ui::Heatmap*>::iterator it = mHeatmaps.begin(); it != mHeatmaps.end(); ++it) {
-			(*it)->refresh();
+		if(isVisible()) {
+			setupHeatmaps();
+			
+			for(std::vector<Ui::Heatmap*>::iterator it = mHeatmaps.begin(); it != mHeatmaps.end(); ++it) {
+				(*it)->refresh();
+			}
+		} else {
+			updateCurrentX();
 		}
 	}
 	

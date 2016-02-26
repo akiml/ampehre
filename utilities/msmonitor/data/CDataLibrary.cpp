@@ -133,6 +133,10 @@ namespace NData {
 		pthread_join(mThreadID, NULL);
 	}
 	
+	MS_CONFIG* CDataLibrary::getMS_CONFIG() {
+		return mpMSSystem->config;
+	}
+
 	void CDataLibrary::run(void) {
 		int i;
 		std::ofstream csv_file;
@@ -228,7 +232,7 @@ namespace NData {
 			mrMeasurement.mMaxelerActiveProcessUser = pMsMeasurementFpga->maxeler_active_process_user;
 			
 			mrMeasurement.mNVMLActiveProcessesCount = pMsMeasurementGpu->nvml_active_processes_count_cur;
-			for(int i = 0; i < mrMeasurement.mNVMLActiveProcessesCount; i++) {
+			for(uint32_t i = 0; i < mrMeasurement.mNVMLActiveProcessesCount; i++) {
 				mrMeasurement.mNVMLActiveProcessesPid[i] = pMsMeasurementGpu->nvml_active_processes_pid[i];
 				mrMeasurement.mNVMLActiveProcessesName[i] = pMsMeasurementGpu->nvml_active_processes_name[i];
 			}

@@ -29,6 +29,7 @@
 #include <iomanip>
 #include <iostream>
 #include <stdint.h>
+#include <math.h>
 #include <deque>
 
 #define MAX_VISIBLE_GPU_PROCSSES 5
@@ -52,26 +53,29 @@ namespace Ui {
 			QPainter *mpPainter;
 			QPixmap *mpPixmapGPUActivity;
 			QPixmap *mpPixmapFPGAActivity;
-			QPixmap *mpPixmapCPU0Utilization;
+			QPixmap *mpPixmapCPUUtilization;
 			QPixmap *mpPixmapCPU0Temperature;
-			QPixmap *mpPixmapCPU1Utilization;
 			QPixmap *mpPixmapCPU1Temperature;
-			QPixmap *mpPixmapGPUUtilization;
+			QPixmap *mpPixmapGPUCoreUtilization;
+			QPixmap *mpPixmapGPUMemUtilization;
 			QPixmap *mpPixmapGPUTemperature;
 			QPixmap *mpPixmapFPGAUtilization;
-			QPixmap *mpPixmapFPGATemperature;
+			QPixmap *mpPixmapFPGAComputeTemperature;
+			QPixmap *mpPixmapFPGAInterfaceTemperature;
 			QPixmap *mpPixmapMICUtilization;
 			QPixmap *mpPixmapMICTemperature;
 			
 			QwtLinearColorMap *mpColorMap;
 			
+			void initGUI(void);
 			void setActivity(QPixmap *pPixmap, QLabel *pLabel, bool active);
 			void setUtilization(QPixmap *pPixmap, QLabel *pLabel, double value);
-			void setTemperature(QPixmap *pPixmap, QLabel *pLabel, double value);
+			void setTemperature(QPixmap *pPixmap, QLabel *pLabel, double minVal, double maxVal, double value);
 			void addFPGAProcessToTable(uint32_t pid,const std::string &name,const std::string &user);
 			void addGPUProcessesToTable(uint32_t processCount, uint32_t *pids, std::string *names);
 			void updateActiveProcesses(void);
 			void updateUtilization(void);
+			void updateTemperature(void);
 			double calcMean(double* data, uint32_t size);
 			void createActions(void);
 			

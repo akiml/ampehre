@@ -27,8 +27,7 @@ namespace Ui {
 		mpHeatmapFPGACompute(addHeatmap(QString::fromUtf8("Compute\nFPGA\n[°C]"))),
 		mpHeatmapFPGAInterface(addHeatmap(QString::fromUtf8("Interface\nFPGA\n[°C]"))),
 		mpHeatmapMIC(addHeatmap(QString::fromUtf8("MIC Die\n\n[°C]"))),
-		mpHeatmapSysboard(addHeatmap(QString::fromUtf8("Main-\nboard\n[°C]"))),
-		mCurrentX(0)
+		mpHeatmapSysboard(addHeatmap(QString::fromUtf8("Main-\nboard\n[°C]")))
 		{
 		//only one minute is stored here
 		mBufferSize = mpDataHandler->getSettings().mTimeToShowData / mpDataHandler->getSettings().mHeatmapSamplingRate;
@@ -101,32 +100,12 @@ namespace Ui {
 		uint32_t factorDataToHeatmapSamplingRate = mpDataHandler->getSettings().mHeatmapSamplingRate / mpDataHandler->getSettings().mDataSamplingRate;
 		uint32_t bufferedSamples = ((mpDataHandler->getSettings().mTimeToBufferData - mpDataHandler->getSettings().mTimeToShowData) /
 									mpDataHandler->getSettings().mDataSamplingRate)-1;
-		uint32_t showSamples = (mpDataHandler->getSettings().mTimeToShowData / mpDataHandler->getSettings().mDataSamplingRate) - 1;
-		uint32_t indexCurrentX = 0;
 		uint32_t indexStartX = 0;
 		
-		double *x = mpDataHandler->getMeasurement().mpX->getDataPtr() + bufferedSamples;
-		
-		//shift x axis every 10 s
-		if(x[showSamples] - mCurrentX > 10) {
-			mCurrentX += 10;
-		}
-		
-		//reset x axis if necessary 
-		if(x[showSamples] < mCurrentX) {
-			mCurrentX = 0;
-		}
-		
-		//search the index corresponding to mCurrentX
-		for (int i = showSamples; i >= 0; i--) {
-			if(x[i] <= (mCurrentX + ((double) mpDataHandler->getSettings().mDataSamplingRate/1000/3))){
-				 indexCurrentX = i;
-				 break;
-			}
-		}
-		
+		updateCurrentX();
+				
 		//calculate the index of the first element
-		indexStartX = indexCurrentX - (mpDataHandler->getSettings().mTimeToShowData -10000) / mpDataHandler->getSettings().mDataSamplingRate;
+		indexStartX = mIndexCurrentX - (mpDataHandler->getSettings().mTimeToShowData -10000) / mpDataHandler->getSettings().mDataSamplingRate;
 		
 		double *temp_cpu_0	= mpDataHandler->getMeasurement().mpYTempCpu0->getDataPtr() + bufferedSamples + indexStartX;
 		double *temp_cpu_1	= mpDataHandler->getMeasurement().mpYTempCpu1->getDataPtr() + bufferedSamples + indexStartX;
@@ -138,7 +117,7 @@ namespace Ui {
 		
 		//calculate the mean and fill the rest with 0
 		for (uint32_t i = 0; i < (mBufferSize); i++) {
-			if(i < mBufferSize-(indexStartX/factorDataToHeatmapSamplingRate)) {
+			if(i < mBufferSize-(indexStartX/factorDataToHeatmapSamplingRate) - 1) {
 				mpCPU0Data[i]			= calcMean(temp_cpu_0, factorDataToHeatmapSamplingRate);
 				mpCPU1Data[i]			= calcMean(temp_cpu_1, factorDataToHeatmapSamplingRate);
 				mpGPUData[i]			= calcMean(temp_gpu, factorDataToHeatmapSamplingRate);
