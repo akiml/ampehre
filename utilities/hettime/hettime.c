@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 	int32_t file_flag = 0;
 	int32_t args_flag = 0;
 	
-	while ((opt = getopt(argc, argv, "h?c:g:f:m:s:S:e:a:G:C:L:H:V:o:v:j:ui")) != -1) {
+	while ((opt = getopt(argc, argv, "h?c:g:f:m:s:d:S:e:a:G:C:L:H:V:o:v:j:ui")) != -1) {
 		switch (opt) {
 			case 'a':
 				if (file_flag == 0) {
@@ -127,6 +127,14 @@ int main(int argc, char **argv) {
 			case 's':
 				if (parse_sampling_rates(optarg, &(cur_settings->sample_rate_sys), &(cur_settings->check_for_exit_interrupts_sys))) {
 					LOG_ERROR("Wrong argument of option 's'.");
+					print_help(argv, std_settings);
+					free_settings(&std_settings, &cur_settings);
+					return EXIT_FAILURE;
+				}
+				break;
+			case 'd':
+				if (parse_sampling_rates(optarg, &(cur_settings->sample_rate_odroid), &(cur_settings->check_for_exit_interrupts_odroid))) {
+					LOG_ERROR("Wrong argument of option 'd'.");
 					print_help(argv, std_settings);
 					free_settings(&std_settings, &cur_settings);
 					return EXIT_FAILURE;
@@ -330,29 +338,34 @@ static void print_help(char **argv, ARGUMENTS *std_settings) {
 	
 	fprintf(stderr,
 			"Usage:\n"
-			"%s [-h|-?|-i|-c \"SAMPLE_CPU, CHECK_EXIT_INTER_CPU\"|-g \"SAMPLE_GPU, CHECK_EXIT_INTER_GPU\"|-f \"SAMPLE_FPGA, CHECK_EXIT_INTER_FPGA\"|\n"
-			"         -m \"SAMPLE_MIC, CHECK_EXIT_INTER_MIC\"|-s \"SAMPLE_SYS, CHECK_EXIT_INTER_SYS\"|-G FREQUENCY|-C GOVERNOR|-L FREQUENCY|\n"
-			"         -H FREQUENCY|-o RESULT_FILE|-v CSV_FILE|-u] -e EXECUTABLE [-a \"ARGS\"]\n"
+			"%s [-h|-?|-i|-c \"SAMPLE_CPU, CHK_EXIT_INTR_CPU\"|-g \"SAMPLE_GPU, CHK_EXIT_INTR_GPU\"|-f \"SAMPLE_FPGA, CHK_EXIT_INTR_FPGA\"|\n"
+			"         -m \"SAMPLE_MIC, CHK_EXIT_INTR_MIC\"|-s \"SAMPLE_SYS, CHK_EXIT_INTR_SYS\"|-d \"SAMPLE_ODROID, CHK_EXIT_INTR_ODROID\"|\n"
+			"         -G FREQUENCY|-C GOVERNOR|-L FREQUENCY|-H FREQUENCY|-o RESULT_FILE|-v CSV_FILE|-u] -e EXECUTABLE [-a \"ARGS\"]\n"
 			"-c \"SAMPLE_CPU,            | Sampling rate for CPU power/temp measurements in ms.\n"
-			"    CHECK_EXIT_INTER_CPU\"  | Check for exit interrupts defines how often it is checked whether the measurement\n"
+			"    CHK_EXIT_INTR_CPU\"     | Check for exit interrupts defines how often it is checked whether the measurement\n"
 			"                           | should be stopped between two measurement points.\n"
 			"                           | Default: %ums, %u. Recommended minimum: 20ms.\n"
 			"-g \"SAMPLE_GPU,            | Sampling rate for GPU power/temp measurements in ms.\n"
-			"    CHECK_EXIT_INTER_GPU\"  | Check for exit interrupts defines how often it is checked whether the measurement\n"
+			"    CHK_EXIT_INTR_GPU\"     | Check for exit interrupts defines how often it is checked whether the measurement\n"
 			"                           | should be stopped between two measurement points.\n"
 			"                           | Default: %ums, %u. Recommended minimum: 30ms.\n"
 			"-f \"SAMPLE_FPGA,           | Sampling rate for FPGA power/temp measurements in ms.\n"
-			"    CHECK_EXIT_INTER_FPGA\" | Check for exit interrupts defines how often it is checked whether the measurement\n"
+			"    CHK_EXIT_INTR_FPGA\"    | Check for exit interrupts defines how often it is checked whether the measurement\n"
 			"                           | should be stopped between two measurement points.\n"
 			"                           | Default: %ums, %u. Recommended minimum: 50ms.\n"
 			"-m \"SAMPLE_MIC,            | Sampling rate for MIC power/temp measurements in ms.\n"
-			"    CHECK_EXIT_INTER_MIC\"  | Check for exit interrupts defines how often it is checked whether the measurement\n"
+			"    CHK_EXIT_INTR_MIC\"     | Check for exit interrupts defines how often it is checked whether the measurement\n"
 			"                           | should be stopped between two measurement points.\n"
 			"                           | Default: %ums, %u. Recommended minimum: 20ms.\n"
 			"-s \"SAMPLE_SYS             | Sampling rate for system-wide power/temp measurements in ms.\n"
-			"    CHECK_EXIT_INTER_SYS\"  |  Check for exit interrupts defines how often it is checked whether the measurement\n"
+			"    CHK_EXIT_INTR_SYS\"     |  Check for exit interrupts defines how often it is checked whether the measurement\n"
 			"                           | should be stopped between two measurement points.\n"
 			"                           | Default: %ums, %u. Recommended minimum: 100ms.\n"
+			"-d \"SAMPLE_ODROID          | Sampling rate for the odroid xu4 board measurements in ms.\n"
+			"    CHK_EXIT_INTR_ODROID\"  |  Check for exit interrupts defines how often it is checked whether the measurement\n"
+			"                           | should be stopped between two measurement points.\n"
+			"                           | Note that CHK_EXIT_INTR_ODROID has no influence at the moment.\n"
+			"                           | Default: %ums, %u. Recommended minimum: 50ms.\n"
 			"-S SKIP_MS_RATE            | Skip measurement rate defines how often certain measurements\n"
 			"                           | are performed.\n"
 			"                           | Possible settings are:\n"
@@ -417,6 +430,8 @@ static void print_help(char **argv, ARGUMENTS *std_settings) {
 			std_settings->check_for_exit_interrupts_mic,
 			std_settings->sample_rate_sys,
 			std_settings->check_for_exit_interrupts_sys,
+			std_settings->sample_rate_odroid,
+			std_settings->check_for_exit_interrupts_odroid,
 			skip_ms_rate_string,
 			gpu_freq_string,
 			cpu_gov_string,
@@ -434,31 +449,33 @@ static void init_settings(ARGUMENTS **std_settings, ARGUMENTS **cur_settings) {
 	}
 	
 	// Please, set the default settings here
-	(*std_settings)->child_filename					= NULL;
-	(*std_settings)->child_args						= NULL;
-	(*std_settings)->child_num_of_args				= 0;
-	(*std_settings)->csv_filename					= NULL;
-	(*std_settings)->json_filename			= NULL;
-	(*std_settings)->ostream_filename				= NULL;
-	(*std_settings)->force_idle_fpga				= 0;
-	(*std_settings)->sample_rate_cpu				= 100;
-	(*std_settings)->sample_rate_gpu				= 100;
-	(*std_settings)->sample_rate_fpga				= 100;
-	(*std_settings)->sample_rate_mic				= 100;
-	(*std_settings)->sample_rate_sys				= 100;
-	(*std_settings)->check_for_exit_interrupts_cpu	= 1;
-	(*std_settings)->check_for_exit_interrupts_gpu	= 1;
-	(*std_settings)->check_for_exit_interrupts_fpga	= 1;
-	(*std_settings)->check_for_exit_interrupts_mic	= 1;
-	(*std_settings)->check_for_exit_interrupts_sys	= 1;
-	(*std_settings)->gpu_freq						= GPU_FREQUENCY_CUR;
-	(*std_settings)->cpu_gov						= CPU_GOVERNOR_ONDEMAND;
-	(*std_settings)->cpu_freq_min					= 0;
-	(*std_settings)->cpu_freq_max					= 0;
-	(*std_settings)->ush_client						= 0;
-	(*std_settings)->timeout_setting				= IPMI_SET_TIMEOUT;
-	(*std_settings)->skip_ms						= SKIP_NEVER;
-	(*std_settings)->variant						= VARIANT_FULL;
+	(*std_settings)->child_filename						= NULL;
+	(*std_settings)->child_args							= NULL;
+	(*std_settings)->child_num_of_args					= 0;
+	(*std_settings)->csv_filename						= NULL;
+	(*std_settings)->json_filename						= NULL;
+	(*std_settings)->ostream_filename					= NULL;
+	(*std_settings)->force_idle_fpga					= 0;
+	(*std_settings)->sample_rate_cpu					= 100;
+	(*std_settings)->sample_rate_gpu					= 100;
+	(*std_settings)->sample_rate_fpga					= 100;
+	(*std_settings)->sample_rate_mic					= 100;
+	(*std_settings)->sample_rate_sys					= 100;
+	(*std_settings)->sample_rate_odroid					= 100;
+	(*std_settings)->check_for_exit_interrupts_cpu		= 1;
+	(*std_settings)->check_for_exit_interrupts_gpu		= 1;
+	(*std_settings)->check_for_exit_interrupts_fpga		= 1;
+	(*std_settings)->check_for_exit_interrupts_mic		= 1;
+	(*std_settings)->check_for_exit_interrupts_sys		= 1;
+	(*std_settings)->check_for_exit_interrupts_odroid	= 1;
+	(*std_settings)->gpu_freq							= GPU_FREQUENCY_CUR;
+	(*std_settings)->cpu_gov							= CPU_GOVERNOR_ONDEMAND;
+	(*std_settings)->cpu_freq_min						= 0;
+	(*std_settings)->cpu_freq_max						= 0;
+	(*std_settings)->ush_client							= 0;
+	(*std_settings)->timeout_setting					= IPMI_SET_TIMEOUT;
+	(*std_settings)->skip_ms							= SKIP_NEVER;
+	(*std_settings)->variant							= VARIANT_FULL;
 	
 	memcpy(*cur_settings, *std_settings, sizeof(ARGUMENTS));
 }

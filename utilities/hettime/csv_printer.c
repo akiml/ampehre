@@ -43,7 +43,7 @@ void print_csv(FILE *csv, ARGUMENTS* settings, MS_LIST *m, EXEC_TIME *exec_time)
 		
 	cur_caption_pos += snprintf(captions + cur_caption_pos, MAX_HEADER_LENGTH - cur_caption_pos, "time_total_exec_child;"
 								"unix_timestamp;");
-	cur_value_pos += snprintf(values + cur_value_pos, MAX_VALUES_LENGTH - cur_value_pos, "%lf;%lu;", exec_time->exec_time_diff, (uint64_t)time(NULL));
+	cur_value_pos += snprintf(values + cur_value_pos, MAX_VALUES_LENGTH - cur_value_pos, "%lf;%llu;", exec_time->exec_time_diff, (uint64_t)time(NULL));
 	cur_unit_pos += snprintf(units + cur_unit_pos, MAX_UNITS_LENGTH - cur_unit_pos,"s;s;");
 	
 	print_csv_cpu(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);

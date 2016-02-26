@@ -49,8 +49,8 @@ static void print(ARGUMENTS *settings, MS_LIST *m, EXEC_TIME *time);
 
 int run(ARGUMENTS *settings) {
 	int status_child	= 1;
-	MS_SYSTEM *ms			= NULL;
-	MS_LIST *m		= NULL;
+	MS_SYSTEM *ms		= NULL;
+	MS_LIST *m			= NULL;
 	EXEC_TIME *time		= NULL;
 	
 	alloc_exec_time(&time);
@@ -82,11 +82,12 @@ static void init_measuring_system(ARGUMENTS *settings, MS_SYSTEM **ms, MS_LIST *
 	*m	= ms_alloc_measurement(*ms);
 	
 	// Set timer for measurement m
-	ms_set_timer(*m, CPU   , settings->sample_rate_cpu /1000, (settings->sample_rate_cpu %1000) * 1000000, settings->check_for_exit_interrupts_cpu);
-	ms_set_timer(*m, GPU   , settings->sample_rate_gpu /1000, (settings->sample_rate_gpu %1000) * 1000000, settings->check_for_exit_interrupts_gpu);
-	ms_set_timer(*m, FPGA  , settings->sample_rate_fpga/1000, (settings->sample_rate_fpga%1000) * 1000000, settings->check_for_exit_interrupts_fpga);
-	ms_set_timer(*m, MIC   , settings->sample_rate_mic/1000, (settings->sample_rate_mic%1000) * 1000000, settings->check_for_exit_interrupts_mic);
-	ms_set_timer(*m, SYSTEM, settings->sample_rate_sys /1000, (settings->sample_rate_sys %1000) * 1000000, settings->check_for_exit_interrupts_sys);
+	ms_set_timer(*m, CPU   , settings->sample_rate_cpu   /1000, (settings->sample_rate_cpu   %1000) * 1000000, settings->check_for_exit_interrupts_cpu );
+	ms_set_timer(*m, GPU   , settings->sample_rate_gpu   /1000, (settings->sample_rate_gpu   %1000) * 1000000, settings->check_for_exit_interrupts_gpu );
+	ms_set_timer(*m, FPGA  , settings->sample_rate_fpga  /1000, (settings->sample_rate_fpga  %1000) * 1000000, settings->check_for_exit_interrupts_fpga);
+	ms_set_timer(*m, MIC   , settings->sample_rate_mic   /1000, (settings->sample_rate_mic   %1000) * 1000000, settings->check_for_exit_interrupts_mic );
+	ms_set_timer(*m, SYSTEM, settings->sample_rate_sys   /1000, (settings->sample_rate_sys   %1000) * 1000000, settings->check_for_exit_interrupts_sys );
+	ms_set_timer(*m, ODROID, settings->sample_rate_odroid/1000, (settings->sample_rate_odroid%1000) * 1000000, settings->check_for_exit_interrupts_odroid);
 	ms_init_measurement(*ms, *m, ALL);
 }
 

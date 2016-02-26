@@ -116,6 +116,13 @@ void* allocMeasurement(int id) {
 			((MS_MEASUREMENT_SYS *)ms_measurement)->ipmi_time_wait.tv_nsec				= UINT64_MAX;
 			((MS_MEASUREMENT_SYS *)ms_measurement)->ipmi_check_for_exit_interrupts		= 1;
 			break;
+		case ODROID:
+			ms_measurement =  malloc(sizeof(MS_MEASUREMENT_ODROID));
+			memset(ms_measurement, 0, sizeof(MS_MEASUREMENT_ODROID));
+			((MS_MEASUREMENT_ODROID *)ms_measurement)->odroid_time_wait.tv_sec			= UINT64_MAX;
+			((MS_MEASUREMENT_ODROID *)ms_measurement)->odroid_time_wait.tv_nsec			= UINT64_MAX;
+			((MS_MEASUREMENT_ODROID *)ms_measurement)->odroid_check_for_exit_interrupts	= 1;
+			break;
 		default:
 			std::cout << "!!! 'mgmt' (thread main): Error: cannot allocate resource specific measurement struct. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
 			exit(EXIT_FAILURE);

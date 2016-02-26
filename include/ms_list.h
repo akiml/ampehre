@@ -31,7 +31,7 @@ extern "C" {
 #define SYSTEM	0x08
 #define MIC 	0x10
 #define ODROID	0x20
-#define ALL		(CPU | GPU | FPGA | SYSTEM | MIC)
+#define ALL		(CPU | GPU | FPGA | SYSTEM | MIC | ODROID)
 	
 #define NULL_CHECK(val)  if(NULL == val) return 0;
 

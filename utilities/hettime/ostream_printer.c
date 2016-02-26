@@ -34,41 +34,59 @@ static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MS_LIST *m);
 static void print_ostream_fpga(FILE *file, ARGUMENTS *settings, MS_LIST *m);
 static void print_ostream_mic(FILE *file, ARGUMENTS *settings, MS_LIST *m);
 static void print_ostream_system(FILE *file, ARGUMENTS *settings, MS_LIST *m);
+static void print_ostream_odroid(FILE *file, ARGUMENTS *settings, MS_LIST *m);
 static void print_ostream_time(FILE *file, EXEC_TIME *exec_time);
 
 void print_ostream(FILE *file, ARGUMENTS *settings, MS_LIST *m, EXEC_TIME *exec_time) {
 	fprintf(file,
 		"RESULTS:\n========\n"
 		"time total exec child   [ s ]: %lf\n"
-		"unix timestamp          [ s ]: %lu\n",
+		"unix timestamp          [ s ]: %llu\n",
 		exec_time->exec_time_diff,
 		(uint64_t)time(NULL)
 	);
 	
-	fprintf(file,
-		"\nCPU:\n====\n"
-	);
-	print_ostream_cpu(file, settings, m);
+	if (NULL != getMeasurement(&m, CPU)) {
+		fprintf(file,
+			"\nCPU:\n====\n"
+		);
+		print_ostream_cpu(file, settings, m);
+	}
 	
-	fprintf(file,
-		"\nGPU:\n====\n"
-	);
-	print_ostream_gpu(file, settings, m);
+	if (NULL != getMeasurement(&m, GPU)) {
+		fprintf(file,
+			"\nGPU:\n====\n"
+		);
+		print_ostream_gpu(file, settings, m);
+	}
 	
-	fprintf(file,
-		"\nFPGA:\n=====\n"
-	);
-	print_ostream_fpga(file, settings, m);
+	if (NULL != getMeasurement(&m, FPGA)) {
+		fprintf(file,
+			"\nFPGA:\n=====\n"
+		);
+		print_ostream_fpga(file, settings, m);
+	}
 	
-	fprintf(file,
-		"\nMIC:\n=====\n"
-	);
-	print_ostream_mic(file, settings, m);
+	if (NULL != getMeasurement(&m, MIC)) {
+		fprintf(file,
+			"\nMIC:\n=====\n"
+		);
+		print_ostream_mic(file, settings, m);
+	}
 	
-	fprintf(file,
-		"\nSystem:\n=======\n"
-	);
-	print_ostream_system(file, settings, m);
+	if (NULL != getMeasurement(&m, SYSTEM)) {
+		fprintf(file,
+			"\nSystem:\n=======\n"
+		);
+		print_ostream_system(file, settings, m);
+	}
+	
+	if (NULL != getMeasurement(&m, ODROID)) {
+		fprintf(file,
+			"\nOdroid:\n=======\n"
+		);
+		print_ostream_odroid(file, settings, m);
+	}
 	
 	fprintf(file,
 		"\nTime:\n=======\n"
@@ -387,8 +405,8 @@ static void print_ostream_system(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 	);
 	
 	fprintf(file,
-		"energy total board      [Ws ]: %lf\n"
-		"energy total system     [Ws ]: %lf\n"
+		"energy total board      [ Ws]: %lf\n"
+		"energy total system     [ Ws]: %lf\n"
 		"power  avg   board      [ W ]: %lf\n"
 		"power  avg   system     [ W ]: %lf\n"
 		"temp   max   system     [\u00b0C ]: %lf\n",
@@ -397,6 +415,57 @@ static void print_ostream_system(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 		system_power_board_avg(m),
 		system_power_avg(m),
 		system_temp_max(m)
+	);
+}
+
+static void print_ostream_odroid(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
+	fprintf(file,
+		"time total measure odrd [ s ]: %lf\n\n",
+		odroid_time_total(m)
+	);
+	
+	fprintf(file,
+		"energy total a15        [mWs]: %lf\n"
+		"energy total a7         [mWs]: %lf\n"
+		"energy total mali       [mWs]: %lf\n"
+		"energy total mem        [mWs]: %lf\n",
+		odroid_energy_total_a15(m),
+		odroid_energy_total_a7(m),
+		odroid_energy_total_mali(m),
+		odroid_energy_total_mem(m)
+	);
+	
+	fprintf(file,
+		"power  avg   a15        [mW ]: %lf\n"
+		"power  avg   a7         [mW ]: %lf\n"
+		"power  avg   mali       [mW ]: %lf\n"
+		"power  avg   mem        [mW ]: %lf\n",
+		odroid_power_avg_a15(m),
+		odroid_power_avg_a7(m),
+		odroid_power_avg_mali(m),
+		odroid_power_avg_mem(m)
+	);
+	
+	fprintf(file,
+		"temp   max   a15  c 0   [\u00b0C ]: %u\n"
+		"temp   max   a15  c 1   [\u00b0C ]: %u\n"
+		"temp   max   a15  c 2   [\u00b0C ]: %u\n"
+		"temp   max   a15  c 3   [\u00b0C ]: %u\n"
+		"temp   max   mali       [\u00b0C ]: %u\n",
+		odroid_temp_max_a15(m, 0),
+		odroid_temp_max_a15(m, 1),
+		odroid_temp_max_a15(m, 2),
+		odroid_temp_max_a15(m, 3),
+		odroid_temp_max_mali(m)
+	);
+	
+	fprintf(file,
+		"freq   avg   a15        [MHz]: %.1lf\n"
+		"freq   avg   a7         [MHz]: %.1lf\n"
+		"freq   avg   mali       [MHz]: %.1lf\n",
+		odroid_freq_avg_a15(m),
+		odroid_freq_avg_a7(m),
+		odroid_freq_avg_mali(m)
 	);
 }
 

@@ -117,7 +117,8 @@ namespace NLibMeasure {
 	double CMeasureOdroid::readSensorPower(ODROID_SENSOR* pSensorDevFSStruct) {
 		ioctl(pSensorDevFSStruct->fd, INA231_IOCGREG, &pSensorDevFSStruct->data);
 		
-		return pSensorDevFSStruct->data.cur_uW;
+		// Devision by 1000.0 to return mW instead of uW.
+		return pSensorDevFSStruct->data.cur_uW / 1000.0;
 	}
 	
 	void CMeasureOdroid::measurePower(MS_MEASUREMENT_ODROID* pMsMeasurementOdroid, int32_t& rThreadNum) {
@@ -165,6 +166,8 @@ namespace NLibMeasure {
 	}
 	
 	void CMeasureOdroid::measureTemperature(MS_MEASUREMENT_ODROID* pMsMeasurementOdroid, int32_t& rThreadNum) {
+		mpSensorSysFSTemp = freopen(SYSFS_SENSOR_TEMP, "r", mpSensorSysFSTemp);
+		
 		/* Read temperature sensors of ARM A15 cores */
 		pMsMeasurementOdroid->odroid_temperature_cur[ODROID_TEMP_A15_CORE_0]	= readSensorTemp(mpSensorSysFSTemp, ODROID_TEMP_A15_CORE_0, rThreadNum);
 		pMsMeasurementOdroid->odroid_temperature_cur[ODROID_TEMP_A15_CORE_1]	= readSensorTemp(mpSensorSysFSTemp, ODROID_TEMP_A15_CORE_1, rThreadNum);
@@ -209,6 +212,10 @@ namespace NLibMeasure {
 	}
 	
 	void CMeasureOdroid::measureFrequency(MS_MEASUREMENT_ODROID* pMsMeasurementOdroid, int32_t& rThreadNum) {
+		mpSensorSysFSFreqA15	= freopen(SYSFS_SENSOR_FREQ_A15 , "r", mpSensorSysFSFreqA15 );
+		mpSensorSysFSFreqA7		= freopen(SYSFS_SENSOR_FREQ_A7  , "r", mpSensorSysFSFreqA7  );
+		mpSensorSysFSFreqMali	= freopen(SYSFS_SENSOR_FREQ_MALI, "r", mpSensorSysFSFreqMali);
+		
 		/* Read clock sensor of ARM A15 cores */
 		pMsMeasurementOdroid->odroid_clock_cur[ODROID_FREQ_A15]		= readSensorFreq(mpSensorSysFSFreqA15 , ODROID_FREQ_A15 , rThreadNum);
 		/* Read clock sensor of ARM A7 cores */

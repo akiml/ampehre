@@ -51,11 +51,12 @@ CMgmt::CMgmt(cpu_governor cpuGovernor, uint64_t cpuFrequencyMin, uint64_t cpuFre
 	uint64_t params_gpu[]	= {gpuFrequency};
 	uint64_t params_sys[]	= {timeout_setting};
 	
-	mResources[CPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, CPU_LIB_NAME, mLibVariant, skip_ms_rate, (void*) params_cpu);
-	mResources[GPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, GPU_LIB_NAME, mLibVariant, skip_ms_rate, (void*) params_gpu);
-	mResources[FPGA] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, FPGA_LIB_NAME, mLibVariant, skip_ms_rate, NULL);
-	mResources[SYSTEM]	= new NLibMeasure::CResourceLibraryHandler(mLogger, SYS_LIB_NAME, mLibVariant, skip_ms_rate, (void*) params_sys);
-	mResources[MIC] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, MIC_LIB_NAME, mLibVariant, skip_ms_rate, NULL);
+	mResources[CPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, CPU_LIB_NAME   , mLibVariant, skip_ms_rate, (void*) params_cpu);
+	mResources[GPU] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, GPU_LIB_NAME   , mLibVariant, skip_ms_rate, (void*) params_gpu);
+	mResources[FPGA] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, FPGA_LIB_NAME  , mLibVariant, skip_ms_rate, NULL);
+	mResources[SYSTEM]	= new NLibMeasure::CResourceLibraryHandler(mLogger, SYS_LIB_NAME   , mLibVariant, skip_ms_rate, (void*) params_sys);
+	mResources[MIC] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, MIC_LIB_NAME   , mLibVariant, skip_ms_rate, NULL);
+	mResources[ODROID] 	= new NLibMeasure::CResourceLibraryHandler(mLogger, ODROID_LIB_NAME, mLibVariant, skip_ms_rate, NULL);
 	
 	mpActionStart	= NULL;
 	mpActionStop	= NULL;

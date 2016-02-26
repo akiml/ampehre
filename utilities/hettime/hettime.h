@@ -69,11 +69,13 @@ typedef struct __arguments {
 	uint32_t sample_rate_fpga;
 	uint32_t sample_rate_sys;
 	uint32_t sample_rate_mic;
+	uint32_t sample_rate_odroid;
 	uint32_t check_for_exit_interrupts_cpu;
 	uint32_t check_for_exit_interrupts_gpu;
 	uint32_t check_for_exit_interrupts_fpga;
 	uint32_t check_for_exit_interrupts_sys;
 	uint32_t check_for_exit_interrupts_mic;
+	uint32_t check_for_exit_interrupts_odroid;
 	enum gpu_frequency gpu_freq;
 	enum cpu_governor cpu_gov;
 	uint64_t cpu_freq_min;
