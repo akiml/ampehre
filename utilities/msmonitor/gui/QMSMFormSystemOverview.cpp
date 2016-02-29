@@ -31,8 +31,8 @@ namespace Ui {
 		
 		setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint);
 		
-		this->setFixedHeight(640);
-		this->setMinimumWidth(510);
+		this->setFixedHeight(710);
+		this->setMinimumWidth(550);
 		
 		setupUi(mpFormSystemOverview);
 		
