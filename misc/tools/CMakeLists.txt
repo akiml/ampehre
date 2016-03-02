@@ -27,6 +27,7 @@
 #
 
 add_subdirectory(example_ms)
+add_subdirectory(example_ms_odroid)
 add_subdirectory(example_ms_hetsched)
 add_subdirectory(driver_tester)
 add_subdirectory(example_cpufreq)
