@@ -36,6 +36,9 @@ namespace NLibMeasure {
 			FILE *mpSensorSysFSFreqA15;
 			FILE *mpSensorSysFSFreqMali;
 			
+			FILE *mpFileSysFSUtilMali;
+			FILE *mpFileProcFSUtilARM;
+			
 		public:
 			CMeasureOdroid(CLogger& rLogger);
 			~CMeasureOdroid();
@@ -55,6 +58,13 @@ namespace NLibMeasure {
 			FILE *initSensorFreq(const char *pSensorSysFSFileName);
 			void destroySensorFreq(FILE *pSensorSysFSFile);
 			uint32_t readSensorFreq(FILE *pSensorSysFSFile, odroid_freq sensorFreqType, int32_t& rThreadNum);
+			
+			FILE *initFileUtilizationProcFS(const char *pFileProcFSFileName);
+			FILE *initFileUtilizationSysFS(const char *pFileSysFSFileName);
+			void destroyFileUtilizationProcFS(FILE *pFileProcFSFileName);
+			void destroyFileUtilizationSysFS(FILE *pFileSysFSFileName);
+			void readFileUtilizationProcFS(FILE *pFileProcFSFileName, odroid_util deviceUtilType, int32_t& rThreadNum, uint64_t *active, uint64_t *inactive);
+			double readFileUtilizationSysFS(FILE *pFileSysFSFileName, odroid_util deviceUtilType, int32_t& rThreadNum);
 			
 			void measurePower(MS_MEASUREMENT_ODROID *pMsMeasurementOdroid, int32_t& rThreadNum);
 			void measureTemperature(MS_MEASUREMENT_ODROID *pMsMeasurementOdroid, int32_t& rThreadNum);

@@ -27,7 +27,9 @@ namespace NLibMeasure {
 		mpSensorSysFSTemp(0),
 		mpSensorSysFSFreqA7(0),
 		mpSensorSysFSFreqA15(0),
-		mpSensorSysFSFreqMali(0)
+		mpSensorSysFSFreqMali(0),
+		mpFileSysFSUtilMali(0),
+		mpFileProcFSUtilARM(0)
 		{
 		
 		init();
@@ -72,6 +74,15 @@ namespace NLibMeasure {
 		mpSensorSysFSFreqMali	= initSensorFreq(SYSFS_SENSOR_FREQ_MALI);
 		mrLog()
 		<< "     sensor clock arm mali t628       initialized" << std::endl;
+		
+		/* Initialize utilization info files */
+		mpFileProcFSUtilARM		= initFileUtilizationProcFS(PROCFS_FILE_UTIL_A15_A7);
+		mrLog()
+		<< "     file   util  arm a15  eagle      opened" << std::endl
+		<< "     file   util  arm a7   kingfisher opened" << std::endl;
+		mpFileSysFSUtilMali		= initFileUtilizationSysFS(SYSFS_FILE_UTIL_MALI);
+		mrLog()
+		<< "     file   util  arm mali t628       opened" << std::endl;
 	}
 	
 	void CMeasureOdroid::destroy(void) {
@@ -85,6 +96,9 @@ namespace NLibMeasure {
 		destroySensorFreq(mpSensorSysFSFreqA15);
 		destroySensorFreq(mpSensorSysFSFreqA7);
 		destroySensorFreq(mpSensorSysFSFreqMali);
+		
+		destroyFileUtilizationProcFS(mpFileProcFSUtilARM);
+		destroyFileUtilizationSysFS(mpFileSysFSUtilMali);
 	}
 	
 	ODROID_SENSOR *CMeasureOdroid::initSensorPower(const char* pSensorDevFSFileName) {
@@ -224,8 +238,127 @@ namespace NLibMeasure {
 		pMsMeasurementOdroid->odroid_clock_cur[ODROID_FREQ_MALI]	= readSensorFreq(mpSensorSysFSFreqMali, ODROID_FREQ_MALI, rThreadNum);
 	}
 	
+	FILE* CMeasureOdroid::initFileUtilizationSysFS(const char* pFileSysFSFileName) {
+		return initSensorTemp(pFileSysFSFileName);
+	}
+	
+	FILE* CMeasureOdroid::initFileUtilizationProcFS(const char* pFileProcFSFileName) {
+		FILE *file_proc_fs_file = fopen(pFileProcFSFileName, "r");
+		if (0 == file_proc_fs_file) {
+			mrLog(CLogger::scErr) << "!!! 'odroid' (thread main): Error: cannot open file in proc fs. (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+		
+		return file_proc_fs_file;
+	}
+	
+	void CMeasureOdroid::destroyFileUtilizationSysFS(FILE* pFileSysFSFileName) {
+		destroySensorTemp(pFileSysFSFileName);
+	}
+	
+	void CMeasureOdroid::destroyFileUtilizationProcFS(FILE* pFileProcFSFileName) {
+		fclose(pFileProcFSFileName);
+	}
+	
+	double CMeasureOdroid::readFileUtilizationSysFS(FILE* pFileSysFSFileName, odroid_util deviceUtilType, int32_t& rThreadNum) {
+		double utilization	= 1.0;
+		int status			= 0;
+		
+		fseek(pFileSysFSFileName, 0, SEEK_SET);
+		
+		status = fscanf(pFileSysFSFileName, "%lf", &utilization);
+		if (status != 1) {
+			mrLog(CLogger::scErr)
+			<< "!!! 'odroid thread' (thread #" << rThreadNum << "): Error: Cannot read utilization (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+		
+		switch (deviceUtilType) {
+			case ODROID_UTIL_MALI:
+				break;
+			case ODROID_UTIL_A7:
+			case ODROID_UTIL_A15:
+			default:
+				mrLog(CLogger::scErr)
+				<< "!!! 'odroid thread' (thread #" << rThreadNum << "): Error: Wrong utilization type (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+				exit(EXIT_FAILURE);
+		}
+		
+		return utilization;
+	}
+	
+	void CMeasureOdroid::readFileUtilizationProcFS(FILE* pFileProcFSFileName, odroid_util deviceUtilType, int32_t& rThreadNum,
+												   uint64_t *active, uint64_t *inactive) {
+		int status			= 0;
+		char *line			= NULL;
+		size_t line_size	= 0;
+		ssize_t line_length	= 0;
+		
+		fseek(pFileProcFSFileName, 0, SEEK_SET);
+		
+		int first_line		= 0;
+		switch (deviceUtilType) {
+			case ODROID_UTIL_A15:
+				first_line	= 5;
+				break;
+			case ODROID_UTIL_A7:
+				first_line	= 1;
+				break;
+			case ODROID_UTIL_MALI:
+			default:
+				mrLog(CLogger::scErr)
+				<< "!!! 'odroid thread' (thread #" << rThreadNum << "): Error: Wrong utilization type (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+				exit(EXIT_FAILURE);
+		}
+		
+		uint64_t nice, user, system, idle, iowait;
+		
+		*active		= 0;
+		*inactive	= 0;
+		
+		int i;
+		for (i=0; i<9; ++i) {
+			line_length = getline(&line, &line_size, pFileProcFSFileName);
+			if (line_length <= 0) {
+				mrLog(CLogger::scErr)
+				<< "!!! 'odroid thread' (thread #" << rThreadNum << "): Error: Cannot read utilization file in proc fs (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+				exit(EXIT_FAILURE);
+			}
+			
+			if (i>=first_line && i<first_line+4) {
+				status		= sscanf(line, "%*s %llu %llu %llu %llu %llu %*s", &nice, &user, &system, &idle, &iowait);
+				if (status != 5) {
+					mrLog(CLogger::scErr)
+					<< "!!! 'odroid thread' (thread #" << rThreadNum << "): Error: Cannot read utilization (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
+					exit(EXIT_FAILURE);
+				}
+				
+				*active		+= nice + user + system;
+				*inactive	+= idle + iowait;
+			}
+		}
+		
+		free(line);
+	}
+	
 	void CMeasureOdroid::measureUtilization(MS_MEASUREMENT_ODROID* pMsMeasurementOdroid, int32_t& rThreadNum) {
-		/* TODO: Works like Intel/AMD CPUs but with /proc/stat instead of dedicated kernel driver */
+		double gpu_cur_util		= 0.0;
+		uint64_t cpu_cur_act	= 0;
+		uint64_t cpu_cur_idle	= 0;
+		
+		mpFileProcFSUtilARM	= freopen(PROCFS_FILE_UTIL_A15_A7, "r", mpFileProcFSUtilARM);
+		mpFileSysFSUtilMali	= freopen(SYSFS_FILE_UTIL_MALI   , "r", mpFileSysFSUtilMali);
+		
+		/* Read utilization of Mali GPU */
+		gpu_cur_util	= readFileUtilizationSysFS(mpFileSysFSUtilMali, ODROID_UTIL_MALI, rThreadNum);
+		
+#warning "TODO: Continue coding here!"
+		static int i = 0;
+		/* Read utilization of ARM Cortex A7/A15 CPU */
+		readFileUtilizationProcFS(mpFileProcFSUtilARM, ODROID_UTIL_A15, rThreadNum, &cpu_cur_act, &cpu_cur_idle);
+		printf("%i A15: %llu vs %llu\n", i, cpu_cur_act, cpu_cur_idle);
+		readFileUtilizationProcFS(mpFileProcFSUtilARM, ODROID_UTIL_A7 , rThreadNum, &cpu_cur_act, &cpu_cur_idle);
+		printf("%i A7: %llu vs %llu\n", i++, cpu_cur_act, cpu_cur_idle);
 	}
 	
 	void CMeasureOdroid::measure(void* pMsMeasurement, int32_t& rThreadNum) {

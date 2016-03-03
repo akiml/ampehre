@@ -51,6 +51,12 @@ enum odroid_freq {
 	ODROID_FREQ_MALI
 };
 
+enum odroid_util {
+	ODROID_UTIL_A7,
+	ODROID_UTIL_A15,
+	ODROID_UTIL_MALI
+};
+
 // Only for library internal usage!
 typedef struct __measurement_internal_odroid {
 	struct timespec odroid_time_cur;

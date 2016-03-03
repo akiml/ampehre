@@ -39,6 +39,9 @@
 #define SYSFS_SENSOR_FREQ_A15	"/sys/devices/system/cpu/cpu4/cpufreq/cpuinfo_cur_freq"
 #define SYSFS_SENSOR_FREQ_MALI	"/sys/devices/11800000.mali/clock"
 
+#define PROCFS_FILE_UTIL_A15_A7	"/proc/stat"
+#define SYSFS_FILE_UTIL_MALI	"/sys/devices/11800000.mali/utilization"
+
 typedef struct __odroid_ina231_iocreg {
 	char name[INA231_IOCREG_NAME_LENGTH+1];
 	unsigned int enable;
