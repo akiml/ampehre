@@ -25,6 +25,7 @@ static void print_csv_gpu(FILE *csv, char* captions, int* cur_caption_pos, char*
 static void print_csv_fpga(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
 static void print_csv_mic(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
 static void print_csv_system(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
+static void print_csv_odroid(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m);
 static void print_csv_time(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, EXEC_TIME *exec_time);
 static void print_csv_settings(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, ARGUMENTS* settings);
 
@@ -34,7 +35,7 @@ void print_csv(FILE *csv, ARGUMENTS* settings, MS_LIST *m, EXEC_TIME *exec_time)
 	int cur_value_pos 	= 0;
 	
 	char* captions 	= malloc(MAX_HEADER_LENGTH*sizeof(char));
-	char* units		= malloc(MAX_UNITS_LENGTH);
+	char* units		= malloc(MAX_UNITS_LENGTH*sizeof(char));
 	char* values 	= malloc(MAX_VALUES_LENGTH*sizeof(char));
 	
 	memset(captions, 0, MAX_HEADER_LENGTH*sizeof(char));
@@ -46,11 +47,24 @@ void print_csv(FILE *csv, ARGUMENTS* settings, MS_LIST *m, EXEC_TIME *exec_time)
 	cur_value_pos += snprintf(values + cur_value_pos, MAX_VALUES_LENGTH - cur_value_pos, "%lf;%llu;", exec_time->exec_time_diff, (uint64_t)time(NULL));
 	cur_unit_pos += snprintf(units + cur_unit_pos, MAX_UNITS_LENGTH - cur_unit_pos,"s;s;");
 	
-	print_csv_cpu(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
-	print_csv_gpu(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
-	print_csv_fpga(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
-	print_csv_mic(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
-	print_csv_system(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
+	if (NULL != getMeasurement(&m, CPU)) {
+		print_csv_cpu(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
+	}
+	if (NULL != getMeasurement(&m, GPU)) {
+		print_csv_gpu(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
+	}
+	if (NULL != getMeasurement(&m, FPGA)) {
+		print_csv_fpga(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
+	}
+	if (NULL != getMeasurement(&m, MIC)) {
+		print_csv_mic(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
+	}
+	if (NULL != getMeasurement(&m, SYSTEM)) {
+		print_csv_system(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
+	}
+	if (NULL != getMeasurement(&m, ODROID)) {
+		print_csv_odroid(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, m);
+	}
 	print_csv_time(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, exec_time);
 	print_csv_settings(csv, captions, &cur_caption_pos, units, &cur_unit_pos, values, &cur_value_pos, settings);
 		
@@ -345,22 +359,104 @@ static void print_csv_system(FILE *csv, char* captions, int* cur_caption_pos, ch
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "SYSTEM;");
 	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, ";");
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,";");
+	
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "time_total_measure_system;");
 	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;", system_time_total(m));
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"s;");
+	
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "energy_total_board;"
 								"energy_total_system;");
 	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;%lf;", system_energy_board(m),
 								system_energy_total(m));
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"Ws;Ws;");
+	
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "power_avg_board;"
 								"power_avg_system;");
 	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;%lf;", system_power_board_avg(m),
 								system_power_avg(m));
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"W;W;");
+	
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "temp_max_system;");
 	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;", system_temp_max(m));
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"\u00b0C;");
+}
+
+static void print_csv_odroid(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m) {
+	*cur_caption_pos	+= snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "ODROID;");
+	*cur_value_pos		+= snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, ";");
+	*cur_unit_pos		+= snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,";");
+	
+	*cur_caption_pos	+= snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "time_total_measure_odroid;");
+	*cur_value_pos		+= snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;", odroid_time_total(m));
+	*cur_unit_pos		+= snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"s;");
+	
+	*cur_caption_pos	+= snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos,
+									"energy_total_a15;"
+									"energy_total_a7;"
+									"energy_total_mali;"
+									"energy_total_mem;"
+								   );
+	*cur_value_pos		+= snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;%lf;%lf;%lf;",
+									odroid_energy_total_a15(m),
+									odroid_energy_total_a7(m),
+									odroid_energy_total_mali(m),
+									odroid_energy_total_mem(m)
+								   );
+	*cur_unit_pos		+= snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"mWs;mWs;mWs;mWs;");
+	
+	*cur_caption_pos	+= snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos,
+									"power_avg_a15;"
+									"power_avg_a7;"
+									"power_avg_mali;"
+									"power_avg_mem;"
+								   );
+	*cur_value_pos		+= snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;%lf;%lf;%lf;",
+									odroid_power_avg_a15(m),
+									odroid_power_avg_a7(m),
+									odroid_power_avg_mali(m),
+									odroid_power_avg_mem(m)
+								   );
+	*cur_unit_pos		+= snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"mW;mW;mW;mW;");
+	
+	*cur_caption_pos	+= snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos,
+									"temp_max_a15_core_0;"
+									"temp_max_a15_core_1;"
+									"temp_max_a15_core_2;"
+									"temp_max_a15_core_3;"
+									"temp_max_mali;"
+								   );
+	*cur_value_pos		+= snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%u;%u;%u;%u;%u;",
+									odroid_temp_max_a15(m, 0),
+									odroid_temp_max_a15(m, 0),
+									odroid_temp_max_a15(m, 0),
+									odroid_temp_max_a15(m, 0),
+									odroid_temp_max_mali(m)
+								   );
+	*cur_unit_pos		+= snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"\u00b0C;\u00b0C;\u00b0C;\u00b0C;\u00b0C;");
+	
+	*cur_caption_pos	+= snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos,
+									"freq_avg_a15;"
+									"freq_avg_a7;"
+									"freq_avg_mali;"
+								   );
+	*cur_value_pos		+= snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;%lf;%lf;",
+									odroid_freq_avg_a15(m),
+									odroid_freq_avg_a7(m),
+									odroid_freq_avg_mali(m)
+								   );
+	*cur_unit_pos		+= snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"MHz;MHz;MHz;");
+	
+	*cur_caption_pos	+= snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos,
+									"util_avg_a15;"
+									"util_avg_a7;"
+									"util_avg_mali;"
+								   );
+	*cur_value_pos		+= snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;%lf;%lf;",
+									odroid_util_avg_a15(m),
+									odroid_util_avg_a7(m),
+									odroid_util_avg_mali(m)
+								   );
+	*cur_unit_pos		+= snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"%%;%%;%%;");
 }
 
 static void print_csv_time(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, EXEC_TIME *exec_time) {
