@@ -42,6 +42,13 @@ static void add_mic_temperature(cJSON *val_mic, MS_LIST *m);
 
 static void add_system_values(cJSON *values, MS_LIST *m);
 
+static void add_odroid_values(cJSON *values, MS_LIST *m);
+static void add_odroid_energy(cJSON *val_odroid, MS_LIST *m);
+static void add_odroid_power(cJSON *val_odroid, MS_LIST *m);
+static void add_odroid_temperature(cJSON *val_odroid, MS_LIST *m);
+static void add_odroid_frequency(cJSON *val_odroid, MS_LIST *m);
+static void add_odroid_utlization(cJSON *val_odroid, MS_LIST *m);
+
 static void add_time_values(cJSON *values, EXEC_TIME *exec_time);
 
 static void add_json_leaf_to_object(cJSON *parent, const char *name, double value, const char *unit);
@@ -58,14 +65,28 @@ void print_json(FILE *json, ARGUMENTS *settings, MS_LIST *m, EXEC_TIME *exec_tim
 	
 	add_config(config, settings);
 	
-	add_cpu_values(values,m);
-	add_gpu_values(values, m);
-	add_fpga_values(values, m);
-	add_mic_values(values, m);
-	add_system_values(values, m);
+	if (NULL != getMeasurement(&m, CPU)) {
+		add_cpu_values(values, m);
+	}
+	if (NULL != getMeasurement(&m, GPU)) {
+		add_gpu_values(values, m);
+	}
+	if (NULL != getMeasurement(&m, FPGA)) {
+		add_fpga_values(values, m);
+	}
+	if (NULL != getMeasurement(&m, MIC)) {
+		add_mic_values(values, m);
+	}
+	if (NULL != getMeasurement(&m, SYSTEM)) {
+		add_system_values(values, m);
+	}
+	if (NULL != getMeasurement(&m, ODROID)) {
+		add_odroid_values(values, m);
+	}
+	
 	add_time_values(values, exec_time);
 	
-	fprintf(json, cJSON_Print(root));
+	fprintf(json, "%s", cJSON_Print(root));
 	
 	cJSON_Delete(root);
 }
@@ -456,6 +477,71 @@ static void add_system_values(cJSON *values, MS_LIST *m){
 	add_json_leaf_to_object(item, "total",	system_power_avg(m),		"W");
 	
 	add_json_leaf_to_object(val_sys, "temperature_max",	system_temp_max(m),	"\u00b0C");
+}
+
+static void add_odroid_values(cJSON *values, MS_LIST *m){
+	cJSON *val_odroid;
+	
+	cJSON_AddItemToArray(values, val_odroid = cJSON_CreateObject());
+	
+	cJSON_AddStringToObject(val_odroid, "resource", "odroid");
+	
+	add_json_leaf_to_object(val_odroid, "runtime", odroid_time_total(m), "s");
+	
+	add_odroid_energy(val_odroid, m);
+	add_odroid_power(val_odroid, m);
+	add_odroid_temperature(val_odroid, m);
+	add_odroid_frequency(val_odroid, m);
+	add_odroid_utlization(val_odroid, m);
+}
+
+static void add_odroid_energy(cJSON* val_odroid, MS_LIST* m) {
+	cJSON *item;
+	
+	cJSON_AddItemToObject(val_odroid, "energy_total", item = cJSON_CreateObject());
+	add_json_leaf_to_object(item, "a15"	, odroid_energy_total_a15(m)	, "mWs");
+	add_json_leaf_to_object(item, "a7"	, odroid_energy_total_a7(m)		, "mWs");
+	add_json_leaf_to_object(item, "mali", odroid_energy_total_mali(m)	, "mWs");
+	add_json_leaf_to_object(item, "mem"	, odroid_energy_total_mem(m)	, "mWs");
+}
+
+static void add_odroid_power(cJSON* val_odroid, MS_LIST* m) {
+	cJSON *item;
+	
+	cJSON_AddItemToObject(val_odroid, "power_avg", item = cJSON_CreateObject());
+	add_json_leaf_to_object(item, "a15"	, odroid_power_avg_a15(m)	, "mW");
+	add_json_leaf_to_object(item, "a7"	, odroid_power_avg_a7(m)	, "mW");
+	add_json_leaf_to_object(item, "mali", odroid_power_avg_mali(m)	, "mW");
+	add_json_leaf_to_object(item, "mem"	, odroid_power_avg_mem(m)	, "mW");
+}
+
+static void add_odroid_temperature(cJSON* val_odroid, MS_LIST* m) {
+	cJSON *item;
+	
+	cJSON_AddItemToObject(val_odroid, "temperature_max", item = cJSON_CreateObject());
+	add_json_leaf_to_object(item, "a15_core_0"	, odroid_temp_max_a15(m, ODROID_TEMP_A15_CORE_0), "\u00b0C");
+	add_json_leaf_to_object(item, "a15_core_1"	, odroid_temp_max_a15(m, ODROID_TEMP_A15_CORE_1), "\u00b0C");
+	add_json_leaf_to_object(item, "a15_core_2"	, odroid_temp_max_a15(m, ODROID_TEMP_A15_CORE_2), "\u00b0C");
+	add_json_leaf_to_object(item, "a15_core_3"	, odroid_temp_max_a15(m, ODROID_TEMP_A15_CORE_3), "\u00b0C");
+	add_json_leaf_to_object(item, "mali"		, odroid_temp_max_mali(m)						, "\u00b0C");
+}
+
+static void add_odroid_frequency(cJSON* val_odroid, MS_LIST* m) {
+	cJSON *item;
+	
+	cJSON_AddItemToObject(val_odroid, "frequency_avg", item = cJSON_CreateObject());
+	add_json_leaf_to_object(item, "a15"	, odroid_freq_avg_a15(m)	, "MHz");
+	add_json_leaf_to_object(item, "a7"	, odroid_freq_avg_a7(m)		, "MHz");
+	add_json_leaf_to_object(item, "mali", odroid_freq_avg_mali(m)	, "MHz");
+}
+
+static void add_odroid_utlization(cJSON* val_odroid, MS_LIST* m) {
+	cJSON *item;
+	
+	cJSON_AddItemToObject(val_odroid, "utilization_avg", item = cJSON_CreateObject());
+	add_json_leaf_to_object(item, "a15"	, odroid_util_avg_a15(m)	, "%");
+	add_json_leaf_to_object(item, "a7"	, odroid_util_avg_a7(m)		, "%");
+	add_json_leaf_to_object(item, "mali", odroid_util_avg_mali(m)	, "%");
 }
 
 static void add_time_values(cJSON *values, EXEC_TIME *exec_time) {
