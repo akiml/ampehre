@@ -260,13 +260,13 @@ namespace NLibMeasure {
 		fclose(pFileProcFSFileName);
 	}
 	
-	double CMeasureOdroid::readFileUtilizationSysFS(FILE* pFileSysFSFileName, odroid_util deviceUtilType, int32_t& rThreadNum) {
-		double utilization	= 1.0;
-		int status			= 0;
+	void CMeasureOdroid::readFileUtilizationSysFS(FILE* pFileSysFSFileName, odroid_util deviceUtilType, int32_t& rThreadNum, uint64_t *active, uint64_t *inactive) {
+		uint64_t utilization	= 0;
+		int status				= 0;
 		
 		fseek(pFileSysFSFileName, 0, SEEK_SET);
 		
-		status = fscanf(pFileSysFSFileName, "%lf", &utilization);
+		status = fscanf(pFileSysFSFileName, "%llu", &utilization);
 		if (status != 1) {
 			mrLog(CLogger::scErr)
 			<< "!!! 'odroid thread' (thread #" << rThreadNum << "): Error: Cannot read utilization (file: " << __FILE__ << ", line: " << __LINE__ << ")" << std::endl;
@@ -284,7 +284,8 @@ namespace NLibMeasure {
 				exit(EXIT_FAILURE);
 		}
 		
-		return utilization;
+		*active		= utilization;
+		*inactive	= 100 - utilization;
 	}
 	
 	void CMeasureOdroid::readFileUtilizationProcFS(FILE* pFileProcFSFileName, odroid_util deviceUtilType, int32_t& rThreadNum,
@@ -342,23 +343,21 @@ namespace NLibMeasure {
 	}
 	
 	void CMeasureOdroid::measureUtilization(MS_MEASUREMENT_ODROID* pMsMeasurementOdroid, int32_t& rThreadNum) {
-		double gpu_cur_util		= 0.0;
-		uint64_t cpu_cur_act	= 0;
-		uint64_t cpu_cur_idle	= 0;
-		
 		mpFileProcFSUtilARM	= freopen(PROCFS_FILE_UTIL_A15_A7, "r", mpFileProcFSUtilARM);
 		mpFileSysFSUtilMali	= freopen(SYSFS_FILE_UTIL_MALI   , "r", mpFileSysFSUtilMali);
 		
 		/* Read utilization of Mali GPU */
-		gpu_cur_util	= readFileUtilizationSysFS(mpFileSysFSUtilMali, ODROID_UTIL_MALI, rThreadNum);
+		readFileUtilizationSysFS(mpFileSysFSUtilMali, ODROID_UTIL_MALI, rThreadNum,
+								 &(pMsMeasurementOdroid->internal.odroid_measure_util_cur[ODROID_UTIL_MALI][ODROID_UTIL_ACTIVE]),
+								 &(pMsMeasurementOdroid->internal.odroid_measure_util_cur[ODROID_UTIL_MALI][ODROID_UTIL_IDLE]));
 		
-#warning "TODO: Continue coding here!"
-		static int i = 0;
 		/* Read utilization of ARM Cortex A7/A15 CPU */
-		readFileUtilizationProcFS(mpFileProcFSUtilARM, ODROID_UTIL_A15, rThreadNum, &cpu_cur_act, &cpu_cur_idle);
-		printf("%i A15: %llu vs %llu\n", i, cpu_cur_act, cpu_cur_idle);
-		readFileUtilizationProcFS(mpFileProcFSUtilARM, ODROID_UTIL_A7 , rThreadNum, &cpu_cur_act, &cpu_cur_idle);
-		printf("%i A7: %llu vs %llu\n", i++, cpu_cur_act, cpu_cur_idle);
+		readFileUtilizationProcFS(mpFileProcFSUtilARM, ODROID_UTIL_A15, rThreadNum,
+								  &(pMsMeasurementOdroid->internal.odroid_measure_util_cur[ODROID_UTIL_A15][ODROID_UTIL_ACTIVE]),
+								  &(pMsMeasurementOdroid->internal.odroid_measure_util_cur[ODROID_UTIL_A15][ODROID_UTIL_IDLE]));
+		readFileUtilizationProcFS(mpFileProcFSUtilARM, ODROID_UTIL_A7 , rThreadNum,
+								  &(pMsMeasurementOdroid->internal.odroid_measure_util_cur[ODROID_UTIL_A7][ODROID_UTIL_ACTIVE]),
+								  &(pMsMeasurementOdroid->internal.odroid_measure_util_cur[ODROID_UTIL_A7][ODROID_UTIL_IDLE]));
 	}
 	
 	void CMeasureOdroid::measure(void* pMsMeasurement, int32_t& rThreadNum) {

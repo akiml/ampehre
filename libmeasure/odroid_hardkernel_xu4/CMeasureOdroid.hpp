@@ -64,7 +64,7 @@ namespace NLibMeasure {
 			void destroyFileUtilizationProcFS(FILE *pFileProcFSFileName);
 			void destroyFileUtilizationSysFS(FILE *pFileSysFSFileName);
 			void readFileUtilizationProcFS(FILE *pFileProcFSFileName, odroid_util deviceUtilType, int32_t& rThreadNum, uint64_t *active, uint64_t *inactive);
-			double readFileUtilizationSysFS(FILE *pFileSysFSFileName, odroid_util deviceUtilType, int32_t& rThreadNum);
+			void readFileUtilizationSysFS(FILE *pFileSysFSFileName, odroid_util deviceUtilType, int32_t& rThreadNum, uint64_t *active, uint64_t *inactive);
 			
 			void measurePower(MS_MEASUREMENT_ODROID *pMsMeasurementOdroid, int32_t& rThreadNum);
 			void measureTemperature(MS_MEASUREMENT_ODROID *pMsMeasurementOdroid, int32_t& rThreadNum);

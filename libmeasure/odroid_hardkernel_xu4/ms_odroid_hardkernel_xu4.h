@@ -26,9 +26,11 @@ extern "C" {
 
 #include "ms_list.h"
 
-#define ODROID_NUM_POWER	4
-#define ODROID_NUM_TEMP		5
-#define ODROID_NUM_FREQ		3
+#define ODROID_NUM_POWER		4
+#define ODROID_NUM_TEMP			5
+#define ODROID_NUM_FREQ			3
+#define ODROID_NUM_UTIL			3
+#define ODROID_NUM_UTIL_FIELDS	2
 
 enum odroid_power {
 	ODROID_POWER_A15,
@@ -57,12 +59,19 @@ enum odroid_util {
 	ODROID_UTIL_MALI
 };
 
+enum odroid_util_fields {
+	ODROID_UTIL_ACTIVE,
+	ODROID_UTIL_IDLE
+};
+
 // Only for library internal usage!
 typedef struct __measurement_internal_odroid {
 	struct timespec odroid_time_cur;
 	struct timespec odroid_time_temp;
 	struct timespec odroid_time_diff;
 	double odroid_time_diff_double;
+	uint64_t odroid_measure_util_cur[ODROID_NUM_UTIL][ODROID_NUM_UTIL_FIELDS];
+	uint64_t odroid_measure_util_temp[ODROID_NUM_UTIL][ODROID_NUM_UTIL_FIELDS];
 } MEASUREMENT_INTERNAL_ODROID;
 
 typedef struct __ms_measurement_odroid {
