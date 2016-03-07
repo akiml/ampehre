@@ -70,8 +70,9 @@ typedef struct __measurement_internal_odroid {
 	struct timespec odroid_time_temp;
 	struct timespec odroid_time_diff;
 	double odroid_time_diff_double;
-	uint64_t odroid_measure_util_cur[ODROID_NUM_UTIL][ODROID_NUM_UTIL_FIELDS];
-	uint64_t odroid_measure_util_temp[ODROID_NUM_UTIL][ODROID_NUM_UTIL_FIELDS];
+	
+	uint64_t odroid_util_cur[ODROID_NUM_UTIL][ODROID_NUM_UTIL_FIELDS];
+	uint64_t odroid_util_temp[ODROID_NUM_UTIL][ODROID_NUM_UTIL_FIELDS];
 } MEASUREMENT_INTERNAL_ODROID;
 
 typedef struct __ms_measurement_odroid {
@@ -93,6 +94,11 @@ typedef struct __ms_measurement_odroid {
 	uint32_t odroid_clock_cur[ODROID_NUM_FREQ];
 	double odroid_clock_avg[ODROID_NUM_FREQ];
 	double odroid_clock_acc[ODROID_NUM_FREQ];
+	
+	uint64_t odroid_util_cur[ODROID_NUM_UTIL][ODROID_NUM_UTIL_FIELDS];
+	uint64_t odroid_util_acc[ODROID_NUM_UTIL][ODROID_NUM_UTIL_FIELDS];
+	double odroid_util_avg_cur[ODROID_NUM_UTIL];
+	double odroid_util_avg[ODROID_NUM_UTIL];
 } MS_MEASUREMENT_ODROID;
 
 double odroid_time_total(MS_LIST *ms_list);
@@ -109,6 +115,9 @@ uint32_t odroid_temp_max_mali(MS_LIST *ms_list);
 double odroid_freq_avg_a15(MS_LIST *ms_list);
 double odroid_freq_avg_a7(MS_LIST *ms_list);
 double odroid_freq_avg_mali(MS_LIST *ms_list);
+double odroid_util_avg_a15(MS_LIST *ms_list);
+double odroid_util_avg_a7(MS_LIST *ms_list);
+double odroid_util_avg_mali(MS_LIST *ms_list);
 
 #ifdef __cplusplus
 }

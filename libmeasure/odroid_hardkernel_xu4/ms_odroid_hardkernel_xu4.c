@@ -75,3 +75,15 @@ double odroid_freq_avg_a7(MS_LIST* ms_list) {
 double odroid_freq_avg_mali(MS_LIST* ms_list) {
 	return MEASUREMENT_ODROID->odroid_clock_avg[ODROID_FREQ_MALI];
 }
+
+double odroid_util_avg_a15(MS_LIST *ms_list) {
+	return MEASUREMENT_ODROID->odroid_util_avg[ODROID_UTIL_A15];
+}
+
+double odroid_util_avg_a7(MS_LIST *ms_list) {
+	return MEASUREMENT_ODROID->odroid_util_avg[ODROID_UTIL_A7];
+}
+
+double odroid_util_avg_mali(MS_LIST *ms_list) {
+	return MEASUREMENT_ODROID->odroid_util_avg[ODROID_UTIL_MALI];
+}

@@ -46,7 +46,7 @@ namespace NLibMeasure {
 		
 		mMutexTimer.lock();
 		
-		uint32_t i;
+		uint32_t i, j;
 		
 		// initialize some variables
 		pMsMeasurementOdroid->odroid_time_runtime			= 0.0;
@@ -61,15 +61,28 @@ namespace NLibMeasure {
 			pMsMeasurementOdroid->odroid_clock_acc[i]		= 0.0;
 			pMsMeasurementOdroid->odroid_clock_avg[i]		= 0.0;
 		}
+		for (i=0; i<ODROID_NUM_UTIL; ++i) {
+			pMsMeasurementOdroid->odroid_util_avg[i]		= 0.0;
+			for (j=0; j<ODROID_NUM_UTIL_FIELDS; ++j) {
+				pMsMeasurementOdroid->odroid_util_acc[i][j]	= 0;
+			}
+		}
+		
 		
 		mpMutexStart->unlock();
 		
 		mrStartSem.wait();
 		
+		// first intial measurement
 		mrMeasureResource.measure(mpMsMeasurement, mThreadNum);
 		clock_gettime(CLOCK_REALTIME, &(pMsMeasurementOdroid->internal.odroid_time_cur));
-		pMsMeasurementOdroid->internal.odroid_time_temp.tv_sec	= pMsMeasurementOdroid->internal.odroid_time_cur.tv_sec;
-		pMsMeasurementOdroid->internal.odroid_time_temp.tv_nsec	= pMsMeasurementOdroid->internal.odroid_time_cur.tv_nsec;
+		pMsMeasurementOdroid->internal.odroid_time_temp.tv_sec			= pMsMeasurementOdroid->internal.odroid_time_cur.tv_sec;
+		pMsMeasurementOdroid->internal.odroid_time_temp.tv_nsec			= pMsMeasurementOdroid->internal.odroid_time_cur.tv_nsec;
+		for (i=0; i<ODROID_NUM_UTIL; ++i) {
+			for (j=0; j<ODROID_NUM_UTIL_FIELDS; ++j) {
+				pMsMeasurementOdroid->internal.odroid_util_temp[i][j]	= pMsMeasurementOdroid->internal.odroid_util_cur[i][j];
+			}
+		}
 		
 		while (!mThreadStateStop) {
 			mMutexTimer.lock();
@@ -107,12 +120,45 @@ namespace NLibMeasure {
 				pMsMeasurementOdroid->odroid_clock_avg[i]		=
 					(pMsMeasurementOdroid->odroid_clock_acc[i])/pMsMeasurementOdroid->odroid_time_runtime;
 			}
+			
+			// result: resource utilization
+			for (i=0; i<ODROID_NUM_UTIL; ++i) {
+				for (j=0; j<ODROID_NUM_UTIL_FIELDS; ++j) {
+					if (i == ODROID_UTIL_MALI) {
+						pMsMeasurementOdroid->odroid_util_cur[i][j]			 =
+							pMsMeasurementOdroid->internal.odroid_util_cur[i][j];
+					} else {
+						pMsMeasurementOdroid->odroid_util_cur[i][j]			 =
+							pMsMeasurementOdroid->internal.odroid_util_cur[i][j] - pMsMeasurementOdroid->internal.odroid_util_temp[i][j];
+					}
+					
+					pMsMeasurementOdroid->odroid_util_acc[i][j]				+= pMsMeasurementOdroid->odroid_util_cur[i][j];
+					
+					pMsMeasurementOdroid->internal.odroid_util_temp[i][j]	 = pMsMeasurementOdroid->internal.odroid_util_cur[i][j];
+				}
+				
+				pMsMeasurementOdroid->odroid_util_avg_cur[i]				 =
+					(pMsMeasurementOdroid->odroid_util_cur[i][ODROID_UTIL_ACTIVE] * 100.0) /
+					(pMsMeasurementOdroid->odroid_util_cur[i][ODROID_UTIL_ACTIVE] + pMsMeasurementOdroid->odroid_util_cur[i][ODROID_UTIL_IDLE]);
+			}
 		}
 		
 		// result: average power consumption
 		for (i=0; i<ODROID_NUM_POWER; ++i) {
-			pMsMeasurementOdroid->odroid_power_avg[i] 				=
+			pMsMeasurementOdroid->odroid_power_avg[i] =
 				(pMsMeasurementOdroid->odroid_energy_acc[i])/pMsMeasurementOdroid->odroid_time_runtime;
+		}
+		
+		// result: average resource utilization
+		for (i=0; i<ODROID_NUM_UTIL; ++i) {
+			uint64_t util_time_total =
+				pMsMeasurementOdroid->odroid_util_acc[i][ODROID_UTIL_ACTIVE] +
+				pMsMeasurementOdroid->odroid_util_acc[i][ODROID_UTIL_IDLE];
+			uint64_t util_time_idle =
+				pMsMeasurementOdroid->odroid_util_acc[i][ODROID_UTIL_IDLE];
+			
+			pMsMeasurementOdroid->odroid_util_avg[i] =
+				(((double)util_time_total - (double)util_time_idle) * 100.0) / (double)util_time_total;
 		}
 		
 #ifdef DEBUG

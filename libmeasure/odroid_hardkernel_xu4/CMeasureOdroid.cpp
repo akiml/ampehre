@@ -348,16 +348,16 @@ namespace NLibMeasure {
 		
 		/* Read utilization of Mali GPU */
 		readFileUtilizationSysFS(mpFileSysFSUtilMali, ODROID_UTIL_MALI, rThreadNum,
-								 &(pMsMeasurementOdroid->internal.odroid_measure_util_cur[ODROID_UTIL_MALI][ODROID_UTIL_ACTIVE]),
-								 &(pMsMeasurementOdroid->internal.odroid_measure_util_cur[ODROID_UTIL_MALI][ODROID_UTIL_IDLE]));
+								 &(pMsMeasurementOdroid->internal.odroid_util_cur[ODROID_UTIL_MALI][ODROID_UTIL_ACTIVE]),
+								 &(pMsMeasurementOdroid->internal.odroid_util_cur[ODROID_UTIL_MALI][ODROID_UTIL_IDLE]));
 		
 		/* Read utilization of ARM Cortex A7/A15 CPU */
 		readFileUtilizationProcFS(mpFileProcFSUtilARM, ODROID_UTIL_A15, rThreadNum,
-								  &(pMsMeasurementOdroid->internal.odroid_measure_util_cur[ODROID_UTIL_A15][ODROID_UTIL_ACTIVE]),
-								  &(pMsMeasurementOdroid->internal.odroid_measure_util_cur[ODROID_UTIL_A15][ODROID_UTIL_IDLE]));
+								  &(pMsMeasurementOdroid->internal.odroid_util_cur[ODROID_UTIL_A15][ODROID_UTIL_ACTIVE]),
+								  &(pMsMeasurementOdroid->internal.odroid_util_cur[ODROID_UTIL_A15][ODROID_UTIL_IDLE]));
 		readFileUtilizationProcFS(mpFileProcFSUtilARM, ODROID_UTIL_A7 , rThreadNum,
-								  &(pMsMeasurementOdroid->internal.odroid_measure_util_cur[ODROID_UTIL_A7][ODROID_UTIL_ACTIVE]),
-								  &(pMsMeasurementOdroid->internal.odroid_measure_util_cur[ODROID_UTIL_A7][ODROID_UTIL_IDLE]));
+								  &(pMsMeasurementOdroid->internal.odroid_util_cur[ODROID_UTIL_A7][ODROID_UTIL_ACTIVE]),
+								  &(pMsMeasurementOdroid->internal.odroid_util_cur[ODROID_UTIL_A7][ODROID_UTIL_IDLE]));
 	}
 	
 	void CMeasureOdroid::measure(void* pMsMeasurement, int32_t& rThreadNum) {

@@ -467,6 +467,15 @@ static void print_ostream_odroid(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 		odroid_freq_avg_a7(m),
 		odroid_freq_avg_mali(m)
 	);
+	
+	fprintf(file,
+		"util   avg   a15        [ %% ]: %.2lf\n"
+		"util   avg   a7         [ %% ]: %.2lf\n"
+		"util   avg   mali       [ %% ]: %.2lf\n",
+		odroid_util_avg_a15(m),
+		odroid_util_avg_a7(m),
+		odroid_util_avg_mali(m)
+	);
 }
 
 static void print_ostream_time(FILE *file, EXEC_TIME *exec_time) {
