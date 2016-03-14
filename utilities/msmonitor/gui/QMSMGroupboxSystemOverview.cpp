@@ -310,9 +310,9 @@ namespace Ui {
 		
 		mpPainter = new QPainter();
 		
-		mpColorMap = new QwtLinearColorMap(Qt::blue, Qt::red);
-		mpColorMap->addColorStop(0.3, Qt::cyan);
-		mpColorMap->addColorStop(0.5, Qt::green);
-		mpColorMap->addColorStop(0.7, Qt::yellow);
+		mpColorMap = new QwtLinearColorMap(START_COLOR, START_COLOR);
+		mpColorMap->addColorStop(FIRST_COLOR_STOP);
+		mpColorMap->addColorStop(SECOND_COLOR_STOP);
+		mpColorMap->addColorStop(THIRD_COLOR_STOP);
 	}
 }

@@ -17,212 +17,125 @@
 
 #include "ms_mic_intel_knc.h"
 
+#define MEASUREMENT_MIC \
+	(NULL == getMeasurement(&ms_list, MIC)) ? 0 : ((MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC))
+
 double mic_time_total(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_time_runtime;
+	return MEASUREMENT_MIC->mic_time_runtime;
 }
 
 double mic_energy_total_pcie(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_energy_acc[MIC_PCIE];
+	return MEASUREMENT_MIC->mic_energy_acc[MIC_PCIE];
 }
 
 double mic_energy_total_c2x3(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_energy_acc[MIC_C2X3];
+	return MEASUREMENT_MIC->mic_energy_acc[MIC_C2X3];
 }
 
 double mic_energy_total_c2x4(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_energy_acc[MIC_C2X4];
+	return MEASUREMENT_MIC->mic_energy_acc[MIC_C2X4];
 }
 
 double mic_energy_total_vccp(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_energy_acc[MIC_VCCP];
+	return MEASUREMENT_MIC->mic_energy_acc[MIC_VCCP];
 }
 
 double mic_energy_total_vddg(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_energy_acc[MIC_VDDG];
+	return MEASUREMENT_MIC->mic_energy_acc[MIC_VDDG];
 }
 
 double mic_energy_total_vddq(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_energy_acc[MIC_VDDQ];
+	return MEASUREMENT_MIC->mic_energy_acc[MIC_VDDQ];
 }
 
 double mic_energy_total_power_usage(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_energy_acc[MIC_POWER];
+	return MEASUREMENT_MIC->mic_energy_acc[MIC_POWER];
 }
 
 double mic_power_avg_pcie(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_power_avg[MIC_PCIE];
+	return MEASUREMENT_MIC->mic_power_avg[MIC_PCIE];
 }
 
 double mic_power_avg_c2x3(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_power_avg[MIC_C2X3];
+	return MEASUREMENT_MIC->mic_power_avg[MIC_C2X3];
 }
 
 double mic_power_avg_c2x4(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_power_avg[MIC_C2X4];
+	return MEASUREMENT_MIC->mic_power_avg[MIC_C2X4];
 }
 
 double mic_power_avg_vccp(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_power_avg[MIC_VCCP];
+	return MEASUREMENT_MIC->mic_power_avg[MIC_VCCP];
 }
 
 double mic_power_avg_vddg(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_power_avg[MIC_VDDG];
+	return MEASUREMENT_MIC->mic_power_avg[MIC_VDDG];
 }
 
 double mic_power_avg_vddq(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_power_avg[MIC_VDDQ];
+	return MEASUREMENT_MIC->mic_power_avg[MIC_VDDQ];
 }
 
 double mic_power_avg_power_usage(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_power_avg[MIC_POWER];
+	return MEASUREMENT_MIC->mic_power_avg[MIC_POWER];
 }
 
 uint32_t mic_temp_max_die(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_temperature_max[MIC_DIE_TEMP];
+	return MEASUREMENT_MIC->mic_temperature_max[MIC_DIE_TEMP];
 }
 
 uint32_t mic_temp_max_gddr(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_temperature_max[MIC_GDDR_TEMP];
+	return MEASUREMENT_MIC->mic_temperature_max[MIC_GDDR_TEMP];
 }
 
 uint32_t mic_temp_max_fan_in(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_temperature_max[MIC_FAN_IN_TEMP];
+	return MEASUREMENT_MIC->mic_temperature_max[MIC_FAN_IN_TEMP];
 }
 
 uint32_t mic_temp_max_fan_out(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_temperature_max[MIC_FAN_OUT_TEMP];
+	return MEASUREMENT_MIC->mic_temperature_max[MIC_FAN_OUT_TEMP];
 }
 
 uint32_t mic_temp_max_vccp(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_temperature_max[MIC_VCCP_TEMP];
+	return MEASUREMENT_MIC->mic_temperature_max[MIC_VCCP_TEMP];
 }
 
 uint32_t mic_temp_max_vddg(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_temperature_max[MIC_VDDG_TEMP];
+	return MEASUREMENT_MIC->mic_temperature_max[MIC_VDDG_TEMP];
 }
 
 uint32_t mic_temp_max_vddq(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_temperature_max[MIC_VDDQ_TEMP];
+	return MEASUREMENT_MIC->mic_temperature_max[MIC_VDDQ_TEMP];
 }
 
 double mic_freq_avg_mem(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_freq_mem_avg;
+	return MEASUREMENT_MIC->mic_freq_mem_avg;
 }
 
 double mic_freq_avg_core(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_freq_core_avg;
+	return MEASUREMENT_MIC->mic_freq_core_avg;
 }
 
 double mic_active_avg_all(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_util_active_avg;
+	return MEASUREMENT_MIC->mic_util_active_avg;
 }
 
 double mic_idle_avg_all(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_util_idle_avg;
+	return MEASUREMENT_MIC->mic_util_idle_avg;
 }
 
 double mic_util_avg_all(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_util_avg;
+	return MEASUREMENT_MIC->mic_util_avg;
 }
 
 uint32_t mic_memory_total(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_memory_total;
+	return MEASUREMENT_MIC->mic_memory_total;
 }
 
 uint32_t mic_memory_used_max(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_memory_used_max;
+	return MEASUREMENT_MIC->mic_memory_used_max;
 }
 
 uint32_t mic_memory_free_max(MS_LIST *ms_list) {
-	MS_MEASUREMENT_MIC *ms_measurement_mic = (MS_MEASUREMENT_MIC *) getMeasurement(&ms_list, MIC);
-	NULL_CHECK(ms_measurement_mic);
-	
-	return ms_measurement_mic->mic_memory_free_max;
+	return MEASUREMENT_MIC->mic_memory_free_max;
 }

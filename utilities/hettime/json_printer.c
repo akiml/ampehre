@@ -15,6 +15,7 @@
  * version: 0.6.1 - add json printer to hettime
  *          0.7.0 - modularized measurement struct
  *          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
+ *          0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
  */
 
 #include "printer.h"
@@ -317,7 +318,11 @@ static void add_gpu_values(cJSON *values, MS_LIST *m){
 	cJSON_AddItemToObject(val_gpu, "memory", item = cJSON_CreateObject());
 	add_json_leaf_to_object(item, "total",		gpu_memory_total(m),	"kiB");
 	add_json_leaf_to_object(item, "max_used",	gpu_memory_used_max(m),	"kiB");
-	add_json_leaf_to_object(item, "max_free",	gpu_memory_free_max(m),	"kiB");	
+	add_json_leaf_to_object(item, "max_free",	gpu_memory_free_max(m),	"kiB");
+	
+	cJSON_AddItemToObject(val_gpu, "processes", item = cJSON_CreateObject());
+	add_json_leaf_to_object(item, "max_active", gpu_active_processes_max(m), "");
+	
 }
 
 static void add_fpga_values(cJSON *values, MS_LIST *m){

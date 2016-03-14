@@ -30,8 +30,6 @@ extern "C" {
 #define SYSTEM	0x08
 #define MIC 	0x10
 #define ALL		(CPU | GPU | FPGA | SYSTEM | MIC)
-	
-#define NULL_CHECK(val)  if(NULL == val) return 0;
 
 typedef struct __ms_list {
 	int32_t resource_id;

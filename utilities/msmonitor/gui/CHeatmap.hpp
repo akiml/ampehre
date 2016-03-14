@@ -25,6 +25,12 @@
 #include <qwt_scale_widget.h>
 #include <qwt_plot_layout.h>
 
+#define START_COLOR			Qt::blue
+#define FIRST_COLOR_STOP	0.3, Qt::cyan
+#define SECOND_COLOR_STOP	0.5, Qt::green
+#define THIRD_COLOR_STOP	0.7, Qt::yellow
+#define STOP_COLOR			Qt::red
+
 namespace Ui {
 	class Heatmap: public QwtPlot {
 		Q_OBJECT

@@ -18,94 +18,58 @@
 
 #include "ms_gpu_nvidia_tesla_kepler.h"
 
+#define MEASUREMENT_GPU \
+	(NULL == getMeasurement(&ms_list, GPU)) ? 0 : ((MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU))
+
 double gpu_time_total(MS_LIST *ms_list) {
-	MS_MEASUREMENT_GPU *ms_measurement_gpu = (MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU);
-	NULL_CHECK(ms_measurement_gpu);
-	
-	return ms_measurement_gpu->nvml_time_runtime;
+	return MEASUREMENT_GPU->nvml_time_runtime;
 }
 
 double gpu_energy_total(MS_LIST *ms_list) {
-	MS_MEASUREMENT_GPU *ms_measurement_gpu = (MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU);
-	NULL_CHECK(ms_measurement_gpu);
-	
-	return ms_measurement_gpu->nvml_energy_acc;
+	return MEASUREMENT_GPU->nvml_energy_acc;
 }
 
 double gpu_power_avg(MS_LIST *ms_list) {
-	MS_MEASUREMENT_GPU *ms_measurement_gpu = (MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU);
-	NULL_CHECK(ms_measurement_gpu);
-	
-	return ms_measurement_gpu->nvml_power_avg;
+	return MEASUREMENT_GPU->nvml_power_avg;
 }
 
 uint32_t gpu_temp_max(MS_LIST *ms_list) {
-	MS_MEASUREMENT_GPU *ms_measurement_gpu = (MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU);
-	NULL_CHECK(ms_measurement_gpu);
-	
-	return ms_measurement_gpu->nvml_temperature_max;
+	return MEASUREMENT_GPU->nvml_temperature_max;
 }
 
 double gpu_freq_avg_graph(MS_LIST *ms_list) {
-	MS_MEASUREMENT_GPU *ms_measurement_gpu = (MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU);
-	NULL_CHECK(ms_measurement_gpu);
-	
-	return ms_measurement_gpu->nvml_clock_graphics_avg;
+	return MEASUREMENT_GPU->nvml_clock_graphics_avg;
 }
 
 double gpu_freq_avg_sm(MS_LIST *ms_list) {
-	MS_MEASUREMENT_GPU *ms_measurement_gpu = (MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU);
-	NULL_CHECK(ms_measurement_gpu);
-	
-	return ms_measurement_gpu->nvml_clock_sm_avg;
+	return MEASUREMENT_GPU->nvml_clock_sm_avg;
 }
 
 double gpu_freq_avg_mem(MS_LIST *ms_list) {
-	MS_MEASUREMENT_GPU *ms_measurement_gpu = (MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU);
-	NULL_CHECK(ms_measurement_gpu);
-	
-	return ms_measurement_gpu->nvml_clock_mem_avg;
+	return MEASUREMENT_GPU->nvml_clock_mem_avg;
 }
 
 double gpu_util_avg_gpu(MS_LIST *ms_list) {
-	MS_MEASUREMENT_GPU *ms_measurement_gpu = (MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU);
-	NULL_CHECK(ms_measurement_gpu);
-	
-	return ms_measurement_gpu->nvml_util_gpu_avg;
+	return MEASUREMENT_GPU->nvml_util_gpu_avg;
 }
 
 double gpu_util_avg_mem(MS_LIST *ms_list) {
-	MS_MEASUREMENT_GPU *ms_measurement_gpu = (MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU);
-	NULL_CHECK(ms_measurement_gpu);
-	
-	return ms_measurement_gpu->nvml_util_mem_avg;
+	return MEASUREMENT_GPU->nvml_util_mem_avg;
 }
 
 uint32_t gpu_memory_total(MS_LIST *ms_list) {
-	MS_MEASUREMENT_GPU *ms_measurement_gpu = (MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU);
-	NULL_CHECK(ms_measurement_gpu);
-	
-	return ms_measurement_gpu->nvml_memory_total;
+	return MEASUREMENT_GPU->nvml_memory_total;
 }
 
 uint32_t gpu_memory_used_max(MS_LIST *ms_list) {
-	MS_MEASUREMENT_GPU *ms_measurement_gpu = (MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU);
-	NULL_CHECK(ms_measurement_gpu);
-	
-	return ms_measurement_gpu->nvml_memory_used_max;
+	return MEASUREMENT_GPU->nvml_memory_used_max;
 }
 
 uint32_t gpu_memory_free_max(MS_LIST *ms_list) {
-	MS_MEASUREMENT_GPU *ms_measurement_gpu = (MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU);
-	NULL_CHECK(ms_measurement_gpu);
-	
-	return ms_measurement_gpu->nvml_memory_free_max;
+	return MEASUREMENT_GPU->nvml_memory_free_max;
 }
 
 uint32_t gpu_active_processes_max ( MS_LIST* ms_list ) {
-	MS_MEASUREMENT_GPU *ms_measurement_gpu = (MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU);
-	NULL_CHECK(ms_measurement_gpu);
-	
-	return ms_measurement_gpu->nvml_active_processes_count_max;
+	return MEASUREMENT_GPU->nvml_active_processes_count_max;
 }
 

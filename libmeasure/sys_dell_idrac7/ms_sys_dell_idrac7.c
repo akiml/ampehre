@@ -17,44 +17,29 @@
 
 #include "ms_sys_dell_idrac7.h"
 
-double system_time_total(MS_LIST *ms_list) {
-	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
-	NULL_CHECK(ms_measurement_sys);
-	
-	return ms_measurement_sys->ipmi_time_runtime;
+#define MEASUREMENT_SYSTEM \
+	(NULL == getMeasurement(&ms_list, SYSTEM)) ? 0 : ((MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM))
+
+double system_time_total(MS_LIST *ms_list) {	
+	return MEASUREMENT_SYSTEM->ipmi_time_runtime;
 }
 
 double system_energy_board(MS_LIST *ms_list) {
-	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
-	NULL_CHECK(ms_measurement_sys);
-	
-	return ms_measurement_sys->ipmi_energy_sysboard_acc;
+	return MEASUREMENT_SYSTEM->ipmi_energy_sysboard_acc;
 }
 
 double system_power_board_avg(MS_LIST *ms_list) {
-	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
-	NULL_CHECK(ms_measurement_sys);
-	
-	return ms_measurement_sys->ipmi_power_sysboard_avg;
+	return MEASUREMENT_SYSTEM->ipmi_power_sysboard_avg;
 }
 
 double system_temp_max(MS_LIST *ms_list) {
-	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
-	NULL_CHECK(ms_measurement_sys);
-	
-	return ms_measurement_sys->ipmi_temperature_sysboard_max;
+	return MEASUREMENT_SYSTEM->ipmi_temperature_sysboard_max;
 }
 
 double system_energy_total(MS_LIST *ms_list) {
-	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
-	NULL_CHECK(ms_measurement_sys);
-	
-	return ms_measurement_sys->ipmi_energy_server_acc;
+	return MEASUREMENT_SYSTEM->ipmi_energy_server_acc;
 }
 
 double system_power_avg(MS_LIST *ms_list) {
-	MS_MEASUREMENT_SYS *ms_measurement_sys = (MS_MEASUREMENT_SYS *) getMeasurement(&ms_list, SYSTEM);
-	NULL_CHECK(ms_measurement_sys);
-	
-	return ms_measurement_sys->ipmi_power_server_avg;
+	return MEASUREMENT_SYSTEM->ipmi_power_server_avg;
 }

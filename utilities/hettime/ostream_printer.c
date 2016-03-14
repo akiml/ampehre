@@ -25,6 +25,7 @@
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.7.0 - modularized measurement struct
  *          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
+ *          0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
  */
 
 #include "printer.h"
@@ -225,7 +226,8 @@ static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 		"util   avg   gpu mem    [ %% ]: %lf\n"
 		"memory total gpu        [kiB]: %d\n"
 		"memory max   gpu used   [kiB]: %d\n"
-		"memory max   gpu free   [kiB]: %d\n",
+		"memory max   gpu free   [kiB]: %d\n"
+		"proc   max   gpu active [   ]: %u\n",
 		gpu_energy_total(m),
 		gpu_power_avg(m),
 		gpu_temp_max(m),
@@ -236,7 +238,8 @@ static void print_ostream_gpu(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 		gpu_util_avg_mem(m),
 		gpu_memory_total(m),
 		gpu_memory_used_max(m),
-		gpu_memory_free_max(m)
+		gpu_memory_free_max(m),
+		gpu_active_processes_max(m)
 	);
 }
 

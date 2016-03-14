@@ -21,14 +21,14 @@ namespace Ui {
 	Heatmap::Heatmap(QWidget *parent):
 		QwtPlot(parent),
 		mpSpectrogram(new QwtPlotSpectrogram()),
-		mpColorMap(new QwtLinearColorMap(Qt::blue, Qt::red)),
+		mpColorMap(new QwtLinearColorMap(START_COLOR, STOP_COLOR)),
 		mpHeatmapData(new HeatmapData()) {
 
 		QwtScaleDraw *scale = new QwtScaleDraw();
 		
-		mpColorMap->addColorStop(0.3, Qt::cyan);
-		mpColorMap->addColorStop(0.5, Qt::green);
-		mpColorMap->addColorStop(0.7, Qt::yellow);
+		mpColorMap->addColorStop(FIRST_COLOR_STOP);
+		mpColorMap->addColorStop(SECOND_COLOR_STOP);
+		mpColorMap->addColorStop(THIRD_COLOR_STOP);
 		
 		mpSpectrogram->setColorMap(*mpColorMap);
 		mpSpectrogram->setData(*mpHeatmapData);

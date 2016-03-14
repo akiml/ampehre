@@ -16,6 +16,7 @@
  *          0.5.6 - extended hettime csv printer
  *          0.7.0 - modularized measurement struct
  *          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
+ *          0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
  */
 
 #include "printer.h"
@@ -199,8 +200,9 @@ static void print_csv_gpu(FILE *csv, char* captions, int* cur_caption_pos, char*
 								"util_avg_gpu_mem;"
 								"memory_total_gpu;"
 								"memory_max_gpu_used;"
-								"memory_max_gpu_free;");
-	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;%lf;%u;%lf;%lf;%lf;%lf;%lf;%d;%d;%d;", gpu_energy_total(m),
+								"memory_max_gpu_free;"
+								"proc_max_gpu_active;");
+	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%lf;%lf;%u;%lf;%lf;%lf;%lf;%lf;%d;%d;%d;%u;", gpu_energy_total(m),
 								gpu_power_avg(m),
 								gpu_temp_max(m),
 								gpu_freq_avg_graph(m),
@@ -210,8 +212,9 @@ static void print_csv_gpu(FILE *csv, char* captions, int* cur_caption_pos, char*
 								gpu_util_avg_mem(m),
 								gpu_memory_total(m),
 								gpu_memory_used_max(m),
-								gpu_memory_free_max(m));
-	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"mWs;mW;\u00b0C;MHz;MHz;MHz;%%;%%;kiB;kiB;kiB;");
+								gpu_memory_free_max(m),
+								gpu_active_processes_max(m));
+	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"mWs;mW;\u00b0C;MHz;MHz;MHz;%%;%%;kiB;kiB;kiB;;");
 }
 
 static void print_csv_fpga(FILE *csv, char* captions, int* cur_caption_pos, char* units, int* cur_unit_pos, char* values, int* cur_value_pos, MS_LIST* m){
