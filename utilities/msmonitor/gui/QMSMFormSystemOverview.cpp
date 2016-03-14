@@ -12,7 +12,7 @@
  * 
  * author: Christoph Knorr (cknorr@mail.uni-paderborn.de)
  * created: 02/24/16
- * version: 0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
+ * version: 0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
  */
 
 #include "QMSMFormSystemOverview.hpp"
@@ -31,7 +31,7 @@ namespace Ui {
 		
 		setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint);
 		
-		this->setFixedHeight(710);
+		this->setFixedHeight(670);
 		this->setMinimumWidth(550);
 		
 		setupUi(mpFormSystemOverview);
@@ -44,101 +44,58 @@ namespace Ui {
 	}
 
 	QMSMFormSystemOverview::~QMSMFormSystemOverview() {
-		delete mpPixmapFPGAActivity;
-		delete mpPixmapGPUActivity;
+		delete mpGroupboxCPU;
+		delete mpGroupboxGPU;
+		delete mpGroupboxFPGA;
+		delete mpGroupboxMIC;
 		
-		delete mpPixmapCPUUtilization;
-		delete mpPixmapGPUCoreUtilization;
-		delete mpPixmapGPUMemUtilization;
-		delete mpPixmapFPGAUtilization;
-		delete mpPixmapMICUtilization;
-		
-		delete mpPixmapCPU0Temperature;
-		delete mpPixmapCPU1Temperature;
-		delete mpPixmapGPUTemperature;
-		delete mpPixmapFPGAComputeTemperature;
-		delete mpPixmapFPGAInterfaceTemperature;
-		delete mpPixmapMICTemperature;
-		
-		delete mpColorMap;
 		delete mpFormSystemOverview;
 	}
 	
     void QMSMFormSystemOverview::initGUI(void) {
 		MS_CONFIG* pConfig = mpDataHandler->getLibrary().getMS_CONFIG();
 		
-		mpPainter = new QPainter();
+		std::string columnNamesGPU[] = {"PID", "Name"};
+		mpGroupboxCPU = new QMSMGroupboxSystemOverview(mpFormSystemOverview, "CPU", "", "", "CPU 0", "CPU 1", false);
+		mpGroupboxGPU = new QMSMGroupboxSystemOverview(mpFormSystemOverview, "GPU", "Core", "Memory", "", "", true, columnNamesGPU, 2, MAX_VISIBLE_GPU_PROCSSES);
+		mpGroupboxFPGA = new QMSMGroupboxSystemOverview(mpFormSystemOverview, "FPGA", "", "", "Compute", "Interface", true);
+		mpGroupboxMIC = new QMSMGroupboxSystemOverview(mpFormSystemOverview, "MIC", "", "", "", "", false);
 		
-		mpPixmapGPUActivity		= new QPixmap(35, 35);
-		mpPixmapFPGAActivity	= new QPixmap(35, 35);
+		verticalLayout->addWidget(mpGroupboxCPU);
+		verticalLayout->addWidget(mpGroupboxGPU);
+		verticalLayout->addWidget(mpGroupboxFPGA);
+		verticalLayout->addWidget(mpGroupboxMIC);
 		
-		mpPixmapCPUUtilization		= new QPixmap(60, 35);
-		mpPixmapGPUCoreUtilization	= new QPixmap(60, 35);
-		mpPixmapGPUMemUtilization	= new QPixmap(60, 35);
-		mpPixmapFPGAUtilization		= new QPixmap(60, 35);
-		mpPixmapMICUtilization		= new QPixmap(60, 35);
+		//initialize all labels which should be visible
+		mpGroupboxGPU->setActivity(false);
+		mpGroupboxFPGA->setActivity(false);
 		
-		mpPixmapCPU0Temperature			= new QPixmap(60, 35);
-		mpPixmapCPU1Temperature			= new QPixmap(60, 35);
-		mpPixmapGPUTemperature			= new QPixmap(60, 35);
-		mpPixmapFPGAComputeTemperature 	= new QPixmap(60, 35);
-		mpPixmapFPGAInterfaceTemperature= new QPixmap(60, 35);
-		mpPixmapMICTemperature			= new QPixmap(60, 35);
+		mpGroupboxCPU->setUtilization(0, 0);
+		mpGroupboxGPU->setUtilization(0, 0);
+		mpGroupboxGPU->setUtilization(1, 0);
+		mpGroupboxFPGA->setUtilization(0, 0);
+		mpGroupboxMIC->setUtilization(0, 0);
 		
-		mpColorMap = new QwtLinearColorMap(Qt::blue, Qt::red);
-		mpColorMap->addColorStop(0.3, Qt::cyan);
-		mpColorMap->addColorStop(0.5, Qt::green);
-		mpColorMap->addColorStop(0.7, Qt::yellow);
-		
-		setActivity(mpPixmapGPUActivity, labelGPUActivity, false);
-		setActivity(mpPixmapFPGAActivity, labelFPGAActivity, false);
-		
-		setUtilization(mpPixmapCPUUtilization, labelCPUPixmapUtiliziation, 0);
-		setUtilization(mpPixmapGPUCoreUtilization, labelGPUCorePixmapUtilization, 0);
-		setUtilization(mpPixmapGPUMemUtilization, labelGPUMemPixmapUtilization, 0);
-		setUtilization(mpPixmapFPGAUtilization, labelFPGAPixmapUtilization,0);
-		setUtilization(mpPixmapMICUtilization, labelMICPixmapUtilization,  0);
-		
-		setTemperature(mpPixmapCPU0Temperature, labelCPU0PixmapTemperature, 0, 100, 0);
-		setTemperature(mpPixmapCPU1Temperature, labelCPU1PixmapTemperature, 0, 100, 0);
-		setTemperature(mpPixmapGPUTemperature, labelGPUPixmapTemperature, 0, 100, 0);
-		setTemperature(mpPixmapFPGAComputeTemperature, labelFPGAComputePixmapTemperature, 0, 100, 0);
-		setTemperature(mpPixmapFPGAInterfaceTemperature, labelFPGAInterfacePixmapTemperature, 0, 100, 0);
-		setTemperature(mpPixmapMICTemperature, labelMICPixmapTemperature, 0, 100, 0);
-		
-		tableWidgetGPUProcesses->verticalHeader()->hide();
-		tableWidgetGPUProcesses->setRowCount(MAX_VISIBLE_GPU_PROCSSES);
-		for(int i = 0; i < MAX_VISIBLE_GPU_PROCSSES; i++) {
-			tableWidgetGPUProcesses->setItem(i, 0, new QTableWidgetItem());
-			tableWidgetGPUProcesses->setItem(i, 1, new QTableWidgetItem());
-		}
-		tableWidgetGPUProcesses->resizeColumnsToContents();
-		tableWidgetGPUProcesses->setEditTriggers(QAbstractItemView::NoEditTriggers);
-		tableWidgetGPUProcesses->horizontalHeader()->setStretchLastSection(true);
-		
-		tableWidgetFPGAProcesses->verticalHeader()->hide();
-		tableWidgetFPGAProcesses->setRowCount(1);
-		tableWidgetFPGAProcesses->setItem(0, 0, new QTableWidgetItem());
-		tableWidgetFPGAProcesses->setItem(0, 1, new QTableWidgetItem());
-		tableWidgetFPGAProcesses->setItem(0, 2, new QTableWidgetItem());
-		tableWidgetFPGAProcesses->resizeColumnsToContents();
-		tableWidgetFPGAProcesses->setEditTriggers(QAbstractItemView::NoEditTriggers);
-		tableWidgetFPGAProcesses->horizontalHeader()->setStretchLastSection(true);
+		mpGroupboxCPU->setTemperature(0, 0, 100, 0);
+		mpGroupboxCPU->setTemperature(1, 0, 100, 0);
+		mpGroupboxGPU->setTemperature(0, 0, 100, 0);
+		mpGroupboxFPGA->setTemperature(0, 0, 100, 0);
+		mpGroupboxFPGA->setTemperature(1, 0, 100, 0);
+		mpGroupboxMIC->setTemperature(0, 0, 100, 0);
 		
 		if(!(pConfig->cpu_enabled)) {
-			groupBoxCPU->setEnabled(false);
+			mpGroupboxCPU->setEnabled(false);
 		}
 		if(!(pConfig->gpu_enabled)) {
-			groupBoxGPU->setEnabled(false);
+			mpGroupboxGPU->setEnabled(false);
 		}
 		if(!(pConfig->fpga_enabled)) {
-			groupBoxFPGA->setEnabled(false);
+			mpGroupboxFPGA->setEnabled(false);
 		}
 		if(!(pConfig->mic_enabled)) {
-			groupBoxMIC->setEnabled(false);
+			mpGroupboxMIC->setEnabled(false);
 		}
-    }
-
+	}
 	
 	void QMSMFormSystemOverview::refreshGui(void) {
 		emit signalRefreshGui();
@@ -190,9 +147,9 @@ namespace Ui {
     
     void QMSMFormSystemOverview::updateActiveProcesses(void) {
 		if(mpDataHandler->getMeasurement().mMaxelerActiveProcessPid != 0) {
-			setActivity(mpPixmapFPGAActivity, labelFPGAActivity, true);
+			mpGroupboxFPGA->setActivity(true);
 		} else {
-			setActivity(mpPixmapFPGAActivity, labelFPGAActivity, false);
+			mpGroupboxFPGA->setActivity(false);
 		}
 		
 		addFPGAProcessToTable(mpDataHandler->getMeasurement().mMaxelerActiveProcessPid,
@@ -200,9 +157,9 @@ namespace Ui {
 								mpDataHandler->getMeasurement().mMaxelerActiveProcessUser);
 		
 		if(mpDataHandler->getMeasurement().mNVMLActiveProcessesCount > 0) {
-			setActivity(mpPixmapGPUActivity, labelGPUActivity, true);
+			mpGroupboxGPU->setActivity(true);
 		} else {
-			setActivity(mpPixmapGPUActivity, labelGPUActivity, false);
+			mpGroupboxGPU->setActivity(false);
 		}
 		
 		addGPUProcessesToTable(mpDataHandler->getMeasurement().mNVMLActiveProcessesCount,
@@ -231,11 +188,11 @@ namespace Ui {
 		double utilFPGA		= calcMean(util_fpga, factorDataToHeatmapSamplingRate);
 		double utilMIC		= calcMean(util_mic, factorDataToHeatmapSamplingRate);
 		
-		setUtilization(mpPixmapCPUUtilization, labelCPUPixmapUtiliziation, utilCPU);
-		setUtilization(mpPixmapGPUCoreUtilization, labelGPUCorePixmapUtilization, utilGPUCore);
-		setUtilization(mpPixmapGPUMemUtilization, labelGPUMemPixmapUtilization, utilGPUMem);
-		setUtilization(mpPixmapFPGAUtilization, labelFPGAPixmapUtilization, utilFPGA);
-		setUtilization(mpPixmapMICUtilization, labelMICPixmapUtilization,  utilMIC);
+		mpGroupboxCPU->setUtilization(0, utilCPU);
+		mpGroupboxGPU->setUtilization(0, utilGPUCore);
+		mpGroupboxGPU->setUtilization(1, utilGPUMem);
+		mpGroupboxFPGA->setUtilization(0, utilFPGA);
+		mpGroupboxMIC->setUtilization(0,  utilMIC);
     }
     
     void QMSMFormSystemOverview::updateTemperature(void) {
@@ -264,90 +221,36 @@ namespace Ui {
 		
 		NData::CDataSettings &rSettings = mpDataHandler->getSettings();
 		
-		setTemperature(mpPixmapCPU0Temperature, labelCPU0PixmapTemperature,
-					   rSettings.mHeatmapTempCPUMinY, rSettings.mHeatmapTempCPUMaxY, round(tempCPU0));
-		setTemperature(mpPixmapCPU1Temperature, labelCPU1PixmapTemperature,
-					   rSettings.mHeatmapTempCPUMinY, rSettings.mHeatmapTempCPUMaxY, round(tempCPU1));
-		setTemperature(mpPixmapGPUTemperature, labelGPUPixmapTemperature,
-					   rSettings.mHeatmapTempGPUMinY, rSettings.mHeatmapTempGPUMaxY, round(tempGPU));
-		setTemperature(mpPixmapFPGAComputeTemperature, labelFPGAComputePixmapTemperature,
-					   rSettings.mHeatmapTempFPGAMinY, rSettings.mHeatmapTempFPGAMaxY, round(tempFPGAm));
-		setTemperature(mpPixmapFPGAInterfaceTemperature, labelFPGAInterfacePixmapTemperature,
-					   rSettings.mHeatmapTempFPGAMinY, rSettings.mHeatmapTempFPGAMaxY, round(tempFPGAi));
-		setTemperature(mpPixmapMICTemperature, labelMICPixmapTemperature,
-					   rSettings.mHeatmapTempMICMinY, rSettings.mHeatmapTempMICMaxY, round(tempMIC));
+		mpGroupboxCPU->setTemperature(0, rSettings.mHeatmapTempCPUMinY, rSettings.mHeatmapTempCPUMaxY, round(tempCPU0));
+		mpGroupboxCPU->setTemperature(1, rSettings.mHeatmapTempCPUMinY, rSettings.mHeatmapTempCPUMaxY, round(tempCPU1));
+		mpGroupboxGPU->setTemperature(0, rSettings.mHeatmapTempGPUMinY, rSettings.mHeatmapTempGPUMaxY, round(tempGPU));
+		mpGroupboxFPGA->setTemperature(0, rSettings.mHeatmapTempFPGAMinY, rSettings.mHeatmapTempFPGAMaxY, round(tempFPGAm));
+		mpGroupboxFPGA->setTemperature(1, rSettings.mHeatmapTempFPGAMinY, rSettings.mHeatmapTempFPGAMaxY, round(tempFPGAi));
+		mpGroupboxMIC->setTemperature(0, rSettings.mHeatmapTempMICMinY, rSettings.mHeatmapTempMICMaxY, round(tempMIC));
     }
 
-
-	void QMSMFormSystemOverview::setActivity(QPixmap* pPixmap, QLabel* pLabel, bool active) {
-		pPixmap->fill(this, 0, 0);
-		mpPainter->begin(pPixmap);
-		mpPainter->setRenderHint(QPainter::Antialiasing);
-		mpPainter->setPen(Qt::black);
-		QRadialGradient radialGradient(16, 16, 16);
-		radialGradient.setColorAt(0.0, Qt::white);
-		radialGradient.setColorAt(1.0, Qt::black);
-		if(active) {
-			radialGradient.setColorAt(0.7, Qt::red);
-		} else {
-			radialGradient.setColorAt(0.7, Qt::green);
-		}
-		mpPainter->setBrush(radialGradient);
-		mpPainter->drawEllipse(1, 1, 30, 30);
-		mpPainter->end();
-		pLabel->setPixmap(*pPixmap);
-	}
-
-	void QMSMFormSystemOverview::setUtilization(QPixmap* pPixmap, QLabel* pLabel, double value) {
-		pPixmap->fill(this, 0, 0);
-		mpPainter->begin(pPixmap);
-		mpPainter->setRenderHint(QPainter::Antialiasing);
-		mpPainter->setPen(Qt::black);
-		QRect rect = QRect(1, 1, 58, 33);
-		mpPainter->drawRect(rect);
-		mpPainter->fillRect(rect, mpColorMap->color(QwtDoubleInterval(0,100), value));
-		std::ostringstream sstream;
-		sstream.precision(2);
-		sstream << std::fixed << value << " %";
-		mpPainter->drawText(1 ,1, 58, 33, Qt::AlignCenter, sstream.str().c_str());
-		mpPainter->end();
-		pLabel->setPixmap(*pPixmap);
-	}
-
-	void QMSMFormSystemOverview::setTemperature(QPixmap* pPixmap, QLabel* pLabel, double minVal, double maxVal, double value) {
-		pPixmap->fill(this, 0, 0);
-		mpPainter->begin(pPixmap);
-		mpPainter->setRenderHint(QPainter::Antialiasing);
-		mpPainter->setPen(Qt::black);
-		QRect rect = QRect(1, 1, 58, 33);
-		mpPainter->drawRect(rect);
-		mpPainter->fillRect(rect, mpColorMap->color(QwtDoubleInterval(minVal, maxVal), value));
-		std::ostringstream sstream;
-		sstream << value << " \u00b0C";
-		mpPainter->drawText(1 ,1, 58, 33, Qt::AlignCenter, QString::fromUtf8(sstream.str().c_str()));
-		mpPainter->end();
-		pLabel->setPixmap(*pPixmap);
-	}
-
 	void QMSMFormSystemOverview::addFPGAProcessToTable(uint32_t pid, const std::string& name, const std::string& user) {
+		QTableWidget *processTable = mpGroupboxFPGA->getProcessTable();
 		if(pid != 0) {
-			tableWidgetFPGAProcesses->item(0, 0)->setText(QString("%1").arg(pid));
-			tableWidgetFPGAProcesses->item(0, 1)->setText(QString::fromStdString(name));
-			tableWidgetFPGAProcesses->item(0, 2)->setText(QString::fromStdString(user));
-			tableWidgetFPGAProcesses->item(0,0)->setTextColor(Qt::black);
-			tableWidgetFPGAProcesses->item(0,1)->setTextColor(Qt::black);
-			tableWidgetFPGAProcesses->item(0,2)->setTextColor(Qt::black);
+			processTable->item(0, 0)->setText(QString("%1").arg(pid));
+			processTable->item(0, 1)->setText(QString::fromStdString(name));
+			processTable->item(0, 2)->setText(QString::fromStdString(user));
+			processTable->item(0,0)->setTextColor(Qt::black);
+			processTable->item(0,1)->setTextColor(Qt::black);
+			processTable->item(0,2)->setTextColor(Qt::black);
 		} else {
-			tableWidgetFPGAProcesses->item(0,0)->setTextColor(Qt::gray);
-			tableWidgetFPGAProcesses->item(0,1)->setTextColor(Qt::gray);
-			tableWidgetFPGAProcesses->item(0,2)->setTextColor(Qt::gray);
+			processTable->item(0,0)->setTextColor(Qt::gray);
+			processTable->item(0,1)->setTextColor(Qt::gray);
+			processTable->item(0,2)->setTextColor(Qt::gray);
 		}
-		tableWidgetFPGAProcesses->resizeColumnsToContents();
-		tableWidgetFPGAProcesses->horizontalHeader()->setStretchLastSection(true);
+		processTable->resizeColumnsToContents();
+		processTable->horizontalHeader()->setStretchLastSection(true);
 	}
 	
     void QMSMFormSystemOverview::addGPUProcessesToTable(uint32_t processCount, uint32_t* pids, std::string* names) {
+		QTableWidget *processTable = mpGroupboxGPU->getProcessTable();
 		bool newProcess = true;
+		//update the list of GPU processes
 		if(processCount > MAX_VISIBLE_GPU_PROCSSES) {
 			mGPUProcessList.clear();
 			for(int i = 0; i < MAX_VISIBLE_GPU_PROCSSES; i++) {
@@ -365,31 +268,33 @@ namespace Ui {
 					mGPUProcessList.push_front(std::pair<uint32_t, std::string>(pids[i], names[i]));
 				}
 			}
+			// delete old processes from the queue if necessary
 			while(mGPUProcessList.size() > MAX_VISIBLE_GPU_PROCSSES) {
 				mGPUProcessList.pop_back();
 			}
 		}
 		
+		//add all processes from the list to the processTable
 		for(uint32_t i = 0; i < MAX_VISIBLE_GPU_PROCSSES; i++) {
 			if(mGPUProcessList.size() > i) {
-				tableWidgetGPUProcesses->item(i, 0)->setText(QString("%1").arg(mGPUProcessList[i].first));
-				tableWidgetGPUProcesses->item(i, 1)->setText(QString::fromStdString(mGPUProcessList[i].second));
+				processTable->item(i, 0)->setText(QString("%1").arg(mGPUProcessList[i].first));
+				processTable->item(i, 1)->setText(QString::fromStdString(mGPUProcessList[i].second));
 				if(processCount > i){
-					tableWidgetGPUProcesses->item(i,0)->setTextColor(Qt::black);
-					tableWidgetGPUProcesses->item(i,1)->setTextColor(Qt::black);
+					processTable->item(i,0)->setTextColor(Qt::black);
+					processTable->item(i,1)->setTextColor(Qt::black);
 				} else {
-					tableWidgetGPUProcesses->item(i,0)->setTextColor(Qt::gray);
-					tableWidgetGPUProcesses->item(i,1)->setTextColor(Qt::gray);
+					processTable->item(i,0)->setTextColor(Qt::gray);
+					processTable->item(i,1)->setTextColor(Qt::gray);
 				}
 			} else {
-				tableWidgetGPUProcesses->item(i, 0)->setText("");
-				tableWidgetGPUProcesses->item(i, 1)->setText("");	
+				processTable->item(i, 0)->setText("");
+				processTable->item(i, 1)->setText("");	
 			}
 		}
 		
-		tableWidgetGPUProcesses->resizeColumnsToContents();
-		tableWidgetGPUProcesses->horizontalHeader()->setStretchLastSection(true);
-    }
+		processTable->resizeColumnsToContents();
+		processTable->horizontalHeader()->setStretchLastSection(true);
+	}
     
 	double QMSMFormSystemOverview::calcMean(double* data, uint32_t size) {
 		double sum = 0;
@@ -397,5 +302,5 @@ namespace Ui {
 			sum += data[i];
 		}
 		return sum / size;
-    }
+	}
 }

@@ -12,7 +12,7 @@
  * 
  * author: Christoph Knorr (cknorr@mail.uni-paderborn.de)
  * created: 03/11/16
- * version: 0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
+ * version: 0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
  */
 
 #include <QtGui/QGroupBox>
@@ -73,14 +73,28 @@ namespace Ui {
 		int mColumnCount;
 	
 	public:
+		/**
+		 * resourceName:		heading of the groupbox
+		 * utilization1/2:		text of the label above the first/second utilization
+		 * temperature1/2:		text of the label above the first/second temperature
+		 * withProcessTable:	indicates whether a table for the processes is needed
+		 * columnNames:			string array with the column headings
+		 * columns:				number of columns in the table
+		 * maxProcessCount:		number of rows in the table
+		 */
 		QMSMGroupboxSystemOverview(QWidget* parent, const std::string &resourceName, const std::string &utilization1, const std::string &utilization2,
 									const std::string &temperature1, const std::string &temperature2, bool withProcessTable, const  std::string columnNames[] = NULL, int columns = 3, int maxProcessCount = 1);
 		~QMSMGroupboxSystemOverview();
 		
 		void setupUi();
+		//set the activity LED
 		void setActivity(bool active);
+		// set the utilization, id indicates the first (0) or second (1) label
 		void setUtilization(int id, double value);
+		// set the temperature, id indicates the first (0) or second (1) label
+		// minVal is the lowest value and maxVal the highest possible value needed to calculate the color of the Pixmap
 		void setTemperature(int id, double minVal, double maxVal, double value);
+		
 		QTableWidget* getProcessTable();
 		int getProcessTableRowCount();
 		int getProcessTableColumnCount();

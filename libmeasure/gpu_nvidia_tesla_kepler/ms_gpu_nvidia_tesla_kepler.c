@@ -13,7 +13,7 @@
  * author: Achim Lösch
  * created: 01/25/16
  * version: 0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
- *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
+ *          0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
  */
 
 #include "ms_gpu_nvidia_tesla_kepler.h"

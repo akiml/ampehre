@@ -17,7 +17,7 @@
  *          0.4.1 - add MIC support to msmonitor
  *          0.5.0 - add cpu, gpu and mic memory information
  *          0.5.11 - add option to control the output to csv file and new RingBuffer to store results to msmonitor
- *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
+ *          0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
  */
 
 #include "CDataMeasurement.hpp"

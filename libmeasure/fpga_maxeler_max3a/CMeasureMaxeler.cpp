@@ -19,7 +19,7 @@
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library. 
  *          0.7.0 - modularized measurement struct
- *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
+ *          0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
  */
 
 namespace NLibMeasure {

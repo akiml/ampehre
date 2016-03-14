@@ -14,7 +14,7 @@
  * created: 1/27/14
  * version: 0.3.0 - extend libmeasure and add application for online monitoring
  *          0.7.0 - modularized measurement struct
- *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
+ *          0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
  */
 
 #ifndef __CDATALIBRARY_HPP__

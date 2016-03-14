@@ -15,7 +15,7 @@
  * version: 0.7.0 - modularized measurement struct
  *          0.7.1 - move functions to query measurement results into the modules
  *          0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
- *          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
+ *          0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
  */
 
 #ifndef __MS_FPGA_MAXELER_MAX3A_H__

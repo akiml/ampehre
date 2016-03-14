@@ -12,7 +12,7 @@
  * 
  * author: Christoph Knorr (cknorr@mail.uni-paderborn.de)
  * created: 03/11/16
- * version: 0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
+ * version: 0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
  */
 
 #include "QMSMGroupboxSystemOverview.hpp"
@@ -42,14 +42,15 @@ namespace Ui {
 				QTableWidgetItem *qtablewidgetitem = mpTableWidgetProcesses->horizontalHeaderItem(i);
 				qtablewidgetitem->setText(QApplication::translate(parentName, columnNames[i].c_str(), 0, QApplication::UnicodeUTF8));
 			}
+			mpTableWidgetProcesses->resizeColumnsToContents();
 		} else if(columnNames == NULL && mHasProcessTable) {
 			std::string names[] = {"PID", "Name", "User"};
 			for(int i = 0; i < 3; i++) {
 				QTableWidgetItem *qtablewidgetitem = mpTableWidgetProcesses->horizontalHeaderItem(i);
 				qtablewidgetitem->setText(QApplication::translate(parentName, names[i].c_str(), 0, QApplication::UnicodeUTF8));
 			}
+			mpTableWidgetProcesses->resizeColumnsToContents();
 		}
-		mpTableWidgetProcesses->resizeColumnsToContents();
 	}
 
 	QMSMGroupboxSystemOverview::~QMSMGroupboxSystemOverview() {

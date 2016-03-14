@@ -12,7 +12,7 @@
  * 
  * author: Christoph Knorr (cknorr@mail.uni-paderborn.de)
  * created: 02/24/16
- * version: 0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
+ * version: 0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
  */
 
 #ifndef __QMSMFORMSYSTEMOVERVIEW_H__
@@ -21,9 +21,7 @@
 #include "ui_formsystemoverview.h"
 #include "../data/CDataHandler.hpp"
 #include "CGuiTimer.hpp"
-#include <qwt_color_map.h>
-#include <QPixmap>
-#include <QPainter>
+#include "QMSMGroupboxSystemOverview.hpp"
 #include <QMdiSubWindow>
 #include <sstream>
 #include <iomanip>
@@ -50,27 +48,12 @@ namespace Ui {
 			
 			std::deque< std::pair<uint32_t, std::string> > mGPUProcessList;
 			
-			QPainter *mpPainter;
-			QPixmap *mpPixmapGPUActivity;
-			QPixmap *mpPixmapFPGAActivity;
-			QPixmap *mpPixmapCPUUtilization;
-			QPixmap *mpPixmapCPU0Temperature;
-			QPixmap *mpPixmapCPU1Temperature;
-			QPixmap *mpPixmapGPUCoreUtilization;
-			QPixmap *mpPixmapGPUMemUtilization;
-			QPixmap *mpPixmapGPUTemperature;
-			QPixmap *mpPixmapFPGAUtilization;
-			QPixmap *mpPixmapFPGAComputeTemperature;
-			QPixmap *mpPixmapFPGAInterfaceTemperature;
-			QPixmap *mpPixmapMICUtilization;
-			QPixmap *mpPixmapMICTemperature;
-			
-			QwtLinearColorMap *mpColorMap;
+			QMSMGroupboxSystemOverview *mpGroupboxCPU;
+			QMSMGroupboxSystemOverview *mpGroupboxGPU;
+			QMSMGroupboxSystemOverview *mpGroupboxFPGA;
+			QMSMGroupboxSystemOverview *mpGroupboxMIC;
 			
 			void initGUI(void);
-			void setActivity(QPixmap *pPixmap, QLabel *pLabel, bool active);
-			void setUtilization(QPixmap *pPixmap, QLabel *pLabel, double value);
-			void setTemperature(QPixmap *pPixmap, QLabel *pLabel, double minVal, double maxVal, double value);
 			void addFPGAProcessToTable(uint32_t pid,const std::string &name,const std::string &user);
 			void addGPUProcessesToTable(uint32_t processCount, uint32_t *pids, std::string *names);
 			void updateActiveProcesses(void);

@@ -16,7 +16,7 @@
 #          0.3.2 - add a networking component to show influence of a task to measurements in GUI
 #          0.5.0 - add cpu, gpu and mic memory information
 #          0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
-#          0.7.4 - add query for currently active processes to libmeasure and show them in msmonitor
+#          0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
 #
 
 find_package(Qt4 REQUIRED)
@@ -68,6 +68,7 @@ set(MSMONITOR_HEADERS
 	QMSMFormHeatmapUtilization.hpp
 	QMSMFormHeatmapTemperature.hpp
 	QMSMFormSystemOverview.hpp
+	QMSMGroupboxSystemOverview.hpp
 	CHeatmap.hpp
 )
 
@@ -85,6 +86,7 @@ set(MSMONITOR_SOURCES
 	QMSMFormHeatmapUtilization.cpp
 	QMSMFormHeatmapTemperature.cpp
 	QMSMFormSystemOverview.cpp
+	QMSMGroupboxSystemOverview.cpp
 	CHeatmap.cpp
 )
 
