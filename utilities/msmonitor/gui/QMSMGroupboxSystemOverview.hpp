@@ -24,7 +24,7 @@
 #include <QPainter>
 #include <qwt_color_map.h>
 #include <sstream>
-#include "CHeatmap.hpp"
+#include "QMSMHeatmap.hpp"
 
 #ifndef __QMSMGROUPBOXSYSTEMOVERVIEW_H__
 #define __QMSMGROUPBOXSYSTEMOVERVIEW_H__

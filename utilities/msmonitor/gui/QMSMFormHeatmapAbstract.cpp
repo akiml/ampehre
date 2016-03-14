@@ -42,7 +42,7 @@ namespace Ui {
 	}
 	
 	QMSMFormHeatmapAbstract::~QMSMFormHeatmapAbstract(void) {
-		for(std::vector<Ui::Heatmap*>::iterator it = mHeatmaps.begin(); it != mHeatmaps.end(); ++it) {
+		for(std::vector<Ui::QMSMHeatmap*>::iterator it = mHeatmaps.begin(); it != mHeatmaps.end(); ++it) {
 			delete (*it);
 		}
 		delete mpFormHeatmapAbstract;
@@ -112,7 +112,7 @@ namespace Ui {
 		if(isVisible()) {
 			setupHeatmaps();
 			
-			for(std::vector<Ui::Heatmap*>::iterator it = mHeatmaps.begin(); it != mHeatmaps.end(); ++it) {
+			for(std::vector<Ui::QMSMHeatmap*>::iterator it = mHeatmaps.begin(); it != mHeatmaps.end(); ++it) {
 				(*it)->refresh();
 			}
 		} else {
@@ -136,8 +136,8 @@ namespace Ui {
 		mTimer.joinTimer();
 	}
 	
-    Heatmap* QMSMFormHeatmapAbstract::addHeatmap(const QString &title) {
-		Ui::Heatmap *heatmap = new Heatmap(this);
+    QMSMHeatmap* QMSMFormHeatmapAbstract::addHeatmap(const QString &title) {
+		Ui::QMSMHeatmap *heatmap = new QMSMHeatmap(this);
 		
 		heatmap->setObjectName(title);
 		heatmap->setFrameShape(QFrame::NoFrame);

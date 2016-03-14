@@ -1,5 +1,5 @@
 /*
- * CHeatmap.hpp
+ * QMSMHeatmap.hpp
  * 
  * Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>
  * All rights reserved.
@@ -15,8 +15,8 @@
  * version: 0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
  */
 
-#ifndef __CHEATMAP_H__
-#define __CHEATMAP_H__
+#ifndef __QMSMHEATMAP_H__
+#define __QMSMHEATMAP_H__
  
 #include "CHeatmapData.hpp"
 #include <qwt_plot.h>
@@ -32,12 +32,12 @@
 #define STOP_COLOR			Qt::red
 
 namespace Ui {
-	class Heatmap: public QwtPlot {
+	class QMSMHeatmap: public QwtPlot {
 		Q_OBJECT
 
 		public:
-			Heatmap(QWidget * = NULL);
-			~Heatmap();
+			QMSMHeatmap(QWidget * = NULL);
+			~QMSMHeatmap();
 			
 			void setTitle(const std::string &name);
 			void setColorMap(QwtLinearColorMap *colorMap);
@@ -57,4 +57,4 @@ namespace Ui {
 			void updateYAxis();
 	};
 }
-#endif /* __CHEATMAP_H__ */
+#endif /* __QMSMHEATMAP_H__ */

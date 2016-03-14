@@ -69,7 +69,7 @@ set(MSMONITOR_HEADERS
 	QMSMFormHeatmapTemperature.hpp
 	QMSMFormSystemOverview.hpp
 	QMSMGroupboxSystemOverview.hpp
-	CHeatmap.hpp
+	QMSMHeatmap.hpp
 )
 
 set(MSMONITOR_SOURCES
@@ -87,7 +87,7 @@ set(MSMONITOR_SOURCES
 	QMSMFormHeatmapTemperature.cpp
 	QMSMFormSystemOverview.cpp
 	QMSMGroupboxSystemOverview.cpp
-	CHeatmap.cpp
+	QMSMHeatmap.cpp
 )
 
 qt4_wrap_ui(MSMONITOR_FORMS_HEADERS ${MSMONITOR_FORMS})

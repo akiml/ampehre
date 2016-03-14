@@ -1,5 +1,5 @@
 /*
- * CHeatmap.cpp
+ * QMSMHeatmap.cpp
  * 
  * Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>
  * All rights reserved.
@@ -15,10 +15,10 @@
  * version: 0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
  */
 
-#include "CHeatmap.hpp"
+#include "QMSMHeatmap.hpp"
 #include <qwt_scale_draw.h>
 namespace Ui {
-	Heatmap::Heatmap(QWidget *parent):
+	QMSMHeatmap::QMSMHeatmap(QWidget *parent):
 		QwtPlot(parent),
 		mpSpectrogram(new QwtPlotSpectrogram()),
 		mpColorMap(new QwtLinearColorMap(START_COLOR, STOP_COLOR)),
@@ -47,40 +47,40 @@ namespace Ui {
 		replot();
 	}
 	
-    Heatmap::~Heatmap() {
+    QMSMHeatmap::~QMSMHeatmap() {
 		delete mpSpectrogram;
 		delete mpHeatmapData;
 		delete mpColorMap;
 		delete mpRightAxis;
     }
 
-	void Heatmap::setTitle(const std::string &name) {
+	void QMSMHeatmap::setTitle(const std::string &name) {
 		QwtText label = QwtText(name.c_str());
 		label.setFont(QFont("Helvetica", 12));
 		mpRightAxis->setTitle(label);
 	}
 
-	void Heatmap::setColorMap(QwtLinearColorMap *colorMap) {
+	void QMSMHeatmap::setColorMap(QwtLinearColorMap *colorMap) {
 		mpColorMap = colorMap;
 		mpSpectrogram->setColorMap(*mpColorMap);
 	}
 
-	void Heatmap::setData(double *data, uint32_t size) {
+	void QMSMHeatmap::setData(double *data, uint32_t size) {
 		mpHeatmapData->setDataPtr(data, size);
 	}
 
-	void Heatmap::setXInterval(double minX, double maxX) {
+	void QMSMHeatmap::setXInterval(double minX, double maxX) {
 		mpHeatmapData->setXInterval(minX, maxX);
 		setAxisScale(QwtPlot::xBottom, minX, maxX);
 	}
 	
-    void Heatmap::setYInterval(double minY, double maxY) {
+    void QMSMHeatmap::setYInterval(double minY, double maxY) {
 		mpHeatmapData->setYInterval(minY, maxY);
 		mpSpectrogram->setData(*mpHeatmapData);
 		updateYAxis();
 	}
 	
-	void Heatmap::updateYAxis() {
+	void QMSMHeatmap::updateYAxis() {
 		double minY = mpHeatmapData->range().minValue();
 		double maxY = mpHeatmapData->range().maxValue();
 		int interval = (maxY - minY)/5;
@@ -89,7 +89,7 @@ namespace Ui {
 		mpRightAxis->setColorMap(mpSpectrogram->data().range(),mpSpectrogram->colorMap());
 	}
 	
-	void Heatmap::refresh() {
+	void QMSMHeatmap::refresh() {
 		mpSpectrogram->setData(*mpHeatmapData);
 		replot();
 	}

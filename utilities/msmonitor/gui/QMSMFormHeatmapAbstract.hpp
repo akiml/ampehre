@@ -27,7 +27,7 @@
 
 #include "../data/CDataHandler.hpp"
 #include "CGuiTimer.hpp"
-#include "CHeatmap.hpp"
+#include "QMSMHeatmap.hpp"
 
 namespace NData {
 	class CDataHandler;
@@ -46,7 +46,7 @@ namespace Ui {
 			
 			CGuiTimer<QMSMFormHeatmapAbstract> mTimer;
 			
-			std::vector<Ui::Heatmap*> mHeatmaps;
+			std::vector<Ui::QMSMHeatmap*> mHeatmaps;
 			
 			double mCurrentX;
 			uint32_t mIndexCurrentX;
@@ -66,7 +66,7 @@ namespace Ui {
 			void startTimer(void);
 			void stopTimer(void);
 			void joinTimer(void);
-			Ui::Heatmap* addHeatmap(const QString &title);
+			Ui::QMSMHeatmap* addHeatmap(const QString &title);
 			
 		protected slots:
 			void slotRefreshGui(void);

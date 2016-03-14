@@ -32,11 +32,11 @@ namespace Ui {
 		private:
 			static QMSMFormHeatmapUtilization* spFormHeatUtil;
 			
-			Heatmap *mpHeatmapCPU;
-			Heatmap *mpHeatmapGPUCore;
-			Heatmap *mpHeatmapGPUMemory;
-			Heatmap *mpHeatmapFPGA;
-			Heatmap *mpHeatmapMIC;
+			QMSMHeatmap *mpHeatmapCPU;
+			QMSMHeatmap *mpHeatmapGPUCore;
+			QMSMHeatmap *mpHeatmapGPUMemory;
+			QMSMHeatmap *mpHeatmapFPGA;
+			QMSMHeatmap *mpHeatmapMIC;
 			
 			double *mpCPUData;
 			double *mpGPUCoreData;
