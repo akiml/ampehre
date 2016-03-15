@@ -22,7 +22,7 @@
 In this section we first describe how to build and install our measuring framework. Secondly, we give a brief overview of libmeasure's modular software architecture. Finally, we explain what you have to do in order to add and implement a module to the library, so that you will be able to sample sensors provided by new devices.
 
 \subsection{Build and Install Ampehre}
-Ampehre is coded in C and C++. We use the cross-platform build system cmake to build the binaries and libraries. Additionally, we provide a GNU Makefile in the project's root directory that simplifies the build and install instructions. The difference between running make with the \texttt{Makefile} and a manual run of cmake is, that we build the software in a dedicated build directory and that the install directory is set to \texttt{/usr/ampehre}. This directory can be easily change by editing the \texttt{Makefile} and change the \texttt{BASE\_DIR} variable. Do not forget to extend the environment variable \texttt{PATH} by \texttt{\$\{BASE\_DIR\}/bin}. Furthermore, you must add \texttt{\$\{BASE\_DIR\}/lib} to your system's \texttt{ld.so.conf}. It might be necessary to run \texttt{ldconfig} as root afterwards.
+Ampehre is coded in C and C++. We use the cross-platform build system cmake to build the binaries and libraries. Additionally, we provide a GNU Makefile in the project's root directory that simplifies the build and install instructions. The difference between running make with the \texttt{Makefile} and a manual run of cmake is, that we build the software in a dedicated build directory and that the install directory is set to \texttt{/usr/ampehre}. This directory can be easily changed by editing the \texttt{Makefile} and change the \texttt{BASE\_DIR} variable. Do not forget to extend the environment variable \texttt{PATH} by \texttt{\$\{BASE\_DIR\}/bin}. Furthermore, you must add \texttt{\$\{BASE\_DIR\}/lib} to your system's \texttt{ld.so.conf}. It might be necessary to run \texttt{ldconfig} as root afterwards.
 
 \subsubsection{Prerequirements}
 This following software must be installed on your computer to build and run the software:
@@ -107,21 +107,21 @@ option(CPU_INTEL_SANDY_SUPPORT
 \subsubsection{Measuring library usage}
 \label{sec:libmeasureUsage}
 
-The libmeasure can be called from other C or C++ projects by including the header file \texttt{/include/measurement.h} and linking against the \texttt{libms\_common.so}. The complete user interface to the libmeasure is defined in the \texttt{measurement.h}.
+The libmeasure can be called from other C or C++ projects by including the header file \added[id=ck]{\texttt{/include/ms\_measurement.h}} and linking against the \texttt{libms\_common.so}. The complete user interface to the libmeasure is defined in the \added[id=ck]{\texttt{ms\_measurement.h}}.
 The first steps needed to perfom measurements are shown in the next Listing.
 
-\begin{lstlisting}[caption={Initialization of our measuring library \texttt{libmeasure}. Each function name has a \texttt{ms\_} prefix.},label=lst:InitMS]
+\begin{lstlisting}[caption={Initialization of our measuring library \texttt{libmeasure}. Each function name has a \texttt{ms\_} prefix.\added[id=ck]{Listing an neue structs und IPMI enum angepasst}},label=lst:InitMS]
 MS_VERSION version = { .major = MS_MAJOR_VERSION,
 					   .minor = MS_MINOR_VERSION,
 					   .revision = MS_REVISION_VERSION };
 //init measuring library
-MSYSTEM *ms = ms_init(&version, CPU_GOVERNOR_ONDEMAND,
+MS_SYSTEM *ms = ms_init(&version, CPU_GOVERNOR_ONDEMAND,
                       2000000, 2500000, GPU_FREQUENCY_CUR, 
-                      IOC_SET_IPMI_TIMEOUT, SKIP_PERIODIC,
+                      IPMI_SET_TIMEOUT, SKIP_PERIODIC,
                       VARIANT_FULL);
 	
 // allocate measurement struct
-MEASUREMENT *m = ms_alloc_measurement();
+MS_LIST *m1 = ms_alloc_measurement(ms);
 	
 // Set timer for m1. Measurements perform every (10ms/30ms).
 ms_set_timer(m1, CPU,    0, 10000000, 10);
@@ -130,10 +130,10 @@ ms_set_timer(m1, FPGA,   0, 30000000, 10);
 ms_set_timer(m1, SYSTEM, 0, 30000000, 10);
 ms_set_timer(m1, MIC,    0, 30000000, 10);
 
-ms_init_measurement(ms, m, CPU | GPU | FPGA | SYSTEM | MIC);
+ms_init_measurement(ms, m1, CPU | GPU | FPGA | SYSTEM | MIC);
 \end{lstlisting}
 
-The first step is to initialize libmeasure. Therefore, the \texttt{ms\_init} function is called. The \texttt{ms\_init} function has several parameters which are described in the following paragraph. The first parameter is a \texttt{MS\_VERSION} struct as defined in the \texttt{ms\_version.h} header file. The \texttt{ms\_init} function compares the version information to ensure that the correct version of the libmeasure is installed and loaded. The next four parameters are used to set the CPU governor policy as defined in the Linux kernel, the maximum and minimum CPU frequencies, as well as the GPU frequency. The next parameter defines the timeout for IPMI requests in our kernel module. Both available values \texttt{IOC\_SET\_IPMI\_TIMEOUT} and  \texttt{IOC\_SET\_AND\_LOCK\_IPMI\_TIMEOUT} set the timeout for an IPMI request via an \texttt{ioctl} call to the user-defined system sampling rate minus 10ms or, if this value is larger than 200ms, to the maximum valid value of 200ms. The difference between \texttt{IOC\_SET\_IPMI\_TIMEOUT} and  \texttt{IOC\_SET\_AND\_LOCK\_IPMI\_TIMEOUT} is that \texttt{IOC\_SET\_AND\_LOCK\_IPMI\_TIMEOUT} sets and fixates the IPMI timeout. Hence, subsequent \texttt{ms\_init} calls with \texttt{IOC\_SET\_IPMI\_TIMEOUT} cannot modify the timeout value. Only further \texttt{ms\_init} calls with \texttt{IOC\_SET\_AND\_LOCK\_IPMI\_TIMEOUT} given or reloading the kernel module can change the timeout. For instance, the different parameters are used to ensure that multiple instances of the hettime tool using the driver simultaneously are not able to modify the IPMI timeout while msmonitor is running. In general, it is sufficient to use \texttt{IOC\_SET\_IPMI\_TIMEOUT} if a single application uses libmeasure. If multiple applications access libmeasure and the kernel driver respectively, the process executed first should call \texttt{ms\_init} with \texttt{IOC\_SET\_AND\_LOCK\_IPMI\_TIMEOUT} to ensure that all following processes are not able to modify the IPMI timeout value during the library initializations.\\
+The first step is to initialize libmeasure. Therefore, the \texttt{ms\_init} function is called. The \texttt{ms\_init} function has several parameters which are described in the following paragraph. The first parameter is a \texttt{MS\_VERSION} struct as defined in the \texttt{ms\_version.h} header file. The \texttt{ms\_init} function compares the version information to ensure that the correct version of the libmeasure is installed and loaded. The next four parameters are used to set the CPU governor policy as defined in the Linux kernel, the maximum and minimum CPU frequencies, as well as the GPU frequency. The next parameter defines the timeout for IPMI requests in our kernel module. \added[id=ck]{Both available values \texttt{IPMI\_SET\_TIMEOUT} and  \texttt{IPMI\_SET\_AND\_LOCK\_TIMEOUT}} set the timeout for an IPMI request via an \texttt{ioctl} call to the user-defined system sampling rate minus 10ms or, if this value is larger than 200ms, to the maximum valid value of 200ms. The difference between \texttt{IPMI\_SET\_TIMEOUT} and  \texttt{IPMI\_SET\_AND\_LOCK\_TIMEOUT} is that \texttt{IPMI\_SET\_AND\_LOCK\_TIMEOUT} sets and fixates the IPMI timeout. Hence, subsequent \texttt{ms\_init} calls with \texttt{IPMI\_SET\_TIMEOUT} cannot modify the timeout value. Only further \texttt{ms\_init} calls with \texttt{IPMI\_SET\_AND\_LOCK\_TIMEOUT} given or reloading the kernel module can change the timeout. For instance, the different parameters are used to ensure that multiple instances of the hettime tool using the driver simultaneously are not able to modify the IPMI timeout while msmonitor is running. In general, it is sufficient to use \texttt{IPMI\_SET\_TIMEOUT} if a single application uses libmeasure. If multiple applications access libmeasure and the kernel driver respectively, the process executed first should call \texttt{ms\_init} with \texttt{IPMI\_SET\_AND\_LOCK\_TIMEOUT} to ensure that all following processes are not able to modify the IPMI timeout value during the library initializations.\\
 The next parameter \texttt{skip\_ms\_rate} specifies whether certain measurements should be sampled only each 10th iteration of the measurement procedure in order to reduce the CPU utilization. We have profiled libmeasure to select the measurements with high CPU utilization. We assume that temperatures changes less frequent than power. Therefore, we can reduce the frequence of temperature measurements with a minor loss in accuracy. Please, set the parameter to \texttt{SKIP\_NEVER} in order to perform each measurement at every sampling point or to \texttt{SKIP\_PERIODIC} to reduce the sampling frequency for the measurements listed in Table \ref{tab:reduce_cpu_util}.
 
 \begin{table}
@@ -181,25 +181,25 @@ SYSTEM & x & x & -- & -- & -- & x \\
 \label{tab:light_vs_full}
 \end{table}
 
-The next step in the initialization phase is to allocate memory for the measurement results and all values related to a single measurement. This is done with a call to \texttt{ms\_alloc\_measurement} which returns a pointer to a so called \texttt{MEASUREMENT} struct. This struct contains variables for CPU, GPU, FPGA, MIC and System measurements such as the average power consumption of a resource, or the maximum temperature of a device retrieved during a concrete measuring.
-Before the measurement can be started, the sampling rate for each resource need to be set. This defines how often the actual measurements are executed and thus how often the current values are sampled from the resources. The sampling rates are set by the function \texttt{ms\_set\_timer}. The first parameter is the pointer to the \texttt{MEASUREMENT} struct which is used to hold the measured values as well as some temporary data. The second parameter is the resource for which the sampling rate is set. The third parameter is the number of seconds and the fourth parameter is the number of nanoseconds which are combined internally to a \texttt{struct timespec} to memorize the sampling rate. The last parameter \texttt{check\_for\_exit\_interrupts} defines how often a measurement thread checks whether the measurement should be stopped between two actual measurement points. For example, if the sampling rate defined by the 3rd and 4th parameter, is $100 ms$ and \texttt{check\_for\_exit\_interrupts} is set to $10$, the measurement thread wakes up every $10 ms$ to check whether the measurement should be stopped while the actual measurements are performed only every $100 ms$.This is useful if the runtime of the measurement threads must be very precise. This option is not suited to reduce the CPU utilization like the \texttt{skip\_ms\_rate} or the variants. In the aforementioned example we can stop the measurements with a precision of $10 ms$ while only every $100 ms$ the actual measurements are performed.For further details on the sampling rates have a look at Appendix \ref{app:A}. Note that you can set the sampling rates independently for each resource. This could be helpful, if you need precise measured data from a resource A, but only imprecise data from a resource B, while the total CPU load induced by the libmeasure should be limited somehow. The final step in the initialization phase is the call to \texttt{ms\_init\_measurement} which initializes the threads for the measurements. The last parameter specifies for which resources the measurement should be performed.\\
+The next step in the initialization phase is to allocate memory for the measurement results and all values related to a single measurement. This is done with a call to \texttt{ms\_alloc\_measurement} which returns a pointer to a so called \added[id=ck]{\texttt{MS\_LIST} struct. This struct contains a linked list of resource-specific measurement structs. This measurement structs are used to store variables for CPU, GPU, FPGA, MIC and System measurements such as the average power consumption of a resource, or the maximum temperature of a device retrieved during a concrete measuring.}
+Before the measurement can be started, the sampling rate for each resource need to be set. This defines how often the actual measurements are executed and thus how often the current values are sampled from the resources. The sampling rates are set by the function \texttt{ms\_set\_timer}. The first parameter is the pointer to the \added[id=ck]{\texttt{MS\_LIST} struct which is a linked list used to hold the resource-specific measurement structs where the measured values as well as some temporary data are stored}. The second parameter is the resource for which the sampling rate is set. The third parameter is the number of seconds and the fourth parameter is the number of nanoseconds which are combined internally to a \texttt{struct timespec} to memorize the sampling rate. The last parameter \texttt{check\_for\_exit\_interrupts} defines how often a measurement thread checks whether the measurement should be stopped between two actual measurement points. For example, if the sampling rate defined by the 3rd and 4th parameter, is $100 ms$ and \texttt{check\_for\_exit\_interrupts} is set to $10$, the measurement thread wakes up every $10 ms$ to check whether the measurement should be stopped while the actual measurements are performed only every $100 ms$.This is useful if the runtime of the measurement threads must be very precise. This option is not suited to reduce the CPU utilization like the \texttt{skip\_ms\_rate} or the variants. In the aforementioned example we can stop the measurements with a precision of $10 ms$ while only every $100 ms$ the actual measurements are performed. For further details on the sampling rates have a look at Appendix \ref{app:A}. Note that you can set the sampling rates independently for each resource. This could be helpful, if you need precise measured data from a resource A, but only imprecise data from a resource B, while the total CPU load induced by the libmeasure should be limited somehow. The final step in the initialization phase is the call to \texttt{ms\_init\_measurement} which initializes the threads for the measurements. The last parameter specifies for which resources the measurement should be performed.\\
 
-After the initialization the measurement can be started and stopped with the following functions. A measurement can be started and stopped exactly once, i.e., restarts to accumulate measurements are not supported yet. The \texttt{do\_something()} function should be replaced by your specific code. While executing this code, the measuring library samples the sensors of the devices and stores energy, power, temperature, and so on in the \texttt{MEAUSREMENT} struct \texttt{m}. Our hettime tool replaces the \texttt{do\_something()} function by forking a process and calling \texttt{execve()} with an executable given by the flag \texttt{-e} with the arguments of flag \texttt{-a} (Appendix \ref{app:manpage} for further information).
+After the initialization the measurement can be started and stopped with the following functions. A measurement can be started and stopped exactly once, i.e., restarts to accumulate measurements are not supported yet. The \texttt{do\_something()} function should be replaced by your specific code. While executing this code, the measuring library samples the sensors of the devices and stores energy, power, temperature, and so on in the \added[id=ck]{\texttt{MS\_LIST} struct \texttt{m1} provided at the initialization}. Our hettime tool replaces the \texttt{do\_something()} function by forking a process and calling \texttt{execve()} with an executable given by the flag \texttt{-e} with the arguments of flag \texttt{-a} (Appendix \ref{app:manpage} for further information).
 \begin{lstlisting}[caption={The start and stop functions trigger the measuring procedures of the measuring library. Please replace the \texttt{do\_something()} function by the code you want to execute while the measuring system is running.},label=lst:StartStopMS]
-ms_start_measurement(ms, m);
+ms_start_measurement(ms);
 
 do_something();
 
-ms_stop_measurement(ms, m);
+ms_stop_measurement(ms);
 \end{lstlisting}
 
-Before the measured values can be retrieved the internal measurement threads need to be stopped and terminated. Therefore we call the functions shown in Listing \ref{lst:finiMs}. This function calls are necessary, since we internally use POSIX-Threads that would continue writing new data to the \texttt{MEASUREMENT} struct.
+Before the measured values can be retrieved the internal measurement threads need to be stopped and terminated. Therefore we call the functions shown in Listing \ref{lst:finiMs}. This function calls are necessary, since we internally use POSIX-Threads that would continue writing new data to the \added[id=ck]{measurement structs}.
 \begin{lstlisting}[caption={Functions to join and terminate measurement threads.},label=lst:finiMs]
-ms_join_measurement(ms, m);
-ms_fini_measurement(ms, m);
+ms_join_measurement(ms);
+ms_fini_measurement(ms);
 \end{lstlisting}
 
-Subsequently it is possible to retrieve the measured values. For each measured value a function is defined in the \texttt{measurement.h} to return the corresponding value. Listing \ref{lst:msValues} shows a few examples, a complete list of the available functions can be found in the \texttt{measurement.h}
+Subsequently it is possible to retrieve the measured values. For each measured value a function is defined in \added[id=ck]{the corresponding module to return the value. Listing \ref{lst:msValues} shows a few examples. For example the function \texttt{cpu\_energy\_total\_dram()} is declared in the header \texttt{ms\_cpu\_intel\_xeon\_sandy.h} of the CPU module. For a complete list of the available functions have a look at those header files.}
 
 \begin{lstlisting}[caption={Example for getting the measured values.},label=lst:msValues]
 printf("consumed energy of cpu 1 dram bank : %.2lf mWs\n",
@@ -214,7 +214,7 @@ printf("mic temperature max die            : %u \u00b0C\n",
 
 Finally, you should free all memory allocated for the measurements and cleanup the environment. This is done by a call to the following functions.
 \begin{lstlisting}[caption={Environment cleanup and freeing memory.},label=lst:cleanupMS]
-ms_free_measurement(m);
+ms_free_measurement(m1);
 ms_fini(ms);
 \end{lstlisting}
 This frees the \texttt{MEASUREMENT} struct and thus deletes all measurement results.
@@ -246,16 +246,16 @@ Figure \ref{fig:libmeasure_principle} shows the concept of the modular libmeasur
 		
 		\item \texttt{CMgmt}: This class is responsible for the management of all measurements. All POSIX-Threads executing the measuring procedures in the inherited implementations of \texttt{CMeasureAbstractThread} are instantiated in this class (in fact, the raw POSIX-Thread handling is performed in the \texttt{CMeasureAbstractThread} class and its children). In its constructor every module is dynamically loaded with \texttt{dlopen()}. This is still implemented statically. In the future, we are going to reimplement the module loader in a more dynamic way, so that modules are only loaded, if they are listed in a configuration file located in the user's home directory.
 		
-		\item \texttt{mgmt}: This class implements the libmeasure management functions such as \texttt{ms\_init()}, \texttt{ms\_start\_measurement()} or\\ \texttt{ms\_join\_measurement()} which can be called from C. We describe this functions in Section \ref{sec:libmeasureUsage}. These functions are accessible by including the corresponding interface header file \texttt{measurement.h}.
+		\item \texttt{mgmt}: This class implements the libmeasure management functions such as \texttt{ms\_init()}, \texttt{ms\_start\_measurement()} or\\ \texttt{ms\_join\_measurement()} which can be called from C. We describe this functions in Section \ref{sec:libmeasureUsage}. These functions are accessible by including the corresponding interface header file \added[id=ck]{\texttt{ms\_measurement.h}}.
 	\end{itemize}
 	
 	\item[\texttt{libms\_resource.so}] encapsulates a resource-specific module with the concrete implementation of the abstract classes which are compiled to the shared object \texttt{libms\_common.so}. As already mentioned, the word \textit{resource} is used as a template and must be replaced by a concrete resource. We  illustrate the structure of the resource-specific modules without considering the real class names but using the template word \textit{resource}. Feel free to take a look to the source code for better understanding of the modules, respectively plugins.\\
 	Every resource with sensors that should be sampled by the libmeasure, must have a separate module with implementations of the abstract classes mentioned in the prior passage. Since the modules are loaded like plugins, there must be an implementation of the plugin interface, too.
 	\begin{itemize}
-		\item \texttt{CMeasureResource}: Implementation of the abstract class\\\texttt{CMeasureAbstractResource} and therefore also the \texttt{measure()} method. The resource-specific measuring functionality is implemented and all retrieved values are stored in the \texttt{MEASUREMENT} struct. No further calculations such as the integration of the retrieved power data to get the consumed energy since the last sample are done here. Such computations are done in the \texttt{run()} method of \texttt{CMeasureResourceThread}, i.e., the \texttt{run()} method calls the \texttt{measure()} method periodically, calculates additional data such as the consumed energy from raw power data stored in the \texttt{MEASUREMENT} struct, and finally stores these results in other elements of the \texttt{MEASUREMENT} struct. Furthermore, all resource-specific initialization should be done in the constructor of the \texttt{CMeasureResource} class (e.g. calling the external library NVML which is used for sampling sensors of Nvidia GPUs). Consequently, the destructor is used to close the libraries and/or free the memory allocated for using the libraries. The class provides two templates for flexible and easily customizable measurements. The first template parameter \texttt{TSkipMs} is used to decrease the number of sensor readings which cause high CPU utilization. The second template parameter \texttt{TVariant} is a switch to select the \texttt{VARIANT\_LIGHT} or \texttt{VARIANT\_FULL}. 
+		\item \texttt{CMeasureResource}: Implementation of the abstract class\\\texttt{CMeasureAbstractResource} and therefore also the \texttt{measure()} method. The resource-specific measuring functionality is implemented and all retrieved values are stored in the \added[id=ck]{resource-specific measurement struct \texttt{MS\_MEASUREMENT\_RESOURCE} which is part of the linked list \texttt{MS\_LIST}. The resource specific measurement struct is defined in the header \texttt{ms\_resource.h} together with the functions to obtain the measurement results.} No further calculations such as the integration of the retrieved power data to get the consumed energy since the last sample are done in the \texttt{measure()} method. Such computations are done in the \texttt{run()} method of \texttt{CMeasureResourceThread}, i.e., the \texttt{run()} method calls the \texttt{measure()} method periodically, calculates additional data such as the consumed energy from raw power data stored in the \added[id=ck]{\texttt{MS\_MEASUREMENT\_RESOURCE} struct, and finally stores these results in other elements of the \texttt{MS\_MEASUREMENT\_RESOURCE} struct.} Furthermore, all resource-specific initialization should be done in the constructor of the \texttt{CMeasureResource} class (e.g. calling the external library NVML which is used for sampling sensors of Nvidia GPUs). Consequently, the destructor is used to close the libraries and/or free the memory allocated for using the libraries. The class provides two templates for flexible and easily customizable measurements. The first template parameter \texttt{TSkipMs} is used to decrease the number of sensor readings which cause high CPU utilization. The second template parameter \texttt{TVariant} is a switch to select the \texttt{VARIANT\_LIGHT} or \texttt{VARIANT\_FULL}. 
 		
 		\item \texttt{CMeasureResourceThread}: Concrete implementation of\\ 
-		\texttt{CMeasureAbstractThread} and therefore the resource-specific \texttt{run()} method. This class uses the \texttt{CMeasureResource} class to retrieve measurement values periodically. The \texttt{run()} method basically consists of a loop frequently calling the \texttt{measure()} method of the\\ \texttt{CMeasureResource} class. Afterwards all necessary calculations such as accumulation of energy values are done with the obtained values which are located in the \texttt{MEASUREMENT} struct. The \texttt{measure()} method only stores values which can be directly read from the sensors placed on-die or on-board of the resources. The further processing of the raw data is then performed in the loop of the \texttt{run()} method located in \texttt{CMeasureResourceThread} or after the loop before thread termination. For example, the recently measured power dissipation and time slice since the last sampling (approximately the sampling rate) are used to calculate the energy consumed during this period. Finally, this intermediate result is used to accumulate/sum up the total energy consumption during the whole measurement respectively between calling \texttt{ms\_start\_measurement(ms, m)} and \\\texttt{ms\_stop\_measurement(ms, m)} (Section \ref{sec:libmeasureUsage}). The calculated values are stored in the \texttt{MEASUREMENT} struct again. This templated class has the same template parameter \texttt{TVariant} as implemented in the \texttt{CMeasureResource} class. The parameter is used to omit calculations unnecessary for the libmeasure light variant. For example, the maximum temperature is not computed since the temperature queries are disabled in the \texttt{VARIANT\_LIGHT}.
+		\texttt{CMeasureAbstractThread} and therefore the resource-specific \texttt{run()} method. This class uses the \texttt{CMeasureResource} class to retrieve measurement values periodically. The \texttt{run()} method basically consists of a loop frequently calling the \texttt{measure()} method of the\\ \texttt{CMeasureResource} class. Afterwards all necessary calculations such as accumulation of energy values are done with the obtained values which are located in the \added[id=ck]{\texttt{MS\_MEASUREMENT\_RESOURCE}} struct. The \texttt{measure()} method only stores values which can be directly read from the sensors placed on-die or on-board of the resources. The further processing of the raw data is then performed in the loop of the \texttt{run()} method located in \texttt{CMeasureResourceThread} or after the loop before thread termination. For example, the recently measured power dissipation and time slice since the last sampling (approximately the sampling rate) are used to calculate the energy consumed during this period. Finally, this intermediate result is used to accumulate/sum up the total energy consumption during the whole measurement respectively between calling \texttt{ms\_start\_measurement(ms)} and \\\texttt{ms\_stop\_measurement(ms)} (Section \ref{sec:libmeasureUsage}). The calculated values are stored in the\added[id=ck]{\texttt{MS\_MEASUREMENT\_RESOURCE}} struct again. This templated class has the same template parameter \texttt{TVariant} as implemented in the \texttt{CMeasureResource} class. The parameter is used to omit calculations unnecessary for the libmeasure light variant. For example, the maximum temperature is not computed since the temperature queries are disabled in the \texttt{VARIANT\_LIGHT}.
 		
 		\item \texttt{ms\_plugin\_interface}: This is the C interface of the module respectively plugin which is called from the \texttt{CMgmt} class in order to instantiate the \texttt{CMeasureResource} and \texttt{CMeasureResourceThread} objects. Since the interface is written in C but the library encapsulates C++ classes, the returned void pointers are usually related to objects.
 	\end{itemize}
@@ -275,7 +275,7 @@ On the one side, all resource-specific libraries have to be linked against the \
 
 Figure \ref{fig:libmeasure_overview} shows the libmeasure with all currently available modules. There you can also see the replacement of \textit{resource} by real class names. All modules have the same structure and implementations of the abstract classes from the \texttt{libms\_common.so}. Caused by some ``historic'' reasons, our naming scheme is inconsistent. For instance, instead of naming the \texttt{CMeasureResource} and \texttt{CMeasureResourceThread} classes in \texttt{libms\_gpu\_nvidia\_tesla\_kepler.so} \\\texttt{CMeasureGPU} and \texttt{CMeasureGPUThread}, we used the name of the library (NVML) that we utilize to retrieve the measurement values.\\
 
-As we already mentioned in Section \ref{sec:BuildInstallInstructions}, it is possible to build and install the project with a subset of supported resources. In this case the module \texttt{libms\_stub.so} is loaded instead of the disabled resource-specific modules. The stub module has no functionality but defines all necessary classes and functions. This allows loading the stub module in the \texttt{CMgmt} class like all other modules. If the functions are called, no measurement thread is created and the values stored to the \texttt{MEASUREMENT} struct are always zero.
+As we already mentioned in Section \ref{sec:BuildInstallInstructions}, it is possible to build and install the project with a subset of supported resources. In this case the module \texttt{libms\_stub.so} is loaded instead of the disabled resource-specific modules. The stub module has no functionality but defines all necessary classes and functions. This allows loading the stub module in the \texttt{CMgmt} class like all other modules. If the functions are called, no measurement thread is created and the values stored to the \added[id=ck]{\texttt{MS\_MEASUREMENT\_RESOURCE}} struct are always zero.
 
 \begin{figure}
 \begin{center}
@@ -294,16 +294,17 @@ The existing modules fit perfectly to our heterogeneous node but it is very unli
 	\item \textbf{resource-specific module:}
 	\begin{itemize}
 		\item \texttt{ms\_plugin\_interface}
+		\item \added[id=ck]{\texttt{ms\_resource}}
 		\item \texttt{CMeasureResource}
 		\item \texttt{CMeasureResourceThread}
 		\item \texttt{CMakeLists.txt}
 	\end{itemize}
-	\item \texttt{measurement.h}
+	\item \texttt{ms\_measurement.h}
 	\item \textbf{libms\_common.so:}
 	\begin{itemize}
-		\item \texttt{interface.cpp}
 		\item \texttt{CMgmt}
-		\item \texttt{mgmt.cpp} 
+		\item \texttt{mgmt.cpp}
+		\item \added[id=ck]{\texttt{list.cpp}} 
 	\end{itemize}
 \end{itemize}
 In the following sections, we discuss each modification in detail. Please feel free to use the existing modules as examples to create new modules.
@@ -314,13 +315,13 @@ For a complete module, we recommend to implement six source files and a \texttt{
 	\item[ms\_plugin\_interface] is the implementation of the C interface to the module/ plugin. The interface is identical for every module and the corresponding unique header file is \texttt{/include/ms\_plugin\_interface.h}. The functions necessary to implement this interface are shown in Listing \ref{lst:ResourceInterface}.
 	\pagebreak
 	
-	\begin{lstlisting}[caption={Interface that each plugin must implement.}, label=lst:ResourceInterface]
+	\begin{lstlisting}[caption={Interface that each plugin must implement. \added[id=ck]{Angepasst}}, label=lst:ResourceInterface]
 void* init_resource(void* pLogger, lib_variant variant,
 					skip_ms_rate skip_ms, void* pParams);
 void  fini_resource(void* pMeasureRes);
 
 void* init_resource_thread(void* pLogger, void* pStartSem,
-						   MEASUREMENT* pMeasurement,
+						   MS_LIST* pMs_List,
 						   void* pMeasureRes);
 void  fini_resource_thread(void* pMeasureResThread);
 
@@ -331,6 +332,29 @@ void  trigger_resource_custom(void* pMeasureRes,
 	The second parameter \texttt{variant} of the \texttt{init\_resource} function defines which variant (\texttt{VARIANT\_LIGHT} or \\\texttt{VARIANT\_FULL} as explained in \ref{sec:libmeasureUsage}) is initialized. The third parameter \texttt{skip\_ms\_rate} defines that either certain measurements can be skipped in order to reduce the CPU utilization (\texttt{SKIP\_PERIODIC}) or the maximum precision is needed (\texttt{SKIP\_NEVER}). Both options are described in more detail in section \ref{sec:libmeasureUsage}.
 	The additional parameter \texttt{void* pParams} of the \texttt{init\_resource()} function can be used to pass an arbitrary number of parameters to the \texttt{CMeasureResource} object during the initilization. For example, the CPU frequency settings (governor, maximum and minimum frequencies) are listed in the \texttt{pParams} argument. While the init and fini functions are mandatory for a new module, the function \texttt{trigger\_resource\_custom()} is optional and can be used to call any custom function for a specific resource. For example, we use this function to process a ``force idle function'' of the FPGA, which is used to reconfigure the FPGA with an empty bitstream. If you do not need the additional custom function add it anyway but keep the function body empty.
 	
+	\item[ms\_resource] \added[id=ck]{The header file \texttt{ms\_resource.h} contains the \texttt{MS\_MEASUREMENT\_RESOURCE} struct which is used to store the measured values and can be accessed through the linked list \texttt{MS\_LIST}. For every value which should be measured, a new variable needs to be added here. Supplementary variables to store the sampling rate and the skip rate, set by the call to \texttt{ms\_set\_timer()} during the initialization need to be added to the \texttt{MS\_MEASUREMENT\_RESOURCE} struct as shown in Listing \ref{lst:measurement.h_struct}.}	
+	\begin{lstlisting}[caption={Mandatory extensions for the \texttt{MS\_MEASUREMENT\_RESOURCE} struct defined in \texttt{ms\_resource.h}.},label=lst:measurement.h_struct]
+	struct timespec resource_time_wait;
+	uint32_t resource_skip_ms_rate;
+	\end{lstlisting}
+	\added[id=ck]{The header file contains also a struct \texttt{MS\_MEASUREMENT\_INTERNAL\_RESOURCE} which is part of the \texttt{MS\_MEASUREMENT\_RESOURCE} struct and can be used to store temporary variables which are needed for the calculation of other measurement results. Furthermore, you need to add new variables to the internal struct to store time stamps for the new resource. These timespec structs are used to hold precise time information and can be used to calculate energy out of measured power values. The additions to the internal struct should look like the code shown in Listing \ref{lst:measurement.h_internal_struct}.}
+	\begin{lstlisting}[caption={Extensions for the \texttt{MS\_MEASUREMENT\_INTERNAL\_RESOURCE} struct defined in \texttt{ms\_resource.h}.}, label=lst:measurement.h_internal_struct]
+	struct timespec resource_time_cur;
+	struct timespec resource_time_temp;
+	struct timespec resource_time_diff;
+	double resource_time_diff_double;
+	\end{lstlisting}
+	\added[id=ck]{Beside these structs all methods to obtain the measured values after stopping the measuring procedure are declared here. For each of these values, a function declaration must be added to \texttt{ms\_resource.h} and the corresponding function definition must be added to the \texttt{ms\_resourde.c} file. These functions are used to return the measured values stored in the \texttt{MS\_MEASUREMENT\_RESOURCE} struct. The \texttt{MS\_LIST} struct should be the first parameter of the functions. The following listing shows an example for a function returning the total/accumulated energy consumed during a measuring. The define in the first few lines is used to get the \texttt{MS\_MEASUREMENT\_RESOURCE} struct from the linked list.}
+	\begin{lstlisting}[caption={Example for a function to return values stored in a \texttt{MS\_MEASUREMENT\_RESOURCE} struct.}, label=lst:GPUEnergyExample]
+#define MEASUREMENT_GPU \
+		(NULL == getMeasurement(&ms_list, GPU)) ? 0 : \
+		((MS_MEASUREMENT_GPU *) getMeasurement(&ms_list, GPU))
+		
+double gpu_energy_total(MS_LIST *ms_list) {
+	return MEASUREMENT_GPU->nvml_energy_acc;
+}
+	\end{lstlisting}
+	
 	\item[CMeasureResource] extends the class \texttt{CMeasureAbstractResource} and therefore has to implement the methods shown in Listing \ref{lst:CMeasureResource}. This class provides two template parameters. The first (\texttt{TSkipMs}) is used to define which measurements in the \texttt{measure} method can be performed with a lower frequency (Table \ref{tab:reduce_cpu_util}) in order to reduce the CPU utilization. The second template (\texttt{TVariant}) selects which measuring values should be obtained (Table \ref{tab:light_vs_full}).
 	\begin{lstlisting}[caption={Methods of the \texttt{CMeasureResource} class that programmers have to implement in order to support a new resource.}, label=lst:CMeasureResource]
 private:
@@ -338,30 +362,36 @@ private:
 	void destroy(void);
 	
 public:
-	void measure(MEASUREMENT *pMeasurement, 
+	void measure(void *pMsMeasurement, 
 				int32_t& rThreadNum);
 	int  getVariant();
 	\end{lstlisting}
 	
 	The method \texttt{init()} is used to initialize the libraries needed to obtain the measurement values from the resources. For example in our GPU module we initialize the NVML, open the device, store the pointer to the device for later queries and set the frequencies to the desired values. This allows it to query the measurement values after the initialization from the resource without any unnecessary overhead. Furthermore the \texttt{init()} method can be used to display the capabilities of the resource on which the measurements are performed. An example is our CPU module where all available CPU frequencies are displayed.\\
 	After the last measurement, all used libraries need to be closed and the allocated memory must be freed. Therefore we provide a \texttt{destroy()} method which is similar to \texttt{init()}. For example, in our GPU module we set the clock frequencies back to the default values and close the NVML environment.\\
-	The method \texttt{measure()} is called to obtain the current measurement values from the resource. Every value which is measured here needs to be stored in the \texttt{MEASUREMENT} struct which is passed as parameter to the method. The extension of the \texttt{MEASUREMENT} struct to store additional values is explained later. The second parameter of the \texttt{measure} method is the thread id of the thread which executes this method. The thread ids are used for a first debugging without professional debuggers such as gdb. 
+	The method \texttt{measure()} is called to obtain the current measurement values from the resource. Every value which is measured here needs to be stored in the \texttt{MS\_MEASUREMENT\_RESOURCE} struct which is passed as parameter to the method. The extension of the \texttt{MS\_MEASUREMENT\_RESOURCE} struct to store additional values is explained later. The second parameter of the \texttt{measure} method is the thread id of the thread which executes this method. The thread ids are used for a first debugging without professional debuggers such as gdb. 
 	Listing \ref{lst:CMeasureResourceMeasure} shows an abstract example of the \texttt{measure} method.
 	
-	\begin{lstlisting}[caption={Abstract minimal example for the \texttt{measure()} method of the \texttt{CMeasureResource} class to show the usage of the templates.}, label=lst:CMeasureResourceMeasure]
+	\begin{lstlisting}[caption={Abstract minimal example for the \texttt{measure()} method of the \texttt{CMeasureResource} class to show the usage of the templates. \added[id=ck]{Listing aktualisiert}}, label=lst:CMeasureResourceMeasure]
 template <int TSkipMs, int TVariant>
-void CMeasureResource<TSkipMs, TVariant>::measure(MEASUREMENT* pMeasurement, int32_t& rThreadNum) {
+void CMeasureResource<TSkipMs, TVariant>::measure(void* pMsMeasurement, int32_t& rThreadNum) {
+	MS_MEASUREMENT_RESOURCE *pMsMeasurementResource =
+		(MS_MEASUREMENT_RESOURCE*) pMsMeasurement;
 	//This measurements are always performed.
-	ResourceGetPower(pMeasurement, rThreadNum);
-	ResourceGetUtil(pMeasurement, rThreadNum);
-
+	ResourceGetPower(pMsMeasurementResource,
+					rThreadNum);
+	ResourceGetUtil(pMsMeasurementResource,
+					rThreadNum);
 	if(TVariant == VARIANT_FULL) {
 		// This is only executed in the FULL variant.
-		ResourceGetFrequency(pMeasurement, rThreadNum);
+		ResourceGetFrequency(pMsMeasurementResource,
+							rThreadNum);
 		if(!(mMeasureCounter++ % TSkipMs)) {
 			//This is executed every TSkipMs'th call. 
-			ResourceGetMemory(pMeasurement, rThreadNum);
-			ResourceGetTemperature(pMeasurement, rThreadNum);
+			ResourceGetMemory(pMsMeasurementResource,
+							rThreadNum);
+			ResourceGetTemperature(pMsMeasurementResource,
+							rThreadNum);
 		}
 	}
 }	
@@ -379,9 +409,11 @@ private:
 \pagebreak
 \vspace*{-2.6cm}
 
-\begin{lstlisting}[caption={Scheme of the \texttt{run()} method that each \texttt{CMeasureResourceThread} must have.}, label=lst:RunMethodScheme]
+\begin{lstlisting}[caption={Scheme of the \texttt{run()} method that each \texttt{CMeasureResourceThread} must have. \added[id=ck]{Listing aktualisiert}}, label=lst:RunMethodScheme]
 template <int TVariant>
 void CMeasureResourceThread::run(void) {
+	MS_MEASUREMENT_CPU *pMsMeasurementCpu =
+		(MS_MEASUREMENT_CPU*) mpMsMeasurement;
 	mThreadStateRun		= true;
 	mThreadStateStop	= false;
 	uint64_t skip_ms_cnt = 0;
@@ -412,7 +444,7 @@ void CMeasureResourceThread::run(void) {
 		 * the check_for_exit_interrupts.
 		 */
 		if(!(skip_ms_cnt++ %
-			 mpMeasurement->check_for_exit_interrupts)){
+			 pMsMeasurementCpu->check_for_exit_interrupts)){
 			mrMeasureResource.measure(mpMeasurement,
 									  mThreadNum);
 		}
@@ -426,13 +458,13 @@ void CMeasureResourceThread::run(void) {
 		 * information to compute energy in a more precise
 		 * way.
 		 */
-		calcTimeDiff(&(mpMeasurement->
+		calcTimeDiff(&(pMsMeasurementCpu->
 				       	internal.resource_time_cur),
-					 &(mpMeasurement->
+					 &(pMsMeasurementCpu->
 					 	internal.resource_time_temp),
-					 &(mpMeasurement->
+					 &(pMsMeasurementCpu->
 						 internal.resource_time_diff),
-					 &(mpMeasurement->
+					 &(pMsMeasurementCpu->
 						 internal.resource_time_diff_double));
 			
 		/* 
@@ -461,58 +493,50 @@ void CMeasureResourceThread::run(void) {
 	exit();
 }	
 \end{lstlisting}
-	The mutex \texttt{mMutexTimer} gets locked in every loop run. We have implemented a timer thread which is part of the \texttt{libms\_common.so} to unlock this mutex dependent on the sampling rates. The timer thread is a member of the \texttt{CMeasureAbstractResource} class but should be configured as shown in Listing \ref{lst:CMeasureResourceThreadConstructor}. Please replace the string of \texttt{setThreadName()} with a custom resource-dependent string. In addition, set the timer with a resource-dependent sampling rate stored in a variable in the \texttt{MEASUREMENT} struct. Finally, you must share the mutex of the \texttt{CMeasureResourceThread} class with the timer. This is mandatory as this mutex is used for synchronization as explained above.
+	The mutex \texttt{mMutexTimer} gets locked in every loop run. We have implemented a timer thread which is part of the \texttt{libms\_common.so} to unlock this mutex dependent on the sampling rates. The timer thread is a member of the \texttt{CMeasureAbstractResource} class but should be configured as shown in Listing \ref{lst:CMeasureResourceThreadConstructor}. Please replace the string of \texttt{setThreadName()} with a custom resource-dependent string. In addition, set the timer with a resource-dependent sampling rate stored in a variable in the \added[id=ck]{\texttt{MS\_MEASUREMENT\_RESOURCE}} struct. Finally, you must share the mutex of the \texttt{CMeasureResourceThread} class with the timer. This is mandatory as this mutex is used for synchronization as explained above.
 
 \begin{lstlisting}[caption={\texttt{CMeasureResourceThread} constructor template.},label=lst:CMeasureResourceThreadConstructor]
 mTimer.setThreadName("Resource timer");
-mTimer.setTimer(&(pMeasurement->resource_time_wait));
+mTimer.setTimer(&(((MS_MEASUREMENT_RESOURCE*)pMsMeasurement)->resource_time_wait));
 mTimer.shareMutex(&mMutexTimer);
 \end{lstlisting}
 	
 	\item[CMakeLists.txt] compiles all source files to one dynamically loadable library and links the module against the provided \texttt{libms\_common.so} library. Finally, as already mentioned above, you must add the directory containing the new module and the if statement for the new module to the \texttt{CMakeLists.txt} located in the \texttt{/libmeasure} directory. Code for the new module in the \texttt{CMakeLists.txt} should look like the already existing. We also need to add a new option for the module to the \texttt{CMakeLists.txt} of the project root directory as shown in Listing \ref{lst:CMakeListsResourceSupport}.
 \end{description}
 
-\subsubsection{measurement.h}
+\subsubsection{ms\_measurement.h}
 \label{sec:measurement_h}
-For a new resource a define preprocessor directive has to be added to the header \texttt{measurement.h}. We assign a single integer to each resource. The i-th resource gets the value $2^{i}$, so that each bit of the integer indicates one specific resource. Moreover the new resource needs a define directive which indicates whether the library or the stub should be loaded. The define preprocessor directive in the ifdef-statement is triggered dependent on the options set in the \texttt{CMakeLists.txt} file of the project's root directory (Listing \ref{lst:CMakeListsResourceSupport}). This preprocessor directive \texttt{Resource\_LIB} will only be true if the library is compiled with support for the corresponding resource. The edited header including the new resource could look like Listing \ref{lst:measurement.h_defines}.
-\begin{lstlisting}[caption={Extended \texttt{measurement.h} header file with new define directives to support a new resource.},label=lst:measurement.h_defines]
-#define CPU		 0x01
-#define ...
-#define RESOURCE 0x20
-#define ALL		(CPU | GPU | GPU | FPGA | SYSTEM | MIC | RESOURCE)
-		
+\added[id=ck]{The header \texttt{ms\_resource.h} created for the new resource needs to be included in the \texttt{ms\_measurement.h}. Furthermore for the new resource a define directive which indicates whether the library or the stub should be loaded needs to be added to the header.} The define preprocessor directive in the ifdef-statement is triggered dependent on the options set in the \texttt{CMakeLists.txt} file of the project's root directory (Listing \ref{lst:CMakeListsResourceSupport}). This preprocessor directive \texttt{Resource\_LIB} will only be true if the library is compiled with support for the corresponding resource. \added[id=ck]{Moreover a variable for the new resource to indicate whether the module is activated or not needs to be added to the \texttt{MS\_CONFIG} struct which is also defined in the \texttt{ms\_measurement.h}.} The edited header including the extended \texttt{MS\_CONFIG} struct could look like Listing \ref{lst:measurement.h_defines}.
+\begin{lstlisting}[caption={Extended \texttt{ms\_measurement.h} header file with new define directives to support a new resource. \added[id=ck]{Listing angepasst}},label=lst:measurement.h_defines]		
 #ifdef Resource_LIB
 	#define Resource_LIB_NAME "libms_resource.so"
 #else
 	#define Resource_LIB_NAME "libms_stub.so"
 #endif
+
+typedef struct __ms_config {
+	int32_t cpu_enabled;
+	int32_t gpu_enabled;
+	int32_t fpga_enabled;
+	int32_t mic_enabled;
+	int32_t sys_enabled;
+	int32_t resource_enabled;
+} MS_CONFIG;
 \end{lstlisting}
-The \texttt{MEASUREMENT} struct is also defined in \texttt{measurement.h}. For every value which should be measured, a new variable needs to be added here. Furthermore the methods to obtain the measured values after stopping the measuring procedure are declared here. For this, you have to add a function for each value of interest stored in the struct. Supplementary variables to store the sampling rate and the skip rate, set by the call to \texttt{ms\_set\_timer()} during the initialization need to be added to the \texttt{MEASUREMENT} struct as shown in Listing \ref{lst:measurement.h_struct}.
-\begin{lstlisting}[caption={Mandatory extensions for the \texttt{MEAUSREMENT} struct defined in \texttt{measurement.h}.},label=lst:measurement.h_struct]
-struct timespec resource_time_wait;
-uint32_t resource_skip_ms_rate;
-\end{lstlisting}
-Temprorarily variables which are needed for the calculation of other measurement results can be added to the C struct \texttt{MEASUREMENT\_INTERNAL}. Furthermore, you need to add new variables to the internal struct to store time stamps for the new resource. These timespec structs are used to hold precise time information and can be used to calculate energy out of measured power values. The additions to the internal struct should look like the code shown in Listing \ref{lst:measurement.h_internal_struct}.
-\begin{lstlisting}[caption={Extensions for the \texttt{MEAUSREMENT\_INTERNAL} struct defined in \texttt{measurement.h}.}, label=lst:measurement.h_internal_struct]
-struct timespec resource_time_cur;
-struct timespec resource_time_temp;
-struct timespec resource_time_diff;
-double resource_time_diff_double;
+For a new resource a define preprocessor directive has to be added to the header \texttt{ms\_list.h} as shown in Listing \ref{lst:ms_list.h_defines}. We assign a single integer to each resource. The i-th resource gets the value $2^{i}$, so that each bit of the integer indicates one specific resource.  
+\begin{lstlisting}[caption={Extended \texttt{ms\_list.h} header.\added[id=ck]{Listing ist neu}},label=lst:ms_list.h_defines]
+#define CPU		 0x01
+#define ...
+#define RESOURCE 0x20
+#define ALL		(CPU | GPU | GPU | FPGA | SYSTEM | MIC | RESOURCE)
 \end{lstlisting}
 
 \subsubsection{libms\_common.so}
 You have to modify some files which are compiled and bundled to the \\\texttt{libms\_common.so} library. The necessary modifications are described in the following paragraphs. \texttt{libms\_common.so} should be resource-independent. For this, we will remove all resource-specific code from the library in one of the next releases of Ampehre.
 
 \begin{description}
-\item[interface.cpp] implements the interface to obtain all measured values as well as data that are calculated in the \texttt{CMeasureResourceThread}s. For each of these values, a function declaration must be added to \texttt{measurement.h} and the corresponding function definition must be added to the \texttt{interface.cpp} file. These functions are used to return the measured values stored in the \texttt{MEASUREMENT} struct. The \texttt{MEASUREMENT} struct should be the first parameter of the functions. The following listing shows an example for a function returning the total/accumulated energy consumed during a measuring.
-\begin{lstlisting}[caption={Example for a function to return values stored in a \texttt{MEASUREMENT} struct.}, label=lst:GPUEnergyExample]
-double gpu_energy_total(MEASUREMENT *measurement) {
-	return measurement->nvml_energy_acc;
-}
-\end{lstlisting}
-
 \item[CMgmt] is the link between the C user interface and the resource-specific threads and thus provides functions to control the measurement threads (take a look at Figure \ref{fig:libmeasureSequence}). The class \texttt{CResourceLibraryHandler} is used to dynamically load a module with \texttt{dlopen()}, initializes the resource-specific object \texttt{CMeasureResource} and stores it as a pointer. The \\\texttt{CResourceLibraryHandler} calls the plugin interface and provides functionality to execute any of the plugin interface functions via \texttt{dlysm()}. Each resource-specific module such as \texttt{CMeasureResource} is instantiated in \texttt{CMgmt} and is stored for later access. The \texttt{CResourceLibraryHandler} is called with the module name and the values for the template parameters \texttt{variant} and \texttt{skip\_ms\_rate}. It automatically loads a module and instantiates the corresponding \texttt{CMeasureResource} object. The last parameter of the \texttt{CResourceLibraryHandler} constructor is used to pass any additional parameters to the \texttt{CMeasureResource} class of the new module.  For example, we use this parameter to set the GPU clock frequencies. The \texttt{CResourceLibraryHandler} object for the new modules is inserted to the data container \texttt{mResources} which is a member of the \texttt{CMgmt} class.\\
-Listing \ref{lst:CMgmtExtension} shows an example what a programmer needs add to the constructor in order to implement a new module. In this example we pass the GPU frequency settings to the \texttt{CMeasureResource}.
+Listing \ref{lst:CMgmtExtension} shows an example what a programmer needs to add to the constructor in order to implement a new module. In this example we pass the GPU frequency settings to the \texttt{CMeasureResource}.
 \begin{lstlisting}[caption={Example extension to the \texttt{CMgmt} constructor.}, label=lst:CMgmtExtension]
 uint64_t params_gpu[] = {gpuFrequency};
 mResources[GPU] = new NLibMeasure::CResourceLibraryHandler(
@@ -520,28 +544,57 @@ mResources[GPU] = new NLibMeasure::CResourceLibraryHandler(
 						skip_ms_rate, (void*) params_gpu);
 \end{lstlisting}
 
-\item[mgmt.cpp] is the implementation of the C interface to the library management functionality. Functions such as \texttt{ms\_init\_measurement()} and\\ \texttt{ms\_start\_measurement()} (Section \ref{sec:libmeasureUsage}) which are declared in \\\texttt{measurement.h} are defined in the \texttt{mgmt.cpp} file. Three functions have to be modified in order to integrate a new resource to \texttt{libms\_common.so} respectively libmeasure. The first function is \texttt{ms\_set\_timer} where the sampling rates for each resource are set. This defines how often the \texttt{measure()} function of the class \texttt{CMeasureResource} is called in the \texttt{run()} method of \\\texttt{CMeasureResourceThread}. Therefore the switch statement has to be extended by a new case as indicated in the next listing. The identifier of the case statement is defined in \texttt{measurement.h} (Listing \ref{lst:measurement.h_defines} of Section \ref{sec:measurement_h}).
-\begin{lstlisting}[caption={Code to store resource-specific sampling rates in the \texttt{ms\_set\_timer()} function.}, label=lst:mgmt]
+\item[mgmt.cpp] is the implementation of the C interface to the library management functionality. Functions such as \texttt{ms\_init\_measurement()} and\\ \texttt{ms\_start\_measurement()} (Section \ref{sec:libmeasureUsage}) which are declared in \\\texttt{measurement.h} are defined in the \texttt{mgmt.cpp} file. Four functions have to be modified in order to integrate a new resource to \texttt{libms\_common.so} respectively libmeasure. \added[id=ck]{The first function is \texttt{ms\_init()} where the variable \texttt{resource\_enabled} of the \texttt{MS\_CONFIG} struct needs to be set dependent on the activated resources. Listing \ref{lst:mgmt_ms_init} shows an example of the code which has to be added.}
+\begin{lstlisting}[caption={Extension of the \texttt{ms\_init()} function to set the variable \texttt{resource\_enabled}. \added[id=ck]{Listing ist neu}}, label=lst:mgmt_ms_init]
+#ifdef Resource_LIB
+	ms_system->config->resource_enabled = 1;
+#else
+	ms_system->config->resource_enabled = 0;
+#endif
+\end{lstlisting}
+The second function is \texttt{ms\_set\_timer} where the sampling rates for each resource are set. This defines how often the \texttt{measure()} function of the class \texttt{CMeasureResource} is called in the \texttt{run()} method of \\\texttt{CMeasureResourceThread}. Therefore the switch statement has to be extended by a new case as indicated in the next listing. The identifier of the case statement is defined in \added[id=ck]{\texttt{ms\_list.h} (Listing \ref{lst:ms_list.h_defines} of Section \ref{sec:measurement_h}).}
+\begin{lstlisting}[caption={Code to store resource-specific sampling rates in the \texttt{ms\_set\_timer()} function. \added[id=ck]{Listing aktualisiert}}, label=lst:mgmt]
 case RESOURCE:
-	divide_sampling_rates(&(measurement->resource_time_wait),
-							sec, nsec,
-							check_for_exit_interrupts);
-	measurement->msr_check_for_exit_interrupts =
-		check_for_exit_interrupts;
+	ms_measurement = getMeasurement(&ms_list, RESOURCE);
+	
+	if(ms_measurement!=NULL) {
+		divide_sampling_rates(&(((MS_MEASUREMENT_RESOURCE *)
+				ms_measurement)->resource_time_wait),
+				sec, nsec, check_for_exit_interrupts);
+								  
+		((MS_MEASUREMENT_RESOURCE *)ms_measurement)
+		->resource_check_for_exit_interrupts =
+			check_for_exit_interrupts;
+	}
 	break;
 \end{lstlisting}
-The second function which has to be modified is \texttt{ms\_init\_measurement()}. Here you must add an if statement which is needed for appropriate plugin instantiation. An example is listed in Listing \ref{lst:mgmtMsInitMeasurement}.
-\begin{lstlisting}[caption={Extension of the \texttt{ms\_init\_measurement()} function.}, label=lst:mgmtMsInitMeasurement]
+The third function which has to be modified is \texttt{ms\_init\_measurement()}. Here you must add an if statement which is needed for appropriate plugin instantiation. An example is listed in Listing \ref{lst:mgmtMsInitMeasurement}.
+\begin{lstlisting}[caption={Extension of the \texttt{ms\_init\_measurement()} function. \added[id=ck]{Listing aktualisiert}}, label=lst:mgmtMsInitMeasurement]
 if (flags & RESOURCE) {
-	ms->initMeasureThread(RESOURCE, measurement);
+	mgmt->initMeasureThread(RESOURCE, ms_list);
 }
 \end{lstlisting}
 
-The third function which has to be modified is \texttt{ms\_alloc\_measurement()}. You should set the \texttt{struct timespec} which holds the sampling rate to maximum and the \texttt{resource\_check\_for\_exit\_interrupts} to the default value 1 (\texttt{SKIP\_NEVER}).
-\begin{lstlisting}[caption={Extension of the \texttt{ms\_alloc\_measurement()} function.}, label=lst:AlloctoMaxInteger]
-measurement->resource_time_wait.tv_sec			= UINT64_MAX;
-measurement->resource_time_wait.tv_nsec			= UINT64_MAX;
-measurement->resource_check_for_exit_interrupts	= 1;
+\added[id=ck]{The fourth function which has to be modified is \texttt{ms\_alloc\_measurement()}. In this function the linked list with the resource-specific measurement structs is initialized. Therefore it has to be checked whether the resource is activated in the \texttt{MS\_CONFIG} struct and if the resource is activated a measurement struct for this resource is appended to linked list. Listing \ref{lst:MsAllocMeasurement} shows an example of the code which needs to be added.}
+\begin{lstlisting}[caption={Extension of the \texttt{ms\_alloc\_measurement()} function.}, label=lst:MsAllocMeasurement]
+if(config->resource_enabled) {
+	appendList(&ms_list, RESOURCE);
+}
+\end{lstlisting}
+
+\item[list.cpp] \added[id=ck]{contains all functions to append, delete or get specific elements of the linked list \texttt{MS\_LIST}. The only function which has to be modified is \texttt{allocMeasurement()}. It is necessary to allocate a resource specific measurement struct and to set the \texttt{struct timespec} which holds the sampling rate to maximum and the \texttt{resource\_check\_for\_exit\_interrupts} to the default value 1 (\texttt{SKIP\_NEVER}). Therfore the switch statement has to be extended as shown in Listing \ref{lst:AllocMeasurement}.}
+\begin{lstlisting}[caption={Extension of the \texttt{allocMeasurement()} function. \added[id=ck]{Listing ist neu.}}, label=lst:AllocMeasurement]
+case RESOURCE:
+	ms_measurement = malloc(sizeof(MS_MEASUREMENT_RESOURCE));
+	memset(ms_measurement,0, sizeof(MS_MEASUREMENT_RESOURCE));
+	
+	((MS_MEASUREMENT_RESOURCE *)ms_measurement)
+		->resource_time_wait.tv_sec	= UINT64_MAX;
+	((MS_MEASUREMENT_RESOURCE *)ms_measurement)
+		->resource_time_wait.tv_nsec = UINT64_MAX;
+	((MS_MEASUREMENT_RESOURCE *)ms_measurement)
+		->resource_check_for_exit_interrupts = 1;
+	break;
 \end{lstlisting}
 \end{description}
 
