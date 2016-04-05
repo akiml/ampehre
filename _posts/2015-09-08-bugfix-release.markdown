@@ -7,18 +7,18 @@ brief: Ampehre v0.5.10 is now available.
 --- 
 ---
 
-####Description:
+#### Description:
 
 The latest version of Ampehre, v0.5.10, is now available at our github repository [github.com/akiml/ampehre](https://github.com/akiml/ampehre).
 
 ---
 
-####Bugfixes:
+#### Bugfixes:
 - Fix GPU frequency settings in ms_hetsched example application.
 - Fix hetpowidle JSON file writer.
 - Fix headers of CSV files created by hettime's CSV file printer.
 
-####Feature improvements:
+#### Feature improvements:
 - Adjust sampling rates in hetpowidle tool.
 - Add MIC support to task wrapper and adjust its default sampling rates.
 - Adjust libmeasure light version.

@@ -7,14 +7,14 @@ brief: The latest version of Ampehre, v0.5.9, is now publicly available at our g
 --- 
 ---
 
-####Description:
+#### Description:
 
 The latest version of Ampehre, v0.5.9, is now publicly available at our github repository [github.com/akiml/ampehre](https://github.com/akiml/ampehre).
 There you’ll find the complete source that enables you to perform accurate measurements for different resources on your own system.
 
 ---
 
-####Features:
+#### Features:
 - Modular software-framework
 - Measuring of power, energy, temperature, utilization and memory occupancy
 - GUI to monitor measurements (msmonitor)
