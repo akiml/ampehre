@@ -17,3 +17,4 @@
 
 add_subdirectory(hettime)
 add_subdirectory(msmonitor)
+add_subdirectory(msmonitor_cs)

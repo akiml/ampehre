@@ -73,3 +73,6 @@ correlation_install:
 
 mic_start:
 	sudo service mpss restart
+
+server:
+	cd utilities/msmonitor_cs && cmake CMakeLists.txt && make 

@@ -15,7 +15,7 @@
 # version: 0.3.0 - extend libmeasure and add application for online monitoring
 #
 
-#cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6)
 
 #project(msmonitor)
 
@@ -24,13 +24,11 @@
 
 link_directories(${CMAKE_BINARY_DIR}/..)
 
-add_subdirectory(common)
-add_subdirectory(data)
-add_subdirectory(gui)
+#add_subdirectory(client)
+add_subdirectory(server)
 
-set(BIN_SOURCES main.cpp)
+add_executable(msmonitor_cs main.cpp)
+target_link_libraries(msmonitor_cs msmonitor_server)
 
-add_executable(msmonitor ${BIN_SOURCES})
-target_link_libraries(msmonitor msmonitor_gui msmonitor_data)
+install(TARGETS msmonitor_cs RUNTIME DESTINATION bin)
 
-install(TARGETS msmonitor RUNTIME DESTINATION bin)
