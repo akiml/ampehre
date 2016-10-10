@@ -7,7 +7,7 @@ CMeasure::~CMeasure(){}
 
 void CMeasure::init(){
 	// Initialize library and measurement system
-	MS_VERSION version = { .major = MS_MAJOR_VERSION, .minor = MS_MINOR_VERSION, .revision = MS_REVISION_VERSION };
+	MS_VERSION version = {MS_MAJOR_VERSION, MS_MINOR_VERSION, MS_REVISION_VERSION };
 	MS_SYSTEM *ms = ms_init(&version, CPU_GOVERNOR_ONDEMAND, 2000000, 2500000, GPU_FREQUENCY_CUR, IPMI_SET_TIMEOUT, SKIP_PERIODIC, VARIANT_FULL);
 	
 	// Allocate measurement list

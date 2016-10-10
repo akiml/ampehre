@@ -22,6 +22,9 @@ cmake_minimum_required(VERSION 2.6)
 #set(CMAKE_C_FLAGS "-O3 -Wall")
 #set(CMAKE_CXX_FLAGS "-O3 -Wall")
 
+include_directories(server/include/)
+include_directories(client/include/)
+
 link_directories(${CMAKE_BINARY_DIR}/..)
 
 #add_subdirectory(client)

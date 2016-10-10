@@ -5,6 +5,7 @@ CServer::CServer(){}
 CServer::~CServer(){}
 
 int CServer::init(){
-	mMeasure->init();
-	mCom->initSocket();
+	//mMeasure->init();
+	mSockfd = mCom->initSocket();
+	mCom->acceptSocket(mSockfd);
 }

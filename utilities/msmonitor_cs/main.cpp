@@ -18,25 +18,32 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <string.h>
+#include <getopt.h>
+#include <CServer.hpp>
 
 void printUsage();
 
-int main(int argc, char *argv[]) {
-	
-	if(argc == 2){
-		if(strcmp(argv[1], "s") == 0){
-			printf("initiating server...\n");
-			//stuff for server happens
+int main(int argc, char **argv) {
+	int c;
+	while( (c = getopt(argc, argv, "sch")) != -1){
+		switch(c){
+			case 's':{
+				printf("initiating server...\n");
+				CServer* srv = new CServer();
+				srv -> init();
+				break;
+			}
+			case 'c':{
+				printf("initialing client...\n");
+				break;
+			}
+			case 'h':
+				printUsage();
+				break;
+			default:
+				printUsage();
+				break;
 		}
-		else if(strcmp(argv[1], "c") == 0){
-			printf("initialing client...\n");
-			//stuff for client happens
-		}
-		else{
-			printUsage();
-		}
-	}else{
-		printUsage();
 	}
 	
 	return 0;

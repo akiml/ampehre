@@ -9,6 +9,7 @@ public:
 	int init();
 	
 private:
+	int mSockfd;
 	CMeasure* mMeasure;
 	CComS* mCom;
 	

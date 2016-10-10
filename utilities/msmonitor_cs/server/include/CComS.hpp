@@ -15,9 +15,10 @@ class CComS{
 public:
 	CComS();
 	~CComS();
-	void initSocket();
-	void accept();
+	int initSocket();
+	void acceptSocket(int sockfd);
 	void fatal(char *message);
+	void dump(char *data_buffer, const unsigned int length);
 	
 private:
 	std::list<int> mRegClients;

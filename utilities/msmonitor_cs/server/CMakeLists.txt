@@ -9,4 +9,6 @@ set(DATA_SOURCES
 )
 
 add_library(msmonitor_server SHARED ${DATA_SOURCES})
+target_link_libraries(msmonitor_server ${MS_LIBRARY})
 
+install(TARGETS msmonitor_server LIBRARY DESTINATION lib)
