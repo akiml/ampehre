@@ -37,8 +37,8 @@ void CComS::acceptSocket(int sockfd) {
 	struct sockaddr_in client_addr;
 	char buffer[1024];
 	
-	while(1) {    // Accept loop
-		printf("waiting for client\n");
+	while(1) {    // Accept loop - later threads
+		printf("waiting for client\n");	
 		sin_size = sizeof(struct sockaddr_in);
 		nsockfd = accept(sockfd, (struct sockaddr *)&client_addr, &sin_size);
 		if(nsockfd == -1)
@@ -49,6 +49,14 @@ void CComS::acceptSocket(int sockfd) {
 		
 		close(nsockfd);
 	}
+}
+
+void CComS::registerClient(int socket) {
+	mRegClients.push_back(socket);
+}
+
+void CComS::unregisterClient(int socket) {	
+	mRegClients.remove(socket);
 }
 
 

@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <list>
+#include <algorithm>
 
 #define PORT 1050
 
@@ -17,6 +18,8 @@ public:
 	~CComS();
 	int initSocket();
 	void acceptSocket(int sockfd);
+	void registerClient(int socket);
+	void unregisterClient(int socket);
 	void fatal(char *message);
 	void dump(char *data_buffer, const unsigned int length);
 	
