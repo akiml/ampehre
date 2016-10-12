@@ -8,4 +8,6 @@ int CServer::init(){
 	//mMeasure->init();
 	mSockfd = mCom->initSocket();
 	mCom->acceptSocket(mSockfd);
+	
+	return 0;
 }

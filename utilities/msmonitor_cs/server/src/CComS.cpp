@@ -9,22 +9,30 @@ int CComS::initSocket(){
 	struct sockaddr_in host_addr;	// my address information
 	int yes=1;
 
-	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1)
-		fatal("in socket");
+	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1){
+		printf("error while creating socket!");
+		return -1;
+	}
 
-	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
-		fatal("setting socket option SO_REUSEADDR");
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1){
+		printf("error setting socket options");
+		return -1;
+	}
 	
 	host_addr.sin_family = AF_INET;		 // host byte order
 	host_addr.sin_port = htons(PORT);	 // short, network byte order
 	host_addr.sin_addr.s_addr = INADDR_ANY; // automatically fill with my IP
 	memset(&(host_addr.sin_zero), '\0', 8); // zero the rest of the struct
 
-	if (bind(sockfd, (struct sockaddr *)&host_addr, sizeof(struct sockaddr)) == -1)
-		fatal("binding to socket");
+	if (bind(sockfd, (struct sockaddr *)&host_addr, sizeof(struct sockaddr)) == -1){
+		printf("error while binding socket");
+		return -1;
+	}
 
-	if (listen(sockfd, 5) == -1)
-		fatal("listening on socket");
+	if (listen(sockfd, 5) == -1){
+		printf("error listening to socket");
+		return -1;
+	}
 	
 	printf("listening on socket %d\n", sockfd);
 	return sockfd;
@@ -41,8 +49,10 @@ void CComS::acceptSocket(int sockfd) {
 		printf("waiting for client\n");	
 		sin_size = sizeof(struct sockaddr_in);
 		nsockfd = accept(sockfd, (struct sockaddr *)&client_addr, &sin_size);
-		if(nsockfd == -1)
-			fatal("accepting connection");
+		if(nsockfd == -1){
+			printf("error while accepting connection");
+			exit(-1);
+		}
 		printf("server: got connection from %s port %d\n",inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 		recv_length = recv(nsockfd, &buffer, 1024, 0);
 		dump(buffer, recv_length);
@@ -59,15 +69,6 @@ void CComS::unregisterClient(int socket) {
 	mRegClients.remove(socket);
 }
 
-
-void CComS::fatal(char *message) {
-   char error_message[100];
-
-   strcpy(error_message, "[!] Fatal Error ");
-   strncat(error_message, message, 83);
-   perror(error_message);
-   exit(-1);
-}
 
 // dumps raw memory in strings
 void CComS::dump(char *data_buffer, const unsigned int length) {

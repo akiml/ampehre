@@ -51,5 +51,5 @@ int main(int argc, char **argv) {
 
 void printUsage() {
 	printf("Usage: ./executable [option]\n\n");
-	printf("Options:\ns\tserver (e.g. heterogenous node)\nc\tclient (e.g. your local PC)\n");
+	printf("Options:\n-s\tserver (e.g. heterogenous node)\n-c\tclient (e.g. your local PC)\n-h\thelp (show this help)");
 }

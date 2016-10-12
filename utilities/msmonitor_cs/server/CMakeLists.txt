@@ -6,6 +6,7 @@ set(DATA_SOURCES
 	src/CComS.cpp
 	src/CMeasure.cpp
 	src/CServer.cpp
+	src/CProtocolS.cpp
 )
 
 add_library(msmonitor_server SHARED ${DATA_SOURCES})
