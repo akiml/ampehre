@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <list>
 
-#define PORT 2600
+#define PORT 2900
 
 class CComS{
 	

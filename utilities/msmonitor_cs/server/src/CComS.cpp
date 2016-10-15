@@ -24,7 +24,7 @@ int CComS::initSocket(){
 	host_addr.sin_addr.s_addr = INADDR_ANY; // automatically fill with my IP
 	memset(&(host_addr.sin_zero), '\0', 8); // zero the rest of the struct
 
-	if (bind(sockfd, (struct sockaddr *)&host_addr, sizeof(struct sockaddr)) == -1){
+	if (bind(sockfd, (struct sockaddr *)&host_addr, sizeof(struct sockaddr_in)) == -1){
 		printf("error while binding socket");
 		return -1;
 	}
@@ -46,7 +46,7 @@ void CComS::acceptSocket(int sockfd) {
 	char buffer[1024];
 	
 	while(1) {    // Accept loop - later threads
-		printf("waiting for client\n");	
+		printf("waiting for client\n");
 		sin_size = sizeof(struct sockaddr_in);
 		nsockfd = accept(sockfd, (struct sockaddr *)&client_addr, &sin_size);
 		if(nsockfd == -1){

@@ -12,7 +12,7 @@ int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* re
 	char txt[length];
 	
 	// parsing Version - start
-	while(msg[i] != 10 || i >= length){	//while not newline 
+	while(msg[i] != 10 && i < length){	//while not newline 
 		txt[i] = msg[i];
 		i++;
 	}
@@ -22,19 +22,30 @@ int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* re
 	}
 	// parsing Version - end
 	
-	//parsing Command - start
+	// parsing Command - start
 	k = i;
-	while(msg[i] != 10 || i >= length){	//while not newline 
+	while(msg[i] != 10 && i < length){	//while not newline 
 		txt[i-k] = msg[i];
 		i++;
 	}
-	if(checkCmd(txt, i-k) < 0){
+	*tsk = checkCmd(txt, i-k);
+	if(*tsk < 0){
 		printf("unknown command! Abort");
 		return -1;
 	}
-	//parsing Command - end
+	// parsing Command - end
 	
+	// parsing last line -> check if registry and 
 	k = i;
+	while(msg[i] != 10 && i < length){	//while not newline 
+		txt[i-k] = msg[i];
+		i++;
+	}
+	if(checkReg(txt, i-k, reg) < 0){
+		if(checkData(txt, i-k) < 0){
+			return -1;
+		}
+	}
 	
 	return 0;
 
@@ -67,3 +78,26 @@ int CProtocolS::checkCmd(char* cmd, unsigned int length) {
 		return -1;
 	
 }
+
+int CProtocolS::checkData(char* txt, unsigned int length) {
+	
+	return 0;
+}
+
+int CProtocolS::checkReg(char* txt, unsigned int length, int* registry) {
+	if(length != 5){
+		printf("reg_msg length: %d", length);
+		registry = NULL;
+		return -1;
+	}
+	std::string cmd (txt, 4);
+	if(cmd == "REG:") {
+		*registry = (int)txt[4];
+		return 0;
+	}
+	else {
+		registry = NULL;
+		return -1;
+	}
+}
+
