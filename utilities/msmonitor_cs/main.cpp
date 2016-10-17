@@ -17,6 +17,7 @@
 
 #include <cstdlib>
 #include <stdio.h>
+#include <iostream>
 #include <string.h>
 #include <getopt.h>
 #include <CServer.hpp>
@@ -28,13 +29,13 @@ int main(int argc, char **argv) {
 	while( (c = getopt(argc, argv, "sch")) != -1){
 		switch(c){
 			case 's':{
-				printf("initiating server...\n");
+				std::cout << "initiating server..." << std::endl; 
 				CServer* srv = new CServer();
 				srv -> init();
 				break;
 			}
 			case 'c':{
-				printf("initialing client...\n");
+				std::cout << "initiating client..." << std::endl;
 				break;
 			}
 			case 'h':
@@ -50,6 +51,6 @@ int main(int argc, char **argv) {
 }
 
 void printUsage() {
-	printf("Usage: ./executable [option]\n\n");
-	printf("Options:\n-s\tserver (e.g. heterogenous node)\n-c\tclient (e.g. your local PC)\n-h\thelp (show this help)");
+	std::cout << "Usage: ./executable [option]\n" << std::endl;
+	std::cout << "Options:\n-s\tserver (e.g. heterogenous node)\n-c\tclient (e.g. your local PC)\n-h\thelp (show this help)" << std::endl;
 }

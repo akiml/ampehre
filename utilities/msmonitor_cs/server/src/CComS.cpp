@@ -1,4 +1,4 @@
-#include <CComS.hpp>
+#include "CComS.hpp"
 
 CComS::CComS(){}
 

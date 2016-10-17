@@ -1,4 +1,4 @@
-#include <CProtocolS.hpp>
+#include "CProtocolS.hpp"
 
 CProtocolS::CProtocolS(std::string version){
 	this->mVersion = version;
@@ -6,7 +6,7 @@ CProtocolS::CProtocolS(std::string version){
 
 CProtocolS::~CProtocolS(){}
 
-int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* reg){
+int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* reg, long* data){
 	unsigned int i = 0;
 	int k = 0;
 	char txt[length];
@@ -17,7 +17,7 @@ int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* re
 		i++;
 	}
 	if(checkVersion(txt, i-1) < 0){
-		printf("wrong version! Abort");
+		std::cout << "wrong version! Abort" << std::endl;
 		return -1;
 	}
 	// parsing Version - end
@@ -30,7 +30,7 @@ int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* re
 	}
 	*tsk = checkCmd(txt, i-k);
 	if(*tsk < 0){
-		printf("unknown command! Abort");
+		std::cout << "unknown command! Abort" << std::endl;
 		return -1;
 	}
 	// parsing Command - end
@@ -42,7 +42,7 @@ int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* re
 		i++;
 	}
 	if(checkReg(txt, i-k, reg) < 0){
-		if(checkData(txt, i-k) < 0){
+		if(checkData(txt, i-k, data) < 0){
 			return -1;
 		}
 	}
@@ -66,6 +66,10 @@ int CProtocolS::checkCmd(char* cmd, unsigned int length) {
 		this->mCmd = DATA_REQ;
 		return DATA_REQ;
 	}
+	else if(cmp == "CLIENT_REG"){
+		this->mCmd = CLIENT_REG;
+		return CLIENT_REG;
+	}
 	else if(cmp == "DATA_RES"){
 		this->mCmd = DATA_RES;
 		return DATA_RES;
@@ -79,14 +83,20 @@ int CProtocolS::checkCmd(char* cmd, unsigned int length) {
 	
 }
 
-int CProtocolS::checkData(char* txt, unsigned int length) {
-	
+int CProtocolS::checkData(char* txt, unsigned int length, long* data) {
+	if(length == 8){ //8 bytes should be transmitted
+		data = txt;
+	}
+	else {
+		data = NULL;
+		return -1;
+	}
 	return 0;
 }
 
 int CProtocolS::checkReg(char* txt, unsigned int length, int* registry) {
 	if(length != 5){
-		printf("reg_msg length: %d", length);
+		std::cout << "reg_msg length: " << length << std::endl;
 		registry = NULL;
 		return -1;
 	}

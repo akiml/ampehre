@@ -4,17 +4,17 @@
 class CProtocolS{
 	
 public:
-	enum CMD { DATA_REQ, DATA_RES, TERM_COM };
+	enum CMD { CLIENT_REG ,DATA_REQ, DATA_RES, TERM_COM };
 	
-	enum DATA { X=0x1, YPowerCpu0=0x2, YPowerCpu1=0x4, YPowerGpu, YPowerFpga, YPowerMic, YPowerSystem, YTempCpu0, YTempCpu1, YTempGpu, YTempFpgaM, YTempFpgaI, YTempMicDie, YTempSystem, YClockCpu0, YClockCpu1, YClockGpuCore, YClockGpuMem, YClockMicCore, YClockMicMem, YUtilCpu, YUtilGpuCore, YUtilGpuMem, YUtilFpga, YUtilMic, YMemoryCpu, YSwapCpu, YMemoryGpu, YMemoryMic };
+	enum DATA { X, YPowerCpu0, YPowerCpu1, YPowerGpu, YPowerFpga, YPowerMic, YPowerSystem, YTempCpu0, YTempCpu1, YTempGpu, YTempFpgaM, YTempFpgaI, YTempMicDie, YTempSystem, YClockCpu0, YClockCpu1, YClockGpuCore, YClockGpuMem, YClockMicCore, YClockMicMem, YUtilCpu, YUtilGpuCore, YUtilGpuMem, YUtilFpga, YUtilMic, YMemoryCpu, YSwapCpu, YMemoryGpu, YMemoryMic };
 	
 	CProtocolS(std::string version);
 	~CProtocolS();
-	int parseMsg(char *msg, const unsigned int length, int* tsk, int* reg);
+	int parseMsg(char *msg, const unsigned int length, int* tsk, int* reg, long* data);
 	int checkVersion(char* vrs, unsigned int length);
 	int checkCmd(char* cmd, unsigned int length);
 	int checkReg(char* txt, unsigned int length, int* registry);
-	int checkData(char* txt, unsigned int length);
+	int checkData(char* txt, unsigned int length, long* data);
 	
 private:
 	std::string mVersion;
@@ -26,7 +26,10 @@ private:
  
  Version
  Task_Code
- n bytes
  list of needed values
+ 
+ Version 
+ Task_Code
+ Registry
  
  */
