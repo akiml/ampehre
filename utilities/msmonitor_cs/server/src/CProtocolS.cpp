@@ -6,7 +6,7 @@ CProtocolS::CProtocolS(std::string version){
 
 CProtocolS::~CProtocolS(){}
 
-int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* reg, long* data){
+int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* reg, uint64_t* data){
 	unsigned int i = 0;
 	int k = 0;
 	char txt[length];
@@ -83,9 +83,10 @@ int CProtocolS::checkCmd(char* cmd, unsigned int length) {
 	
 }
 
-int CProtocolS::checkData(char* txt, unsigned int length, long* data) {
+int CProtocolS::checkData(char* txt, unsigned int length, uint64_t* data) {
 	if(length == 8){ //8 bytes should be transmitted
-		data = txt;
+		for (unsigned int i = 0 ; i < length ; i++ )
+			*data = (*data << 8) | txt[i];		
 	}
 	else {
 		data = NULL;

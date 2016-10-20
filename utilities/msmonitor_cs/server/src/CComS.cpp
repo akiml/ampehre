@@ -10,12 +10,12 @@ int CComS::initSocket(){
 	int yes=1;
 
 	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1){
-		printf("error while creating socket!");
+		std::cout <<"error while creating socket!"<<std::endl;
 		return -1;
 	}
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1){
-		printf("error setting socket options");
+		std::cout << "error setting socket options" << std::endl;
 		return -1;
 	}
 	
@@ -25,50 +25,37 @@ int CComS::initSocket(){
 	memset(&(host_addr.sin_zero), '\0', 8); // zero the rest of the struct
 
 	if (bind(sockfd, (struct sockaddr *)&host_addr, sizeof(struct sockaddr_in)) == -1){
-		printf("error while binding socket");
+		std::cout << "error while binding socket" << std::endl;
 		return -1;
 	}
 
 	if (listen(sockfd, 5) == -1){
-		printf("error listening to socket");
+		std::cout << "error listening to socket" << std::endl;
 		return -1;
 	}
 	
-	printf("listening on socket %d\n", sockfd);
+	std::cout << "listening on socket " << sockfd << std::endl;
 	return sockfd;
 }
 
-void CComS::acceptSocket(int sockfd) {
+void CComS::acceptSocket(int sockfd, int* recv_length, char* buffer, int& new_socket) {
 	socklen_t sin_size;
 	int nsockfd;
-	int recv_length = 1;
 	struct sockaddr_in client_addr;
-	char buffer[1024];
-	
-	while(1) {    // Accept loop - later threads
-		printf("waiting for client\n");
-		sin_size = sizeof(struct sockaddr_in);
-		nsockfd = accept(sockfd, (struct sockaddr *)&client_addr, &sin_size);
-		if(nsockfd == -1){
-			printf("error while accepting connection");
-			exit(-1);
-		}
-		printf("server: got connection from %s port %d\n",inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
-		recv_length = recv(nsockfd, &buffer, 1024, 0);
-		dump(buffer, recv_length);
-		
-		close(nsockfd);
+
+	std::cout << "waiting for client" << std::endl;
+	sin_size = sizeof(struct sockaddr_in);
+	nsockfd = accept(sockfd, (struct sockaddr *)&client_addr, &sin_size);
+	if(nsockfd == -1){
+		std::cout << "error while accepting connection" << std::endl;
+		exit(-1);
 	}
+	std::cout << "server: got connection from " << inet_ntoa(client_addr.sin_addr)<< " port " << ntohs(client_addr.sin_port)<< std::endl;
+	*recv_length = recv(nsockfd, buffer, 1024, 0);
+	dump(buffer, *recv_length);
+	
+	new_socket = nsockfd;	
 }
-
-void CComS::registerClient(int socket) {
-	mRegClients.push_back(socket);
-}
-
-void CComS::unregisterClient(int socket) {	
-	mRegClients.remove(socket);
-}
-
 
 // dumps raw memory in strings
 void CComS::dump(char *data_buffer, const unsigned int length) {

@@ -1,5 +1,5 @@
-#ifndef CCOMS_HPP
-#define CCOMS_HPP
+#ifndef CCOMC_HPP
+#define CCOMC_HPP
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,20 +11,17 @@
 #include <unistd.h>
 #include <iostream>
 
-
 #define PORT 2900
 
-class CComS{
-	
+class CComC{
 public:
-	CComS();
-	~CComS();
+	CComC();
+	~CComC();
 	int initSocket();
-	void acceptSocket(int sockfd, int* recv_length, char* buffer,  int& new_socket);
-	void dump(char *data_buffer, const unsigned int length);
+	int communicate(char* msg, char* reply, int sockfd);
 	
 private:
-
+	
 };
 
 #endif

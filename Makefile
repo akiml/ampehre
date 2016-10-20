@@ -75,4 +75,7 @@ mic_start:
 	sudo service mpss restart
 
 server:
-	cd utilities/msmonitor_cs && cmake CMakeLists.txt && make 
+	cd utilities/msmonitor_cs/server && cmake CMakeLists.txt && make 
+
+client:
+	cd utilities/msmonitor_cs/client && cmake CMakeLists.txt && make

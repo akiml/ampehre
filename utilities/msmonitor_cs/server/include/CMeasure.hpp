@@ -1,3 +1,6 @@
+#ifndef CMEASURE_HPP
+#define CMEASURE_HPP
+
 #include <stdio.h>
 #include <unistd.h>
 #include "ms_measurement.h"
@@ -15,3 +18,5 @@ private:
 	MS_LIST* m1;
 
 };
+
+#endif

@@ -20,7 +20,8 @@
 #include <iostream>
 #include <string.h>
 #include <getopt.h>
-#include <CServer.hpp>
+#include "CServer.hpp"
+#include "CClient.hpp"
 
 void printUsage();
 
@@ -32,6 +33,7 @@ int main(int argc, char **argv) {
 				std::cout << "initiating server..." << std::endl; 
 				CServer* srv = new CServer();
 				srv -> init();
+				srv -> acceptLoop();
 				break;
 			}
 			case 'c':{

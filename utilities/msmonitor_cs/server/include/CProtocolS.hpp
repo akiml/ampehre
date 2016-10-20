@@ -1,5 +1,10 @@
+#ifndef CPROTOCOLS_HPP
+#define CPROTOCOLS_HPP
+
 #include <stdio.h>
 #include <string>
+#include <iostream>
+#include <inttypes.h>
 
 class CProtocolS{
 	
@@ -10,11 +15,11 @@ public:
 	
 	CProtocolS(std::string version);
 	~CProtocolS();
-	int parseMsg(char *msg, const unsigned int length, int* tsk, int* reg, long* data);
+	int parseMsg(char *msg, const unsigned int length, int* tsk, int* reg, uint64_t* data);
 	int checkVersion(char* vrs, unsigned int length);
 	int checkCmd(char* cmd, unsigned int length);
 	int checkReg(char* txt, unsigned int length, int* registry);
-	int checkData(char* txt, unsigned int length, long* data);
+	int checkData(char* txt, unsigned int length, uint64_t* data);
 	
 private:
 	std::string mVersion;
@@ -33,3 +38,5 @@ private:
  Registry
  
  */
+
+#endif
