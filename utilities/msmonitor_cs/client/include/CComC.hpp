@@ -18,7 +18,7 @@ public:
 	CComC();
 	~CComC();
 	int initSocket();
-	int communicate(char* msg, char* reply, int sockfd);
+	int communicate(const char* msg, char* reply, unsigned int length, int sockfd);
 	
 private:
 	

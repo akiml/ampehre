@@ -38,6 +38,13 @@ int main(int argc, char **argv) {
 			}
 			case 'c':{
 				std::cout << "initiating client..." << std::endl;
+				CClient* client = new CClient();
+				std::vector<int> values;
+				values.push_back(X);
+				values.push_back(YClockCpu0);
+				values.push_back(YClockCpu1);
+				values.push_back(YPowerCpu0);
+				client->registerToServer(values);
 				break;
 			}
 			case 'h':

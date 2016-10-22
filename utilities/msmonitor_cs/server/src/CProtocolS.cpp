@@ -1,7 +1,8 @@
 #include "CProtocolS.hpp"
 
 CProtocolS::CProtocolS(std::string version){
-	this->mVersion = version;
+	mVersion = version;
+	
 }
 
 CProtocolS::~CProtocolS(){}
@@ -16,7 +17,7 @@ int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* re
 		txt[i] = msg[i];
 		i++;
 	}
-	if(checkVersion(txt, i-1) < 0){
+	if(checkVersion(txt, i-1, mVersion) < 0){
 		std::cout << "wrong version! Abort" << std::endl;
 		return -1;
 	}
@@ -35,13 +36,13 @@ int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* re
 	}
 	// parsing Command - end
 	
-	// parsing last line -> check if registry and 
+	// parsing last line -> check if registry
 	k = i;
 	while(msg[i] != 10 && i < length){	//while not newline 
 		txt[i-k] = msg[i];
 		i++;
 	}
-	if(checkReg(txt, i-k, reg) < 0){
+	if(setReg(txt, i-k, reg) < 0){
 		if(checkData(txt, i-k, data) < 0){
 			return -1;
 		}
@@ -51,39 +52,9 @@ int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* re
 
 }
 
-int CProtocolS::checkVersion(char* vrs, unsigned int length){
-	std::string cmp (vrs, length);
-	if (cmp == this->mVersion)
-		return 0;
-	else 
-		return -1;
-}
-
-int CProtocolS::checkCmd(char* cmd, unsigned int length) {
-	std::string cmp (cmd, length);
-	
-	if(cmp == "DATA_REQ"){
-		this->mCmd = DATA_REQ;
-		return DATA_REQ;
-	}
-	else if(cmp == "CLIENT_REG"){
-		this->mCmd = CLIENT_REG;
-		return CLIENT_REG;
-	}
-	else if(cmp == "DATA_RES"){
-		this->mCmd = DATA_RES;
-		return DATA_RES;
-	}
-	else if(cmp == "TERM_COM"){
-		this->mCmd = TERM_COM;
-		return TERM_COM;
-	}
-	else
-		return -1;
-	
-}
 
 int CProtocolS::checkData(char* txt, unsigned int length, uint64_t* data) {
+	*data = 0;
 	if(length == 8){ //8 bytes should be transmitted
 		for (unsigned int i = 0 ; i < length ; i++ )
 			*data = (*data << 8) | txt[i];		
@@ -95,20 +66,6 @@ int CProtocolS::checkData(char* txt, unsigned int length, uint64_t* data) {
 	return 0;
 }
 
-int CProtocolS::checkReg(char* txt, unsigned int length, int* registry) {
-	if(length != 5){
-		std::cout << "reg_msg length: " << length << std::endl;
-		registry = NULL;
-		return -1;
-	}
-	std::string cmd (txt, 4);
-	if(cmd == "REG:") {
-		*registry = (int)txt[4];
-		return 0;
-	}
-	else {
-		registry = NULL;
-		return -1;
-	}
-}
+
+
 

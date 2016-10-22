@@ -35,16 +35,17 @@ int CComC::initSocket() {
 	
 }
 
-int CComC::communicate(char* msg, char* reply, int sockfd) {
+int CComC::communicate(const char* msg, char* reply, unsigned int length, int sockfd) {
 
 	//Send some data
 	if( send(sockfd , msg , strlen(msg) , 0) < 0)
 	{
 		return -1;
 	}
-		
+	
+	length = recv(sockfd , reply , 1024 , 0);
 	//Receive a reply from the server
-	if( recv(sockfd , reply , 1024 , 0) < 0)
+	if( length < 0)
 	{
 		return -1;
 	}
