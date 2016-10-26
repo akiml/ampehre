@@ -30,11 +30,4 @@ link_directories(${CMAKE_BINARY_DIR}/..)
 
 add_subdirectory(client)
 add_subdirectory(server)
-add_subdirectory(include)
-
-add_executable(msmonitor_cs main.cpp)
-target_link_libraries(msmonitor_cs msmonitor_server)
-target_link_libraries(msmonitor_cs msmonitor_client)
-target_link_libraries(msmonitor_cs msmonitor_protocol)
-
-install(TARGETS msmonitor_cs RUNTIME DESTINATION bin)
+#add_subdirectory(include)

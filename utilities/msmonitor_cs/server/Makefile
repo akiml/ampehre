@@ -42,10 +42,10 @@ EQUALS = =
 CMAKE_EDIT_COMMAND = /usr/bin/ccmake
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/aelali/ampehre/utilities/msmonitor_cs/server
+CMAKE_SOURCE_DIR = /home/aelali/ampehre/utilities/msmonitor_cs
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/aelali/ampehre/utilities/msmonitor_cs/server
+CMAKE_BINARY_DIR = /home/aelali/ampehre/utilities/msmonitor_cs
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -113,14 +113,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/aelali/ampehre/utilities/msmonitor_cs/server/CMakeFiles /home/aelali/ampehre/utilities/msmonitor_cs/server/CMakeFiles/progress.marks
-	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/aelali/ampehre/utilities/msmonitor_cs/server/CMakeFiles 0
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(CMAKE_COMMAND) -E cmake_progress_start /home/aelali/ampehre/utilities/msmonitor_cs/CMakeFiles /home/aelali/ampehre/utilities/msmonitor_cs/server/CMakeFiles/progress.marks
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f CMakeFiles/Makefile2 server/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/aelali/ampehre/utilities/msmonitor_cs/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	$(MAKE) -f CMakeFiles/Makefile2 clean
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f CMakeFiles/Makefile2 server/clean
 .PHONY : clean
 
 # The main clean target
@@ -129,91 +129,190 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	$(MAKE) -f CMakeFiles/Makefile2 preinstall
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f CMakeFiles/Makefile2 server/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	$(MAKE) -f CMakeFiles/Makefile2 preinstall
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f CMakeFiles/Makefile2 server/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-#=============================================================================
-# Target rules for targets named msmonitor_server
+# Convenience name for target.
+server/CMakeFiles/msm_srv.dir/rule:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f CMakeFiles/Makefile2 server/CMakeFiles/msm_srv.dir/rule
+.PHONY : server/CMakeFiles/msm_srv.dir/rule
 
-# Build rule for target.
-msmonitor_server: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 msmonitor_server
-.PHONY : msmonitor_server
+# Convenience name for target.
+msm_srv: server/CMakeFiles/msm_srv.dir/rule
+.PHONY : msm_srv
 
 # fast build rule for target.
-msmonitor_server/fast:
-	$(MAKE) -f CMakeFiles/msmonitor_server.dir/build.make CMakeFiles/msmonitor_server.dir/build
-.PHONY : msmonitor_server/fast
+msm_srv/fast:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/msm_srv.dir/build.make server/CMakeFiles/msm_srv.dir/build
+.PHONY : msm_srv/fast
+
+# Convenience name for target.
+server/CMakeFiles/server.dir/rule:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f CMakeFiles/Makefile2 server/CMakeFiles/server.dir/rule
+.PHONY : server/CMakeFiles/server.dir/rule
+
+# Convenience name for target.
+server: server/CMakeFiles/server.dir/rule
+.PHONY : server
+
+# fast build rule for target.
+server/fast:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/build
+.PHONY : server/fast
+
+__/include/CProtocol.o: __/include/CProtocol.cpp.o
+.PHONY : __/include/CProtocol.o
 
 # target to build an object file
-src/CComS.o:
-	$(MAKE) -f CMakeFiles/msmonitor_server.dir/build.make CMakeFiles/msmonitor_server.dir/src/CComS.o
+__/include/CProtocol.cpp.o:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/__/include/CProtocol.cpp.o
+.PHONY : __/include/CProtocol.cpp.o
+
+__/include/CProtocol.i: __/include/CProtocol.cpp.i
+.PHONY : __/include/CProtocol.i
+
+# target to preprocess a source file
+__/include/CProtocol.cpp.i:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/__/include/CProtocol.cpp.i
+.PHONY : __/include/CProtocol.cpp.i
+
+__/include/CProtocol.s: __/include/CProtocol.cpp.s
+.PHONY : __/include/CProtocol.s
+
+# target to generate assembly for a file
+__/include/CProtocol.cpp.s:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/__/include/CProtocol.cpp.s
+.PHONY : __/include/CProtocol.cpp.s
+
+main.o: main.cpp.o
+.PHONY : main.o
+
+# target to build an object file
+main.cpp.o:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/msm_srv.dir/build.make server/CMakeFiles/msm_srv.dir/main.cpp.o
+.PHONY : main.cpp.o
+
+main.i: main.cpp.i
+.PHONY : main.i
+
+# target to preprocess a source file
+main.cpp.i:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/msm_srv.dir/build.make server/CMakeFiles/msm_srv.dir/main.cpp.i
+.PHONY : main.cpp.i
+
+main.s: main.cpp.s
+.PHONY : main.s
+
+# target to generate assembly for a file
+main.cpp.s:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/msm_srv.dir/build.make server/CMakeFiles/msm_srv.dir/main.cpp.s
+.PHONY : main.cpp.s
+
+src/CComS.o: src/CComS.cpp.o
 .PHONY : src/CComS.o
 
-# target to preprocess a source file
-src/CComS.i:
-	$(MAKE) -f CMakeFiles/msmonitor_server.dir/build.make CMakeFiles/msmonitor_server.dir/src/CComS.i
+# target to build an object file
+src/CComS.cpp.o:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/src/CComS.cpp.o
+.PHONY : src/CComS.cpp.o
+
+src/CComS.i: src/CComS.cpp.i
 .PHONY : src/CComS.i
 
-# target to generate assembly for a file
-src/CComS.s:
-	$(MAKE) -f CMakeFiles/msmonitor_server.dir/build.make CMakeFiles/msmonitor_server.dir/src/CComS.s
+# target to preprocess a source file
+src/CComS.cpp.i:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/src/CComS.cpp.i
+.PHONY : src/CComS.cpp.i
+
+src/CComS.s: src/CComS.cpp.s
 .PHONY : src/CComS.s
 
-# target to build an object file
-src/CMeasure.o:
-	$(MAKE) -f CMakeFiles/msmonitor_server.dir/build.make CMakeFiles/msmonitor_server.dir/src/CMeasure.o
+# target to generate assembly for a file
+src/CComS.cpp.s:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/src/CComS.cpp.s
+.PHONY : src/CComS.cpp.s
+
+src/CMeasure.o: src/CMeasure.cpp.o
 .PHONY : src/CMeasure.o
 
-# target to preprocess a source file
-src/CMeasure.i:
-	$(MAKE) -f CMakeFiles/msmonitor_server.dir/build.make CMakeFiles/msmonitor_server.dir/src/CMeasure.i
+# target to build an object file
+src/CMeasure.cpp.o:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/src/CMeasure.cpp.o
+.PHONY : src/CMeasure.cpp.o
+
+src/CMeasure.i: src/CMeasure.cpp.i
 .PHONY : src/CMeasure.i
 
-# target to generate assembly for a file
-src/CMeasure.s:
-	$(MAKE) -f CMakeFiles/msmonitor_server.dir/build.make CMakeFiles/msmonitor_server.dir/src/CMeasure.s
+# target to preprocess a source file
+src/CMeasure.cpp.i:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/src/CMeasure.cpp.i
+.PHONY : src/CMeasure.cpp.i
+
+src/CMeasure.s: src/CMeasure.cpp.s
 .PHONY : src/CMeasure.s
 
-# target to build an object file
-src/CProtocolS.o:
-	$(MAKE) -f CMakeFiles/msmonitor_server.dir/build.make CMakeFiles/msmonitor_server.dir/src/CProtocolS.o
+# target to generate assembly for a file
+src/CMeasure.cpp.s:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/src/CMeasure.cpp.s
+.PHONY : src/CMeasure.cpp.s
+
+src/CProtocolS.o: src/CProtocolS.cpp.o
 .PHONY : src/CProtocolS.o
 
-# target to preprocess a source file
-src/CProtocolS.i:
-	$(MAKE) -f CMakeFiles/msmonitor_server.dir/build.make CMakeFiles/msmonitor_server.dir/src/CProtocolS.i
+# target to build an object file
+src/CProtocolS.cpp.o:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/src/CProtocolS.cpp.o
+.PHONY : src/CProtocolS.cpp.o
+
+src/CProtocolS.i: src/CProtocolS.cpp.i
 .PHONY : src/CProtocolS.i
 
-# target to generate assembly for a file
-src/CProtocolS.s:
-	$(MAKE) -f CMakeFiles/msmonitor_server.dir/build.make CMakeFiles/msmonitor_server.dir/src/CProtocolS.s
+# target to preprocess a source file
+src/CProtocolS.cpp.i:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/src/CProtocolS.cpp.i
+.PHONY : src/CProtocolS.cpp.i
+
+src/CProtocolS.s: src/CProtocolS.cpp.s
 .PHONY : src/CProtocolS.s
 
-# target to build an object file
-src/CServer.o:
-	$(MAKE) -f CMakeFiles/msmonitor_server.dir/build.make CMakeFiles/msmonitor_server.dir/src/CServer.o
+# target to generate assembly for a file
+src/CProtocolS.cpp.s:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/src/CProtocolS.cpp.s
+.PHONY : src/CProtocolS.cpp.s
+
+src/CServer.o: src/CServer.cpp.o
 .PHONY : src/CServer.o
 
-# target to preprocess a source file
-src/CServer.i:
-	$(MAKE) -f CMakeFiles/msmonitor_server.dir/build.make CMakeFiles/msmonitor_server.dir/src/CServer.i
+# target to build an object file
+src/CServer.cpp.o:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/src/CServer.cpp.o
+.PHONY : src/CServer.cpp.o
+
+src/CServer.i: src/CServer.cpp.i
 .PHONY : src/CServer.i
 
-# target to generate assembly for a file
-src/CServer.s:
-	$(MAKE) -f CMakeFiles/msmonitor_server.dir/build.make CMakeFiles/msmonitor_server.dir/src/CServer.s
+# target to preprocess a source file
+src/CServer.cpp.i:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/src/CServer.cpp.i
+.PHONY : src/CServer.cpp.i
+
+src/CServer.s: src/CServer.cpp.s
 .PHONY : src/CServer.s
+
+# target to generate assembly for a file
+src/CServer.cpp.s:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/src/CServer.cpp.s
+.PHONY : src/CServer.cpp.s
 
 # Help Target
 help:
@@ -226,8 +325,15 @@ help:
 	@echo "... install/local"
 	@echo "... install/strip"
 	@echo "... list_install_components"
-	@echo "... msmonitor_server"
+	@echo "... msm_srv"
 	@echo "... rebuild_cache"
+	@echo "... server"
+	@echo "... __/include/CProtocol.o"
+	@echo "... __/include/CProtocol.i"
+	@echo "... __/include/CProtocol.s"
+	@echo "... main.o"
+	@echo "... main.i"
+	@echo "... main.s"
 	@echo "... src/CComS.o"
 	@echo "... src/CComS.i"
 	@echo "... src/CComS.s"
@@ -251,6 +357,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

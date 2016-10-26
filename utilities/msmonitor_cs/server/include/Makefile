@@ -42,10 +42,10 @@ EQUALS = =
 CMAKE_EDIT_COMMAND = /usr/bin/ccmake
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/aelali/ampehre/utilities/msmonitor_cs
+CMAKE_SOURCE_DIR = /home/aelali/ampehre/utilities/msmonitor_cs/server
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/aelali/ampehre/utilities/msmonitor_cs
+CMAKE_BINARY_DIR = /home/aelali/ampehre/utilities/msmonitor_cs/server
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -113,14 +113,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/aelali/ampehre/utilities/msmonitor_cs/CMakeFiles /home/aelali/ampehre/utilities/msmonitor_cs/CMakeFiles/progress.marks
-	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/aelali/ampehre/utilities/msmonitor_cs/CMakeFiles 0
+	cd /home/aelali/ampehre/utilities/msmonitor_cs/server && $(CMAKE_COMMAND) -E cmake_progress_start /home/aelali/ampehre/utilities/msmonitor_cs/server/CMakeFiles /home/aelali/ampehre/utilities/msmonitor_cs/server/include/CMakeFiles/progress.marks
+	cd /home/aelali/ampehre/utilities/msmonitor_cs/server && $(MAKE) -f CMakeFiles/Makefile2 include/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/aelali/ampehre/utilities/msmonitor_cs/server/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	$(MAKE) -f CMakeFiles/Makefile2 clean
+	cd /home/aelali/ampehre/utilities/msmonitor_cs/server && $(MAKE) -f CMakeFiles/Makefile2 include/clean
 .PHONY : clean
 
 # The main clean target
@@ -129,70 +129,56 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	$(MAKE) -f CMakeFiles/Makefile2 preinstall
+	cd /home/aelali/ampehre/utilities/msmonitor_cs/server && $(MAKE) -f CMakeFiles/Makefile2 include/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	$(MAKE) -f CMakeFiles/Makefile2 preinstall
+	cd /home/aelali/ampehre/utilities/msmonitor_cs/server && $(MAKE) -f CMakeFiles/Makefile2 include/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/aelali/ampehre/utilities/msmonitor_cs/server && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-#=============================================================================
-# Target rules for targets named client
+# Convenience name for target.
+include/CMakeFiles/msmonitor_protocol.dir/rule:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs/server && $(MAKE) -f CMakeFiles/Makefile2 include/CMakeFiles/msmonitor_protocol.dir/rule
+.PHONY : include/CMakeFiles/msmonitor_protocol.dir/rule
 
-# Build rule for target.
-client: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 client
-.PHONY : client
-
-# fast build rule for target.
-client/fast:
-	$(MAKE) -f client/CMakeFiles/client.dir/build.make client/CMakeFiles/client.dir/build
-.PHONY : client/fast
-
-#=============================================================================
-# Target rules for targets named msm_client
-
-# Build rule for target.
-msm_client: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 msm_client
-.PHONY : msm_client
+# Convenience name for target.
+msmonitor_protocol: include/CMakeFiles/msmonitor_protocol.dir/rule
+.PHONY : msmonitor_protocol
 
 # fast build rule for target.
-msm_client/fast:
-	$(MAKE) -f client/CMakeFiles/msm_client.dir/build.make client/CMakeFiles/msm_client.dir/build
-.PHONY : msm_client/fast
+msmonitor_protocol/fast:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs/server && $(MAKE) -f include/CMakeFiles/msmonitor_protocol.dir/build.make include/CMakeFiles/msmonitor_protocol.dir/build
+.PHONY : msmonitor_protocol/fast
 
-#=============================================================================
-# Target rules for targets named msm_srv
+CProtocol.o: CProtocol.cpp.o
+.PHONY : CProtocol.o
 
-# Build rule for target.
-msm_srv: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 msm_srv
-.PHONY : msm_srv
+# target to build an object file
+CProtocol.cpp.o:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs/server && $(MAKE) -f include/CMakeFiles/msmonitor_protocol.dir/build.make include/CMakeFiles/msmonitor_protocol.dir/CProtocol.cpp.o
+.PHONY : CProtocol.cpp.o
 
-# fast build rule for target.
-msm_srv/fast:
-	$(MAKE) -f server/CMakeFiles/msm_srv.dir/build.make server/CMakeFiles/msm_srv.dir/build
-.PHONY : msm_srv/fast
+CProtocol.i: CProtocol.cpp.i
+.PHONY : CProtocol.i
 
-#=============================================================================
-# Target rules for targets named server
+# target to preprocess a source file
+CProtocol.cpp.i:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs/server && $(MAKE) -f include/CMakeFiles/msmonitor_protocol.dir/build.make include/CMakeFiles/msmonitor_protocol.dir/CProtocol.cpp.i
+.PHONY : CProtocol.cpp.i
 
-# Build rule for target.
-server: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 server
-.PHONY : server
+CProtocol.s: CProtocol.cpp.s
+.PHONY : CProtocol.s
 
-# fast build rule for target.
-server/fast:
-	$(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/build
-.PHONY : server/fast
+# target to generate assembly for a file
+CProtocol.cpp.s:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs/server && $(MAKE) -f include/CMakeFiles/msmonitor_protocol.dir/build.make include/CMakeFiles/msmonitor_protocol.dir/CProtocol.cpp.s
+.PHONY : CProtocol.cpp.s
 
 # Help Target
 help:
@@ -205,11 +191,11 @@ help:
 	@echo "... install/local"
 	@echo "... install/strip"
 	@echo "... list_install_components"
+	@echo "... msmonitor_protocol"
 	@echo "... rebuild_cache"
-	@echo "... client"
-	@echo "... msm_client"
-	@echo "... msm_srv"
-	@echo "... server"
+	@echo "... CProtocol.o"
+	@echo "... CProtocol.i"
+	@echo "... CProtocol.s"
 .PHONY : help
 
 
@@ -221,6 +207,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/aelali/ampehre/utilities/msmonitor_cs/server && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

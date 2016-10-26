@@ -26,6 +26,15 @@ void CServer::acceptLoop() {
 		int cl_Socket;
 		mCom->acceptSocket(mSockfd, &recv_length, buffer, cl_Socket);
 		
+		std::cout<<"received: "<<std::endl;
+		
+		int i = 0;
+		
+		while(i < recv_length){
+			std::cout << buffer[i] << std::endl;
+			i++;
+		}
+		
 		if(mProtocol->parseMsg(buffer, recv_length, task_code, registry, data) < 0){
 			std::cout << "[!]error parsing message" << std::endl;
 		}
