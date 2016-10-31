@@ -10,19 +10,18 @@
 class CServer{
 
 public:
-	CServer();
+	CServer(int port);
 	~CServer();
 	void init();
 	void acceptLoop();
 	
 private:
-	int mSockfd;
 	std::string mVERSION;
-	CMeasure* mMeasure;
-	CComS* mCom;
-	CProtocolS* mProtocol;
-	
+	CMeasure mMeasure;
+	CComS mCom;
+	CProtocolS mProtocol;
 	std::list<int> mRegClients;
+	int mPort;
 	
 };
 

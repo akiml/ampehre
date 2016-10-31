@@ -11,16 +11,18 @@ public:
 	CClient();
 	~CClient();
 
-	int registerToServer(std::vector<int>& values);
+	int registerToServer(std::vector<int>& values, int port, std::string ipaddr);
 	void requestData(std::vector<int>& values);
 	void terminate();
 	
 private:
-	CComC* mCom;
-	CProtocolC* mProtocol;
+	std::string mVERSION;
+	CComC mCom;
+	CProtocolC mProtocol;
 	int mSocket;
 	int mReg;
-	std::string mVERSION;
+	int mPort;
+	
 	
 };
 

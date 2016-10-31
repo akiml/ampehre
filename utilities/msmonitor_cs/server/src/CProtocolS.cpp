@@ -2,7 +2,6 @@
 
 CProtocolS::CProtocolS(std::string version){
 	mVersion = version;
-	
 }
 
 CProtocolS::~CProtocolS(){}
@@ -10,54 +9,70 @@ CProtocolS::~CProtocolS(){}
 int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* reg, uint64_t* data){
 	unsigned int i = 0;
 	int k = 0;
-	char txt[length];
+	std::string msg_str (msg, length);
+	std::string end ("\r\n");
+	std::string submsg;
 	
-	// parsing Version - start
-	while(msg[i] != 10 && i < length){	//while not newline 
-		txt[i] = msg[i];
-		i++;
-	}
-	if(checkVersion(txt, i-1, mVersion) < 0){
-		std::cout << "wrong version! Abort" << std::endl;
-		return -1;
-	}
-	// parsing Version - end
+	std::size_t found = 1;
+	std::size_t next = 0;
+	std::size_t before = 0;
 	
-	// parsing Command - start
-	k = i;
-	while(msg[i] != 10 && i < length){	//while not newline 
-		txt[i-k] = msg[i];
-		i++;
-	}
-	*tsk = checkCmd(txt, i-k);
-	if(*tsk < 0){
-		std::cout << "unknown command! Abort" << std::endl;
-		return -1;
-	}
-	// parsing Command - end
-	
-	// parsing last line -> check if registry
-	k = i;
-	while(msg[i] != 10 && i < length){	//while not newline 
-		txt[i-k] = msg[i];
-		i++;
-	}
-	if(setReg(txt, i-k, reg) < 0){
-		if(checkData(txt, i-k, data) < 0){
-			return -1;
+	while(found != std::string::npos){
+		found = msg_str.find(end, next);
+		before = next;
+		next = found;
+		if(found == std::string::npos){
+			break;
 		}
+		else{
+			submsg = msg_str.substr(before, next-before);
+			switch(i){
+			  case 0:
+				if(checkVersion(submsg, mVersion) < 0){
+					std::cout << "wrong Version - abort..." << std::endl;
+					return -1;
+				}
+				break;
+				
+			  case 1:
+				k = checkCmd(submsg);
+				if(k < 0){
+					std::cout << "unknown command! abort..." << std::endl;
+					return -1;
+				} else {
+					*tsk = k;
+				}
+				break;
+			  case 2:
+				if(setReg(submsg, reg) < 0){
+					if(checkData(submsg, data) < 0){
+						std::cout << "checkdata failed" << std::endl; 
+						return -1;
+					} else{
+						std::cout << "requested data saved..." << std::endl;
+					}
+				}
+				else{
+					std::cout << "assigned new registry value to client" << std::endl;
+				}
+				break;
+			}
+		}
+		next += end.size();
+		i++;
 	}
 	
 	return 0;
-
 }
 
 
-int CProtocolS::checkData(char* txt, unsigned int length, uint64_t* data) {
-	*data = 0;
+int CProtocolS::checkData(std::string msg, uint64_t* data) {
+	*data = 0x0;
+	int length = msg.size();
 	if(length == 8){ //8 bytes should be transmitted
-		for (unsigned int i = 0 ; i < length ; i++ )
-			*data = (*data << 8) | txt[i];		
+		for (unsigned int i = 0 ; i < length; i++ ){
+			*data |= (((int)msg.at(i) - 33) << i*8);
+		}
 	}
 	else {
 		data = NULL;

@@ -1,6 +1,7 @@
 #include "CComC.hpp"
 
-CComC::CComC() {
+CComC::CComC()
+{
 
 }
 
@@ -8,37 +9,45 @@ CComC::~CComC() {
 
 }
 
-int CComC::initSocket() {
+void CComC::setAddr(std::string addr)
+{
+	this->mAddress = addr;
+}
 
-	int sockfd;
-    struct sockaddr_in dest;
 
-    if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ){
-        return -1;
-    }
+int CComC::initSocket(int port) {
+	struct sockaddr_in dest;
 
-    /*---Initialize server address/port struct---*/
-    bzero(&dest, sizeof(dest));
-    dest.sin_addr.s_addr = inet_addr("131.234.58.31");
+	std::cout << "creating socket..." << std::endl;
+	if ( (mSockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ){
+		std::cout << "error creating socket" << std::endl;
+		return -1;
+	}
+
+	/*---Initialize server address/port struct---*/
+	bzero(&dest, sizeof(dest));
+	dest.sin_addr.s_addr = inet_addr(mAddress.c_str());
 	dest.sin_family = AF_INET;
-    dest.sin_port = htons(PORT);
+	dest.sin_port = htons(port);
+	    
+	std::cout << "connecting to server..." << std::endl;
+	/*---Connect to server---*/
+	if ( connect(mSockfd, (struct sockaddr*)&dest, sizeof(dest)) < 0 ){
+		std::cout << "error connecting to server" << std::endl;
+		return -1;
+	}
 	
+	std::cout << "connected to server!" << std::endl;
 
-    /*---Connect to server---*/
-    if ( connect(sockfd, (struct sockaddr*)&dest, sizeof(dest)) < 0 ){
-        return -1;
-    }
-    
-    std::cout << "connected to server!" << std::endl;
-
-    return sockfd;
+	return 0;
 	
 }
 
-int CComC::communicate(const char* msg, char* reply, unsigned int length, int sockfd) {
+int CComC::communicate(const char* msg, char* reply, unsigned int length) {
 
 	//Send some data
-	if( send(sockfd , msg , strlen(msg) , 0) < 0){
+	if( send(mSockfd , msg , strlen(msg) , 0) < 0){
+		std::cout << "error sending msg from client to server" << std::endl;
 		return -1;
 	}
 	else{
@@ -50,9 +59,10 @@ int CComC::communicate(const char* msg, char* reply, unsigned int length, int so
 		}
 	}
 	
-	length = recv(sockfd , reply , 1024 , 0);
+	length = recv(mSockfd , reply , 1024 , 0);
 	//Receive a reply from the server
 	if( length < 0){
+		std::cout << "error receiving reply from server" << std::endl;
 		return -1;
 	}
 	else{

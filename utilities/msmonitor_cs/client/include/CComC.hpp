@@ -17,11 +17,13 @@ class CComC{
 public:
 	CComC();
 	~CComC();
-	int initSocket();
-	int communicate(const char* msg, char* reply, unsigned int length, int sockfd);
+	void setAddr(std::string addr);
+	int initSocket(int port);
+	int communicate(const char* msg, char* reply, unsigned int length);
 	
 private:
-	
+	int mSockfd;
+	std::string mAddress;
 };
 
 #endif

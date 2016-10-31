@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 
+
 class CProtocolC : public CProtocol{
 public:
 	CProtocolC(std::string version);

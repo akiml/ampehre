@@ -14,7 +14,7 @@ public:
 	CProtocolS(std::string version);
 	~CProtocolS();
 	int parseMsg(char *msg, const unsigned int length, int* tsk, int* reg, uint64_t* data);
-	int checkData(char* txt, unsigned int length, uint64_t* data);
+	int checkData(std::string msg, uint64_t* data);
 	
 private:
 	

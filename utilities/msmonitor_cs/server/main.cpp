@@ -24,9 +24,9 @@
 int main(int argc, char **argv) {
 
 	std::cout << "initiating server..." << std::endl; 
-	CServer* srv = new CServer();
-	srv -> init();
-	srv -> acceptLoop();      
+	CServer srv = CServer(2900);
+	srv.init();
+	srv.acceptLoop();      
 
 	return 0;
 }

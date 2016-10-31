@@ -12,18 +12,20 @@
 #include <iostream>
 
 
-#define PORT 2900
-
 class CComS{
 	
 public:
 	CComS();
 	~CComS();
-	int initSocket();
-	void acceptSocket(int sockfd, int* recv_length, char* buffer,  int& new_socket);
-	void dump(char *data_buffer, const unsigned int length);
+	int initSocket(int port = 2900);
+	void acceptSocket(int* recv_length, char* buffer,  int& new_socket);
 	
 private:
+	
+	
+	int mSockfd;
+	int mPort;
+	
 
 };
 
