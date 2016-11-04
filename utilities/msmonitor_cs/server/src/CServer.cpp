@@ -48,8 +48,44 @@ void CServer::acceptLoop() {
 			std::cout << "task code: " << task_code << std::endl;
 			std::cout << "registry: " << registry << std::endl;
 			std::cout << "data: " << data << std::endl;
+			
+			answer(task_code, registry, data);
 		}
 		
 		close(cl_Socket);
 	}
+}
+
+void CServer::answer(int taskCode, int registry, uint64_t datacode){
+	switch(taskCode){
+		case DATA_REQ:{
+			dataRequest(registry);
+			break;
+		}
+		case CLIENT_REG:{
+			registerClient(datacode);
+			break;
+		}
+		case DATA_RES:{
+			std::cout <<"illegal taskcode for client" << std::endl;
+			break;
+		}
+		case TERM_COM:{
+			terminate(registry);
+			break;
+		}
+	}
+}
+
+void CServer::registerClient(uint64_t datacode){
+	//allocate new registry and safe datacode
+	//formulate answer to client
+}
+
+void CServer::dataRequest(int registry){
+	//answer client with all data needed
+}
+
+void CServer::terminate(int registry){
+	//terminate communication with client
 }

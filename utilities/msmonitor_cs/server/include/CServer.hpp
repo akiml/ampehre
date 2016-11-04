@@ -16,6 +16,11 @@ public:
 	void acceptLoop();
 	
 private:
+	void answer(int taskCode, int registry, uint64_t datacode);
+	void registerClient(uint64_t datacode);
+	void dataRequest(int registry);
+	void terminate(int registry);
+	
 	std::string mVERSION;
 	CMeasure mMeasure;
 	CComS mCom;
