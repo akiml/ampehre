@@ -1,15 +1,20 @@
 #include "CServer.hpp"
 
-CServer::CServer(int port):
+CServer::CServer(int port, int maxClients):
      mVERSION("MSMv0.1"),
      mMeasure(CMeasure()),
      mCom(CComS()),
      mProtocol(CProtocolS(mVERSION)),
-     mPort(port){
-
+     mPort(port),
+     mMaxClients(maxClients)
+{
+	//nothing to do here
 }
 
-CServer::~CServer(){}
+CServer::~CServer()
+{
+	//nothing to do here
+}
 
 void CServer::init(){
 	mMeasure.init();
@@ -77,15 +82,24 @@ void CServer::answer(int taskCode, int registry, uint64_t datacode){
 	}
 }
 
-void CServer::registerClient(uint64_t datacode){
-	//allocate new registry and safe datacode
-	//formulate answer to client
+void CServer::registerClient(uint64_t datacode){	
+	int reg = ut::getReg(mRegClients, mMaxClients);		//find available registry
+	clReg a = {reg, datacode};
+	mRegClients.push_back(a);							//add to register
 }
 
 void CServer::dataRequest(int registry){
-	//answer client with all data needed
+	
 }
 
 void CServer::terminate(int registry){
-	//terminate communication with client
+	if(ut::find(mRegClients, registry, mIterator) == 0)
+		mRegClients.erase(mIterator);
 }
+
+void CServer::createDataAnswer(std::string& msg, uint64_t dataCode) {
+	mProtocol.addVersion(msg, mVERSION);
+	mProtocol.addCmd(msg, DATA_RES);
+	
+}
+

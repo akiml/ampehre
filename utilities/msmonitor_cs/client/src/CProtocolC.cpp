@@ -18,9 +18,8 @@ int CProtocolC::parseMsg(char* msg, unsigned int length, bool rflag, int* reg, i
 
 std::string CProtocolC::regMsg(uint64_t code) {
 	std::string msg = "";
-	msg.append(this->mVersion);
-	msg.append("\r\n");
-	msg.append("CLIENT_REG\r\n");
+	addVersion(msg, mVersion);
+	addCmd(msg, CLIENT_REG);
 	
 	char c;
 	for(unsigned int i = 0; i < 8; i++){
@@ -36,9 +35,8 @@ std::string CProtocolC::regMsg(uint64_t code) {
 
 std::string CProtocolC::requestMsg(char reg) {
 	std::string msg = "";
-	msg.append(this->mVersion);
-	msg.append("\r\n");
-	msg.append("DATA_REQ\r\n");
+	addVersion(msg, mVersion);
+	addCmd(msg, DATA_REQ);
 	msg.append("REG: ");
 	msg.push_back(reg);
 	msg.append("\r\n");
@@ -48,9 +46,8 @@ std::string CProtocolC::requestMsg(char reg) {
 
 std::string CProtocolC::termMsg(char reg) {
 	std::string msg = "";
-	msg.append(this->mVersion);
-	msg.append("\r\n");
-	msg.append("TERM_COM\r\n");
+	addVersion(msg, mVersion);
+	addCmd(msg, TERM_COM);
 	msg.append("REG: ");
 	msg.push_back(reg);
 	msg.append("\r\n");

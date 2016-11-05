@@ -1,0 +1,2 @@
+/home/aelali/ampehre/utilities/msmonitor_cs/client/CMakeFiles/client.dir
+/home/aelali/ampehre/utilities/msmonitor_cs/client/CMakeFiles/msm_client.dir

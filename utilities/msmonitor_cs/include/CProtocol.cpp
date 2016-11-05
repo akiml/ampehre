@@ -62,3 +62,45 @@ int CProtocol::setReg(std::string msg, int* registry) {
 		return -1;
 	}
 }
+
+void CProtocol::addVersion(std::string& msg, std::string version) {
+	msg.append(version);
+	msg.append("\r\n");
+}
+
+void CProtocol::addCmd(std::string& msg, int cmd) {
+	switch(cmd){
+		case CLIENT_REG:{
+			msg.append("CLIENT_REG");
+			break;
+		}
+		case DATA_REQ:{
+			msg.append("DATA_REQ");
+			break;
+		}
+		case DATA_RES:{
+			msg.append("DATA_RES");
+			break;
+		}
+		case TERM_COM:{
+			msg.append("TERM_COM");
+			break;
+		}
+	}
+	msg.append("\r\n");
+}
+
+void CProtocol::addData(std::string& msg, int type, double value) {
+	std::ostringstream ss;
+	
+	ss << type;
+	msg.append(ss.str());
+	ss.str("");								//clear the stream
+	
+	msg.push_back(':');
+	
+	ss << value;
+	msg.append(ss.str());
+	
+	msg.append("\r\n");
+}

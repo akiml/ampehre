@@ -11,6 +11,7 @@ set(DATA_SOURCES
 	src/CServer.cpp
 	src/CProtocolS.cpp
 	../include/CProtocol.cpp
+	../include/utils.cpp
 )
 
 add_library(server SHARED ${DATA_SOURCES})

@@ -68,7 +68,7 @@ int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* re
 
 int CProtocolS::checkData(std::string msg, uint64_t* data) {
 	*data = 0x0;
-	int length = msg.size();
+	unsigned int length = msg.size();
 	if(length == 8){ //8 bytes should be transmitted
 		for (unsigned int i = 0 ; i < length; i++ ){
 			*data |= (((int)msg.at(i) - 33) << i*8);
@@ -80,6 +80,8 @@ int CProtocolS::checkData(std::string msg, uint64_t* data) {
 	}
 	return 0;
 }
+
+
 
 
 

@@ -4,13 +4,14 @@
 #include "CComS.hpp"
 #include "CMeasure.hpp"
 #include "CProtocolS.hpp"
+#include "utils.h"
 #include <list>
 
 
 class CServer{
 
 public:
-	CServer(int port);
+	CServer(int port, int maxClients);
 	~CServer();
 	void init();
 	void acceptLoop();
@@ -20,13 +21,16 @@ private:
 	void registerClient(uint64_t datacode);
 	void dataRequest(int registry);
 	void terminate(int registry);
+	void createDataAnswer(std::string &msg, uint64_t dataCode);
 	
 	std::string mVERSION;
 	CMeasure mMeasure;
 	CComS mCom;
 	CProtocolS mProtocol;
-	std::list<int> mRegClients;
+	std::list<clReg> mRegClients;
+	std::list<clReg>::iterator mIterator;
 	int mPort;
+	int mMaxClients;
 	
 };
 

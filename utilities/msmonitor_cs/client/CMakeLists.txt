@@ -9,6 +9,8 @@ set(DATA_SOURCES
 	src/CClient.cpp
 	src/CProtocolC.cpp
 	../include/CProtocol.cpp
+	../include/utils.cpp
+
 )
 
 add_library(client SHARED ${DATA_SOURCES})
