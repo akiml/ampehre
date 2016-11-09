@@ -6,7 +6,8 @@ CServer::CServer(int port, int maxClients):
      mCom(CComS()),
      mProtocol(CProtocolS(mVERSION)),
      mPort(port),
-     mMaxClients(maxClients)
+     mMaxClients(maxClients),
+     mSocket(0)
 {
 	//nothing to do here
 }
@@ -32,8 +33,7 @@ void CServer::acceptLoop() {
 	signal (SIGINT, termHandler);
 	
 	while(1){
-		int cl_Socket;
-		mCom.acceptSocket(&recv_length, buffer, cl_Socket);
+		mCom.acceptSocket(&recv_length, buffer, mSocket);
 		
 		std::cout<<"************************" << std::endl;
 		std::cout<<"received: "<<std::endl;
@@ -58,7 +58,7 @@ void CServer::acceptLoop() {
 			answer(task_code, registry, data);
 		}
 		
-		close(cl_Socket);
+		close(mSocket);
 	}
 }
 
@@ -87,6 +87,10 @@ void CServer::registerClient(uint64_t datacode){
 	int reg = ut::getReg(mRegClients, mMaxClients);		//find available registry
 	clReg a = {reg, datacode};
 	mRegClients.push_back(a);							//add to register
+	std::string answer;
+	
+	mProtocol.answerRegisterMsg(answer, reg);
+	mCom.sendMsg(answer, mSocket);
 }
 
 void CServer::dataRequest(int registry){

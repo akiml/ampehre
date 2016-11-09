@@ -19,6 +19,7 @@ public:
 	~CComS();
 	int initSocket(int port = 2900);
 	void acceptSocket(int* recv_length, char* buffer,  int& new_socket);
+	int sendMsg(std::string msg, int socket);
 	
 private:
 	

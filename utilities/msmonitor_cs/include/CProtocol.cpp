@@ -64,6 +64,7 @@ int CProtocol::setReg(std::string msg, int* registry) {
 }
 
 void CProtocol::addVersion(std::string& msg, std::string version) {
+	msg = "";
 	msg.append(version);
 	msg.append("\r\n");
 }
@@ -104,3 +105,5 @@ void CProtocol::addData(std::string& msg, int type, double value) {
 	
 	msg.append("\r\n");
 }
+
+

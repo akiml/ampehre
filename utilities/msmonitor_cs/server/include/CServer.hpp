@@ -7,7 +7,7 @@
 #include "utils.h"
 #include <list>
 #include <signal.h>
-
+#include <stdlib.h>
 
 class CServer{
 
@@ -33,6 +33,7 @@ private:
 	std::list<clReg>::iterator mIterator;
 	int mPort;
 	int mMaxClients;
+	int mSocket;
 	
 };
 

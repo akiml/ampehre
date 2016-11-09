@@ -15,6 +15,7 @@ public:
 	~CProtocolS();
 	int parseMsg(char *msg, const unsigned int length, int* tsk, int* reg, uint64_t* data);
 	int checkData(std::string msg, uint64_t* data);
+	void answerRegisterMsg(std::string &msg, int reg);
 	
 private:
 	

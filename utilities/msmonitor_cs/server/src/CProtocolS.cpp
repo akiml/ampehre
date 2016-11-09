@@ -81,6 +81,15 @@ int CProtocolS::checkData(std::string msg, uint64_t* data) {
 	return 0;
 }
 
+void CProtocolS::answerRegisterMsg(std::string& msg, int reg) {
+	addVersion(msg, mVersion);
+	addCmd(msg, CLIENT_REG);
+	msg.append("REG:");
+	std::ostringstream ss;
+	ss << reg;
+	msg.append(ss.str());
+	msg.append("\r\n");
+}
 
 
 

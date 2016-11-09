@@ -12,10 +12,13 @@ public:
 	CMeasure();
 	~CMeasure();
 	void init();
+	void start();
+	void stop();
 	MS_LIST* getDataList();
 	
 private:
-	MS_LIST* m1;
+	MS_LIST* mList;
+	MS_SYSTEM* mSys;
 
 };
 

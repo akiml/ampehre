@@ -56,3 +56,11 @@ void CComS::acceptSocket(int* recv_length, char* buffer, int& new_socket) {
 	new_socket = nsockfd;	
 }
 
+int CComS::sendMsg(std::string msg, int socket) {
+	const char* str = msg.c_str();
+	if(send(socket , str , strlen(str) , 0) < 0){
+		std::cout<< "error communicating with client" << std::endl;
+		return -1;
+	}
+	return 0;
+}
