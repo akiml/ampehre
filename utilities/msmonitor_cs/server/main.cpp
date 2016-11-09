@@ -18,15 +18,26 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <iostream>
+#include <signal.h>
 #include "CServer.hpp"
 
+void termHandler(sig_t s);
 
 int main(int argc, char **argv) {
 
 	std::cout << "initiating server..." << std::endl; 
 	CServer srv = CServer(2900, 5);
+	signal (SIGINT, termHandler);
+
+	
 	srv.init();
 	srv.acceptLoop();
 
 	return 0;
+}
+
+
+void termHandler(sig_t s) {
+	std::cout << "terminating server..." << std::endl;
+	exit(0);
 }
