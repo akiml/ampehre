@@ -21,7 +21,7 @@
 #include <signal.h>
 #include "CServer.hpp"
 
-void termHandler(sig_t s);
+void termHandler(int s);
 
 int main(int argc, char **argv) {
 
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 }
 
 
-void termHandler(sig_t s) {
+void termHandler(int s) {
 	std::cout << "terminating server..." << std::endl;
 	exit(0);
 }
