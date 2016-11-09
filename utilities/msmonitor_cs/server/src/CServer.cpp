@@ -29,6 +29,7 @@ void CServer::acceptLoop() {
 	int task_code = 0;
 	int registry = 0;
 	uint64_t data = 0;
+	signal (SIGINT, termHandler);
 	
 	while(1){
 		int cl_Socket;
@@ -102,4 +103,10 @@ void CServer::createDataAnswer(std::string& msg, uint64_t dataCode) {
 	mProtocol.addCmd(msg, DATA_RES);
 	
 }
+
+void CServer::termHandler(sig_t s) {
+	std::cout << "terminating server..." << std::endl;
+	exit(0);
+}
+
 
