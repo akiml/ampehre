@@ -54,7 +54,8 @@ int CProtocol::checkCmd(std::string msg) {
 int CProtocol::setReg(std::string msg, int* registry) {
 	std::size_t found = msg.find("REG:");
 	if(found != std::string::npos && found == 0){
-		*registry = (int)msg.at(4);
+		std::istringstream ss(msg.substr(4));
+		ss >> *registry;
 		return 0;
 	}
 	else {
@@ -91,19 +92,26 @@ void CProtocol::addCmd(std::string& msg, int cmd) {
 	msg.append("\r\n");
 }
 
-void CProtocol::addData(std::string& msg, int type, double value) {
+void CProtocol::addData(std::string& msg, double value) {
 	std::ostringstream ss;
-	
-	ss << type;
-	msg.append(ss.str());
 	ss.str("");								//clear the stream
-	
-	msg.push_back(':');
-	
+		
 	ss << value;
 	msg.append(ss.str());
 	
 	msg.append("\r\n");
 }
+
+void CProtocol::extractData(std::vector< int >& sol, uint64_t dataCode) {
+	sol.clear();
+	int tmp = 0;
+	for(unsigned int i = 0; i < 64; i++){
+		tmp = dataCode & (0x1 << i);
+		if(tmp > 0){
+			sol.push_back(i);
+		}
+	}
+}
+
 
 

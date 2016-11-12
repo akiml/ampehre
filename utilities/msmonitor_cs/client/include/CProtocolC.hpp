@@ -4,6 +4,7 @@
 #include "CProtocol.hpp"
 #include <string>
 #include <iostream>
+#include <sstream>
 
 
 class CProtocolC : public CProtocol{
@@ -12,11 +13,11 @@ public:
 	~CProtocolC();
 	
 	std::string regMsg(uint64_t code);
-	std::string requestMsg(char reg);
-	std::string termMsg(char reg);
+	std::string requestMsg(int reg);
+	std::string termMsg(int reg);
 	
 	int parseMsg(char* msg, unsigned int length, bool rflag, int* reg, int* tsk, std::vector< double >& values);
-	int getData(char* msg, int length, std::vector<double>& values);
+	int getData(std::string &msg, std::vector<double>& values);
 private:
 	
 	

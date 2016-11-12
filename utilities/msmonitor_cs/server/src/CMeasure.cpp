@@ -1,43 +1,149 @@
 #include "CMeasure.hpp"
 
 
-CMeasure::CMeasure(){}
-
-CMeasure::~CMeasure(){}
-
-void CMeasure::init(){
-	// Initialize library and measurement system
-	MS_VERSION version = {MS_MAJOR_VERSION, MS_MINOR_VERSION, MS_REVISION_VERSION };
-	mSys = ms_init(&version, CPU_GOVERNOR_ONDEMAND, 2000000, 2500000, GPU_FREQUENCY_CUR, IPMI_SET_TIMEOUT, SKIP_PERIODIC, VARIANT_FULL);
-	
-	// Allocate measurement list
-	mList = ms_alloc_measurement(mSys);
-	
-	// Set timer for m1. Measurements perform every (10ms/30ms)*10 = 100ms/300ms.
-	ms_set_timer(mList, CPU , 0, 10000000, 10);
-	ms_set_timer(mList, GPU , 0, 30000000, 10);
-	ms_set_timer(mList, FPGA , 0, 30000000, 10);
-	ms_set_timer(mList, SYSTEM , 0, 100000000, 10);
-	ms_set_timer(mList, MIC , 0, 30000000, 10);
-	ms_init_measurement(mSys, mList, ALL);
+CMeasure::CMeasure():
+	mHandler(NData::CDataHandler())
+{
+	//nothing to do
 }
 
-MS_LIST* CMeasure::getDataList(){
-	return this->mList;
+CMeasure::~CMeasure()
+{
+	//nothing to do
 }
+
 
 void CMeasure::start() {
-	ms_start_measurement(mSys);
+	mHandler.startCollectData();
 }
 
+
 void CMeasure::stop() {
-		// Stop all measurement procedures.
-	ms_stop_measurement(mSys);
-	
-	// Join measurement threads and remove thread objects.
-	ms_join_measurement(mSys);
-	ms_fini_measurement(mSys);
-		// Cleanup the environment before exiting the program
-	ms_free_measurement(mList);
-	ms_fini(mSys);
+	mHandler.stopCollectData();
+}
+
+void CMeasure::getValues(std::vector<double>& sol, std::vector<int>& req){
+	sol.clear();
+	NData::CDataMeasurement mData = mHandler.getMeasurement();
+	for(unsigned int i = 0; i < req.size(); i++) {
+		switch(req[i]){
+			case 0:{
+				sol.push_back(mData.mpX->getLast());
+				break;
+			}
+			case 1:{
+				sol.push_back(mData.mpYPowerCpu0->getLast());
+				break;
+			}
+			case 2:{
+				sol.push_back(mData.mpYPowerCpu1->getLast());
+				break;
+			}
+			case 3:{
+				sol.push_back(mData.mpYPowerGpu->getLast());
+				break;
+			}
+			case 4:{
+				sol.push_back(mData.mpYPowerFpga->getLast());
+				break;
+			}
+			case 5:{
+				sol.push_back(mData.mpYPowerMic->getLast());
+				break;
+			}
+			case 6:{
+				sol.push_back(mData.mpYPowerSystem->getLast());
+				break;
+			}
+			case 7:{
+				sol.push_back(mData.mpYTempCpu0->getLast());
+				break;
+			}
+			case 8:{
+				sol.push_back(mData.mpYTempCpu1->getLast());
+				break;
+			}
+			case 9:{
+				sol.push_back(mData.mpYTempGpu->getLast());
+				break;
+			}
+			case 10:{
+				sol.push_back(mData.mpYTempFpgaM->getLast());
+				break;
+			}
+			case 11:{
+				sol.push_back(mData.mpYTempFpgaI->getLast());
+				break;
+			}
+			case 12:{
+				sol.push_back(mData.mpYTempMicDie->getLast());
+				break;
+			}
+			case 13:{
+				sol.push_back(mData.mpYTempSystem->getLast());
+				break;
+			}
+			case 14:{
+				sol.push_back(mData.mpYClockCpu0->getLast());
+				break;
+			}
+			case 15:{
+				sol.push_back(mData.mpYClockCpu1->getLast());
+				break;
+			}
+			case 16:{
+				sol.push_back(mData.mpYClockGpuCore->getLast());
+				break;
+			}
+			case 17:{
+				sol.push_back(mData.mpYClockGpuMem->getLast());
+				break;
+			}
+			case 18:{
+				sol.push_back(mData.mpYClockMicCore->getLast());
+				break;
+			}
+			case 19:{
+				sol.push_back(mData.mpYClockMicMem->getLast());
+				break;
+			}
+			case 20:{
+				sol.push_back(mData.mpYUtilCpu->getLast());
+				break;
+			}
+			case 21:{
+				sol.push_back(mData.mpYUtilGpuCore->getLast());
+				break;
+			}
+			case 22:{
+				sol.push_back(mData.mpYUtilGpuMem->getLast());
+				break;
+			}
+			case 23:{
+				sol.push_back(mData.mpYUtilFpga->getLast());
+				break;
+			}
+			case 24:{
+				sol.push_back(mData.mpYUtilMic->getLast());
+				break;
+			}
+			case 25:{
+				sol.push_back(mData.mpYMemoryCpu->getLast());
+				break;
+			}
+			case 26:{
+				sol.push_back(mData.mpYSwapCpu->getLast());
+				break;
+			}
+			case 27:{
+				sol.push_back(mData.mpYMemoryGpu->getLast());
+				break;
+			}
+			case 28:{
+				sol.push_back(mData.mpYMemoryMic->getLast());
+				break;
+			}
+			
+		}
+	}
 }

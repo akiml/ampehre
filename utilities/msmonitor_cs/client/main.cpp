@@ -27,9 +27,10 @@ int main(int argc, char **argv) {
 	std::vector<int> values;
 	values.push_back(X);
 	values.push_back(YClockCpu0);
-	values.push_back(YTempFpgaI);
-	values.push_back(YPowerCpu0); 
+	values.push_back(YClockGpuCore);
 	client->registerToServer(values, 2900, "131.234.58.31");
+	client->requestData();
+	client->terminate();
 	return 0;
 }
 

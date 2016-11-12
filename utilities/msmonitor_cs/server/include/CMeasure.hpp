@@ -3,7 +3,9 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <vector>
 #include "ms_measurement.h"
+#include "CDataHandler.hpp"
 
 class CMeasure{
 	
@@ -11,14 +13,13 @@ class CMeasure{
 public:
 	CMeasure();
 	~CMeasure();
-	void init();
 	void start();
 	void stop();
-	MS_LIST* getDataList();
+	void getValues(std::vector<double>& sol, std::vector<int>& req);
 	
 private:
-	MS_LIST* mList;
-	MS_SYSTEM* mSys;
+	NData::CDataHandler mHandler;
+
 
 };
 

@@ -12,8 +12,6 @@
 	
 	enum DATA { X, YPowerCpu0, YPowerCpu1, YPowerGpu, YPowerFpga, YPowerMic, YPowerSystem, YTempCpu0, YTempCpu1, YTempGpu, YTempFpgaM, YTempFpgaI, YTempMicDie, YTempSystem, YClockCpu0, YClockCpu1, YClockGpuCore, YClockGpuMem, YClockMicCore, YClockMicMem, YUtilCpu, YUtilGpuCore, YUtilGpuMem, YUtilFpga, YUtilMic, YMemoryCpu, YSwapCpu, YMemoryGpu, YMemoryMic };
 	
-	enum DTYPE { INT, DOUBLE, FLOAT};
-
 class CProtocol{
 
 public:
@@ -28,7 +26,8 @@ public:
 	int setReg(std::string msg, int* registry);
 	void addVersion(std::string &msg, std::string version);
 	void addCmd(std::string &msg, int cmd);
-	void addData(std::string &msg, int type, double value);
+	void addData(std::string &msg, double value);
+	void extractData(std::vector<int>& sol, uint64_t dataCode);
 
 protected:
 	std::string mVersion;

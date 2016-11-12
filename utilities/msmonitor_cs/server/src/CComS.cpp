@@ -43,14 +43,13 @@ void CComS::acceptSocket(int* recv_length, char* buffer, int& new_socket) {
 	int nsockfd;
 	struct sockaddr_in client_addr;
 
-	std::cout << "waiting for client" << std::endl;
 	sin_size = sizeof(struct sockaddr_in);
 	nsockfd = accept(mSockfd, (struct sockaddr *)&client_addr, &sin_size);
 	if(nsockfd == -1){
 		std::cout << "error while accepting connection" << std::endl;
 		exit(-1);
 	}
-	std::cout << "server: got connection from " << inet_ntoa(client_addr.sin_addr)<< " port " << ntohs(client_addr.sin_port)<< std::endl;
+// 	std::cout << "server: got connection from " << inet_ntoa(client_addr.sin_addr)<< " port " << ntohs(client_addr.sin_port)<< std::endl;
 	*recv_length = recv(nsockfd, buffer, 1024, 0);
 	
 	new_socket = nsockfd;	

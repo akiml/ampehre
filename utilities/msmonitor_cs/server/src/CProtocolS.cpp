@@ -48,12 +48,7 @@ int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* re
 					if(checkData(submsg, data) < 0){
 						std::cout << "checkdata failed" << std::endl; 
 						return -1;
-					} else{
-						std::cout << "requested data saved..." << std::endl;
-					}
-				}
-				else{
-					std::cout << "assigned new registry value to client" << std::endl;
+					} 
 				}
 				break;
 			}
@@ -91,7 +86,15 @@ void CProtocolS::answerRegisterMsg(std::string& msg, int reg) {
 	msg.append("\r\n");
 }
 
-
+void CProtocolS::termComMsg(std::string& msg, int reg){
+	addVersion(msg, mVersion);
+	addCmd(msg, TERM_COM);
+	msg.append("REG:");
+	std::ostringstream ss;
+	ss << reg;
+	msg.append(ss.str());
+	msg.append("\r\n");
+}
 
 
 

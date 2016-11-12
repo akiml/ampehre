@@ -12,17 +12,20 @@ public:
 	~CClient();
 
 	int registerToServer(std::vector<int>& values, int port, std::string ipaddr);
-	void requestData(std::vector<int>& values);
+	void requestData();
 	void terminate();
 	
 private:
+	void initSocket();
 	std::string mVERSION;
 	CComC mCom;
 	CProtocolC mProtocol;
 	int mSocket;
 	int mReg;
 	int mPort;
-	
+	int mAmtValues;
+	std::vector<double> mValues;
+	std::string mIPaddr;
 	
 };
 

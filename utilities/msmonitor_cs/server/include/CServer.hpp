@@ -23,6 +23,7 @@ private:
 	void dataRequest(int registry);
 	void terminate(int registry);
 	void createDataAnswer(std::string &msg, uint64_t dataCode);
+	static void termHandler(int s);
 	
 	std::string mVERSION;
 	CMeasure mMeasure;
