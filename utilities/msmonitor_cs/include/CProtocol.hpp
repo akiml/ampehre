@@ -21,13 +21,11 @@ public:
 
 	
 	uint64_t createDataCode(std::vector<int>& values);
-	int checkVersion(std::string msg, std::string version);
-	int checkCmd(std::string msg);
+	int checkCmdVersion(std::string msg, std::string version);
 	int setReg(std::string msg, int* registry);
-	void addVersion(std::string &msg, std::string version);
-	void addCmd(std::string &msg, int cmd);
 	void addData(std::string &msg, double value);
 	void extractData(std::vector<int>& sol, uint64_t dataCode);
+	void addCmdVersion(std::string& msg, int cmd, std::string version);
 
 protected:
 	std::string mVersion;

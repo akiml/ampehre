@@ -1,7 +1,7 @@
 #include "CClient.hpp"
 
 CClient::CClient():
-    mVERSION("MSMv0.1"),
+    mVERSION("0.1"),
     mCom(CComC()),
     mProtocol(CProtocolC(mVERSION)),
     mSocket(0),

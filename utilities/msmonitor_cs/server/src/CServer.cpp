@@ -1,7 +1,7 @@
 #include "CServer.hpp"
 
 CServer::CServer(int port, int maxClients):
-     mVERSION("MSMv0.1"),
+     mVERSION("0.1"),
      mMeasure(CMeasure()),
      mCom(CComS()),
      mProtocol(CProtocolS(mVERSION)),
@@ -117,8 +117,7 @@ void CServer::terminate(int registry){
 }
 
 void CServer::createDataAnswer(std::string& msg, uint64_t dataCode) {
-	mProtocol.addVersion(msg, mVERSION);	//add version
-	mProtocol.addCmd(msg, DATA_RES);		//add command code
+	mProtocol.addCmdVersion(msg, DATA_RES, mVERSION);
 	
 	std::vector<int> d;
 	mProtocol.extractData(d, dataCode);		//extract wanted data from 64Bit dataCode

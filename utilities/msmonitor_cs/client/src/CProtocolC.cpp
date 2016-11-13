@@ -30,22 +30,11 @@ int CProtocolC::parseMsg(char* msg, unsigned int length, bool rflag, int* reg, i
 			submsg = msg_str.substr(before, next-before);
 			switch(i){
 			  case 0:
-				if(checkVersion(submsg, mVersion) < 0){
-					std::cout << "wrong Version - abort..." << std::endl;
+				if(checkCmdVersion(submsg, mVersion) < 0){
 					return -1;
 				}
 				break;
-				
 			  case 1:
-				k = checkCmd(submsg);
-				if(k < 0){
-					std::cout << "unknown command! abort..." << std::endl;
-					return -1;
-				} else {
-					*tsk = k;
-				}
-				break;
-			  case 2:
 				if(setReg(submsg, reg) < 0){
 					if(getData(submsg, values) < 0){
 						std::cout << "aquiring data failed" << std::endl; 
@@ -71,8 +60,7 @@ int CProtocolC::parseMsg(char* msg, unsigned int length, bool rflag, int* reg, i
 
 std::string CProtocolC::regMsg(uint64_t code) {
 	std::string msg = "";
-	addVersion(msg, mVersion);
-	addCmd(msg, CLIENT_REG);
+	addCmdVersion(msg, CLIENT_REG, mVersion);
 	
 	char c;
 	for(unsigned int i = 0; i < 8; i++){
@@ -87,8 +75,7 @@ std::string CProtocolC::regMsg(uint64_t code) {
 
 std::string CProtocolC::requestMsg(int reg) {
 	std::string msg = "";
-	addVersion(msg, mVersion);
-	addCmd(msg, DATA_REQ);
+	addCmdVersion(msg, DATA_REQ, mVersion);
 	msg.append("REG: ");
 	std::ostringstream ss;
 	ss << reg;
@@ -100,8 +87,7 @@ std::string CProtocolC::requestMsg(int reg) {
 
 std::string CProtocolC::termMsg(int reg) {
 	std::string msg = "";
-	addVersion(msg, mVersion);
-	addCmd(msg, TERM_COM);
+	addCmdVersion(msg, TERM_COM, mVersion);
 	msg.append("REG: ");
 	std::ostringstream ss;
 	ss << reg;
