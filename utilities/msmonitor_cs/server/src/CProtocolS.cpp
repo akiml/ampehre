@@ -28,7 +28,8 @@ int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* re
 			submsg = msg_str.substr(before, next-before);
 			switch(i){
 			  case 0:
-				if(checkCmdVersion(submsg, mVersion) < 0){
+				*tsk = checkCmdVersion(submsg, mVersion);
+				if(*tsk < 0){
 					return -1;
 				}
 				break;

@@ -30,7 +30,8 @@ int CProtocolC::parseMsg(char* msg, unsigned int length, bool rflag, int* reg, i
 			submsg = msg_str.substr(before, next-before);
 			switch(i){
 			  case 0:
-				if(checkCmdVersion(submsg, mVersion) < 0){
+				*tsk = checkCmdVersion(submsg, mVersion);
+				if(*tsk < 0){
 					return -1;
 				}
 				break;
