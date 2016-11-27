@@ -23,8 +23,7 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
 	
 	char rep[2048];
 	unsigned int rep_len = 0;
-	bool bReg = false;
-	int reg, tsk;
+	int reg = -1, tsk;
 	
 	uint64_t code = mProtocol.createDataCode(values);
 	std::string msg = mProtocol.regMsg(code);
@@ -32,9 +31,9 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
 	std::vector<double> ignore;
 	
 	mCom.communicate(cpMsg ,rep, rep_len);
-	mProtocol.parseMsg(rep, rep_len, bReg, &reg, &tsk, ignore);
+	mProtocol.parseMsg(rep, rep_len, reg, tsk, ignore);
 	
-	if(bReg == true){
+	if(reg >= 0){
 		this->mReg = reg;
 		return 0;
 	}
@@ -46,12 +45,11 @@ void CClient::requestData() {
 	initSocket();
 	char rep[mAmtValues*2048];
 	unsigned int rep_len = 0;
-	bool b = false;
 	int reg, tsk;
 	
 	std::string msg = mProtocol.requestMsg(mReg);
 	mCom.communicate(msg.c_str(), rep, rep_len);
-	mProtocol.parseMsg(rep, rep_len, b, &reg, &tsk, mValues);
+	mProtocol.parseMsg(rep, rep_len, reg, tsk, mValues);
 	
 }
 
@@ -59,8 +57,6 @@ void CClient::terminate() {
 	initSocket();
 	char rep[mAmtValues*2048];
 	unsigned int rep_len = 0;
-	bool b = false;
-	int reg, tsk;
 
 	std::string msg = mProtocol.termMsg(mReg);
 

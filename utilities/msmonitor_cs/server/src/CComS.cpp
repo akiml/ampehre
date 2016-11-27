@@ -1,6 +1,10 @@
 #include "CComS.hpp"
 
-CComS::CComS(){}
+CComS::CComS():
+	mSockfd(0),
+	mPort(2900),
+	mSin_size(sizeof(struct sockaddr_in))
+{}
 
 CComS::~CComS(){}
 
@@ -38,21 +42,14 @@ int CComS::initSocket(int port){
 	return 0;
 }
 
-void CComS::acceptSocket(int* recv_length, char* buffer, int& new_socket) {
-	socklen_t sin_size;
-	int nsockfd;
-	struct sockaddr_in client_addr;
+void CComS::acceptSocket(int& new_socket) {
+	new_socket = accept(mSockfd, (struct sockaddr *)& mClient_addr, &mSin_size);		
 
-	sin_size = sizeof(struct sockaddr_in);
-	nsockfd = accept(mSockfd, (struct sockaddr *)&client_addr, &sin_size);
-	if(nsockfd == -1){
+	if(new_socket == -1){
 		std::cout << "error while accepting connection" << std::endl;
 		exit(-1);
 	}
-// 	std::cout << "server: got connection from " << inet_ntoa(client_addr.sin_addr)<< " port " << ntohs(client_addr.sin_port)<< std::endl;
-	*recv_length = recv(nsockfd, buffer, 1024, 0);
-	
-	new_socket = nsockfd;	
+ 	//std::cout << "server: got connection from " << inet_ntoa(client_addr.sin_addr)<< " port " << ntohs(client_addr.sin_port)<< std::endl;
 }
 
 int CComS::sendMsg(std::string msg, int socket) {

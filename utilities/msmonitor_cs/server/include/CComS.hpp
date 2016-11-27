@@ -18,14 +18,14 @@ public:
 	CComS();
 	~CComS();
 	int initSocket(int port = 2900);
-	void acceptSocket(int* recv_length, char* buffer,  int& new_socket);
+	void acceptSocket(int& new_socket);
 	int sendMsg(std::string msg, int socket);
 	
 private:
-	
-	
 	int mSockfd;
 	int mPort;
+	struct sockaddr_in mClient_addr;
+	socklen_t mSin_size;
 	
 
 };

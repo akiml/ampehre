@@ -6,7 +6,7 @@ CProtocolS::CProtocolS(std::string version){
 
 CProtocolS::~CProtocolS(){}
 
-int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* reg, uint64_t* data){
+int CProtocolS::parseMsg(char* msg, const unsigned int length, int& tsk, int& reg, uint64_t& data){
 	unsigned int i = 0;
 	int k = 0;
 	std::string msg_str (msg, length);
@@ -28,15 +28,14 @@ int CProtocolS::parseMsg(char* msg, const unsigned int length, int* tsk, int* re
 			submsg = msg_str.substr(before, next-before);
 			switch(i){
 			  case 0:
-				*tsk = checkCmdVersion(submsg, mVersion);
-				if(*tsk < 0){
+				tsk = checkCmdVersion(submsg, mVersion);
+				if(tsk < 0){
 					return -1;
 				}
 				break;
 			  case 1:
 				if(setReg(submsg, reg) < 0){
-					if(checkData(submsg, data) < 0){
-						std::cout << "checkdata failed" << std::endl; 
+					if(checkData(submsg, &data) < 0){
 						return -1;
 					} 
 				}
@@ -56,7 +55,7 @@ int CProtocolS::checkData(std::string msg, uint64_t* data) {
 	unsigned int length = msg.size();
 	if(length == 8){ //8 bytes should be transmitted
 		for (unsigned int i = 0 ; i < length; i++ ){
-			*data |= (((int)msg.at(i) - 33) << i*8);
+			*data |= (((int)msg.at(i)-20) << i*8);
 		}
 	}
 	else {
@@ -68,7 +67,7 @@ int CProtocolS::checkData(std::string msg, uint64_t* data) {
 
 void CProtocolS::answerRegisterMsg(std::string& msg, int reg) {
 	addCmdVersion(msg, CLIENT_REG, mVersion);
-	msg.append("REG:");
+	msg.append("REG: ");
 	std::ostringstream ss;
 	ss << reg;
 	msg.append(ss.str());
@@ -77,7 +76,7 @@ void CProtocolS::answerRegisterMsg(std::string& msg, int reg) {
 
 void CProtocolS::termComMsg(std::string& msg, int reg){
 	addCmdVersion(msg, TERM_COM, mVersion);
-	msg.append("REG:");
+	msg.append("REG: ");
 	std::ostringstream ss;
 	ss << reg;
 	msg.append(ss.str());

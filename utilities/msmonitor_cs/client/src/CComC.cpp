@@ -57,7 +57,7 @@ int CComC::communicate(const char* msg, char* reply, unsigned int length) {
 // 		}
 // 	}
 	
-	length = recv(mSockfd , reply , 1024 , 0);
+	length = recv(mSockfd , reply , 4096 , 0);
 	//Receive a reply from the server
 	if( length < 0){
 		std::cout << "error receiving reply from server" << std::endl;
@@ -68,13 +68,12 @@ int CComC::communicate(const char* msg, char* reply, unsigned int length) {
 		std::cout<< "received: " << std::endl;
 		unsigned int i = 0;
 		while(i < length){
-			std::cout<< reply[i];
+			std::cout << reply[i];
 			i++;
 		}
 		std::cout << "****************************" << std::endl;
 	}
-	
+
 	return 0;
 	
 }
-

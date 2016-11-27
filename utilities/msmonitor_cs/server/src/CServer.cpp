@@ -26,21 +26,21 @@ void CServer::init(){
 
 void CServer::acceptLoop() {
 	int recv_length;
-	char buffer[2048];
-	
+	char buffer[4096];
 	int task_code = 0;
 	int registry = 0;
 	uint64_t data = 0;
-	
+
 	struct sigaction act;
 	act.sa_handler = termHandler;
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = 0;
 	sigaction(SIGINT, &act, 0);
 
-	
 	while(1){
-		mCom.acceptSocket(&recv_length, buffer, mSocket);
+		mCom.acceptSocket(mSocket);
+
+		recv_length = recv(mSocket, buffer, 4096, 0);
 		
 		std::cout<<"************************" << std::endl;
 		std::cout<<"received: "<<std::endl;
@@ -54,14 +54,15 @@ void CServer::acceptLoop() {
 		
 		std::cout<<"************************" << std::endl;
 		
-		if(mProtocol.parseMsg(buffer, recv_length, &task_code, &registry, &data) < 0){
+		if(mProtocol.parseMsg(buffer, recv_length, task_code, registry, data) < 0){
 			std::cout << "[!]error parsing message" << std::endl;
 		}
 		else{
 			answer(task_code, registry, data);
-		}
-		
+		}	
+
 		close(mSocket);
+	
 	}
 }
 
@@ -91,7 +92,7 @@ void CServer::registerClient(uint64_t datacode){
 	clReg a = {reg, datacode};
 	mRegClients.push_back(a);							//add to register
 	std::string answer;
-	
+
 	mProtocol.answerRegisterMsg(answer, reg);
 	mCom.sendMsg(answer, mSocket);
 }
@@ -118,12 +119,12 @@ void CServer::terminate(int registry){
 
 void CServer::createDataAnswer(std::string& msg, uint64_t dataCode) {
 	mProtocol.addCmdVersion(msg, DATA_RES, mVERSION);
-	
 	std::vector<int> d;
-	mProtocol.extractData(d, dataCode);		//extract wanted data from 64Bit dataCode
 	std::vector<double> values;
+
+	mProtocol.extractData(d, dataCode);		//extract wanted data from 64Bit dataCode
 	mMeasure.getValues(values, d);			//read needed values into double vector
-	
+
 	for(unsigned int i = 0; i < values.size(); i++){
 		mProtocol.addData(msg, values[i]);		//write all data values 
 	}

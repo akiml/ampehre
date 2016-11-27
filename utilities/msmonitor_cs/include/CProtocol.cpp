@@ -58,11 +58,11 @@ int CProtocol::checkCmdVersion(std::string msg, std::string version){
 
 
 
-int CProtocol::setReg(std::string msg, int* registry) {
-	std::size_t found = msg.find("REG:");
+int CProtocol::setReg(std::string msg, int& registry) {
+	std::size_t found = msg.find("REG: ");
 	if(found != std::string::npos && found == 0){
-		std::istringstream ss(msg.substr(4));
-		ss >> *registry;
+		std::istringstream ss(msg.substr(5));
+		ss >> registry;
 		return 0;
 	}
 	else {
@@ -85,11 +85,13 @@ void CProtocol::addData(std::string& msg, double value) {
 void CProtocol::extractData(std::vector< int >& sol, uint64_t dataCode) {
 	sol.clear();
 	int tmp = 0;
+	uint64_t v = 1;
 	for(unsigned int i = 0; i < 64; i++){
-		tmp = dataCode & (0x1 << i);
+		tmp = dataCode & v;
 		if(tmp > 0){
 			sol.push_back(i);
 		}
+		v = v << 1;
 	}
 }
 

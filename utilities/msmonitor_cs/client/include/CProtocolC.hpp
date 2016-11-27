@@ -3,6 +3,7 @@
 
 #include "CProtocol.hpp"
 #include <string>
+#include <string.h>
 #include <iostream>
 #include <sstream>
 
@@ -16,7 +17,7 @@ public:
 	std::string requestMsg(int reg);
 	std::string termMsg(int reg);
 	
-	int parseMsg(char* msg, unsigned int length, bool rflag, int* reg, int* tsk, std::vector< double >& values);
+	int parseMsg(char* msg, unsigned int length, int& reg, int& tsk, std::vector< double >& values);
 	int getData(std::string &msg, std::vector<double>& values);
 private:
 	
