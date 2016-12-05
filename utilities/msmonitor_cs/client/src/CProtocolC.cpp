@@ -113,3 +113,55 @@ int CProtocolC::getData(std::string &msg, std::vector< double >& values) {
 	
 	return 0;
 }
+
+void CProtocolC::addAll(std::vector< int >& values) {
+	
+	values.clear();
+	for(unsigned int i = 0; i < VALUESIZE; i++){
+		values.push_back(i);
+	}
+	
+}
+
+void CProtocolC::addClock(std::vector< int >& values) {
+	values.push_back(YClockCpu0);
+	values.push_back(YClockCpu1);
+	values.push_back(YClockGpuCore);
+	values.push_back(YClockGpuMem);
+	values.push_back(YClockMicCore);
+	values.push_back(YClockMicMem);
+}
+
+void CProtocolC::addMemory(std::vector< int >& values) {
+	values.push_back(YMemoryCpu);
+	values.push_back(YSwapCpu);
+	values.push_back(YMemoryGpu);
+	values.push_back(YMemoryMic);
+}
+
+void CProtocolC::addPower(std::vector< int >& values) {
+	values.push_back(YPowerCpu0);
+	values.push_back(YPowerCpu1);
+	values.push_back(YPowerGpu);
+	values.push_back(YPowerFpga);
+	values.push_back(YPowerMic);
+	values.push_back(YPowerSystem);
+}
+
+void CProtocolC::addTemp(std::vector< int >& values) {
+	values.push_back(YTempCpu0);
+	values.push_back(YTempCpu1);
+	values.push_back(YTempGpu);
+	values.push_back(YTempFpgaM);
+	values.push_back(YTempFpgaI);
+	values.push_back(YTempMicDie);
+	values.push_back(YTempSystem);
+}
+
+void CProtocolC::addUtil(std::vector< int >& values) {
+	values.push_back(YUtilCpu);
+	values.push_back(YUtilGpuCore);
+	values.push_back(YUtilGpuMem);
+	values.push_back(YUtilFpga);
+	values.push_back(YUtilMic);
+}

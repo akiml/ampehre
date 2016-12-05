@@ -20,12 +20,11 @@ public:
 	int initSocket(int port = 2900);
 	void acceptSocket(int& new_socket);
 	int sendMsg(std::string msg, int socket);
+	int sendMsg(void* msg, size_t len, int socket);
 	
 private:
 	int mSockfd;
 	int mPort;
-	struct sockaddr_in mClient_addr;
-	socklen_t mSin_size;
 	
 
 };

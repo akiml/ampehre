@@ -19,7 +19,7 @@ public:
 	~CComC();
 	void setAddr(std::string addr);
 	int initSocket(int port);
-	int communicate(const char* msg, char* reply, unsigned int length);
+	int communicate(const char* msg, char* reply, int length);
 	
 private:
 	int mSockfd;

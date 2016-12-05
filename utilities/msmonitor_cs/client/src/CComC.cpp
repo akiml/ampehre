@@ -40,23 +40,13 @@ int CComC::initSocket(int port) {
 	
 }
 
-int CComC::communicate(const char* msg, char* reply, unsigned int length) {
+int CComC::communicate(const char* msg, char* reply, int length) {
 
 	//Send some data
 	if( send(mSockfd , msg , strlen(msg) , 0) < 0){
 		std::cout << "error sending msg from client to server" << std::endl;
 		return -1;
 	}
-// 	else{
-// 		
-// 		std::cout<< "msg: " << std::endl;
-// 		unsigned int i = 0;
-// 		while(i < strlen(msg)){
-// 			std::cout<< msg[i];
-// 			i++;
-// 		}
-// 	}
-	
 	length = recv(mSockfd , reply , 4096 , 0);
 	//Receive a reply from the server
 	if( length < 0){
@@ -66,11 +56,8 @@ int CComC::communicate(const char* msg, char* reply, unsigned int length) {
 	else{
 		std::cout << "****************************" << std::endl;
 		std::cout<< "received: " << std::endl;
-		unsigned int i = 0;
-		while(i < length){
-			std::cout << reply[i];
-			i++;
-		}
+		std::string str(reply, length);
+		std::cout << str;
 		std::cout << "****************************" << std::endl;
 	}
 

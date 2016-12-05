@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include <cstdlib>
 #include <cstring>
-
+#include <iostream>
 namespace NCommon {
 	template <class T>
 	class CRingBuffer {

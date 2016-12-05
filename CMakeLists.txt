@@ -37,8 +37,8 @@ option(CPU_INTEL_SANDY_SUPPORT "build library with cpu intel xeon sandy support"
 
 set(CMAKE_C_FLAGS "-O3 -Wall -std=gnu99")
 set(CMAKE_CXX_FLAGS "-O3 -Wall -std=gnu++98")
-#set(CMAKE_C_FLAGS "-O3 -Wall -DDEBUG")
-#set(CMAKE_CXX_FLAGS "-O3 -Wall -DDEBUG")
+#set(CMAKE_C_FLAGS "-O0 -Wall -DDEBUG")
+#set(CMAKE_CXX_FLAGS "-O0 -Wall -DDEBUG")
 
 if(NOT WIN32)
 	string(ASCII 27 Esc)

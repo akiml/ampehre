@@ -25,23 +25,14 @@ int main(int argc, char **argv) {
 
 	std::cout << "initiating client..." << std::endl;
 	CClient* client = new CClient();
-	CClient* client_a = new CClient();
+
 	std::vector<int> values;
-	values.push_back(X);
-	values.push_back(YPowerCpu0);
-	values.push_back(YPowerCpu1);
+	CProtocolC::addAll(values);
+	
 	client->registerToServer(values, 2900, "131.234.58.31");
-	sleep(1);
-//	client->requestData();
-//	sleep(2);
-//	values.push_back(YPowerSystem);
-//	values.push_back(YTempCpu0);
-	client_a->registerToServer(values, 2900, "131.234.58.31");
-//	client_a->requestData();
-	sleep(1);
-	client_a->terminate();
-	sleep(3);
+	client->requestData();
 	client->terminate();
+	
 	return 0;
 }
 

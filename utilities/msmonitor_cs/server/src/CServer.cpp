@@ -14,7 +14,7 @@ CServer::CServer(int port, int maxClients):
 
 CServer::~CServer()
 {
-	//nothing to do here
+	mMeasure.stop();
 }
 
 void CServer::init(){
@@ -26,7 +26,7 @@ void CServer::init(){
 
 void CServer::acceptLoop() {
 	int recv_length;
-	char buffer[4096];
+	char buffer[4096] = {0};
 	int task_code = 0;
 	int registry = 0;
 	uint64_t data = 0;
@@ -39,18 +39,13 @@ void CServer::acceptLoop() {
 
 	while(1){
 		mCom.acceptSocket(mSocket);
-
 		recv_length = recv(mSocket, buffer, 4096, 0);
 		
 		std::cout<<"************************" << std::endl;
 		std::cout<<"received: "<<std::endl;
-		
-		int i = 0;
-		
-		while(i < recv_length){
-			std::cout << buffer[i];
-			i++;
-		}
+		std::string str(buffer, recv_length);
+		std::cout << str;
+			
 		
 		std::cout<<"************************" << std::endl;
 		
@@ -62,7 +57,6 @@ void CServer::acceptLoop() {
 		}	
 
 		close(mSocket);
-	
 	}
 }
 
@@ -102,8 +96,7 @@ void CServer::dataRequest(int registry){
 		std::string msg;
 		createDataAnswer(msg, mIterator->dataCode);
 		mCom.sendMsg(msg, mSocket);
-	}
-	else{
+	}else{
 		std::cout<<"client not registered yet!" << std::endl;
 	}
 }
@@ -129,6 +122,7 @@ void CServer::createDataAnswer(std::string& msg, uint64_t dataCode) {
 		mProtocol.addData(msg, values[i]);		//write all data values 
 	}
 }
+
 
 void CServer::termHandler(int s) {
 	std::cout << "terminating server..." << std::endl;

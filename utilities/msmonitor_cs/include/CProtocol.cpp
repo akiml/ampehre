@@ -91,7 +91,7 @@ void CProtocol::extractData(std::vector< int >& sol, uint64_t dataCode) {
 		if(tmp > 0){
 			sol.push_back(i);
 		}
-		v = v << 1;
+		v <<= 1;
 	}
 }
 

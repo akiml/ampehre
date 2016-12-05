@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <vector>
 #include <iostream>
+#include "CProtocol.hpp"
 #include "ms_measurement.h"
 #include "CDataHandler.hpp"
 

@@ -2,8 +2,7 @@
 
 CComS::CComS():
 	mSockfd(0),
-	mPort(2900),
-	mSin_size(sizeof(struct sockaddr_in))
+	mPort(2900)
 {}
 
 CComS::~CComS(){}
@@ -43,8 +42,10 @@ int CComS::initSocket(int port){
 }
 
 void CComS::acceptSocket(int& new_socket) {
-	new_socket = accept(mSockfd, (struct sockaddr *)& mClient_addr, &mSin_size);		
+	struct sockaddr_in client_addr;
+	socklen_t sin_size = sizeof(struct sockaddr_in);
 
+	new_socket = accept(mSockfd, (struct sockaddr *)& client_addr, &sin_size);		
 	if(new_socket == -1){
 		std::cout << "error while accepting connection" << std::endl;
 		exit(-1);
@@ -55,6 +56,14 @@ void CComS::acceptSocket(int& new_socket) {
 int CComS::sendMsg(std::string msg, int socket) {
 	const char* str = msg.c_str();
 	if(send(socket , str , strlen(str) , 0) < 0){
+		std::cout<< "error communicating with client" << std::endl;
+		return -1;
+	}
+	return 0;
+}
+
+int CComS::sendMsg(void* msg, size_t len, int socket){
+	if(send(socket , msg , len , 0) < 0){
 		std::cout<< "error communicating with client" << std::endl;
 		return -1;
 	}

@@ -24,122 +24,123 @@ void CMeasure::stop() {
 
 void CMeasure::getValues(std::vector<double>& sol, std::vector<int>& req){
 	sol.clear();
-	NData::CDataMeasurement mData = mHandler.getMeasurement();
+	
+	NData::CDataMeasurement &mData = mHandler.getMeasurement();
 	for(unsigned int i = 0; i < req.size(); i++) {
 		switch(req[i]){
-			case 0:{
+			case X:{
 				sol.push_back(mData.mpX->getLast());
 				break;
 			}
-			case 1:{
+			case YPowerCpu0:{
 				sol.push_back(mData.mpYPowerCpu0->getLast());
 				break;
 			}
-			case 2:{
+			case YPowerCpu1:{
 				sol.push_back(mData.mpYPowerCpu1->getLast());
 				break;
 			}
-			case 3:{
+			case YPowerGpu:{
 				sol.push_back(mData.mpYPowerGpu->getLast());
 				break;
 			}
-			case 4:{
+			case YPowerFpga:{
 				sol.push_back(mData.mpYPowerFpga->getLast());
 				break;
 			}
-			case 5:{
+			case YPowerMic:{
 				sol.push_back(mData.mpYPowerMic->getLast());
 				break;
 			}
-			case 6:{
+			case YPowerSystem:{
 				sol.push_back(mData.mpYPowerSystem->getLast());
 				break;
 			}
-			case 7:{
+			case YTempCpu0:{
 				sol.push_back(mData.mpYTempCpu0->getLast());
 				break;
 			}
-			case 8:{
+			case YTempCpu1:{
 				sol.push_back(mData.mpYTempCpu1->getLast());
 				break;
 			}
-			case 9:{
+			case YTempGpu:{
 				sol.push_back(mData.mpYTempGpu->getLast());
 				break;
 			}
-			case 10:{
+			case YTempFpgaM:{
 				sol.push_back(mData.mpYTempFpgaM->getLast());
 				break;
 			}
-			case 11:{
+			case YTempFpgaI:{
 				sol.push_back(mData.mpYTempFpgaI->getLast());
 				break;
 			}
-			case 12:{
+			case YTempMicDie:{
 				sol.push_back(mData.mpYTempMicDie->getLast());
 				break;
 			}
-			case 13:{
+			case YTempSystem:{
 				sol.push_back(mData.mpYTempSystem->getLast());
 				break;
 			}
-			case 14:{
+			case YClockCpu0:{
 				sol.push_back(mData.mpYClockCpu0->getLast());
 				break;
 			}
-			case 15:{
+			case YClockCpu1:{
 				sol.push_back(mData.mpYClockCpu1->getLast());
 				break;
 			}
-			case 16:{
+			case YClockGpuCore:{
 				sol.push_back(mData.mpYClockGpuCore->getLast());
 				break;
 			}
-			case 17:{
+			case YClockGpuMem:{
 				sol.push_back(mData.mpYClockGpuMem->getLast());
 				break;
 			}
-			case 18:{
+			case YClockMicCore:{
 				sol.push_back(mData.mpYClockMicCore->getLast());
 				break;
 			}
-			case 19:{
+			case YClockMicMem:{
 				sol.push_back(mData.mpYClockMicMem->getLast());
 				break;
 			}
-			case 20:{
+			case YUtilCpu:{
 				sol.push_back(mData.mpYUtilCpu->getLast());
 				break;
 			}
-			case 21:{
+			case YUtilGpuCore:{
 				sol.push_back(mData.mpYUtilGpuCore->getLast());
 				break;
 			}
-			case 22:{
+			case YUtilGpuMem:{
 				sol.push_back(mData.mpYUtilGpuMem->getLast());
 				break;
 			}
-			case 23:{
+			case YUtilFpga:{
 				sol.push_back(mData.mpYUtilFpga->getLast());
 				break;
 			}
-			case 24:{
+			case YUtilMic:{
 				sol.push_back(mData.mpYUtilMic->getLast());
 				break;
 			}
-			case 25:{
+			case YMemoryCpu:{
 				sol.push_back(mData.mpYMemoryCpu->getLast());
 				break;
 			}
-			case 26:{
+			case YSwapCpu:{
 				sol.push_back(mData.mpYSwapCpu->getLast());
 				break;
 			}
-			case 27:{
+			case YMemoryGpu:{
 				sol.push_back(mData.mpYMemoryGpu->getLast());
 				break;
 			}
-			case 28:{
+			case YMemoryMic:{
 				sol.push_back(mData.mpYMemoryMic->getLast());
 				break;
 			}
