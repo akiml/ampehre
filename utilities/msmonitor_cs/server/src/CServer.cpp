@@ -118,10 +118,40 @@ void CServer::createDataAnswer(std::string& msg, uint64_t dataCode) {
 	mProtocol.extractData(d, dataCode);		//extract wanted data from 64Bit dataCode
 	mMeasure.getValues(values, d);			//read needed values into double vector
 
+
 	for(unsigned int i = 0; i < values.size(); i++){
 		mProtocol.addData(msg, values[i]);		//write all data values 
 	}
 }
+
+void CServer::createDataAnswer(void** answer, uint64_t dataCode) {
+	std::string msg;
+	mProtocol.addCmdVersion(msg, DATA_RES, mVERSION);
+	std::vector<int> d;
+	std::vector<double> values;
+	char r = '\r';
+	char n = '\n';
+	
+	char *rn = "\r\n";
+
+	mProtocol.extractData(d, dataCode);		//extract wanted data from 64Bit dataCode
+	mMeasure.getValues(values, d);			//read needed values into double vector
+	
+	*answer = malloc(msg.size()+values.size()*(sizeof(double)+2*sizeof(char)));	//auf NULL prüfen
+	if (NULL == answer)
+		exit(-1);
+	memcpy(*answer, &msg, msg.size());
+	void* b = (*answer)+msg.size();
+
+	for(unsigned int i = 0; i < values.size(); i++){
+		//mProtocol.addData(msg, values[i]);		//write all data values 
+		memcpy(b, &values[i], sizeof(double));
+		b+=sizeof(double);
+		memcpy(b, rn, strlen(rn));
+		b += strlen(rn);
+	}
+}
+
 
 
 void CServer::termHandler(int s) {
