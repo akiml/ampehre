@@ -24,8 +24,8 @@ public:
 	static void addUtil(std::vector<int>& values);
 	static void addMemory(std::vector<int>& values);
 	
-	int parseMsg(char* msg, unsigned int length, int& reg, int& tsk, std::vector< double >& values);
-	int getData(std::string &msg, std::vector<double>& values);
+	int parseMsg(void* msg, unsigned int length, int& reg, int& tsk, std::vector< double >& values);
+	int getData(void* msg, int size, std::vector<double>& values);
 	
 	
 };

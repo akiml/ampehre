@@ -8,12 +8,10 @@ CProtocolC::~CProtocolC() {
 
 }
 
-int CProtocolC::parseMsg(char* msg, unsigned int length, int& reg, int& tsk, std::vector< double >& values){
+int CProtocolC::parseMsg(void* msg, unsigned int length, int& reg, int& tsk, std::vector< double >& values){
 	unsigned int i = 0;
-	int k = 0;
-	std::string msg_str (msg, strlen(msg));
+	std::string msg_str ((char*)msg, length);
 	std::string submsg;
-	
 	std::size_t found = 1;
 	std::size_t next = 0;
 	std::size_t before = 0;
@@ -30,15 +28,17 @@ int CProtocolC::parseMsg(char* msg, unsigned int length, int& reg, int& tsk, std
 			  case 0:
 				tsk = checkCmdVersion(submsg, mVersion);
 				if(tsk < 0){
+					std::cout << "wrong version" << std::endl;
 					return -1;
 				}
 				break;
 			  case 1:
 				if(setReg(submsg, reg) < 0){
-					if(getData(submsg, values) < 0){
+					if(getData(msg+before, length-before, values) < 0){
 						return -1;
 					} 
 				}
+
 				break;
 			}
 		}
@@ -86,30 +86,50 @@ std::string CProtocolC::termMsg(int reg) {
 	return msg;
 }
 
-int CProtocolC::getData(std::string &msg, std::vector< double >& values) {
+int CProtocolC::getData(void* msg, int size, std::vector< double >& values) {
+
 	values.clear();
-	std::string end ("\r\n");
-	std::string submsg;
-	
-	std::size_t found = 1;
-	std::size_t next = 0;
-	std::size_t before = 0;
-	double val;
-	
-	while(found != std::string::npos){
-		found = msg.find(end, next);
-		before = next;
-		next = found;
-		if(found == std::string::npos){
-			break;
-		}
-		else{
-			submsg = msg.substr(before, next-before);
-			std::istringstream ss(submsg);
-			ss >> val;
-			values.push_back(val);
-		}
+	void* k = msg;
+	double val = 0;
+
+
+	if(size % (sizeof(double)+2*sizeof(char)) != 0)
+		return -1;
+
+	std::cout << "DATA_RES / MSMP/0.1" << std::endl;
+ 
+	while(k < size+msg){
+		memcpy(&val, k, sizeof(double));
+		std::cout << val << std::endl;
+		values.push_back(val);
+		k+= sizeof(double)+2*sizeof(char);
 	}
+
+	// values.clear();
+	// std::string end ("\r\n");
+	// std::string submsg;
+	
+	// std::size_t found = 1;
+	// std::size_t next = 0;
+	// std::size_t before = 0;
+	// double val = 0;
+	
+	// while(found != std::string::npos){
+	// 	found = msg.find(end, next);
+	// 	before = next;
+	// 	next = found;
+	// 	if(found == std::string::npos){
+	// 		break;
+	// 	}
+	// 	else{
+	// 		submsg = msg.substr(before, next-before);
+	// 		memcpy(&val, &submsg, sizeof(double));
+	// 		//std::cout << submsg << std::endl;
+	// 		//std::istringstream ss(submsg);
+	// 		//ss >> val;
+	// 		//values.push_back(val);
+	// 	}
+	// }
 	
 	return 0;
 }

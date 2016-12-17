@@ -21,8 +21,8 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
 	
 	initSocket();
 	
-	char rep[2048];
-	unsigned int rep_len = 0;
+	void* rep = malloc(2048);
+	int rep_len = 0;
 	int reg = -1, tsk;
 	
 	uint64_t code = mProtocol.createDataCode(values);
@@ -42,8 +42,8 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
 
 void CClient::requestData() {
 	initSocket();
-	char rep[8192] = {0};
-	unsigned int rep_len = 0;
+	void* rep= malloc(8192);
+	int rep_len = 0;
 	int reg = -1, tsk;
 	
 	std::string msg = mProtocol.requestMsg(mReg);
@@ -54,8 +54,8 @@ void CClient::requestData() {
 
 void CClient::terminate() {
 	initSocket();
-	char rep[4096];
-	unsigned int rep_len = 0;
+	void* rep = malloc(4096);
+	int rep_len = 0;
 
 	std::string msg = mProtocol.termMsg(mReg);
 

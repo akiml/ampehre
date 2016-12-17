@@ -93,9 +93,10 @@ void CServer::registerClient(uint64_t datacode){
 
 void CServer::dataRequest(int registry){
 	if(ut::find(mRegClients, registry, mIterator) == 0){
-		std::string msg;
-		createDataAnswer(msg, mIterator->dataCode);
-		mCom.sendMsg(msg, mSocket);
+		void* m;
+		int s = createDataAnswer(&m, mIterator->dataCode);
+		mCom.sendMsg(m, s, mSocket);
+
 	}else{
 		std::cout<<"client not registered yet!" << std::endl;
 	}
@@ -124,24 +125,27 @@ void CServer::createDataAnswer(std::string& msg, uint64_t dataCode) {
 	}
 }
 
-void CServer::createDataAnswer(void** answer, uint64_t dataCode) {
+int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 	std::string msg;
 	mProtocol.addCmdVersion(msg, DATA_RES, mVERSION);
 	std::vector<int> d;
 	std::vector<double> values;
-	char r = '\r';
-	char n = '\n';
-	
 	char *rn = "\r\n";
 
 	mProtocol.extractData(d, dataCode);		//extract wanted data from 64Bit dataCode
 	mMeasure.getValues(values, d);			//read needed values into double vector
+
+	std::size_t size = msg.size()+values.size()*(sizeof(double)+2*sizeof(char));
 	
-	*answer = malloc(msg.size()+values.size()*(sizeof(double)+2*sizeof(char)));	//auf NULL prüfen
-	if (NULL == answer)
+	*answer = malloc(size);
+	if (NULL == *answer){
+		std::cout << "[FATAL] out of memory!" << std::endl;
 		exit(-1);
-	memcpy(*answer, &msg, msg.size());
-	void* b = (*answer)+msg.size();
+	}
+	const char* str_c = msg.c_str();
+	memcpy(*answer, str_c, strlen(str_c));
+
+	void* b = *answer+msg.size();	
 
 	for(unsigned int i = 0; i < values.size(); i++){
 		//mProtocol.addData(msg, values[i]);		//write all data values 
@@ -150,6 +154,8 @@ void CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 		memcpy(b, rn, strlen(rn));
 		b += strlen(rn);
 	}
+
+	return size;
 }
 
 

@@ -40,7 +40,7 @@ int CComC::initSocket(int port) {
 	
 }
 
-int CComC::communicate(const char* msg, char* reply, int length) {
+int CComC::communicate(const char* msg, void* reply, int& length) {
 
 	//Send some data
 	if( send(mSockfd , msg , strlen(msg) , 0) < 0){
@@ -56,9 +56,11 @@ int CComC::communicate(const char* msg, char* reply, int length) {
 	else{
 		std::cout << "****************************" << std::endl;
 		std::cout<< "received: " << std::endl;
-		std::string str(reply, length);
-		std::cout << str;
-		std::cout << "****************************" << std::endl;
+		std::string str((char*)reply, length);
+		std::size_t found = 2; 
+		found = str.find("DATA_RES /", 0);
+		if(found != 0)
+			std::cout << str;
 	}
 
 	return 0;
