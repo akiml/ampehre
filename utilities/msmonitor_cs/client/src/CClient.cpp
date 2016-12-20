@@ -32,6 +32,7 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
 	mCom.communicate(msg.c_str() ,rep, rep_len);
 	mProtocol.parseMsg(rep, rep_len, reg, tsk, ignore);
 	
+	free(rep);
 	if(reg >= 0){
 		this->mReg = reg;
 		return 0;
@@ -49,6 +50,8 @@ void CClient::requestData() {
 	std::string msg = mProtocol.requestMsg(mReg);
 	mCom.communicate(msg.c_str(), rep, rep_len);
 	mProtocol.parseMsg(rep, rep_len, reg, tsk, mValues);
+
+	free(rep);
 	
 }
 
@@ -60,6 +63,8 @@ void CClient::terminate() {
 	std::string msg = mProtocol.termMsg(mReg);
 
 	mCom.communicate(msg.c_str(), rep, rep_len);
+
+	free(rep);
 }
 
 void CClient::initSocket(){

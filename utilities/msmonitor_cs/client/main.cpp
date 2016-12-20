@@ -25,16 +25,25 @@ int main(int argc, char **argv) {
 
 	std::cout << "initiating client..." << std::endl;
 	CClient* client = new CClient();
+	CClient* cl = new CClient();
 
 	std::vector<int> values;
 	CProtocolC::addAll(values);
+
+	std::vector<int> v;
+	CProtocolC::addUtil(v);
 	
 	client->registerToServer(values, 2900, "131.234.58.31");
 	client->requestData();
+	cl->registerToServer(v, 2900, "131.234.58.31");
+	client->requestData();
+	cl->requestData();
+	cl->terminate();
 	client->terminate();
 	
 	
 	delete client;
+	delete cl;
 	
 	return 0;
 }

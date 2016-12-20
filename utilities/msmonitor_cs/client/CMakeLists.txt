@@ -18,6 +18,6 @@ add_library(client SHARED ${DATA_SOURCES})
 add_executable(msm_client main.cpp)
 target_link_libraries(msm_client client)
 
-install(TARGETS msm_client RUNTIME DESTINATION bin)
+
 
 

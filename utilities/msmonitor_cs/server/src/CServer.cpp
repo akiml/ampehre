@@ -96,6 +96,7 @@ void CServer::dataRequest(int registry){
 		void* m;
 		int s = createDataAnswer(&m, mIterator->dataCode);
 		mCom.sendMsg(m, s, mSocket);
+		free(m);
 
 	}else{
 		std::cout<<"client not registered yet!" << std::endl;

@@ -144,6 +144,8 @@ void CProtocolC::addAll(std::vector< int >& values) {
 }
 
 void CProtocolC::addClock(std::vector< int >& values) {
+	values.clear();
+	values.push_back(X);
 	values.push_back(YClockCpu0);
 	values.push_back(YClockCpu1);
 	values.push_back(YClockGpuCore);
@@ -153,6 +155,8 @@ void CProtocolC::addClock(std::vector< int >& values) {
 }
 
 void CProtocolC::addMemory(std::vector< int >& values) {
+	values.clear();
+	values.push_back(X);
 	values.push_back(YMemoryCpu);
 	values.push_back(YSwapCpu);
 	values.push_back(YMemoryGpu);
@@ -160,6 +164,8 @@ void CProtocolC::addMemory(std::vector< int >& values) {
 }
 
 void CProtocolC::addPower(std::vector< int >& values) {
+	values.clear();
+	values.push_back(X);
 	values.push_back(YPowerCpu0);
 	values.push_back(YPowerCpu1);
 	values.push_back(YPowerGpu);
@@ -169,6 +175,8 @@ void CProtocolC::addPower(std::vector< int >& values) {
 }
 
 void CProtocolC::addTemp(std::vector< int >& values) {
+	values.clear();
+	values.push_back(X);
 	values.push_back(YTempCpu0);
 	values.push_back(YTempCpu1);
 	values.push_back(YTempGpu);
@@ -179,6 +187,8 @@ void CProtocolC::addTemp(std::vector< int >& values) {
 }
 
 void CProtocolC::addUtil(std::vector< int >& values) {
+	values.clear();
+	values.push_back(X);
 	values.push_back(YUtilCpu);
 	values.push_back(YUtilGpuCore);
 	values.push_back(YUtilGpuMem);
