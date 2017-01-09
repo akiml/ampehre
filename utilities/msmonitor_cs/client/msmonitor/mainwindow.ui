@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1057</width>
+    <height>636</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MSMonitor v0.8.0</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QWidget" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>281</width>
+      <height>591</height>
+     </rect>
+    </property>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>261</width>
+       <height>301</height>
+      </rect>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>Resource</string>
+      </attribute>
+     </widget>
+     <widget class="QWidget" name="tab_3">
+      <attribute name="title">
+       <string>Data</string>
+      </attribute>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>GUI</string>
+      </attribute>
+     </widget>
+    </widget>
+    <widget class="QPushButton" name="pushButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>340</y>
+       <width>95</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Save</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>340</y>
+       <width>131</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>save results to csv</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_2">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>430</y>
+       <width>95</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Start</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_3">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>480</y>
+       <width>95</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Stop</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_4">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>530</y>
+       <width>95</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Reset</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1057</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_Quit"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <widget class="QMenu" name="menu_Curves">
+     <property name="title">
+      <string>&amp;Curves</string>
+     </property>
+     <addaction name="action_Power"/>
+     <addaction name="action_Temperature"/>
+     <addaction name="action_Clock"/>
+     <addaction name="action_Utilization"/>
+     <addaction name="action_Memory"/>
+    </widget>
+    <widget class="QMenu" name="menu_Heatmaps">
+     <property name="title">
+      <string>&amp;Heatmaps</string>
+     </property>
+     <addaction name="action_Utilization_2"/>
+     <addaction name="action_Temperature_2"/>
+    </widget>
+    <addaction name="menu_Curves"/>
+    <addaction name="menu_Heatmaps"/>
+    <addaction name="action_Systemoverview"/>
+   </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="action_About"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_View"/>
+   <addaction name="menu_Help"/>
+  </widget>
+  <action name="action_Quit">
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="action_Systemoverview">
+   <property name="text">
+    <string>&amp;System Overview</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="action_Power">
+   <property name="text">
+    <string>&amp;Power</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="action_Temperature">
+   <property name="text">
+    <string>&amp;Temperature</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="action_Clock">
+   <property name="text">
+    <string>&amp;Clock</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="action_Utilization">
+   <property name="text">
+    <string>&amp;Utilization</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+U</string>
+   </property>
+  </action>
+  <action name="action_Memory">
+   <property name="text">
+    <string>&amp;Memory</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="action_Utilization_2">
+   <property name="text">
+    <string>&amp;Utilization</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+U</string>
+   </property>
+  </action>
+  <action name="action_Temperature_2">
+   <property name="text">
+    <string>&amp;Temperature</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+T</string>
+   </property>
+  </action>
+  <action name="action_About">
+   <property name="text">
+    <string>&amp;About</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
