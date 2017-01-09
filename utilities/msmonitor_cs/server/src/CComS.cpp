@@ -1,3 +1,23 @@
+/*
+ * CComS.cpp
+ * 
+ * Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Ahmad El-Ali <aelali@mail.upb.de>
+ * All rights reserved.
+ * 
+ * This software may be modified and distributed under the terms
+ * of the BSD license. See the LICENSE file for details.
+ * 
+ * encoding: UTF-8
+ * tab size: 4
+ * 
+ * author: Ahmad El-Ali (aelali@mail.upb.de)
+ * created: 10/5/16
+ * version: 0.3.0 - extend libmeasure and add application for online monitoring
+ *          0.7.0 - modularized measurement struct
+ *          0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
+ * 			0.8.0 - client server implementation 
+ */
+
 #include "CComS.hpp"
 
 CComS::CComS():
@@ -50,7 +70,6 @@ void CComS::acceptSocket(int& new_socket) {
 		std::cout << "error while accepting connection" << std::endl;
 		exit(-1);
 	}
- 	//std::cout << "server: got connection from " << inet_ntoa(client_addr.sin_addr)<< " port " << ntohs(client_addr.sin_port)<< std::endl;
 }
 
 int CComS::sendMsg(std::string msg, int socket) {

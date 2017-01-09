@@ -1,7 +1,7 @@
 /*
  * main.cpp
  * 
- * Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>, Ahmad El-Ali <aelali@mail.upb.de>
+ * Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Ahmad El-Ali <aelali@mail.upb.de>
  * All rights reserved.
  * 
  * This software may be modified and distributed under the terms
@@ -10,9 +10,12 @@
  * encoding: UTF-8
  * tab size: 4
  * 
- * author: Ahmad El-Ali	<aelali@mail.upb.de>
- * created: 06.10.16
- * version: 0.1- client/server monitoring implementation
+ * author: Ahmad El-Ali (aelali@mail.upb.de)
+ * created: 10/5/16
+ * version: 0.3.0 - extend libmeasure and add application for online monitoring
+ *          0.7.0 - modularized measurement struct
+ *          0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
+ * 			0.8.0 - client server implementation 
  */
 
 #include <cstdlib>

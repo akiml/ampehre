@@ -1,3 +1,23 @@
+/*
+ * CClient.cpp
+ * 
+ * Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Ahmad El-Ali <aelali@mail.upb.de>
+ * All rights reserved.
+ * 
+ * This software may be modified and distributed under the terms
+ * of the BSD license. See the LICENSE file for details.
+ * 
+ * encoding: UTF-8
+ * tab size: 4
+ * 
+ * author: Ahmad El-Ali (aelali@mail.upb.de)
+ * created: 10/25/16
+ * version: 0.3.0 - extend libmeasure and add application for online monitoring
+ *          0.7.0 - modularized measurement struct
+ *          0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
+ * 			0.8.0 - client server implementation 
+ */
+
 #include "CClient.hpp"
 
 CClient::CClient():
@@ -22,6 +42,10 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
 	initSocket();
 	
 	void* rep = malloc(2048);
+	if (NULL == rep){
+		std::cout << "[FATAL] out of memory!" << std::endl;
+		exit(-1);
+	}
 	int rep_len = 0;
 	int reg = -1, tsk;
 	
@@ -44,6 +68,10 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
 void CClient::requestData() {
 	initSocket();
 	void* rep= malloc(8192);
+	if (NULL == rep){
+		std::cout << "[FATAL] out of memory!" << std::endl;
+		exit(-1);
+	}
 	int rep_len = 0;
 	int reg = -1, tsk;
 	
@@ -58,6 +86,10 @@ void CClient::requestData() {
 void CClient::terminate() {
 	initSocket();
 	void* rep = malloc(4096);
+	if (NULL == rep){
+		std::cout << "[FATAL] out of memory!" << std::endl;
+		exit(-1);
+	}
 	int rep_len = 0;
 
 	std::string msg = mProtocol.termMsg(mReg);

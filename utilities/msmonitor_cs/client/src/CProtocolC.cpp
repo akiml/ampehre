@@ -1,3 +1,23 @@
+/*
+ * CProtocolC.cpp
+ * 
+ * Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Ahmad El-Ali <aelali@mail.upb.de>
+ * All rights reserved.
+ * 
+ * This software may be modified and distributed under the terms
+ * of the BSD license. See the LICENSE file for details.
+ * 
+ * encoding: UTF-8
+ * tab size: 4
+ * 
+ * author: Ahmad El-Ali (aelali@mail.upb.de)
+ * created: 11/22/16
+ * version: 0.3.0 - extend libmeasure and add application for online monitoring
+ *          0.7.0 - modularized measurement struct
+ *          0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
+ * 			0.8.0 - client server implementation 
+ */
+
 #include "CProtocolC.hpp"
 
 CProtocolC::CProtocolC(std::string version) {
@@ -104,32 +124,6 @@ int CProtocolC::getData(void* msg, int size, std::vector< double >& values) {
 		values.push_back(val);
 		k+= sizeof(double)+2*sizeof(char);
 	}
-
-	// values.clear();
-	// std::string end ("\r\n");
-	// std::string submsg;
-	
-	// std::size_t found = 1;
-	// std::size_t next = 0;
-	// std::size_t before = 0;
-	// double val = 0;
-	
-	// while(found != std::string::npos){
-	// 	found = msg.find(end, next);
-	// 	before = next;
-	// 	next = found;
-	// 	if(found == std::string::npos){
-	// 		break;
-	// 	}
-	// 	else{
-	// 		submsg = msg.substr(before, next-before);
-	// 		memcpy(&val, &submsg, sizeof(double));
-	// 		//std::cout << submsg << std::endl;
-	// 		//std::istringstream ss(submsg);
-	// 		//ss >> val;
-	// 		//values.push_back(val);
-	// 	}
-	// }
 	
 	return 0;
 }

@@ -1,7 +1,7 @@
 #
 # CMakeLists.txt
 #
-# Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>
+# Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Ahmad El-Ali <aelali@mail.upb.de>
 # All rights reserved.
 #
 # This software may be modified and distributed under the terms
@@ -11,8 +11,8 @@
 # tab size: 4
 #
 # author: Achim Lösch (achim.loesch@upb.de)
-# created: 7/28/14
-# version: 0.5.7 - add automatic detection of ipmi device to measure driver
+# created: 10/12/16
+# version: 0.8.0 - extend libmeasure and add application for online monitoring
 #
 
 add_subdirectory(hettime)
