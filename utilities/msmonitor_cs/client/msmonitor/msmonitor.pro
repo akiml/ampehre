@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2017-01-09T13:34:57
+# Project created by QtCreator 2017-01-11T13:54:32
 #
 #-------------------------------------------------
 
@@ -13,8 +13,10 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    QMSMplotabstract.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    QMSMplotabstract.h
 
 FORMS    += mainwindow.ui

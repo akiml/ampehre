@@ -46,9 +46,11 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = ../msmonitor/main.cpp \
-		../msmonitor/mainwindow.cpp moc_mainwindow.cpp
+		../msmonitor/mainwindow.cpp \
+		../msmonitor/QMSMplotabstract.cpp moc_mainwindow.cpp
 OBJECTS       = main.o \
 		mainwindow.o \
+		QMSMplotabstract.o \
 		moc_mainwindow.o
 DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/shell-unix.conf \
@@ -110,7 +112,8 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/yacc.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
 		../msmonitor/msmonitor.pro ../msmonitor/main.cpp \
-		../msmonitor/mainwindow.cpp
+		../msmonitor/mainwindow.cpp \
+		../msmonitor/QMSMplotabstract.cpp
 QMAKE_TARGET  = msmonitor
 DESTDIR       = #avoid trailing-slash linebreak
 TARGET        = msmonitor
@@ -277,7 +280,7 @@ qmake_all: FORCE
 
 dist: 
 	@test -d .tmp/msmonitor1.0.0 || mkdir -p .tmp/msmonitor1.0.0
-	$(COPY_FILE) --parents $(DIST) .tmp/msmonitor1.0.0/ && $(COPY_FILE) --parents ../msmonitor/mainwindow.h .tmp/msmonitor1.0.0/ && $(COPY_FILE) --parents ../msmonitor/main.cpp ../msmonitor/mainwindow.cpp .tmp/msmonitor1.0.0/ && $(COPY_FILE) --parents ../msmonitor/mainwindow.ui .tmp/msmonitor1.0.0/ && (cd `dirname .tmp/msmonitor1.0.0` && $(TAR) msmonitor1.0.0.tar msmonitor1.0.0 && $(COMPRESS) msmonitor1.0.0.tar) && $(MOVE) `dirname .tmp/msmonitor1.0.0`/msmonitor1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/msmonitor1.0.0
+	$(COPY_FILE) --parents $(DIST) .tmp/msmonitor1.0.0/ && $(COPY_FILE) --parents ../msmonitor/mainwindow.h ../msmonitor/QMSMplotabstract.h .tmp/msmonitor1.0.0/ && $(COPY_FILE) --parents ../msmonitor/main.cpp ../msmonitor/mainwindow.cpp ../msmonitor/QMSMplotabstract.cpp .tmp/msmonitor1.0.0/ && $(COPY_FILE) --parents ../msmonitor/mainwindow.ui .tmp/msmonitor1.0.0/ && (cd `dirname .tmp/msmonitor1.0.0` && $(TAR) msmonitor1.0.0.tar msmonitor1.0.0 && $(COMPRESS) msmonitor1.0.0.tar) && $(MOVE) `dirname .tmp/msmonitor1.0.0`/msmonitor1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/msmonitor1.0.0
 
 
 clean:compiler_clean 
@@ -330,6 +333,9 @@ main.o: ../msmonitor/main.cpp ../msmonitor/mainwindow.h
 mainwindow.o: ../msmonitor/mainwindow.cpp ../msmonitor/mainwindow.h \
 		ui_mainwindow.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../msmonitor/mainwindow.cpp
+
+QMSMplotabstract.o: ../msmonitor/QMSMplotabstract.cpp ../msmonitor/QMSMplotabstract.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o QMSMplotabstract.o ../msmonitor/QMSMplotabstract.cpp
 
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp
