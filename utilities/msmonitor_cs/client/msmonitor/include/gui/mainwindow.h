@@ -2,7 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTimer>
+#include <vector>
 #include "QMSMpowerplot.h"
+#include "CClient.hpp"
 
 namespace Ui {
 class MainWindow;
@@ -18,7 +21,18 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QMSMPowerPlot* powerplot;
+    QMSMPowerPlot* mpPowerplot;
+    CClient mClient;
+    QTimer* mpTimer;
+    int mInterval;
+    void connectActions();
+
+public slots:
+    void start();
+    void stop();
+    void reset();
+    void requestData();
+
 };
 
 #endif // MAINWINDOW_H

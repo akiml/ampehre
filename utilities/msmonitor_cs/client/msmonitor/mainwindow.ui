@@ -51,7 +51,7 @@
       </attribute>
      </widget>
     </widget>
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="pushButton_save">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -77,7 +77,7 @@
       <string>save results to csv</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_2">
+    <widget class="QPushButton" name="pushButton_start">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -90,7 +90,7 @@
       <string>Start</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_3">
+    <widget class="QPushButton" name="pushButton_stop">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -103,7 +103,7 @@
       <string>Stop</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_4">
+    <widget class="QPushButton" name="pushButton_reset">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -116,6 +116,16 @@
       <string>Reset</string>
      </property>
     </widget>
+   </widget>
+   <widget class="QMdiArea" name="mdiArea">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>0</y>
+      <width>771</width>
+      <height>621</height>
+     </rect>
+    </property>
    </widget>
   </widget>
   <widget class="QToolBar" name="mainToolBar">

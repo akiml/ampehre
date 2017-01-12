@@ -35,6 +35,8 @@ public:
 	int registerToServer(std::vector<int>& values, int port, std::string ipaddr);
 	void requestData();
 	void terminate();
+
+    std::vector<double> mValues;
 	
 private:
 	void initSocket();
@@ -45,7 +47,6 @@ private:
 	int mReg;
 	int mPort;
 	int mAmtValues;
-	std::vector<double> mValues;
 	std::string mIPaddr;
 	
 };

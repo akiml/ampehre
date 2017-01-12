@@ -17,14 +17,14 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-include_directories(include/)
+include_directories(msmonitor/include/)
 include_directories(../include/)
 
 
 set(DATA_SOURCES
-	src/CComC.cpp
-	src/CClient.cpp
-	src/CProtocolC.cpp
+	msmonitor/src/CComC.cpp
+	msmonitor/src/CClient.cpp
+	msmonitor/src/CProtocolC.cpp
 	../include/CProtocol.cpp
 	../include/utils.cpp
 
@@ -32,8 +32,8 @@ set(DATA_SOURCES
 
 add_library(client SHARED ${DATA_SOURCES})
 
-add_executable(msm_client main.cpp)
-target_link_libraries(msm_client client)
+add_executable(msm_client_test main.cpp)
+target_link_libraries(msm_client_test client)
 
 
 

@@ -8,36 +8,57 @@ QMSMPowerPlot::QMSMPowerPlot(QWidget *parent):
 
 QMSMPowerPlot::~QMSMPowerPlot()
 {
-    delete plot;
-    delete cpu0;
-    delete cpu1;
-    delete gpu;
-    delete fpga;
-    delete mic;
-    delete system;
+    delete mpPlot;
+    delete mpCpu0;
+    delete mpCpu1;
+    delete mpGpu;
+    delete mpFpga;
+    delete mpMic;
+    delete mpSystem;
 }
 
 void QMSMPowerPlot::initPlot(QWidget* parent)
 {
-    plot    = new QwtPlot(parent);
-    cpu0    = new QwtPlotCurve("CPU0");
-    cpu1    = new QwtPlotCurve("CPU1");
-    gpu     = new QwtPlotCurve("GPU");
-    fpga    = new QwtPlotCurve("FPGA");
-    mic     = new QwtPlotCurve("MIC");
-    system  = new QwtPlotCurve("System");
+    mpPlot    = new QwtPlot(parent);
+    mpCpu0    = new QwtPlotCurve("CPU0");
+    mpCpu1    = new QwtPlotCurve("CPU1");
+    mpGpu     = new QwtPlotCurve("GPU");
+    mpFpga    = new QwtPlotCurve("FPGA");
+    mpMic     = new QwtPlotCurve("MIC");
+    mpSystem  = new QwtPlotCurve("System");
 
-//    cpu0->setSamples(x,y, 101);
-    cpu0->attach(plot);
-    cpu1->attach(plot);
-    gpu->attach(plot);
-    fpga->attach(plot);
-    mic->attach(plot);
-    system->attach(plot);
+    mpCpu0->attach(mpPlot);
+    mpCpu1->attach(mpPlot);
+    mpGpu->attach(mpPlot);
+    mpFpga->attach(mpPlot);
+    mpMic->attach(mpPlot);
+    mpSystem->attach(mpPlot);
 
 }
 
 QWidget* QMSMPowerPlot::getPlot()
 {
-    return plot;
+    return mpPlot;
+}
+
+void QMSMPowerPlot::redraw(std::vector<double> &values)
+{
+    mTimevalues.push_back(values[X]);
+    mCpu0values.push_back(values[YPowerCpu0]);
+    mCpu1values.push_back(values[YPowerCpu1]);
+    mGpuvalues.push_back(values[YPowerGpu]);
+    mFpgavalues.push_back(values[YPowerFpga]);
+    mMicvalues.push_back(values[YPowerMic]);
+    mSystemvalues.push_back(values[YPowerSystem]);
+
+    int size = mTimevalues.size();
+
+    mpCpu0->setSamples(mTimevalues.data(), mCpu0values.data(), size);
+    mpCpu1->setSamples(mTimevalues.data(), mCpu1values.data(), size);
+    mpGpu->setSamples(mTimevalues.data(), mGpuvalues.data(), size);
+    mpFpga->setSamples(mTimevalues.data(), mFpgavalues.data(), size);
+    mpMic->setSamples(mTimevalues.data(), mMicvalues.data(), size);
+    mpSystem->setSamples(mTimevalues.data(), mSystemvalues.data(), size);
+
+    mpPlot->replot();
 }
