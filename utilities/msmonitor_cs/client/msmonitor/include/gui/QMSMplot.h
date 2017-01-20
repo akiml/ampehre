@@ -45,16 +45,16 @@ protected:
     QwtPlotCurve* mpClockMicCore;
     QwtPlotCurve* mpClockMicMem;
 
-    QwtPlotCurve* mpUtilCpu;
-    QwtPlotCurve* mpUtilGpuCore;
-    QwtPlotCurve* mpUtilGpuMem;
-    QwtPlotCurve* mpUtilFpga;
-    QwtPlotCurve* mpUtilMic;
+//    QwtPlotCurve* mpUtilCpu;
+//    QwtPlotCurve* mpUtilGpuCore;
+//    QwtPlotCurve* mpUtilGpuMem;
+//    QwtPlotCurve* mpUtilFpga;
+//    QwtPlotCurve* mpUtilMic;
 
-    QwtPlotCurve* mpMemoryCpu;
-    QwtPlotCurve* mpSwapCpu;
-    QwtPlotCurve* mpMemoryGpu;
-    QwtPlotCurve* mpMemoryMic;
+//    QwtPlotCurve* mpMemoryCpu;
+//    QwtPlotCurve* mpSwapCpu;
+//    QwtPlotCurve* mpMemoryGpu;
+//    QwtPlotCurve* mpMemoryMic;
 
 
     std::vector<double> mTimevalues;
@@ -64,6 +64,32 @@ protected:
     std::vector<double> mFpgavalues;
     std::vector<double> mMicvalues;
     std::vector<double> mSystemvalues;
+
+    std::vector<double> mTempCpu0values;
+    std::vector<double> mTempCpu1values;
+    std::vector<double> mTempGpuvalues;
+    std::vector<double> mTempFpgaIvalues;
+    std::vector<double> mTempFpgaMvalues;
+    std::vector<double> mTempMicDievalues;
+    std::vector<double> mTempSystemvalues;
+
+    std::vector<double> mClockCpu0values;
+    std::vector<double> mClockCpu1values;
+    std::vector<double> mClockGpuCorevalues;
+    std::vector<double> mClockGpuMemvalues;
+    std::vector<double> mClockMicCorevalues;
+    std::vector<double> mClockMicMemvalues;
+
+//    std::vector<double> mUtilCpuvalues;
+//    std::vector<double> mUtilGpuCorevalues;
+//    std::vector<double> mUtilGpuMemvalues;
+//    std::vector<double> mUtilFpgavalues;
+//    std::vector<double> mUtilMicvalues;
+
+//    std::vector<double> mMemoryCpuvalues;
+//    std::vector<double> mSwapCpuvalues;
+//    std::vector<double> mMemoryGpuvalues;
+//    std::vector<double> mMemoryMicvalues;
 
 };
 

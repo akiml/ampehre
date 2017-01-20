@@ -21,11 +21,26 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <iostream>
+#include <string>
 #include <signal.h>
 #include "CServer.hpp"
 
 
 int main(int argc, char **argv) {
+
+	if(argc == 2){
+	    std::string s = argv[1];
+	    if(s != "-d" && s != "--debug")
+	    {
+	        std::cout<<"-d (--debug)\t\tdebug information"<< std::endl;
+	        return 1;
+	    }
+	}else if (argc == 1){
+	    std::cout.setstate(std::ios_base::failbit);
+	}
+	else
+	    return 1;
+
 
 	std::cout << "initiating server..." << std::endl; 
 	CServer srv = CServer(2900, 5);

@@ -1,5 +1,5 @@
-#ifndef QMSMPOWERPLOT_H
-#define QMSMPOWERPLOT_H
+#ifndef QMSMTEMPERATUREPLOT_H
+#define QMSMTEMPERATUREPLOT_H
 
 #include "QMSMplot.h"
 #include<qwt_plot.h>
@@ -9,12 +9,11 @@
 
 #include "CProtocol.hpp"
 
-class QMSMPowerPlot :public QMSMplot
+class QMSMTemperaturePlot :public QMSMplot
 {
-
 public:
-    QMSMPowerPlot(QWidget *parent);
-    virtual ~QMSMPowerPlot();
+    QMSMTemperaturePlot(QWidget* parent);
+    virtual ~QMSMTemperaturePlot();
     virtual QWidget* getPlot();
 
 public slots:
@@ -23,7 +22,6 @@ public slots:
 
 private:
     virtual void initPlot(QWidget *parent);
-
 };
 
-#endif // QMSMPOWERPLOT_H
+#endif // QMSMTEMPERATUREPLOT_H
