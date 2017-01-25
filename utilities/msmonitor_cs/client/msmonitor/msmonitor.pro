@@ -23,7 +23,9 @@ SOURCES += src/main.cpp \
     	src/gui/QMSMpowerplot.cpp \
         src/gui/QMSMplot.cpp \
         src/gui/QMSMtemperatureplot.cpp \
-        src/gui/QMSMclockplot.cpp
+        src/gui/QMSMclockplot.cpp \
+        src/gui/QMSMmemoryplot.cpp \
+        src/gui/QMSMutilplot.cpp
 
 HEADERS  += include/gui/mainwindow.h \
     	include/gui/QMSMpowerplot.h \
@@ -34,7 +36,9 @@ HEADERS  += include/gui/mainwindow.h \
         include/CProtocol.hpp \
         include/utils.h \
         include/gui/QMSMtemperatureplot.h \
-        include/gui/QMSMclockplot.h
+        include/gui/QMSMclockplot.h \
+        include/gui/QMSMutilplot.h \
+        include/gui/QMSMmemoryplot.h
 
 LIBS += -L/usr/local/qwt-6.1.3/lib -lqwt
 

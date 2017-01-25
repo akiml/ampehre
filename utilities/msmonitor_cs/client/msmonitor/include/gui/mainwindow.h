@@ -9,6 +9,8 @@
 #include "QMSMpowerplot.h"
 #include "QMSMtemperatureplot.h"
 #include "QMSMclockplot.h"
+#include "QMSMmemoryplot.h"
+#include "QMSMutilplot.h"
 #include "CClient.hpp"
 
 namespace Ui {
@@ -28,6 +30,14 @@ private:
     QMSMPowerPlot* mpPowerplot;
     QMSMTemperaturePlot* mpTempplot;
     QMSMClockPlot* mpClockplot;
+    QMSMUtilPlot* mpUtilplot;
+    QMSMMemoryPlot* mpMemoryplot;
+
+    QMdiSubWindow* subwPower;
+    QMdiSubWindow* subwTemp;
+    QMdiSubWindow* subwClock;
+    QMdiSubWindow* subwUtil;
+    QMdiSubWindow* subwMemory;
 
     CClient mClient;
     QTimer* mpTimer;
@@ -41,11 +51,21 @@ public slots:
     void stop();
     void reset();
     void requestData();
+
     void setGuiInterval(int val);
     void setInterval(int val);
+
     void showPower();
     void showTemp();
     void showClock();
+    void showUtil();
+    void showMemory();
+
+    void updatePower();
+    void updateTemp();
+    void updateClock();
+    void updateUtil();
+    void updateMemory();
 
 };
 

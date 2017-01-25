@@ -3,20 +3,12 @@
 QMSMClockPlot::QMSMClockPlot(QWidget *parent):
     QMSMplot(parent)
 {
-    initPlot(parent);
+    //nothing to be done
 }
 
 
 QMSMClockPlot::~QMSMClockPlot()
 {
-    delete mpPlot;
-
-    delete mpClockCpu0;
-    delete mpClockCpu1;
-    delete mpClockGpuCore;
-    delete mpClockGpuMem;
-    delete mpClockMicCore;
-    delete mpClockMicMem;
 }
 
 QWidget* QMSMClockPlot::getPlot()
@@ -24,31 +16,34 @@ QWidget* QMSMClockPlot::getPlot()
     return QMSMplot::getPlot();
 }
 
-void QMSMClockPlot::initPlot(QWidget* parent)
+
+void QMSMClockPlot::initPlot(QWidget *parent)
 {
-    mpPlot          = new QwtPlot(parent);
-    mpClockCpu0     = new QwtPlotCurve("CPU0");
-    mpClockCpu1     = new QwtPlotCurve("CPU1");
-    mpClockGpuCore  = new QwtPlotCurve("GPU Core");
-    mpClockGpuMem   = new QwtPlotCurve("GPU Mem");
-    mpClockMicCore  = new QwtPlotCurve("MIC Core");
-    mpClockMicMem   = new QwtPlotCurve("MIC Mem");
+    mpPlot      = new QwtPlot(parent);
+    mpCpu0      = new QwtPlotCurve("CPU0");
+    mpCpu1      = new QwtPlotCurve("CPU1");
+    mpGpu0      = new QwtPlotCurve("GPU Core");
+    mpGpu1      = new QwtPlotCurve("GPU Mem");
+    mpMic0      = new QwtPlotCurve("MIC Core");
+    mpMic1      = new QwtPlotCurve("MIC Mem");
 
     mpPlot->setTitle("Clock");
+    mpPlot->setAxisTitle( QwtPlot::xBottom, "Time [s]" );
+    mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
-    mpClockCpu0->setPen(* new QPen(Qt::blue));
-    mpClockCpu1->setPen(* new QPen(Qt::red));
-    mpClockGpuCore->setPen(* new QPen(Qt::green));
-    mpClockGpuMem->setPen(* new QPen(Qt::gray));
-    mpClockMicCore->setPen(* new QPen(Qt::yellow));
-    mpClockMicMem->setPen(* new QPen(Qt::black));
+    mpCpu0->setPen(*mpPaintCpu0);
+    mpCpu1->setPen(*mpPaintCpu1);
+    mpGpu0->setPen(*mpPaintGpu0);
+    mpGpu1->setPen(*mpPaintGpu1);
+    mpMic0->setPen(*mpPaintMic0);
+    mpMic1->setPen(*mpPaintMic1);
 
-    mpClockCpu0->attach(mpPlot);
-    mpClockCpu1->attach(mpPlot);
-    mpClockGpuCore->attach(mpPlot);
-    mpClockGpuMem->attach(mpPlot);
-    mpClockMicCore->attach(mpPlot);
-    mpClockMicMem->attach(mpPlot);
+    mpCpu0->attach(mpPlot);
+    mpCpu1->attach(mpPlot);
+    mpGpu0->attach(mpPlot);
+    mpGpu1->attach(mpPlot);
+    mpMic0->attach(mpPlot);
+    mpMic1->attach(mpPlot);
 
 }
 
@@ -57,12 +52,12 @@ void QMSMClockPlot::redraw()
 {
     int size = mTimevalues.size();
 
-    mpClockCpu0->setSamples(mTimevalues.data(), mClockCpu0values.data(), size);
-    mpClockCpu1->setSamples(mTimevalues.data(), mClockCpu1values.data(), size);
-    mpClockGpuCore->setSamples(mTimevalues.data(), mClockGpuCorevalues.data(), size);
-    mpClockGpuMem->setSamples(mTimevalues.data(), mClockGpuMemvalues.data(), size);
-    mpClockMicCore->setSamples(mTimevalues.data(), mClockMicCorevalues.data(), size);
-    mpClockMicMem->setSamples(mTimevalues.data(), mClockMicMemvalues.data(), size);
+    mpCpu0->setSamples(mTimevalues.data(), mCpu0values.data(), size);
+    mpCpu1->setSamples(mTimevalues.data(), mCpu1values.data(), size);
+    mpGpu0->setSamples(mTimevalues.data(), mGpu0values.data(), size);
+    mpGpu1->setSamples(mTimevalues.data(), mGpu1values.data(), size);
+    mpMic0->setSamples(mTimevalues.data(), mMic0values.data(), size);
+    mpMic1->setSamples(mTimevalues.data(), mMic1values.data(), size);
 
     mpPlot->replot();
 }
@@ -70,10 +65,10 @@ void QMSMClockPlot::redraw()
 void QMSMClockPlot::updateValues(std::vector<double> &values)
 {
     mTimevalues.push_back(values[X]);
-    mClockCpu0values.push_back(values[YClockCpu0]);
-    mClockCpu1values.push_back(values[YClockCpu1]);
-    mClockGpuCorevalues.push_back(values[YClockGpuCore]);
-    mClockGpuMemvalues.push_back(values[YClockGpuMem]);
-    mClockMicCorevalues.push_back(values[YClockMicCore]);
-    mClockMicMemvalues.push_back(values[YClockMicMem]);
+    mCpu0values.push_back(values[YClockCpu0]);
+    mCpu1values.push_back(values[YClockCpu1]);
+    mGpu0values.push_back(values[YClockGpuCore]);
+    mGpu1values.push_back(values[YClockGpuMem]);
+    mMic0values.push_back(values[YClockMicCore]);
+    mMic1values.push_back(values[YClockMicMem]);
 }

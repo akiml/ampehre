@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'QMSMplot.h'
 **
-** Created: Fri Jan 20 10:12:46 2017
+** Created: Wed Jan 25 17:20:50 2017
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_QMSMplot[] = {
        4,       // revision
        0,       // classname
        0,    0, // classinfo
-       2,   14, // methods
+       3,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -33,13 +33,14 @@ static const uint qt_meta_data_QMSMplot[] = {
  // slots: signature, parameters, type, tag, flags
       17,   10,    9,    9, 0x0a,
       52,    9,    9,    9, 0x0a,
+      68,   61,    9,    9, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_QMSMplot[] = {
     "QMSMplot\0\0values\0updateValues(std::vector<double>&)\0"
-    "redraw()\0"
+    "redraw()\0parent\0initPlot(QWidget*)\0"
 };
 
 const QMetaObject QMSMplot::staticMetaObject = {
@@ -73,9 +74,10 @@ int QMSMplot::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         switch (_id) {
         case 0: updateValues((*reinterpret_cast< std::vector<double>(*)>(_a[1]))); break;
         case 1: redraw(); break;
+        case 2: initPlot((*reinterpret_cast< QWidget*(*)>(_a[1]))); break;
         default: ;
         }
-        _id -= 2;
+        _id -= 3;
     }
     return _id;
 }

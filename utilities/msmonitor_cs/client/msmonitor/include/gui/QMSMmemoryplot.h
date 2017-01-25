@@ -1,5 +1,5 @@
-#ifndef QMSMPOWERPLOT_H
-#define QMSMPOWERPLOT_H
+#ifndef QMSMMemoryPlot_H
+#define QMSMMemoryPlot_H
 
 #include "QMSMplot.h"
 #include<qwt_plot.h>
@@ -9,19 +9,17 @@
 
 #include "CProtocol.hpp"
 
-class QMSMPowerPlot :public QMSMplot
+class QMSMMemoryPlot : public QMSMplot
 {
-
 public:
-    QMSMPowerPlot(QWidget *parent);
-    virtual ~QMSMPowerPlot();
+    QMSMMemoryPlot(QWidget *parent);
+    virtual ~QMSMMemoryPlot();
     virtual QWidget* getPlot();
 
 public slots:
     virtual void updateValues(std::vector<double>& values);
     virtual void redraw();
     virtual void initPlot(QWidget* parent);
-
 };
 
-#endif // QMSMPOWERPLOT_H
+#endif // QMSMMemoryPlot_H

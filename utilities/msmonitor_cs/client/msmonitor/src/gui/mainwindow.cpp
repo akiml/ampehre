@@ -4,9 +4,16 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    mpPowerplot(new QMSMPowerPlot(parent)),
-    mpTempplot(new QMSMTemperaturePlot(parent)),
-    mpClockplot(new QMSMClockPlot(parent)),
+    mpPowerplot (new QMSMPowerPlot(parent)),
+    mpTempplot (new QMSMTemperaturePlot(parent)),
+    mpClockplot (new QMSMClockPlot(parent)),
+    mpUtilplot(new QMSMUtilPlot(parent)),
+    mpMemoryplot(new QMSMMemoryPlot(parent)),
+    subwPower(new QMdiSubWindow()),
+    subwTemp(new QMdiSubWindow()),
+    subwClock(new QMdiSubWindow()),
+    subwUtil(new QMdiSubWindow()),
+    subwMemory(new QMdiSubWindow()),
     mClient(CClient()),
     mpTimer(new QTimer()),
     mpGuiTimer(new QTimer()),
@@ -17,6 +24,37 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pushButton_stop->setDisabled(true);
     ui->pushButton_reset->setDisabled(true);
     connectActions();
+
+    mpPowerplot->initPlot(mpPowerplot->getParent());
+    subwPower->setWidget(mpPowerplot->getPlot());
+    ui->mdiArea->addSubWindow(subwPower);
+    subwPower->resize(600, 400);
+    subwPower->hide();
+
+    mpClockplot->initPlot(mpClockplot->getParent());
+    subwClock->setWidget(mpClockplot->getPlot());
+    ui->mdiArea->addSubWindow(subwClock);
+    subwClock->resize(600, 400);
+    subwClock->hide();
+
+    mpTempplot->initPlot(mpTempplot->getParent());
+    subwTemp->setWidget(mpTempplot->getPlot());
+    ui->mdiArea->addSubWindow(subwTemp);
+    subwTemp->resize(600, 400);
+    subwTemp->hide();
+
+    mpMemoryplot->initPlot(mpMemoryplot->getParent());
+    subwMemory->setWidget(mpMemoryplot->getPlot());
+    ui->mdiArea->addSubWindow(subwMemory);
+    subwMemory->resize(600, 400);
+    subwMemory->hide();
+
+    mpUtilplot->initPlot(mpUtilplot->getParent());
+    subwUtil->setWidget(mpUtilplot->getPlot());
+    ui->mdiArea->addSubWindow(subwUtil);
+    subwUtil->resize(600, 400);
+    subwUtil->hide();
+
 }
 
 MainWindow::~MainWindow()
@@ -25,6 +63,15 @@ MainWindow::~MainWindow()
     delete mpPowerplot;
     delete mpTempplot;
     delete mpClockplot;
+    delete mpUtilplot;
+    delete mpMemoryplot;
+    delete subwClock;
+    delete subwTemp;
+    delete subwUtil;
+    delete subwMemory;
+    delete subwPower;
+
+    delete mpGuiTimer;
     delete mpTimer;
 }
 
@@ -32,16 +79,17 @@ void MainWindow::connectActions()
 {
     connect(ui->pushButton_start, SIGNAL(clicked()), this, SLOT(start()));
     connect(ui->pushButton_stop, SIGNAL(clicked()), this, SLOT(stop()));
-    connect(mpTimer, SIGNAL(timeout()), this, SLOT(requestData()));
-    connect(mpGuiTimer, SIGNAL(timeout()), mpPowerplot, SLOT(redraw()));
-    connect(mpGuiTimer, SIGNAL(timeout()), mpTempplot, SLOT(redraw()));
-    connect(mpGuiTimer, SIGNAL(timeout()), mpClockplot, SLOT(redraw()));
-    connect(ui->horizontalSlider_guiRate, SIGNAL(valueChanged(int)), this, SLOT(setGuiInterval(int)));
-    connect(ui->horizontalSlider_dataPlot, SIGNAL(valueChanged(int)), this, SLOT(setInterval(int)));
+
     connect(ui->action_Power, SIGNAL(triggered()),this, SLOT(showPower()));
     connect(ui->action_Temperature, SIGNAL(triggered()),this, SLOT(showTemp()));
     connect(ui->action_Clock, SIGNAL(triggered()),this, SLOT(showClock()));
+    connect(ui->action_Utilization, SIGNAL(triggered()), this, SLOT(showUtil()));
+    connect(ui->action_Memory, SIGNAL(triggered()), this, SLOT(showMemory()));
 
+    connect(mpTimer, SIGNAL(timeout()), this, SLOT(requestData()));
+
+    connect(ui->horizontalSlider_guiRate, SIGNAL(valueChanged(int)), this, SLOT(setGuiInterval(int)));
+    connect(ui->horizontalSlider_dataPlot, SIGNAL(valueChanged(int)), this, SLOT(setInterval(int)));
 
 }
 
@@ -71,10 +119,8 @@ void MainWindow::stop()
 void MainWindow::requestData()
 {
     mClient.requestData();
-    mpPowerplot->updateValues(mClient.mValues);
-    mpTempplot->updateValues(mClient.mValues);
-    mpClockplot->updateValues(mClient.mValues);
 }
+
 
 void MainWindow::reset(){}
 
@@ -103,32 +149,68 @@ void MainWindow::setInterval(int val)
 
 void MainWindow::showPower()
 {
-    QMdiSubWindow* subw = new QMdiSubWindow;
-    subw->setWidget(mpPowerplot->getPlot());
-    subw->setAttribute(Qt::WA_DeleteOnClose);
-    ui->mdiArea->addSubWindow(subw);
-    subw->resize(600, 400);
-    subw->show();
+    connect(mpGuiTimer, SIGNAL(timeout()), mpPowerplot, SLOT(redraw()));
+    connect(mpTimer, SIGNAL(timeout()), this, SLOT(updatePower()));
+
+    mpPowerplot->getPlot()->show();
+
 }
 
 void MainWindow::showTemp()
 {
-    QMdiSubWindow* subw = new QMdiSubWindow;
-    subw->setWidget(mpTempplot->getPlot());
-    subw->setAttribute(Qt::WA_DeleteOnClose);
-    ui->mdiArea->addSubWindow(subw);
-    subw->resize(600, 400);
-    subw->show();
+    connect(mpGuiTimer, SIGNAL(timeout()), mpTempplot, SLOT(redraw()));
+    connect(mpTimer, SIGNAL(timeout()), this, SLOT(updateTemp()));
+
+    mpTempplot->getPlot()->show();
+
 }
 
 void MainWindow::showClock()
 {
-    QMdiSubWindow* subw = new QMdiSubWindow;
-    subw->setWidget(mpClockplot->getPlot());
-    subw->setAttribute(Qt::WA_DeleteOnClose);
-    ui->mdiArea->addSubWindow(subw);
-    subw->resize(600, 400);
-    subw->show();
+    connect(mpGuiTimer, SIGNAL(timeout()), mpClockplot, SLOT(redraw()));
+    connect(mpTimer, SIGNAL(timeout()), this, SLOT(updateClock()));
+
+    mpClockplot->getPlot()->show();
+
 }
 
+void MainWindow::showUtil()
+{
+    connect(mpGuiTimer, SIGNAL(timeout()), mpUtilplot, SLOT(redraw()));
+    connect(mpTimer, SIGNAL(timeout()), this, SLOT(updateUtil()));
 
+    mpUtilplot->getPlot()->show();
+}
+
+void MainWindow::showMemory()
+{
+    connect(mpGuiTimer, SIGNAL(timeout()), mpMemoryplot, SLOT(redraw()));
+    connect(mpTimer, SIGNAL(timeout()), this, SLOT(updateMemory()));
+
+    mpMemoryplot->getPlot()->show();
+}
+
+void MainWindow::updatePower()
+{
+    mpPowerplot->updateValues(mClient.mValues);
+}
+
+void MainWindow::updateClock()
+{
+    mpClockplot->updateValues(mClient.mValues);
+}
+
+void MainWindow::updateTemp()
+{
+    mpTempplot->updateValues(mClient.mValues);
+}
+
+void MainWindow::updateMemory()
+{
+    mpMemoryplot->updateValues(mClient.mValues);
+}
+
+void MainWindow::updateUtil()
+{
+    mpUtilplot->updateValues(mClient.mValues);
+}

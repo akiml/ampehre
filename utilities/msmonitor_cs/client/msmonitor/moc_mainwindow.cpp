@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'mainwindow.h'
 **
-** Created: Fri Jan 20 10:23:01 2017
+** Created: Wed Jan 25 17:20:49 2017
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_MainWindow[] = {
        4,       // revision
        0,       // classname
        0,    0, // classinfo
-       9,   14, // methods
+      16,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -40,6 +40,13 @@ static const uint qt_meta_data_MainWindow[] = {
       90,   11,   11,   11, 0x0a,
      102,   11,   11,   11, 0x0a,
      113,   11,   11,   11, 0x0a,
+     125,   11,   11,   11, 0x0a,
+     136,   11,   11,   11, 0x0a,
+     149,   11,   11,   11, 0x0a,
+     163,   11,   11,   11, 0x0a,
+     176,   11,   11,   11, 0x0a,
+     190,   11,   11,   11, 0x0a,
+     203,   11,   11,   11, 0x0a,
 
        0        // eod
 };
@@ -48,7 +55,9 @@ static const char qt_meta_stringdata_MainWindow[] = {
     "MainWindow\0\0start()\0stop()\0reset()\0"
     "requestData()\0val\0setGuiInterval(int)\0"
     "setInterval(int)\0showPower()\0showTemp()\0"
-    "showClock()\0"
+    "showClock()\0showUtil()\0showMemory()\0"
+    "updatePower()\0updateTemp()\0updateClock()\0"
+    "updateUtil()\0updateMemory()\0"
 };
 
 const QMetaObject MainWindow::staticMetaObject = {
@@ -89,9 +98,16 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 6: showPower(); break;
         case 7: showTemp(); break;
         case 8: showClock(); break;
+        case 9: showUtil(); break;
+        case 10: showMemory(); break;
+        case 11: updatePower(); break;
+        case 12: updateTemp(); break;
+        case 13: updateClock(); break;
+        case 14: updateUtil(); break;
+        case 15: updateMemory(); break;
         default: ;
         }
-        _id -= 9;
+        _id -= 16;
     }
     return _id;
 }
