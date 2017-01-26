@@ -9,11 +9,13 @@ MainWindow::MainWindow(QWidget *parent) :
     mpClockplot (new QMSMClockPlot(parent)),
     mpUtilplot(new QMSMUtilPlot(parent)),
     mpMemoryplot(new QMSMMemoryPlot(parent)),
+    mpHeatmap(new QMSMHeatmap(parent)),
     subwPower(new QMdiSubWindow()),
     subwTemp(new QMdiSubWindow()),
     subwClock(new QMdiSubWindow()),
     subwUtil(new QMdiSubWindow()),
     subwMemory(new QMdiSubWindow()),
+    subwHeatmap( new QMdiSubWindow()),
     mClient(CClient()),
     mpTimer(new QTimer()),
     mpGuiTimer(new QTimer()),
@@ -55,6 +57,9 @@ MainWindow::MainWindow(QWidget *parent) :
     subwUtil->resize(600, 400);
     subwUtil->hide();
 
+    subwHeatmap->setWidget(mpHeatmap);
+    ui->mdiArea->addSubWindow(subwHeatmap);
+    subwHeatmap->resize(600, 400);
 }
 
 MainWindow::~MainWindow()

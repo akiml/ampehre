@@ -43,8 +43,6 @@ void QMSMPowerPlot::initPlot(QWidget* parent)
     mpMic0->attach(mpPlot);
     mpSystem->attach(mpPlot);
 
-//    mpPlot->setAxisScale( QwtPlot::xBottom, 0, HISTORY );
-
 }
 
 

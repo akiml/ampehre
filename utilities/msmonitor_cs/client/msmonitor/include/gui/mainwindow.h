@@ -11,6 +11,7 @@
 #include "QMSMclockplot.h"
 #include "QMSMmemoryplot.h"
 #include "QMSMutilplot.h"
+#include "QMSMheatmap.h"
 #include "CClient.hpp"
 
 namespace Ui {
@@ -32,12 +33,14 @@ private:
     QMSMClockPlot* mpClockplot;
     QMSMUtilPlot* mpUtilplot;
     QMSMMemoryPlot* mpMemoryplot;
+    QMSMHeatmap* mpHeatmap;
 
     QMdiSubWindow* subwPower;
     QMdiSubWindow* subwTemp;
     QMdiSubWindow* subwClock;
     QMdiSubWindow* subwUtil;
     QMdiSubWindow* subwMemory;
+    QMdiSubWindow* subwHeatmap;
 
     CClient mClient;
     QTimer* mpTimer;
