@@ -12,6 +12,27 @@
 #include <qwt_plot_panner.h>
 #include <qwt_plot_layout.h>
 #include <qwt_plot_renderer.h>
+#include <qwt_matrix_raster_data.h>
+#include <qwt_plot_rescaler.h>
+#include <vector>
+#include <QVector>
+#include "CProtocol.hpp"
+
+enum YValue
+{
+    UtilCpu,
+    UtilGpuCore,
+    UtilGpuMem,
+    UtilFpga,
+    UtilMic,
+    TempCpu0,
+    TempCpu1,
+    TempGpu,
+    TempFpgaCompute,
+    TempFpgaInterface,
+    TempMicDie,
+    TempMainBoard
+};
 
 class QMSMHeatmap: public QwtPlot
 {
@@ -25,20 +46,24 @@ public:
         HueMap,
         AlphaMap
     };
-
-    QMSMHeatmap( QWidget * = NULL );
+    QMSMHeatmap(QWidget * , QString caption, int zStart, int zEnd);
 
 public Q_SLOTS:
-    void showContour( bool on );
-    void showSpectrogram( bool on );
     void setColorMap( int );
     void setAlpha( int );
+    void updateValues(std::vector<double>& values, int val);
+    void redraw();
 
 private:
     QwtPlotSpectrogram* mpSpectrogram;
+    QwtMatrixRasterData* mpMatrix;
 
     int mMapType;
     int mAlpha;
+    int mIntervalEnd;
+    int mIntervalStart;
+    QVector<double> mTime;
+    QVector<double> mY;
 };
 
 

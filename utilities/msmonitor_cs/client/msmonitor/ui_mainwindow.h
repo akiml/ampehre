@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Thu Jan 26 15:49:19 2017
+** Created: Sun Jan 29 18:13:46 2017
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -43,7 +43,7 @@ public:
     QAction *action_Temperature_2;
     QAction *action_About;
     QWidget *centralWidget;
-    QWidget *widget;
+    QWidget *settingsWidget;
     QTabWidget *tabWidget;
     QWidget *tab;
     QWidget *tab_3;
@@ -76,7 +76,8 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
-        MainWindow->resize(1057, 636);
+        MainWindow->resize(1050, 650);
+        MainWindow->setMinimumSize(QSize(1050, 650));
         action_Quit = new QAction(MainWindow);
         action_Quit->setObjectName(QString::fromUtf8("action_Quit"));
         action_Systemoverview = new QAction(MainWindow);
@@ -99,10 +100,11 @@ public:
         action_About->setObjectName(QString::fromUtf8("action_About"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
-        widget = new QWidget(centralWidget);
-        widget->setObjectName(QString::fromUtf8("widget"));
-        widget->setGeometry(QRect(0, 0, 331, 591));
-        tabWidget = new QTabWidget(widget);
+        settingsWidget = new QWidget(centralWidget);
+        settingsWidget->setObjectName(QString::fromUtf8("settingsWidget"));
+        settingsWidget->setGeometry(QRect(0, 0, 331, 581));
+        settingsWidget->setMinimumSize(QSize(320, 560));
+        tabWidget = new QTabWidget(settingsWidget);
         tabWidget->setObjectName(QString::fromUtf8("tabWidget"));
         tabWidget->setGeometry(QRect(10, 10, 301, 301));
         tab = new QWidget();
@@ -158,25 +160,28 @@ public:
         label_guiRate->setObjectName(QString::fromUtf8("label_guiRate"));
         label_guiRate->setGeometry(QRect(240, 20, 61, 21));
         tabWidget->addTab(tab_2, QString());
-        pushButton_save = new QPushButton(widget);
+        pushButton_save = new QPushButton(settingsWidget);
         pushButton_save->setObjectName(QString::fromUtf8("pushButton_save"));
         pushButton_save->setGeometry(QRect(20, 520, 95, 31));
-        label_5 = new QLabel(widget);
+        label_5 = new QLabel(settingsWidget);
         label_5->setObjectName(QString::fromUtf8("label_5"));
         label_5->setGeometry(QRect(130, 520, 131, 21));
-        pushButton_start = new QPushButton(widget);
+        pushButton_start = new QPushButton(settingsWidget);
         pushButton_start->setObjectName(QString::fromUtf8("pushButton_start"));
         pushButton_start->setGeometry(QRect(20, 370, 95, 31));
-        pushButton_stop = new QPushButton(widget);
+        pushButton_stop = new QPushButton(settingsWidget);
         pushButton_stop->setObjectName(QString::fromUtf8("pushButton_stop"));
         pushButton_stop->setGeometry(QRect(200, 370, 95, 31));
-        pushButton_reset = new QPushButton(widget);
+        pushButton_reset = new QPushButton(settingsWidget);
         pushButton_reset->setObjectName(QString::fromUtf8("pushButton_reset"));
         pushButton_reset->setGeometry(QRect(200, 420, 95, 31));
         mdiArea = new QMdiArea(centralWidget);
         mdiArea->setObjectName(QString::fromUtf8("mdiArea"));
-        mdiArea->setGeometry(QRect(330, 0, 721, 621));
+        mdiArea->setGeometry(QRect(330, 0, 1973, 700));
         MainWindow->setCentralWidget(centralWidget);
+        settingsWidget->raise();
+        mdiArea->raise();
+        tabWidget->raise();
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
         MainWindow->addToolBar(Qt::TopToolBarArea, mainToolBar);
@@ -185,7 +190,7 @@ public:
         MainWindow->setStatusBar(statusBar);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1057, 27));
+        menuBar->setGeometry(QRect(0, 0, 1050, 27));
         menu_File = new QMenu(menuBar);
         menu_File->setObjectName(QString::fromUtf8("menu_File"));
         menu_View = new QMenu(menuBar);

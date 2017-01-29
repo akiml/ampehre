@@ -9,13 +9,17 @@ MainWindow::MainWindow(QWidget *parent) :
     mpClockplot (new QMSMClockPlot(parent)),
     mpUtilplot(new QMSMUtilPlot(parent)),
     mpMemoryplot(new QMSMMemoryPlot(parent)),
-    mpHeatmap(new QMSMHeatmap(parent)),
+    mpHeatmapCpu(new QMSMHeatmap(parent, "CPU [%]", 0, 100)),
+    mpHeatmapGpuCore(new QMSMHeatmap(parent, "GPU \nCore [%]", 0 ,100)),
+    mpHeatmapGpuMemory(new QMSMHeatmap(parent, "GPU\nMemory\n[%]", 0 ,100)),
+    mpHeatmapFpga(new QMSMHeatmap(parent, "Compute\nFPGA [%]", 0 ,100)),
+    mpHeatmapMic(new QMSMHeatmap(parent, "MIC [%]", 0 ,100)),
     subwPower(new QMdiSubWindow()),
     subwTemp(new QMdiSubWindow()),
     subwClock(new QMdiSubWindow()),
     subwUtil(new QMdiSubWindow()),
     subwMemory(new QMdiSubWindow()),
-    subwHeatmap( new QMdiSubWindow()),
+    subwHeatmapUtil( new QMdiSubWindow()),
     mClient(CClient()),
     mpTimer(new QTimer()),
     mpGuiTimer(new QTimer()),
@@ -57,9 +61,19 @@ MainWindow::MainWindow(QWidget *parent) :
     subwUtil->resize(600, 400);
     subwUtil->hide();
 
-    subwHeatmap->setWidget(mpHeatmap);
-    ui->mdiArea->addSubWindow(subwHeatmap);
-    subwHeatmap->resize(600, 400);
+    QVBoxLayout* layout = new QVBoxLayout;
+    layout->addWidget(mpHeatmapCpu);
+    layout->addWidget(mpHeatmapGpuCore);
+    layout->addWidget(mpHeatmapGpuMemory);
+    layout->addWidget(mpHeatmapFpga);
+    layout->addWidget(mpHeatmapMic);
+
+    delete subwHeatmapUtil->layout();
+    subwHeatmapUtil->setLayout(layout);
+    ui->mdiArea->addSubWindow(subwHeatmapUtil);
+    subwHeatmapUtil->resize(600, 600);
+    subwHeatmapUtil->setFixedHeight(600);
+    subwHeatmapUtil->hide();
 }
 
 MainWindow::~MainWindow()
@@ -70,11 +84,18 @@ MainWindow::~MainWindow()
     delete mpClockplot;
     delete mpUtilplot;
     delete mpMemoryplot;
+    delete mpHeatmapCpu;
+    delete mpHeatmapFpga;
+    delete mpHeatmapGpuCore;
+    delete mpHeatmapGpuMemory;
+    delete mpHeatmapMic;
+
     delete subwClock;
     delete subwTemp;
     delete subwUtil;
     delete subwMemory;
     delete subwPower;
+    delete subwHeatmapUtil;
 
     delete mpGuiTimer;
     delete mpTimer;
@@ -90,6 +111,7 @@ void MainWindow::connectActions()
     connect(ui->action_Clock, SIGNAL(triggered()),this, SLOT(showClock()));
     connect(ui->action_Utilization, SIGNAL(triggered()), this, SLOT(showUtil()));
     connect(ui->action_Memory, SIGNAL(triggered()), this, SLOT(showMemory()));
+    connect(ui->action_Utilization_2, SIGNAL(triggered()), this, SLOT(showHeatmapUtil()));
 
     connect(mpTimer, SIGNAL(timeout()), this, SLOT(requestData()));
 
@@ -195,6 +217,20 @@ void MainWindow::showMemory()
     mpMemoryplot->getPlot()->show();
 }
 
+void MainWindow::showHeatmapUtil()
+{
+    connect(mpGuiTimer, SIGNAL(timeout()), mpHeatmapCpu, SLOT(redraw()));
+    connect(mpGuiTimer, SIGNAL(timeout()), mpHeatmapGpuCore, SLOT(redraw()));
+    connect(mpGuiTimer, SIGNAL(timeout()), mpHeatmapGpuMemory, SLOT(redraw()));
+    connect(mpGuiTimer, SIGNAL(timeout()), mpHeatmapFpga, SLOT(redraw()));
+    connect(mpGuiTimer, SIGNAL(timeout()), mpHeatmapMic, SLOT(redraw()));
+
+    connect(mpTimer, SIGNAL(timeout()), this, SLOT(updateHeatmapUtil()));
+
+    subwHeatmapUtil->show();
+
+}
+
 void MainWindow::updatePower()
 {
     mpPowerplot->updateValues(mClient.mValues);
@@ -218,4 +254,13 @@ void MainWindow::updateMemory()
 void MainWindow::updateUtil()
 {
     mpUtilplot->updateValues(mClient.mValues);
+}
+
+void MainWindow::updateHeatmapUtil()
+{
+    mpHeatmapCpu->updateValues(mClient.mValues, UtilCpu);
+    mpHeatmapGpuCore->updateValues(mClient.mValues, UtilGpuCore);
+    mpHeatmapGpuMemory->updateValues(mClient.mValues, UtilGpuMem);
+    mpHeatmapFpga->updateValues(mClient.mValues, UtilFpga);
+    mpHeatmapMic->updateValues(mClient.mValues, UtilMic);
 }

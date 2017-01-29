@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'QMSMheatmap.h'
 **
-** Created: Thu Jan 26 16:38:09 2017
+** Created: Sun Jan 29 18:13:58 2017
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -31,18 +31,19 @@ static const uint qt_meta_data_QMSMHeatmap[] = {
        0,       // signalCount
 
  // slots: signature, parameters, type, tag, flags
-      16,   13,   12,   12, 0x0a,
-      34,   13,   12,   12, 0x0a,
-      56,   12,   12,   12, 0x0a,
-      73,   12,   12,   12, 0x0a,
+      13,   12,   12,   12, 0x0a,
+      30,   12,   12,   12, 0x0a,
+      55,   44,   12,   12, 0x0a,
+      94,   12,   12,   12, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_QMSMHeatmap[] = {
-    "QMSMHeatmap\0\0on\0showContour(bool)\0"
-    "showSpectrogram(bool)\0setColorMap(int)\0"
-    "setAlpha(int)\0"
+    "QMSMHeatmap\0\0setColorMap(int)\0"
+    "setAlpha(int)\0values,val\0"
+    "updateValues(std::vector<double>&,int)\0"
+    "redraw()\0"
 };
 
 const QMetaObject QMSMHeatmap::staticMetaObject = {
@@ -74,10 +75,10 @@ int QMSMHeatmap::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: showContour((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 1: showSpectrogram((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 2: setColorMap((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 3: setAlpha((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 0: setColorMap((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 1: setAlpha((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 2: updateValues((*reinterpret_cast< std::vector<double>(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
+        case 3: redraw(); break;
         default: ;
         }
         _id -= 4;

@@ -1,36 +1,15 @@
 #include "gui/QMSMheatmap.h"
 
 
-class SpectrogramData: public QwtRasterData
-{
-public:
-    SpectrogramData()
-    {
-        setInterval( Qt::XAxis, QwtInterval( -1, 1 ) );
-        setInterval( Qt::YAxis, QwtInterval( -1, 1 ) );
-        setInterval( Qt::ZAxis, QwtInterval( 0.0, 100.0 ) );
-    }
-
-    virtual double value( double x, double y ) const
-    {
-        const double c = 0.842;
-
-        const double v1 = x * x + ( y - c ) * ( y + c );
-        const double v2 = x * ( y + c ) + x * ( y + c );
-
-        return 1.0 / ( v1 * v1 + v2 * v2 );
-    }
-};
-
 class LinearColorMapRGB: public QwtLinearColorMap
 {
 public:
     LinearColorMapRGB():
         QwtLinearColorMap( Qt::darkCyan, Qt::red, QwtColorMap::RGB )
     {
-        addColorStop( 0.1, Qt::cyan );
-        addColorStop( 0.6, Qt::green );
-        addColorStop( 0.95, Qt::yellow );
+        addColorStop( 0.2, Qt::cyan );
+        addColorStop( 0.5, Qt::green );
+        addColorStop( 0.85, Qt::yellow );
     }
 };
 
@@ -40,9 +19,9 @@ public:
     LinearColorMapIndexed():
         QwtLinearColorMap( Qt::darkCyan, Qt::red, QwtColorMap::Indexed )
     {
-        addColorStop( 0.1, Qt::cyan );
-        addColorStop( 0.6, Qt::green );
-        addColorStop( 0.95, Qt::yellow );
+        addColorStop( 0.2, Qt::cyan );
+        addColorStop( 0.5, Qt::green );
+        addColorStop( 0.85, Qt::yellow );
     }
 };
 
@@ -116,16 +95,26 @@ class AlphaColorMap: public QwtAlphaColorMap
 public:
     AlphaColorMap()
     {
-        //setColor( QColor("DarkSalmon") );
         setColor( QColor("SteelBlue") );
     }
 };
 
-QMSMHeatmap::QMSMHeatmap( QWidget *parent ):
+QMSMHeatmap::QMSMHeatmap( QWidget *parent, QString caption, int zStart, int zEnd):
     QwtPlot( parent ),
-    mAlpha(255)
+    mpSpectrogram(new QwtPlotSpectrogram()),
+    mpMatrix (new QwtMatrixRasterData()),
+    mAlpha(255),
+    mIntervalEnd(60),
+    mIntervalStart(0)
 {
-    mpSpectrogram = new QwtPlotSpectrogram();
+    mY.push_back(0);
+    mpMatrix->setValueMatrix(mY, mY.size());
+    mpMatrix->setInterval( Qt::XAxis, QwtInterval( mIntervalStart, mIntervalEnd ) );
+    mpMatrix->setInterval( Qt::YAxis, QwtInterval( 0, 1 ) );
+    mpMatrix->setInterval( Qt::ZAxis, QwtInterval( zStart, zEnd ) );
+
+
+    mpSpectrogram->setData( mpMatrix );
     mpSpectrogram->setRenderThreadCount( 0 ); // use system specific thread count
     mpSpectrogram->setCachePolicy( QwtPlotRasterItem::PaintCache );
 
@@ -133,37 +122,80 @@ QMSMHeatmap::QMSMHeatmap( QWidget *parent ):
     for ( double level = 0.5; level < 10.0; level += 1.0 )
         contourLevels += level;
     mpSpectrogram->setContourLevels( contourLevels );
-
-    mpSpectrogram->setData( new SpectrogramData() );
     mpSpectrogram->attach( this );
 
     const QwtInterval zInterval = mpSpectrogram->data()->interval( Qt::ZAxis );
+    setAxisScale( QwtPlot::yRight, zInterval.minValue(), zInterval.maxValue() );
 
     // A color bar on the right axis
     QwtScaleWidget *rightAxis = axisWidget( QwtPlot::yRight );
-    rightAxis->setTitle( "Intensity" );
+    QwtText txt (caption);
+    rightAxis->setTitle( txt );
     rightAxis->setColorBarEnabled( true );
 
-    setAxisScale( QwtPlot::yRight, zInterval.minValue(), zInterval.maxValue() );
     enableAxis( QwtPlot::yRight );
 
     plotLayout()->setAlignCanvasToScales( true );
 
     setColorMap( QMSMHeatmap::RGBMap );
-
 }
 
-void QMSMHeatmap::showContour( bool on )
+void QMSMHeatmap::updateValues(std::vector<double> &values, int val)
 {
-    mpSpectrogram->setDisplayMode( QwtPlotSpectrogram::ContourMode, on );
-    replot();
+    this->mTime.push_back(values[X]);
+    switch(val)
+    {
+    case UtilCpu:
+        this->mY.push_back(values[YUtilCpu]);
+        break;
+    case UtilGpuCore:
+        this->mY.push_back(values[YUtilGpuCore]);
+        break;
+    case UtilGpuMem:
+        this->mY.push_back(values[YUtilGpuMem]);
+        break;
+    case UtilFpga:
+        this->mY.push_back(values[YUtilFpga]);
+        break;
+    case UtilMic:
+        this->mY.push_back(values[YUtilMic]);
+        break;
+    case TempCpu0:
+        this->mY.push_back(values[YTempCpu0]);
+        break;
+    case TempCpu1:
+        this->mY.push_back(values[YTempCpu1]);
+        break;
+    case TempGpu:
+        this->mY.push_back(values[YTempGpu]);
+        break;
+    case TempFpgaCompute:
+        this->mY.push_back(values[YTempFpgaM]);
+        break;
+    case TempFpgaInterface:
+        this->mY.push_back(values[YTempFpgaI]);
+        break;
+    case TempMicDie:
+        this->mY.push_back(values[YTempMicDie]);
+        break;
+    case TempMainBoard:
+        this->mY.push_back(values[YTempSystem]);
+        break;
+    }
 }
 
-void QMSMHeatmap::showSpectrogram( bool on )
+void QMSMHeatmap::redraw()
 {
-    mpSpectrogram->setDisplayMode( QwtPlotSpectrogram::ImageMode, on );
-    mpSpectrogram->setDefaultContourPen(
-        on ? QPen( Qt::black, 0 ) : QPen( Qt::NoPen ) );
+//    if(mTime.size() > 60)
+//    {
+//        mIntervalStart++;
+//        mIntervalEnd++;
+//        mTime.pop_front();
+//        mY.pop_front();
+//    }
+    mpMatrix->setValueMatrix(mY, mY.size());
+    mpMatrix->setInterval( Qt::XAxis, QwtInterval( mIntervalStart, mTime.size() ) );
+    mpSpectrogram->setData( mpMatrix );
 
     replot();
 }
@@ -172,7 +204,6 @@ void QMSMHeatmap::setColorMap( int type )
 {
     QwtScaleWidget *axis = axisWidget( QwtPlot::yRight );
     const QwtInterval zInterval = mpSpectrogram->data()->interval( Qt::ZAxis );
-
     mMapType = type;
 
     int alpha = mAlpha;
@@ -207,13 +238,11 @@ void QMSMHeatmap::setColorMap( int type )
     mpSpectrogram->setAlpha( alpha );
 
     replot();
+
 }
 
 void QMSMHeatmap::setAlpha( int alpha )
 {
-    // setting an alpha value doesn't make sense in combination
-    // with a color map interpolating the alpha value
-
     mAlpha = alpha;
     if ( mMapType != QMSMHeatmap::AlphaMap )
     {

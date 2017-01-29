@@ -6,22 +6,34 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1057</width>
-    <height>636</height>
+    <width>1050</width>
+    <height>650</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1050</width>
+    <height>650</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>MSMonitor v0.8.0</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QWidget" name="widget" native="true">
+   <widget class="QWidget" name="settingsWidget" native="true">
     <property name="geometry">
      <rect>
       <x>0</x>
       <y>0</y>
       <width>331</width>
-      <height>591</height>
+      <height>581</height>
      </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>320</width>
+      <height>560</height>
+     </size>
     </property>
     <widget class="QTabWidget" name="tabWidget">
      <property name="geometry">
@@ -281,11 +293,14 @@
      <rect>
       <x>330</x>
       <y>0</y>
-      <width>721</width>
-      <height>621</height>
+      <width>1973</width>
+      <height>700</height>
      </rect>
     </property>
    </widget>
+   <zorder>settingsWidget</zorder>
+   <zorder>mdiArea</zorder>
+   <zorder>tabWidget</zorder>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -301,7 +316,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1057</width>
+     <width>1050</width>
      <height>27</height>
     </rect>
    </property>

@@ -6,6 +6,8 @@
 #include <QString>
 #include <vector>
 #include <QMdiSubWindow>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 #include "QMSMpowerplot.h"
 #include "QMSMtemperatureplot.h"
 #include "QMSMclockplot.h"
@@ -33,14 +35,18 @@ private:
     QMSMClockPlot* mpClockplot;
     QMSMUtilPlot* mpUtilplot;
     QMSMMemoryPlot* mpMemoryplot;
-    QMSMHeatmap* mpHeatmap;
+    QMSMHeatmap* mpHeatmapCpu;
+    QMSMHeatmap* mpHeatmapGpuCore;
+    QMSMHeatmap* mpHeatmapGpuMemory;
+    QMSMHeatmap* mpHeatmapFpga;
+    QMSMHeatmap* mpHeatmapMic;
 
     QMdiSubWindow* subwPower;
     QMdiSubWindow* subwTemp;
     QMdiSubWindow* subwClock;
     QMdiSubWindow* subwUtil;
     QMdiSubWindow* subwMemory;
-    QMdiSubWindow* subwHeatmap;
+    QMdiSubWindow* subwHeatmapUtil;
 
     CClient mClient;
     QTimer* mpTimer;
@@ -63,12 +69,14 @@ public slots:
     void showClock();
     void showUtil();
     void showMemory();
+    void showHeatmapUtil();
 
     void updatePower();
     void updateTemp();
     void updateClock();
     void updateUtil();
     void updateMemory();
+    void updateHeatmapUtil();
 
 };
 
