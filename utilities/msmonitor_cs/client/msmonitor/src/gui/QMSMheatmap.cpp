@@ -186,15 +186,16 @@ void QMSMHeatmap::updateValues(std::vector<double> &values, int val)
 
 void QMSMHeatmap::redraw()
 {
-//    if(mTime.size() > 60)
-//    {
-//        mIntervalStart++;
-//        mIntervalEnd++;
-//        mTime.pop_front();
-//        mY.pop_front();
-//    }
+    if(mTime.size() > 60)
+    {
+        mIntervalStart++;
+        mIntervalEnd++;
+        mTime.pop_front();
+        mY.pop_front();
+    }
     mpMatrix->setValueMatrix(mY, mY.size());
-    mpMatrix->setInterval( Qt::XAxis, QwtInterval( mIntervalStart, mTime.size() ) );
+   // mpMatrix->setInterval( Qt::XAxis, QwtInterval( mIntervalStart, mIntervalEnd ) );
+    setAxisScale(QwtPlot::xBottom, mIntervalStart, mIntervalEnd);
     mpSpectrogram->setData( mpMatrix );
 
     replot();

@@ -41,12 +41,21 @@ private:
     QMSMHeatmap* mpHeatmapFpga;
     QMSMHeatmap* mpHeatmapMic;
 
+    QMSMHeatmap* mpTempCpu0;
+    QMSMHeatmap* mpTempCpu1;
+    QMSMHeatmap* mpTempGpu;
+    QMSMHeatmap* mpTempFpgaCompute;
+    QMSMHeatmap* mpTempFpgaInterface;
+    QMSMHeatmap* mpTempMic;
+    QMSMHeatmap* mpTempSystem;
+
     QMdiSubWindow* subwPower;
     QMdiSubWindow* subwTemp;
     QMdiSubWindow* subwClock;
     QMdiSubWindow* subwUtil;
     QMdiSubWindow* subwMemory;
     QMdiSubWindow* subwHeatmapUtil;
+    QMdiSubWindow* subwHeatmapTemp;
 
     CClient mClient;
     QTimer* mpTimer;
@@ -70,6 +79,7 @@ public slots:
     void showUtil();
     void showMemory();
     void showHeatmapUtil();
+    void showHeatmapTemp();
 
     void updatePower();
     void updateTemp();
@@ -77,6 +87,7 @@ public slots:
     void updateUtil();
     void updateMemory();
     void updateHeatmapUtil();
+    void updateHeatmapTemp();
 
 };
 
