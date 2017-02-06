@@ -26,7 +26,8 @@ SOURCES += src/main.cpp \
         src/gui/QMSMclockplot.cpp \
         src/gui/QMSMmemoryplot.cpp \
         src/gui/QMSMutilplot.cpp \
-        src/gui/QMSMheatmap.cpp
+        src/gui/QMSMheatmap.cpp \
+        src/gui/QMSMsettings.cpp
 
 HEADERS  += include/gui/mainwindow.h \
     	include/gui/QMSMpowerplot.h \
@@ -40,8 +41,10 @@ HEADERS  += include/gui/mainwindow.h \
         include/gui/QMSMclockplot.h \
         include/gui/QMSMutilplot.h \
         include/gui/QMSMmemoryplot.h \
-        include/gui/QMSMheatmap.h
+        include/gui/QMSMheatmap.h \
+        include/gui/QMSMsettings.h
 
 LIBS += -L/usr/local/qwt-6.1.3/lib -lqwt
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    qmsmsettings.ui

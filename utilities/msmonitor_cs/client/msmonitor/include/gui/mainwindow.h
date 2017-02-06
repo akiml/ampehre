@@ -15,6 +15,7 @@
 #include "QMSMutilplot.h"
 #include "QMSMheatmap.h"
 #include "CClient.hpp"
+#include "QMSMsettings.h"
 
 namespace Ui {
 class MainWindow;
@@ -35,6 +36,8 @@ private:
     QMSMClockPlot* mpClockplot;
     QMSMUtilPlot* mpUtilplot;
     QMSMMemoryPlot* mpMemoryplot;
+    QMSMSettings* mpSettings;
+
     QMSMHeatmap* mpHeatmapCpu;
     QMSMHeatmap* mpHeatmapGpuCore;
     QMSMHeatmap* mpHeatmapGpuMemory;
@@ -56,6 +59,7 @@ private:
     QMdiSubWindow* subwMemory;
     QMdiSubWindow* subwHeatmapUtil;
     QMdiSubWindow* subwHeatmapTemp;
+    QMdiSubWindow* subwSettings;
 
     CClient mClient;
     QTimer* mpTimer;
@@ -63,6 +67,8 @@ private:
     int mInterval;
     int mGuiInterval;
     void connectActions();
+    void addPlot(QMSMplot* plot, QMdiSubWindow* subw);
+    void addHeatmap(QMdiSubWindow* heat, QVBoxLayout* layout);
 
 public slots:
     void start();
@@ -80,6 +86,7 @@ public slots:
     void showMemory();
     void showHeatmapUtil();
     void showHeatmapTemp();
+    void showSettings();
 
     void updatePower();
     void updateTemp();

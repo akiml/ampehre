@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mpClockplot (new QMSMClockPlot(parent)),
     mpUtilplot(new QMSMUtilPlot(parent)),
     mpMemoryplot(new QMSMMemoryPlot(parent)),
+    mpSettings(new QMSMSettings(parent)),
     mpHeatmapCpu(new QMSMHeatmap(parent, "CPU\n[%]\n", 0, 100)),
     mpHeatmapGpuCore(new QMSMHeatmap(parent, "GPU\nCore\n[%]", 0 ,100)),
     mpHeatmapGpuMemory(new QMSMHeatmap(parent, "GPU\nMemory\n[%]", 0 ,100)),
@@ -28,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     subwMemory(new QMdiSubWindow()),
     subwHeatmapUtil( new QMdiSubWindow()),
     subwHeatmapTemp( new QMdiSubWindow()),
+    subwSettings( new QMdiSubWindow()),
     mClient(CClient()),
     mpTimer(new QTimer()),
     mpGuiTimer(new QTimer()),
@@ -35,39 +37,19 @@ MainWindow::MainWindow(QWidget *parent) :
     mGuiInterval(250)
 {
     ui->setupUi(this);
-    ui->pushButton_stop->setDisabled(true);
-    ui->pushButton_reset->setDisabled(true);
+//    ui->pushButton_stop->setDisabled(true);
+//    ui->pushButton_reset->setDisabled(true);
     connectActions();
 
-    mpPowerplot->initPlot(mpPowerplot->getParent());
-    subwPower->setWidget(mpPowerplot->getPlot());
-    ui->mdiArea->addSubWindow(subwPower);
-    subwPower->resize(600, 400);
-    subwPower->hide();
+    addPlot((QMSMplot*)mpPowerplot, subwPower);
+    addPlot((QMSMplot*)mpClockplot, subwClock);
+    addPlot((QMSMplot*)mpTempplot, subwTemp);
+    addPlot((QMSMplot*)mpMemoryplot, subwMemory);
+    addPlot((QMSMplot*)mpUtilplot, subwUtil);
 
-    mpClockplot->initPlot(mpClockplot->getParent());
-    subwClock->setWidget(mpClockplot->getPlot());
-    ui->mdiArea->addSubWindow(subwClock);
-    subwClock->resize(600, 400);
-    subwClock->hide();
-
-    mpTempplot->initPlot(mpTempplot->getParent());
-    subwTemp->setWidget(mpTempplot->getPlot());
-    ui->mdiArea->addSubWindow(subwTemp);
-    subwTemp->resize(600, 400);
-    subwTemp->hide();
-
-    mpMemoryplot->initPlot(mpMemoryplot->getParent());
-    subwMemory->setWidget(mpMemoryplot->getPlot());
-    ui->mdiArea->addSubWindow(subwMemory);
-    subwMemory->resize(600, 400);
-    subwMemory->hide();
-
-    mpUtilplot->initPlot(mpUtilplot->getParent());
-    subwUtil->setWidget(mpUtilplot->getPlot());
-    ui->mdiArea->addSubWindow(subwUtil);
-    subwUtil->resize(600, 400);
-    subwUtil->hide();
+    subwSettings->setWidget(mpSettings);
+    ui->mdiArea->addSubWindow(subwSettings);
+    subwSettings->hide();
 
     QVBoxLayout* layout = new QVBoxLayout;
     layout->addWidget(mpHeatmapCpu);
@@ -76,12 +58,7 @@ MainWindow::MainWindow(QWidget *parent) :
     layout->addWidget(mpHeatmapFpga);
     layout->addWidget(mpHeatmapMic);
 
-    delete subwHeatmapUtil->layout();
-    subwHeatmapUtil->setLayout(layout);
-    ui->mdiArea->addSubWindow(subwHeatmapUtil);
-    subwHeatmapUtil->resize(600, 600);
-    subwHeatmapUtil->setFixedHeight(600);
-    subwHeatmapUtil->hide();
+    addHeatmap(subwHeatmapUtil, layout);
 
     QVBoxLayout* layout1 = new QVBoxLayout;
     layout1->addWidget(mpTempCpu0);
@@ -92,11 +69,7 @@ MainWindow::MainWindow(QWidget *parent) :
     layout1->addWidget(mpTempMic);
     layout1->addWidget(mpTempSystem);
 
-    delete subwHeatmapTemp->layout();
-    subwHeatmapTemp->setLayout(layout1);
-    ui->mdiArea->addSubWindow(subwHeatmapTemp);
-    subwHeatmapTemp->resize(600, 800);
-    subwHeatmapTemp->hide();
+    addHeatmap(subwHeatmapTemp, layout1);
 }
 
 MainWindow::~MainWindow()
@@ -107,6 +80,7 @@ MainWindow::~MainWindow()
     delete mpClockplot;
     delete mpUtilplot;
     delete mpMemoryplot;
+    delete mpSettings;
     delete mpHeatmapCpu;
     delete mpHeatmapFpga;
     delete mpHeatmapGpuCore;
@@ -128,28 +102,50 @@ MainWindow::~MainWindow()
     delete subwPower;
     delete subwHeatmapUtil;
     delete subwHeatmapTemp;
+    delete subwSettings;
 
     delete mpGuiTimer;
     delete mpTimer;
 }
 
+void MainWindow::addPlot(QMSMplot *plot, QMdiSubWindow *subw)
+{
+    plot->initPlot(plot->getParent());
+    subw->setWidget(plot->getPlot());
+    ui->mdiArea->addSubWindow(subw);
+    subw->resize(600, 400);
+    subw->hide();
+}
+
+void MainWindow::addHeatmap(QMdiSubWindow *heat, QVBoxLayout *layout)
+{
+    delete heat->layout();
+    heat->setLayout(layout);
+    ui->mdiArea->addSubWindow(heat);
+    heat->resize(600, 600);
+    heat->setFixedHeight(600);
+    heat->hide();
+}
+
 void MainWindow::connectActions()
 {
-    connect(ui->pushButton_start, SIGNAL(clicked()), this, SLOT(start()));
-    connect(ui->pushButton_stop, SIGNAL(clicked()), this, SLOT(stop()));
+
+    connect(mpSettings, SIGNAL(signal_start()), this, SLOT(start()));
+    connect(mpSettings, SIGNAL(signal_stop()), this, SLOT(stop()));
+
+    connect(mpSettings, SIGNAL(signal_guiRate(int)), this, SLOT(setGuiInterval(int)));
+    connect(mpSettings, SIGNAL(signal_dataPlot(int)), this, SLOT(setInterval(int)));
 
     connect(ui->action_Power, SIGNAL(triggered()),this, SLOT(showPower()));
     connect(ui->action_Temperature, SIGNAL(triggered()),this, SLOT(showTemp()));
     connect(ui->action_Clock, SIGNAL(triggered()),this, SLOT(showClock()));
     connect(ui->action_Utilization, SIGNAL(triggered()), this, SLOT(showUtil()));
     connect(ui->action_Memory, SIGNAL(triggered()), this, SLOT(showMemory()));
+    connect(ui->action_Settings, SIGNAL(triggered()), this, SLOT(showSettings()));
     connect(ui->action_Utilization_2, SIGNAL(triggered()), this, SLOT(showHeatmapUtil()));
     connect(ui->action_Temperature_2, SIGNAL(triggered()), this, SLOT(showHeatmapTemp()));
 
     connect(mpTimer, SIGNAL(timeout()), this, SLOT(requestData()));
-
-    connect(ui->horizontalSlider_guiRate, SIGNAL(valueChanged(int)), this, SLOT(setGuiInterval(int)));
-    connect(ui->horizontalSlider_dataPlot, SIGNAL(valueChanged(int)), this, SLOT(setInterval(int)));
 
 }
 
@@ -163,17 +159,17 @@ void MainWindow::start()
     mpGuiTimer->setInterval(mGuiInterval);
     mpTimer->start();
     mpGuiTimer->start();
-    ui->pushButton_start->setDisabled(true);
-    ui->pushButton_stop->setDisabled(false);
-    ui->pushButton_reset->setDisabled(false);
+//    ui->pushButton_start->setDisabled(true);
+//    ui->pushButton_stop->setDisabled(false);
+//    ui->pushButton_reset->setDisabled(false);
 }
 
 void MainWindow::stop()
 {
     mpTimer->stop();
     mClient.terminate();
-    ui->pushButton_stop->setDisabled(true);
-    ui->pushButton_start->setDisabled(false);
+//    ui->pushButton_stop->setDisabled(true);
+//    ui->pushButton_start->setDisabled(false);
 }
 
 void MainWindow::requestData()
@@ -190,8 +186,8 @@ void MainWindow::setGuiInterval(int val)
     {
         this->mGuiInterval = val;
         mpGuiTimer->setInterval(mGuiInterval);
-        QString s = QString::number(mGuiInterval) + " ms";
-        ui->label_guiRate->setText(s);
+//        QString s = QString::number(mGuiInterval) + " ms";
+//        ui->label_guiRate->setText(s);
     }
 }
 
@@ -202,8 +198,8 @@ void MainWindow::setInterval(int val)
     {
         this->mInterval = val;
         mpTimer->setInterval(mInterval);
-        QString s = QString::number(mInterval) + " ms";
-        ui->label_dataPlot->setText(s);
+//        QString s = QString::number(mInterval) + " ms";
+//        ui->label_dataPlot->setText(s);
     }
 }
 
@@ -279,6 +275,11 @@ void MainWindow::showHeatmapTemp()
 
     subwHeatmapTemp->show();
 
+}
+
+void MainWindow::showSettings()
+{
+    subwSettings->show();
 }
 
 void MainWindow::updatePower()

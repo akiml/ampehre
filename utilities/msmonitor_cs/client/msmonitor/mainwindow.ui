@@ -20,287 +20,18 @@
    <string>MSMonitor v0.8.0</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QWidget" name="settingsWidget" native="true">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>331</width>
-      <height>581</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>320</width>
-      <height>560</height>
-     </size>
-    </property>
-    <widget class="QTabWidget" name="tabWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>10</y>
-       <width>301</width>
-       <height>301</height>
-      </rect>
-     </property>
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="tab">
-      <attribute name="title">
-       <string>Resource</string>
-      </attribute>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QMdiArea" name="mdiArea">
+      <property name="minimumSize">
+       <size>
+        <width>1050</width>
+        <height>600</height>
+       </size>
+      </property>
      </widget>
-     <widget class="QWidget" name="tab_3">
-      <attribute name="title">
-       <string>Data</string>
-      </attribute>
-      <widget class="QLabel" name="label">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>20</y>
-         <width>41</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Plot:</string>
-       </property>
-      </widget>
-      <widget class="QSlider" name="horizontalSlider_dataPlot">
-       <property name="geometry">
-        <rect>
-         <x>70</x>
-         <y>20</y>
-         <width>160</width>
-         <height>18</height>
-        </rect>
-       </property>
-       <property name="minimum">
-        <number>10</number>
-       </property>
-       <property name="maximum">
-        <number>500</number>
-       </property>
-       <property name="singleStep">
-        <number>10</number>
-       </property>
-       <property name="pageStep">
-        <number>20</number>
-       </property>
-       <property name="sliderPosition">
-        <number>250</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_dataPlot">
-       <property name="geometry">
-        <rect>
-         <x>240</x>
-         <y>20</y>
-         <width>61</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>250 ms</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_2">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>70</y>
-         <width>66</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Heatmap:</string>
-       </property>
-      </widget>
-      <widget class="QSlider" name="horizontalSlider_dataHeatmap">
-       <property name="geometry">
-        <rect>
-         <x>70</x>
-         <y>70</y>
-         <width>160</width>
-         <height>18</height>
-        </rect>
-       </property>
-       <property name="minimum">
-        <number>10</number>
-       </property>
-       <property name="maximum">
-        <number>200</number>
-       </property>
-       <property name="singleStep">
-        <number>10</number>
-       </property>
-       <property name="pageStep">
-        <number>20</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_dataHeatmap">
-       <property name="geometry">
-        <rect>
-         <x>240</x>
-         <y>70</y>
-         <width>61</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>0 ms</string>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QWidget" name="tab_2">
-      <attribute name="title">
-       <string>GUI</string>
-      </attribute>
-      <widget class="QLabel" name="label_3">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>20</y>
-         <width>61</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>redraw:</string>
-       </property>
-      </widget>
-      <widget class="QSlider" name="horizontalSlider_guiRate">
-       <property name="geometry">
-        <rect>
-         <x>70</x>
-         <y>20</y>
-         <width>160</width>
-         <height>18</height>
-        </rect>
-       </property>
-       <property name="minimum">
-        <number>10</number>
-       </property>
-       <property name="maximum">
-        <number>500</number>
-       </property>
-       <property name="singleStep">
-        <number>10</number>
-       </property>
-       <property name="pageStep">
-        <number>20</number>
-       </property>
-       <property name="sliderPosition">
-        <number>250</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_guiRate">
-       <property name="geometry">
-        <rect>
-         <x>240</x>
-         <y>20</y>
-         <width>61</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>250 ms</string>
-       </property>
-      </widget>
-     </widget>
-    </widget>
-    <widget class="QPushButton" name="pushButton_save">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>520</y>
-       <width>95</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Save</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_5">
-     <property name="geometry">
-      <rect>
-       <x>130</x>
-       <y>520</y>
-       <width>131</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>save results to csv</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_start">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>370</y>
-       <width>95</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Start</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_stop">
-     <property name="geometry">
-      <rect>
-       <x>200</x>
-       <y>370</y>
-       <width>95</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Stop</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_reset">
-     <property name="geometry">
-      <rect>
-       <x>200</x>
-       <y>420</y>
-       <width>95</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Reset</string>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QMdiArea" name="mdiArea">
-    <property name="geometry">
-     <rect>
-      <x>330</x>
-      <y>0</y>
-      <width>1973</width>
-      <height>700</height>
-     </rect>
-    </property>
-   </widget>
-   <zorder>settingsWidget</zorder>
-   <zorder>mdiArea</zorder>
-   <zorder>tabWidget</zorder>
+    </item>
+   </layout>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -326,6 +57,7 @@
     </property>
     <addaction name="action_Quit"/>
     <addaction name="separator"/>
+    <addaction name="action_Settings"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -440,6 +172,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="action_Settings">
+   <property name="text">
+    <string>&amp;Settings</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
  </widget>

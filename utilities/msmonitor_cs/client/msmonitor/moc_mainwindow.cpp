@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'mainwindow.h'
 **
-** Created: Mon Jan 30 10:45:59 2017
+** Created: Mon Feb 6 14:19:00 2017
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_MainWindow[] = {
        4,       // revision
        0,       // classname
        0,    0, // classinfo
-      20,   14, // methods
+      21,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -45,12 +45,13 @@ static const uint qt_meta_data_MainWindow[] = {
      149,   11,   11,   11, 0x0a,
      167,   11,   11,   11, 0x0a,
      185,   11,   11,   11, 0x0a,
-     199,   11,   11,   11, 0x0a,
-     212,   11,   11,   11, 0x0a,
-     226,   11,   11,   11, 0x0a,
-     239,   11,   11,   11, 0x0a,
+     200,   11,   11,   11, 0x0a,
+     214,   11,   11,   11, 0x0a,
+     227,   11,   11,   11, 0x0a,
+     241,   11,   11,   11, 0x0a,
      254,   11,   11,   11, 0x0a,
-     274,   11,   11,   11, 0x0a,
+     269,   11,   11,   11, 0x0a,
+     289,   11,   11,   11, 0x0a,
 
        0        // eod
 };
@@ -61,8 +62,8 @@ static const char qt_meta_stringdata_MainWindow[] = {
     "setInterval(int)\0showPower()\0showTemp()\0"
     "showClock()\0showUtil()\0showMemory()\0"
     "showHeatmapUtil()\0showHeatmapTemp()\0"
-    "updatePower()\0updateTemp()\0updateClock()\0"
-    "updateUtil()\0updateMemory()\0"
+    "showSettings()\0updatePower()\0updateTemp()\0"
+    "updateClock()\0updateUtil()\0updateMemory()\0"
     "updateHeatmapUtil()\0updateHeatmapTemp()\0"
 };
 
@@ -108,16 +109,17 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 10: showMemory(); break;
         case 11: showHeatmapUtil(); break;
         case 12: showHeatmapTemp(); break;
-        case 13: updatePower(); break;
-        case 14: updateTemp(); break;
-        case 15: updateClock(); break;
-        case 16: updateUtil(); break;
-        case 17: updateMemory(); break;
-        case 18: updateHeatmapUtil(); break;
-        case 19: updateHeatmapTemp(); break;
+        case 13: showSettings(); break;
+        case 14: updatePower(); break;
+        case 15: updateTemp(); break;
+        case 16: updateClock(); break;
+        case 17: updateUtil(); break;
+        case 18: updateMemory(); break;
+        case 19: updateHeatmapUtil(); break;
+        case 20: updateHeatmapTemp(); break;
         default: ;
         }
-        _id -= 20;
+        _id -= 21;
     }
     return _id;
 }
