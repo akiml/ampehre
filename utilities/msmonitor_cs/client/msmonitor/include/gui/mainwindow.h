@@ -64,11 +64,13 @@ private:
     CClient mClient;
     QTimer* mpTimer;
     QTimer* mpGuiTimer;
-    int mInterval;
+    int mPlotInterval;
+    int mHeatmapInterval;
     int mGuiInterval;
     void connectActions();
     void addPlot(QMSMplot* plot, QMdiSubWindow* subw);
     void addHeatmap(QMdiSubWindow* heat, QVBoxLayout* layout);
+    void setSlider();
 
 public slots:
     void start();

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Mon Feb 6 14:17:12 2017
+** Created: Mon Feb 6 15:03:43 2017
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -141,7 +141,7 @@ public:
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MSMonitor v0.8.0", 0, QApplication::UnicodeUTF8));
         action_Quit->setText(QApplication::translate("MainWindow", "&Quit", 0, QApplication::UnicodeUTF8));
-        action_Quit->setShortcut(QApplication::translate("MainWindow", "Ctrl+S", 0, QApplication::UnicodeUTF8));
+        action_Quit->setShortcut(QApplication::translate("MainWindow", "Ctrl+Q", 0, QApplication::UnicodeUTF8));
         action_Systemoverview->setText(QApplication::translate("MainWindow", "&System Overview", 0, QApplication::UnicodeUTF8));
         action_Systemoverview->setShortcut(QApplication::translate("MainWindow", "Ctrl+O", 0, QApplication::UnicodeUTF8));
         action_Power->setText(QApplication::translate("MainWindow", "&Power", 0, QApplication::UnicodeUTF8));

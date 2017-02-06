@@ -33,13 +33,13 @@ MainWindow::MainWindow(QWidget *parent) :
     mClient(CClient()),
     mpTimer(new QTimer()),
     mpGuiTimer(new QTimer()),
-    mInterval(250),
-    mGuiInterval(250)
+    mPlotInterval(100),
+    mHeatmapInterval(150),
+    mGuiInterval(500)
 {
     ui->setupUi(this);
-//    ui->pushButton_stop->setDisabled(true);
-//    ui->pushButton_reset->setDisabled(true);
     connectActions();
+    setSlider();
 
     addPlot((QMSMplot*)mpPowerplot, subwPower);
     addPlot((QMSMplot*)mpClockplot, subwClock);
@@ -50,6 +50,7 @@ MainWindow::MainWindow(QWidget *parent) :
     subwSettings->setWidget(mpSettings);
     ui->mdiArea->addSubWindow(subwSettings);
     subwSettings->hide();
+    subwSettings->resize(400, 600);
 
     QVBoxLayout* layout = new QVBoxLayout;
     layout->addWidget(mpHeatmapCpu);
@@ -108,6 +109,17 @@ MainWindow::~MainWindow()
     delete mpTimer;
 }
 
+void MainWindow::setSlider()
+{
+    std::vector<int> v;
+    v.resize(SLIDER_VALUESIZE);
+    v[GUI] = mGuiInterval;
+    v[DATA_PLOT] = mPlotInterval;
+    v[DATA_HEAT] = mHeatmapInterval;
+
+    mpSettings->setSliderPos(v);
+}
+
 void MainWindow::addPlot(QMSMplot *plot, QMdiSubWindow *subw)
 {
     plot->initPlot(plot->getParent());
@@ -155,21 +167,16 @@ void MainWindow::start()
     CProtocolC::addAll(values);
     mClient.registerToServer(values, 2900, "131.234.58.31");
 
-    mpTimer->setInterval(mInterval);
+    mpTimer->setInterval(mPlotInterval);
     mpGuiTimer->setInterval(mGuiInterval);
     mpTimer->start();
     mpGuiTimer->start();
-//    ui->pushButton_start->setDisabled(true);
-//    ui->pushButton_stop->setDisabled(false);
-//    ui->pushButton_reset->setDisabled(false);
 }
 
 void MainWindow::stop()
 {
     mpTimer->stop();
     mClient.terminate();
-//    ui->pushButton_stop->setDisabled(true);
-//    ui->pushButton_start->setDisabled(false);
 }
 
 void MainWindow::requestData()
@@ -186,8 +193,6 @@ void MainWindow::setGuiInterval(int val)
     {
         this->mGuiInterval = val;
         mpGuiTimer->setInterval(mGuiInterval);
-//        QString s = QString::number(mGuiInterval) + " ms";
-//        ui->label_guiRate->setText(s);
     }
 }
 
@@ -196,10 +201,8 @@ void MainWindow::setInterval(int val)
 {
     if(val > 0)
     {
-        this->mInterval = val;
-        mpTimer->setInterval(mInterval);
-//        QString s = QString::number(mInterval) + " ms";
-//        ui->label_dataPlot->setText(s);
+        this->mPlotInterval = val;
+        mpTimer->setInterval(mPlotInterval);
     }
 }
 

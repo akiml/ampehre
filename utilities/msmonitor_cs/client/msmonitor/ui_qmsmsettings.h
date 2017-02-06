@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qmsmsettings.ui'
 **
-** Created: Mon Feb 6 14:09:58 2017
+** Created: Mon Feb 6 15:06:30 2017
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -80,7 +80,7 @@ public:
         horizontalSlider_dataHeatmap->setObjectName(QString::fromUtf8("horizontalSlider_dataHeatmap"));
         horizontalSlider_dataHeatmap->setGeometry(QRect(70, 70, 160, 18));
         horizontalSlider_dataHeatmap->setMinimum(10);
-        horizontalSlider_dataHeatmap->setMaximum(200);
+        horizontalSlider_dataHeatmap->setMaximum(500);
         horizontalSlider_dataHeatmap->setSingleStep(10);
         horizontalSlider_dataHeatmap->setPageStep(20);
         horizontalSlider_dataHeatmap->setOrientation(Qt::Horizontal);
@@ -97,7 +97,7 @@ public:
         horizontalSlider_guiRate->setObjectName(QString::fromUtf8("horizontalSlider_guiRate"));
         horizontalSlider_guiRate->setGeometry(QRect(70, 20, 160, 18));
         horizontalSlider_guiRate->setMinimum(10);
-        horizontalSlider_guiRate->setMaximum(500);
+        horizontalSlider_guiRate->setMaximum(1000);
         horizontalSlider_guiRate->setSingleStep(10);
         horizontalSlider_guiRate->setPageStep(20);
         horizontalSlider_guiRate->setSliderPosition(250);
@@ -124,7 +124,7 @@ public:
 
         retranslateUi(QMSMSettings);
 
-        tabWidget->setCurrentIndex(0);
+        tabWidget->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(QMSMSettings);
