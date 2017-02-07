@@ -269,7 +269,10 @@ namespace NLibMeasure {
 			pMsMeasurementCpu->msr_energy_cur[i][PKG]		= msrGetEnergy(rThreadNum, i, MSR_PKG_ENERGY_STATUS)*1000.0;
 			pMsMeasurementCpu->msr_energy_cur[i][PP0]		= msrGetEnergy(rThreadNum, i, MSR_PP0_ENERGY_STATUS)*1000.0;
 			pMsMeasurementCpu->msr_energy_cur[i][DRAM]		= msrGetEnergy(rThreadNum, i, MSR_DRAM_ENERGY_STATUS)*1000.0;
+			
 			if(TVariant == VARIANT_FULL) {
+				//msrGetVoltagePState(rThreadNum, i, MSR_PERF_STATUS, pMsMeasurementCpu->msr_voltage_cur[i], pMsMeasurementCpu->msr_pstate_cur[i]);
+				
 				if(!(mMeasureCounter % TSkipMs)) {
 					pMsMeasurementCpu->msr_temperature_pkg_cur[i]	= msrGetTemperature(rThreadNum, i, IA32_PACKAGE_THERM_STATUS);
 				}
@@ -443,6 +446,19 @@ namespace NLibMeasure {
 	}
 	
 	template <int TSkipMs, int TVariant>
+	void CMeasureMSR<TSkipMs, TVariant>::msrGetVoltagePState(int32_t& rThreadNum, int32_t coreNumber, int32_t msrRegisterAddr,
+															 double& rVoltage, uint64_t& rPSate) {
+		uint64_t msr_register_data	= 0;
+		
+		readMeasureDevice(rThreadNum, cpu_msr, coreNumber, (uint64_t)msrRegisterAddr, &msr_register_data, sizeof(msr_register_data));
+		
+		/* Calculate actual voltage. */
+		uint64_t msr_perf_status	= extractValue(msr_register_data, 47, 32);
+		rVoltage					= (double)msr_perf_status/(1<<13);
+		rPSate						= extractValue(msr_register_data, 15,  0);
+	}
+	
+	template <int TSkipMs, int TVariant>
 	void CMeasureMSR<TSkipMs, TVariant>::msrGetPerfCounter(int32_t& rThreadNum, int32_t coreNumber,
 										int32_t msrRegisterAddrAPerf, uint64_t* pResultAPerf,
 										int32_t msrRegisterAddrMPerf, uint64_t* pResultMPerf) {
@@ -463,5 +479,26 @@ namespace NLibMeasure {
 		readMeasureDevice(rThreadNum, cpu_meminfo, MEMINFO >> CPU_NO_POS, 0, pMeasureMemInfo, sizeof(uint64_t)*MEMINFO_SIZE);
 #endif
 	}
-
+	
+	template <int TSkipMs, int TVariant>
+	uint64_t CMeasureMSR<TSkipMs, TVariant>::getBitmap(uint8_t max, uint8_t min) {
+		uint64_t bitmap = 0;
+		
+		int8_t i = 0;
+		for (i=max; i>=min; --i) {
+			bitmap |= (1L<<i);
+		}
+		
+		return bitmap;
+	}
+	
+	template <int TSkipMs, int TVariant>
+	uint64_t CMeasureMSR<TSkipMs, TVariant>::extractValue(uint64_t raw_data, uint8_t max, uint8_t min) {
+		uint64_t value = 0;
+		
+		value	  = raw_data & getBitmap(max, min);
+		value	>>= min;
+		
+		return value;
+	}
 }

@@ -82,7 +82,7 @@
 #define MSR_PP1_ENERGY_STATUS		0x641
 /* energy consumption of the DRAM power domain */
 #define MSR_DRAM_ENERGY_STATUS		0x619
-/*temperature of a processor core (a core of a CPU) */
+/* temperature of a processor core (a core of a CPU) */
 #define IA32_THERM_STATUS			0x19C
 /* temperature of a processor package */
 #define IA32_PACKAGE_THERM_STATUS	0x1B1
@@ -100,6 +100,8 @@
  * Intel advises us to use delate(IA32_APERF)/delate(IA32_MPERF) ratio as
  * IA32_APERF unrelated to IA32_MPERF makes no sense.*/
 #define IA32_APERF					0xE8
+/* get pstate and voltage of CPU */
+#define MSR_PERF_STATUS				0x198
 
 /* memory usage from /proc/meminfo */
 #define MEMINFO_SIZE 6

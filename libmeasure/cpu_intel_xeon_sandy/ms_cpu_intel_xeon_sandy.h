@@ -78,6 +78,9 @@ typedef struct __ms_measurement_cpu {
 	double msr_power_avg[CPUS][3];
 	double msr_energy_acc[CPUS][3];
 	
+	double msr_voltage_cur[CPUS];
+	uint64_t msr_pstate_cur[CPUS];
+	
 	uint32_t msr_temperature_pkg_cur[CPUS];
 	uint32_t msr_temperature_pkg_max[CPUS];
 	uint32_t msr_temperature_core_cur[CPUS][CORES];

@@ -71,6 +71,9 @@ namespace NLibMeasure {
 				pMsMeasurementCpu->msr_power_cur[i][j]	= 0.0;
 			}
 			
+			pMsMeasurementCpu->msr_voltage_cur[i]	= 0.0;
+			pMsMeasurementCpu->msr_pstate_cur[i]	= 0;
+			
 			pMsMeasurementCpu->msr_temperature_pkg_max[i]	= 0.0;
 			for (int j=0; j<CORES; ++j) {
 				pMsMeasurementCpu->msr_temperature_core_max[i][j]	= 0.0;

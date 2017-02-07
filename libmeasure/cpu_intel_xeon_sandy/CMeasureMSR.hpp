@@ -68,6 +68,8 @@ namespace NLibMeasure {
 			uint64_t msrGetMinumimTccActivation(int32_t& rThreadNum);
 			uint32_t msrGetTemperature(int32_t& rThreadNum, int32_t coreNumber, int32_t msrRegisterAddr);
 			double msrGetEnergy(int32_t& rThreadNum, int32_t coreNumber, int32_t msrRegisterAddr);
+			void msrGetVoltagePState(int32_t& rThreadNum, int32_t coreNumber, int32_t msrRegisterAddr,
+									 double& rVoltage, uint64_t& rPSate);
 			uint64_t msrGetTimeStamp(int32_t& rThreadNum, int32_t coreNumber, int32_t msrRegisterAddr);
 			void msrGetPerfCounter(int32_t& rThreadNum, int32_t coreNumber,
 								   int32_t msrRegisterAddrAPerf, uint64_t* pResultAPerf,
@@ -76,6 +78,9 @@ namespace NLibMeasure {
 			void measureGetUtilization(int32_t& rThreadNum, uint64_t* pMeasureUtilization);
 			
 			void measureGetMemInfo(int32_t& rThreadNum, uint64_t* pMeasureMemInfo);
+			
+			uint64_t getBitmap(uint8_t max, uint8_t min);
+			uint64_t extractValue(uint64_t raw_data, uint8_t max, uint8_t min);
 			
 		public:
 			void measure(void *pMsMeasurement, int32_t& rThreadNum);
