@@ -25,6 +25,8 @@ class AmpehreWrapper:
 		self.libAmpehre = cdll.LoadLibrary("/usr/ampehre/lib/libpythonmeasure.so")
 		
 		self.libAmpehre.ampehre_get_energy_total.restype	= c_double
+		self.libAmpehre.ampehre_get_v2freq_total.restype	= c_double
+		self.libAmpehre.ampehre_get_pstate_total.restype	= c_uint64
 		
 	def init(self):
 		self.libAmpehre.ampehre_init()
@@ -40,6 +42,12 @@ class AmpehreWrapper:
 	
 	def getEnergyTotal(self):
 		return float(self.libAmpehre.ampehre_get_energy_total())
+	
+	def getV2FreqTotal(self):
+		return float(self.libAmpehre.ampehre_get_v2freq_total())
+	
+	def getPStateTotal(self):
+		return int(self.libAmpehre.ampehre_get_pstate_total())
 
 def main():
 	ampehre = AmpehreWrapper()

@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #include "../../../include/ms_measurement.h"
 
@@ -26,7 +27,7 @@ MS_LIST *ml		= NULL;
 void ampehre_init(void) {
 	// Initialize library and measurement system
 	MS_VERSION version = { .major = MS_MAJOR_VERSION, .minor = MS_MINOR_VERSION, .revision = MS_REVISION_VERSION };
-	ms = ms_init(&version, CPU_GOVERNOR_ONDEMAND, 1500000, 2500000, GPU_FREQUENCY_CUR, IPMI_SET_TIMEOUT, SKIP_PERIODIC, VARIANT_LIGHT);
+	ms = ms_init(&version, CPU_GOVERNOR_ONDEMAND, 1500000, 2500000, GPU_FREQUENCY_CUR, IPMI_SET_TIMEOUT, SKIP_PERIODIC, VARIANT_FULL);
 	
 	// Allocate measurement list
 	ml = ms_alloc_measurement(ms);
@@ -73,4 +74,26 @@ double ampehre_get_energy_total(void) {
 	e_total	+= fpga_energy_total_power_usage(ml);
 	
 	return e_total;
+}
+
+double ampehre_get_v2freq_total(void) {
+	double v2freq	= 0.0;
+	
+	// CPU 0
+	v2freq	+= cpu_v2freq_total(ml, 0);
+	// CPU 1
+	v2freq	+= cpu_v2freq_total(ml, 1);
+	
+	return v2freq;
+}
+
+uint64_t ampehre_get_pstate_total(void) {
+	uint64_t pstate	= 0.0;
+	
+	// CPU 0
+	pstate	+= cpu_pstate_total(ml, 0);
+	// CPU 1
+	pstate	+= cpu_pstate_total(ml, 1);
+	
+	return pstate;
 }

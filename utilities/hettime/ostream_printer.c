@@ -99,6 +99,13 @@ static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 	);
 	
 	fprintf(file,
+		"v2freq total cpu 0      [MV²]: %lf\n"
+		"pstate total cpu 0      [ 1 ]: %lu\n",
+		cpu_v2freq_total(m, 0),
+		cpu_pstate_total(m, 0)
+	);
+	
+	fprintf(file,
 		"temp   max   cpu 0 pkg  [\u00b0C ]: %u\n"
 		"temp   max   cpu 0 c 0  [\u00b0C ]: %u\n"
 		"temp   max   cpu 0 c 1  [\u00b0C ]: %u\n"
@@ -146,6 +153,13 @@ static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 		cpu_power_avg_pkg(m, 1),
 		cpu_power_avg_pp0(m, 1),
 		cpu_power_avg_dram(m, 1)
+	);
+	
+	fprintf(file,
+		"v2freq total cpu 1      [MV²]: %lf\n"
+		"pstate total cpu 1      [ 1 ]: %lu\n",
+		cpu_v2freq_total(m, 1),
+		cpu_pstate_total(m, 1)
 	);
 	
 	fprintf(file,

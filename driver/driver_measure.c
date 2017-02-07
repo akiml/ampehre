@@ -21,6 +21,7 @@
  *          0.5.7 - add automatic detection of ipmi device to measure driver
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
+ *          0.7.6 - add voltage and pstate measurements
  */
 
 #include "driver_measure.h"
@@ -107,6 +108,8 @@ static loff_t driver_lseek(struct file *fileptr, loff_t offset, int whence) {
 
 /* Check the Offset for msr and returns 0 if it's correct*/
 static int check_msr_off(loff_t offset){
+	int ret_val	= 0;
+	
 	loff_t msr_reg = 0;
 	loff_t cpu = -1;
 	loff_t whence_msr = (WHENCE_MASK & offset) >> WHENCE_POS;
@@ -118,15 +121,29 @@ static int check_msr_off(loff_t offset){
 		printk("Measure: Wrong Core number!\n");
 		return -EINVAL;
 	}
-	if(msr_reg == MSR_RAPL_POWER_UNIT || msr_reg == MSR_PKG_ENERGY_STATUS || msr_reg == MSR_PP0_ENERGY_STATUS ||
-		msr_reg == MSR_PP1_ENERGY_STATUS || msr_reg == MSR_DRAM_ENERGY_STATUS || msr_reg == IA32_THERM_STATUS ||
-		msr_reg == IA32_PACKAGE_THERM_STATUS || msr_reg == MSR_TEMPERATURE_TARGET || msr_reg == IA32_TIME_STAMP_COUNTER||
-		msr_reg == IA32_MPERF || msr_reg == IA32_APERF){
-		return 0;
+	
+	switch (msr_reg) {
+		case MSR_RAPL_POWER_UNIT:
+		case MSR_PKG_ENERGY_STATUS:
+		case MSR_PP0_ENERGY_STATUS:
+		case MSR_PP1_ENERGY_STATUS:
+		case MSR_DRAM_ENERGY_STATUS:
+		case IA32_THERM_STATUS:
+		case IA32_PACKAGE_THERM_STATUS:
+		case MSR_TEMPERATURE_TARGET:
+		case IA32_TIME_STAMP_COUNTER:
+		case IA32_MPERF:
+		case IA32_APERF:
+		case MSR_PERF_STATUS:
+			ret_val = 0;
+			break;
+			
+		default:
+			ret_val = -EPERM;
+			break;
 	}
-	else{
-		return -EPERM;
-	}
+	
+	return ret_val;
 }
 
 /*Check the offset for cpu_stats and return 0 if it's correct*/

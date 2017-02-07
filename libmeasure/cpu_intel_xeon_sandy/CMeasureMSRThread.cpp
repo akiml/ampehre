@@ -71,8 +71,11 @@ namespace NLibMeasure {
 				pMsMeasurementCpu->msr_power_cur[i][j]	= 0.0;
 			}
 			
-			pMsMeasurementCpu->msr_voltage_cur[i]	= 0.0;
-			pMsMeasurementCpu->msr_pstate_cur[i]	= 0;
+			pMsMeasurementCpu->msr_voltage_cur[i]		= 0.0;
+			pMsMeasurementCpu->msr_freq_cpu_eff_cur[i]	= 0.0;
+			pMsMeasurementCpu->msr_v2freq_acc[i]		= 0.0;
+			pMsMeasurementCpu->msr_pstate_cur[i]		= 0;
+			pMsMeasurementCpu->msr_pstate_acc[i]		= 0;
 			
 			pMsMeasurementCpu->msr_temperature_pkg_max[i]	= 0.0;
 			for (int j=0; j<CORES; ++j) {
@@ -148,6 +151,8 @@ namespace NLibMeasure {
 				
 				// result: performance
 				for (int i=0; i<CPUS; ++i) {
+					double msr_freq_cpu_eff_max	= 0.0;
+					
 					for (int j=0; j<CORES; ++j) {
 						uint64_t diff_aperf = 0;
 						uint64_t diff_mperf = 0;
@@ -170,7 +175,24 @@ namespace NLibMeasure {
 						
 						pMsMeasurementCpu->internal.msr_aperf_core_temp[i][j]	= pMsMeasurementCpu->internal.msr_aperf_core_cur[i][j];
 						pMsMeasurementCpu->internal.msr_mperf_core_temp[i][j]	= pMsMeasurementCpu->internal.msr_mperf_core_cur[i][j];
+						
+						if (msr_freq_cpu_eff_max < pMsMeasurementCpu->msr_freq_core_eff_cur[i][j]) {
+							msr_freq_cpu_eff_max = pMsMeasurementCpu->msr_freq_core_eff_cur[i][j];
+						}
 					}
+					
+					pMsMeasurementCpu->msr_freq_cpu_eff_cur[i]	= msr_freq_cpu_eff_max;
+				}
+				
+				// result: voltage2freq
+				for (int i=0; i<CPUS; ++i) {
+					pMsMeasurementCpu->msr_v2freq_acc[i]	+=
+						pMsMeasurementCpu->msr_voltage_cur[i] * pMsMeasurementCpu->msr_voltage_cur[i] *
+						pMsMeasurementCpu->msr_freq_cpu_eff_cur[i] *
+						pMsMeasurementCpu->internal.msr_time_diff_double;
+					pMsMeasurementCpu->msr_pstate_acc[i]	+=
+						pMsMeasurementCpu->msr_pstate_cur[i] *
+						pMsMeasurementCpu->internal.msr_time_diff_double;
 				}
 			}
 			

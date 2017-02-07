@@ -18,6 +18,7 @@
  *          0.3.3 - add cpu memory info to measure driver
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library.
+ *          0.7.6 - add voltage and pstate measurements
  */
 
 #ifndef __MS_DRIVER_H__

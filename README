@@ -69,3 +69,4 @@ History:
 0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
 0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
 0.7.5 - add a python wrapper for simple measuring by python scripts
+0.7.6 - add voltage and pstate measurements

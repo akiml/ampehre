@@ -23,6 +23,7 @@
  *          0.6.0 - add ioctl for the ipmi timeout, new parameters to skip certain measurements 
  *                  and to select between the full or light library. 
  *          0.7.0 - modularized measurement struct
+ *          0.7.6 - add voltage and pstate measurements
  */
 
 #include <sys/types.h>
@@ -271,7 +272,7 @@ namespace NLibMeasure {
 			pMsMeasurementCpu->msr_energy_cur[i][DRAM]		= msrGetEnergy(rThreadNum, i, MSR_DRAM_ENERGY_STATUS)*1000.0;
 			
 			if(TVariant == VARIANT_FULL) {
-				//msrGetVoltagePState(rThreadNum, i, MSR_PERF_STATUS, pMsMeasurementCpu->msr_voltage_cur[i], pMsMeasurementCpu->msr_pstate_cur[i]);
+				msrGetVoltagePState(rThreadNum, i, MSR_PERF_STATUS, pMsMeasurementCpu->msr_voltage_cur[i], pMsMeasurementCpu->msr_pstate_cur[i]);
 				
 				if(!(mMeasureCounter % TSkipMs)) {
 					pMsMeasurementCpu->msr_temperature_pkg_cur[i]	= msrGetTemperature(rThreadNum, i, IA32_PACKAGE_THERM_STATUS);

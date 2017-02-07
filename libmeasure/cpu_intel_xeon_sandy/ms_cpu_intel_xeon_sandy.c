@@ -48,6 +48,14 @@ double cpu_power_avg_dram(MS_LIST *ms_list, int cpu) {
 	return MEASUREMENT_CPU->msr_power_avg[cpu][DRAM];
 }
 
+double cpu_v2freq_total(MS_LIST *ms_list, int cpu) {
+	return MEASUREMENT_CPU->msr_v2freq_acc[cpu];
+}
+
+uint64_t cpu_pstate_total(MS_LIST *ms_list, int cpu) {
+	return MEASUREMENT_CPU->msr_pstate_acc[cpu];
+}
+
 uint32_t cpu_temp_max_pkg(MS_LIST *ms_list, int cpu) {
 	return MEASUREMENT_CPU->msr_temperature_pkg_max[cpu];
 }

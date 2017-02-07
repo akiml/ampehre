@@ -79,7 +79,10 @@ typedef struct __ms_measurement_cpu {
 	double msr_energy_acc[CPUS][3];
 	
 	double msr_voltage_cur[CPUS];
+	double msr_freq_cpu_eff_cur[CPUS];
+	double msr_v2freq_acc[CPUS];
 	uint64_t msr_pstate_cur[CPUS];
+	uint64_t msr_pstate_acc[CPUS];
 	
 	uint32_t msr_temperature_pkg_cur[CPUS];
 	uint32_t msr_temperature_pkg_max[CPUS];
@@ -118,6 +121,8 @@ double cpu_energy_total_dram(MS_LIST *ms_list, int cpu);
 double cpu_power_avg_pkg(MS_LIST *ms_list, int cpu);
 double cpu_power_avg_pp0(MS_LIST *ms_list, int cpu);
 double cpu_power_avg_dram(MS_LIST *ms_list, int cpu);
+double cpu_v2freq_total(MS_LIST *ms_list, int cpu);
+uint64_t cpu_pstate_total(MS_LIST *ms_list, int cpu);
 uint32_t cpu_temp_max_pkg(MS_LIST *ms_list, int cpu);
 uint32_t cpu_temp_max_core(MS_LIST *ms_list, int cpu, int core);
 double cpu_freq_avg_core(MS_LIST *ms_list, int cpu, int core);
