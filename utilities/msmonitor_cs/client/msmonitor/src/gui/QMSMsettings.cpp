@@ -7,6 +7,11 @@ QMSMSettings::QMSMSettings(QWidget *parent) :
 {
     ui->setupUi(this);
     connectSignals();
+    mFreq.push_back(ui->spinBoxCPU->value());
+    mFreq.push_back(ui->spinBoxGPU->value());
+    mFreq.push_back(ui->spinBoxFPGA->value());
+    mFreq.push_back(ui->spinBoxMIC->value());
+    mFreq.push_back(ui->spinBoxSystem->value());
     ui->pushButton_stop->setDisabled(true);
     ui->pushButton_reset->setDisabled(true);
 }
@@ -23,6 +28,13 @@ void QMSMSettings::connectSignals()
 
     connect(ui->horizontalSlider_guiRate, SIGNAL(valueChanged(int)), this, SLOT(emit_guiRate(int)));
     connect(ui->horizontalSlider_dataPlot, SIGNAL(valueChanged(int)), this, SLOT(emit_dataPlot(int)));
+
+    connect(ui->spinBoxCPU, SIGNAL(valueChanged(int)), this, SLOT(setFreqCpu(int)));
+    connect(ui->spinBoxGPU, SIGNAL(valueChanged(int)), this, SLOT(setFreqGpu(int)));
+    connect(ui->spinBoxFPGA, SIGNAL(valueChanged(int)), this, SLOT(setFreqFpga(int)));
+    connect(ui->spinBoxMIC, SIGNAL(valueChanged(int)), this, SLOT(setFreqMic(int)));
+    connect(ui->spinBoxSystem, SIGNAL(valueChanged(int)), this, SLOT(setFreqSys(int)));
+
 }
 
 void QMSMSettings::emit_start()
@@ -60,6 +72,37 @@ void QMSMSettings::emit_dataHeatmap(int v)
     QString s = QString::number(v) + " ms";
     ui->label_dataHeatmap->setText(s);
 }
+
+void QMSMSettings::setFreqCpu(int v)
+{
+    mFreq[FREQ_CPU] = v;
+    emit signal_freq(mFreq);
+}
+
+void QMSMSettings::setFreqGpu(int v)
+{
+    mFreq[FREQ_GPU] = v;
+    emit signal_freq(mFreq);
+}
+
+void QMSMSettings::setFreqFpga(int v)
+{
+    mFreq[FREQ_FPGA] = v;
+    emit signal_freq(mFreq);
+}
+
+void QMSMSettings::setFreqMic(int v)
+{
+    mFreq[FREQ_MIC] = v;
+    emit signal_freq(mFreq);
+}
+
+void QMSMSettings::setFreqSys(int v)
+{
+    mFreq[FREQ_SYSTEM] = v;
+    emit signal_freq(mFreq);
+}
+
 
 void QMSMSettings::setSliderPos(std::vector<int>& val)
 {

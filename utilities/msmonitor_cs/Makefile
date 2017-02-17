@@ -156,17 +156,17 @@ client/fast:
 .PHONY : client/fast
 
 #=============================================================================
-# Target rules for targets named msm_client
+# Target rules for targets named msm_client_test
 
 # Build rule for target.
-msm_client: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 msm_client
-.PHONY : msm_client
+msm_client_test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 msm_client_test
+.PHONY : msm_client_test
 
 # fast build rule for target.
-msm_client/fast:
-	$(MAKE) -f client/CMakeFiles/msm_client.dir/build.make client/CMakeFiles/msm_client.dir/build
-.PHONY : msm_client/fast
+msm_client_test/fast:
+	$(MAKE) -f client/CMakeFiles/msm_client_test.dir/build.make client/CMakeFiles/msm_client_test.dir/build
+.PHONY : msm_client_test/fast
 
 #=============================================================================
 # Target rules for targets named msm_srv
@@ -207,7 +207,7 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... client"
-	@echo "... msm_client"
+	@echo "... msm_client_test"
 	@echo "... msm_srv"
 	@echo "... server"
 .PHONY : help

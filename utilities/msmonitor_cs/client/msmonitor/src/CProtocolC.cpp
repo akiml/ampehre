@@ -46,24 +46,35 @@ int CProtocolC::parseMsg(void* msg, unsigned int length, int& reg, int& tsk, std
 			submsg = msg_str.substr(before, next-before);
 			switch(i){
 			  case 0:
-				tsk = checkCmdVersion(submsg, mVersion);
+                tsk = checkCmdVersion(submsg);
 				if(tsk < 0){
 					std::cout << "wrong version" << std::endl;
 					return -1;
 				}
+                i++;
 				break;
 			  case 1:
-				if(setReg(submsg, reg) < 0){
-					if(getData(msg+before, length-before, values) < 0){
-						return -1;
-					} 
-				}
+                if(tsk == CLIENT_REG){
+                    if(setReg(submsg, reg) < 0){
+                        return -1;
+                    }
+                    return 0;
+                }
+                else if(tsk == DATA_RES){
+                    if(getData(msg+before, length-before, values) < 0){
+                        return -1;
+                    }
+                    return 0;
+                }
+//                else if(tsk == SET_FREQ)
+//                {
 
+//                }
 				break;
 			}
 		}
 		next += 2;
-		i++;
+
 	}
 	return 0;
 }
@@ -92,6 +103,23 @@ std::string CProtocolC::requestMsg(int reg) {
 	msg.append("\r\n");
 	
 	return msg;
+}
+
+std::string CProtocolC::freqMsg(std::vector<int>& vals)
+{
+    std::cout << "value size: " << vals.size() << std::endl;
+    std::string msg = "";
+    addCmdVersion(msg, SET_FREQ, mVersion);
+    std::ostringstream ss;
+    for(unsigned int i = 0; i < vals.size(); i++)
+    {
+        ss.str("");
+        ss << vals[i];
+        msg.append(ss.str());
+        msg.append("\r\n");
+    }
+
+    return msg;
 }
 
 std::string CProtocolC::termMsg(int reg) {

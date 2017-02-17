@@ -42,6 +42,10 @@ void CMeasure::stop() {
 	mHandler.stopCollectData();
 }
 
+NData::CDataSettings& CMeasure::getSettings(){
+	return mHandler.getSettings();
+}
+
 void CMeasure::getValues(std::vector<double>& sol, std::vector<int>& req){
 	sol.clear();
 	

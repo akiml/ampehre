@@ -29,6 +29,7 @@
 #include "ms_measurement.h"
 #include "CDataHandler.hpp"
 
+
 class CMeasure{
 	
 	
@@ -38,6 +39,7 @@ public:
 	void start();
 	void stop();
 	void getValues(std::vector<double>& sol, std::vector<int>& req);
+	NData::CDataSettings& getSettings();
 	
 private:
 	NData::CDataHandler mHandler;

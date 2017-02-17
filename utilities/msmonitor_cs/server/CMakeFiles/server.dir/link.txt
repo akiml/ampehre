@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC    -shared -Wl,-soname,libserver.so -o libserver.so CMakeFiles/server.dir/src/CComS.cpp.o CMakeFiles/server.dir/src/CMeasure.cpp.o CMakeFiles/server.dir/src/CServer.cpp.o CMakeFiles/server.dir/src/CProtocolS.cpp.o CMakeFiles/server.dir/__/include/CProtocol.cpp.o CMakeFiles/server.dir/__/include/utils.cpp.o  -L/home/aelali/ampehre/utilities/msmonitor_cs/.. 

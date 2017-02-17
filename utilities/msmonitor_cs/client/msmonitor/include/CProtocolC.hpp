@@ -36,6 +36,7 @@ public:
 	std::string regMsg(uint64_t code);
 	std::string requestMsg(int reg);
 	std::string termMsg(int reg);
+    std::string freqMsg(std::vector<int> &vals);
 
 	static void addAll(std::vector<int>& values);
 	static void addPower(std::vector<int>& values);
@@ -46,6 +47,7 @@ public:
 	
 	int parseMsg(void* msg, unsigned int length, int& reg, int& tsk, std::vector< double >& values);
 	int getData(void* msg, int size, std::vector<double>& values);
+
 	
 	
 };

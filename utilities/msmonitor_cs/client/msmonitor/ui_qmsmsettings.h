@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qmsmsettings.ui'
 **
-** Created: Mon Feb 6 15:06:30 2017
+** Created: Fri Feb 17 11:33:48 2017
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -18,6 +18,7 @@
 #include <QtGui/QLabel>
 #include <QtGui/QPushButton>
 #include <QtGui/QSlider>
+#include <QtGui/QSpinBox>
 #include <QtGui/QTabWidget>
 #include <QtGui/QWidget>
 
@@ -28,6 +29,21 @@ class Ui_QMSMSettings
 public:
     QTabWidget *tabWidget;
     QWidget *tab;
+    QSpinBox *spinBoxCPU;
+    QSpinBox *spinBoxGPU;
+    QSpinBox *spinBoxFPGA;
+    QSpinBox *spinBoxMIC;
+    QSpinBox *spinBoxSystem;
+    QLabel *label_4;
+    QLabel *label_6;
+    QLabel *label_7;
+    QLabel *label_8;
+    QLabel *label_9;
+    QLabel *label_10;
+    QLabel *label_11;
+    QLabel *label_12;
+    QLabel *label_13;
+    QLabel *label_14;
     QWidget *tab_3;
     QLabel *label;
     QSlider *horizontalSlider_dataPlot;
@@ -52,9 +68,73 @@ public:
         QMSMSettings->resize(400, 640);
         tabWidget = new QTabWidget(QMSMSettings);
         tabWidget->setObjectName(QString::fromUtf8("tabWidget"));
-        tabWidget->setGeometry(QRect(30, 20, 331, 301));
+        tabWidget->setGeometry(QRect(30, 10, 331, 301));
         tab = new QWidget();
         tab->setObjectName(QString::fromUtf8("tab"));
+        spinBoxCPU = new QSpinBox(tab);
+        spinBoxCPU->setObjectName(QString::fromUtf8("spinBoxCPU"));
+        spinBoxCPU->setGeometry(QRect(140, 10, 61, 31));
+        spinBoxCPU->setMinimum(10);
+        spinBoxCPU->setMaximum(150);
+        spinBoxCPU->setSingleStep(10);
+        spinBoxGPU = new QSpinBox(tab);
+        spinBoxGPU->setObjectName(QString::fromUtf8("spinBoxGPU"));
+        spinBoxGPU->setGeometry(QRect(140, 60, 61, 31));
+        spinBoxGPU->setMinimum(10);
+        spinBoxGPU->setMaximum(150);
+        spinBoxGPU->setSingleStep(10);
+        spinBoxGPU->setValue(50);
+        spinBoxFPGA = new QSpinBox(tab);
+        spinBoxFPGA->setObjectName(QString::fromUtf8("spinBoxFPGA"));
+        spinBoxFPGA->setGeometry(QRect(140, 110, 61, 31));
+        spinBoxFPGA->setMinimum(10);
+        spinBoxFPGA->setMaximum(150);
+        spinBoxFPGA->setSingleStep(10);
+        spinBoxFPGA->setValue(60);
+        spinBoxMIC = new QSpinBox(tab);
+        spinBoxMIC->setObjectName(QString::fromUtf8("spinBoxMIC"));
+        spinBoxMIC->setGeometry(QRect(140, 160, 61, 31));
+        spinBoxMIC->setMinimum(10);
+        spinBoxMIC->setMaximum(150);
+        spinBoxMIC->setSingleStep(60);
+        spinBoxMIC->setValue(60);
+        spinBoxSystem = new QSpinBox(tab);
+        spinBoxSystem->setObjectName(QString::fromUtf8("spinBoxSystem"));
+        spinBoxSystem->setGeometry(QRect(140, 210, 61, 31));
+        spinBoxSystem->setMinimum(10);
+        spinBoxSystem->setMaximum(150);
+        spinBoxSystem->setSingleStep(10);
+        spinBoxSystem->setValue(100);
+        label_4 = new QLabel(tab);
+        label_4->setObjectName(QString::fromUtf8("label_4"));
+        label_4->setGeometry(QRect(80, 20, 51, 21));
+        label_6 = new QLabel(tab);
+        label_6->setObjectName(QString::fromUtf8("label_6"));
+        label_6->setGeometry(QRect(80, 70, 51, 21));
+        label_7 = new QLabel(tab);
+        label_7->setObjectName(QString::fromUtf8("label_7"));
+        label_7->setGeometry(QRect(80, 120, 51, 21));
+        label_8 = new QLabel(tab);
+        label_8->setObjectName(QString::fromUtf8("label_8"));
+        label_8->setGeometry(QRect(80, 170, 41, 21));
+        label_9 = new QLabel(tab);
+        label_9->setObjectName(QString::fromUtf8("label_9"));
+        label_9->setGeometry(QRect(80, 220, 61, 21));
+        label_10 = new QLabel(tab);
+        label_10->setObjectName(QString::fromUtf8("label_10"));
+        label_10->setGeometry(QRect(210, 20, 21, 21));
+        label_11 = new QLabel(tab);
+        label_11->setObjectName(QString::fromUtf8("label_11"));
+        label_11->setGeometry(QRect(210, 70, 21, 21));
+        label_12 = new QLabel(tab);
+        label_12->setObjectName(QString::fromUtf8("label_12"));
+        label_12->setGeometry(QRect(210, 120, 21, 21));
+        label_13 = new QLabel(tab);
+        label_13->setObjectName(QString::fromUtf8("label_13"));
+        label_13->setGeometry(QRect(210, 170, 21, 21));
+        label_14 = new QLabel(tab);
+        label_14->setObjectName(QString::fromUtf8("label_14"));
+        label_14->setGeometry(QRect(210, 220, 21, 21));
         tabWidget->addTab(tab, QString());
         tab_3 = new QWidget();
         tab_3->setObjectName(QString::fromUtf8("tab_3"));
@@ -124,7 +204,7 @@ public:
 
         retranslateUi(QMSMSettings);
 
-        tabWidget->setCurrentIndex(1);
+        tabWidget->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(QMSMSettings);
@@ -133,6 +213,16 @@ public:
     void retranslateUi(QWidget *QMSMSettings)
     {
         QMSMSettings->setWindowTitle(QApplication::translate("QMSMSettings", "Form", 0, QApplication::UnicodeUTF8));
+        label_4->setText(QApplication::translate("QMSMSettings", "CPU:", 0, QApplication::UnicodeUTF8));
+        label_6->setText(QApplication::translate("QMSMSettings", "GPU:", 0, QApplication::UnicodeUTF8));
+        label_7->setText(QApplication::translate("QMSMSettings", "FPGA:", 0, QApplication::UnicodeUTF8));
+        label_8->setText(QApplication::translate("QMSMSettings", "MIC:", 0, QApplication::UnicodeUTF8));
+        label_9->setText(QApplication::translate("QMSMSettings", "System:", 0, QApplication::UnicodeUTF8));
+        label_10->setText(QApplication::translate("QMSMSettings", "ms", 0, QApplication::UnicodeUTF8));
+        label_11->setText(QApplication::translate("QMSMSettings", "ms", 0, QApplication::UnicodeUTF8));
+        label_12->setText(QApplication::translate("QMSMSettings", "ms", 0, QApplication::UnicodeUTF8));
+        label_13->setText(QApplication::translate("QMSMSettings", "ms", 0, QApplication::UnicodeUTF8));
+        label_14->setText(QApplication::translate("QMSMSettings", "ms", 0, QApplication::UnicodeUTF8));
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("QMSMSettings", "Resource", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("QMSMSettings", "Plot:", 0, QApplication::UnicodeUTF8));
         label_dataPlot->setText(QApplication::translate("QMSMSettings", "250 ms", 0, QApplication::UnicodeUTF8));

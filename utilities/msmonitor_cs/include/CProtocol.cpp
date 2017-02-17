@@ -43,7 +43,7 @@ uint64_t CProtocol::createDataCode(std::vector<int>& values){
 	return sol;
 }
 
-int CProtocol::checkCmdVersion(std::string msg, std::string version){
+int CProtocol::checkCmdVersion(std::string msg){
 	int cmd = -1;
 	std::string ver_str = "MSMP/" + mVersion;
 	std::size_t found = msg.find(" / ");
@@ -58,7 +58,9 @@ int CProtocol::checkCmdVersion(std::string msg, std::string version){
 			cmd = DATA_RES;
 		}else if(subs == "TERM_COM"){
 			cmd = TERM_COM;
-		}else
+        }else if(subs == "SET_FREQ"){
+            cmd = SET_FREQ;
+        }else
 			return -1;
 		
 		std::string sub2 = msg.substr(found+3);
@@ -133,6 +135,10 @@ void CProtocol::addCmdVersion(std::string& msg, int cmd, std::string version){
 			msg.append("TERM_COM");
 			break;
 		}
+        case SET_FREQ:{
+            msg.append("SET_FREQ");
+            break;
+        }
 	}
 	msg.append(" / MSMP/");
 	msg.append(version);

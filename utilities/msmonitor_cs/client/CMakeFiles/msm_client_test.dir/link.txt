@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/msm_client_test.dir/main.cpp.o  -o msm_client_test  -L/home/aelali/ampehre/utilities/msmonitor_cs/.. -rdynamic libclient.so -Wl,-rpath,/home/aelali/ampehre/utilities/msmonitor_cs/..:/home/aelali/ampehre/utilities/msmonitor_cs/client 

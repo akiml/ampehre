@@ -50,6 +50,7 @@ void CServer::acceptLoop() {
 	int task_code = 0;
 	int registry = 0;
 	uint64_t data = 0;
+	std::vector<uint64_t> freq;
 
 	struct sigaction act;
 	act.sa_handler = termHandler;
@@ -69,15 +70,45 @@ void CServer::acceptLoop() {
 		
 		std::cout<<"************************" << std::endl;
 		
-		if(mProtocol.parseMsg(buffer, recv_length, task_code, registry, data) < 0){
+		if(mProtocol.parseMsg(buffer, recv_length, task_code, registry, data, freq) < 0){
 			std::cout << "[!]error parsing message" << std::endl;
 		}
 		else{
+			setFrequencies(freq);
 			answer(task_code, registry, data);
 		}	
 
 		close(mSocket);
 	}
+}
+
+void CServer::setFrequencies(std::vector<uint64_t>& freq)
+{
+	if(freq.size() > 0){
+		std::cout<< "setting freq: " << std::endl;
+		NData::CDataSettings settings = mMeasure.getSettings();
+		for(unsigned int k = 0; k < freq.size(); k++){
+			std::cout << freq[k] << std::endl;
+			switch(k){
+				case(0):
+					settings.mCPUSamplingRate = freq[k];
+					break;
+				case(1):
+					settings.mGPUSamplingRate = freq[k];
+					break;
+				case(2):
+					settings.mFPGASamplingRate = freq[k];
+					break;
+				case(3):
+					settings.mMICSamplingRate = freq[k];
+					break;
+				case(4):
+					settings.mSystemSamplingRate = freq[k];
+					break;		
+			}	
+		}
+	}			
+			
 }
 
 void CServer::answer(int taskCode, int registry, uint64_t datacode){
@@ -98,6 +129,10 @@ void CServer::answer(int taskCode, int registry, uint64_t datacode){
 			terminate(registry);
 			break;
 		}
+		case SET_FREQ:{
+			confirmFreq(registry);
+			break;
+		}
 	}
 }
 
@@ -109,6 +144,17 @@ void CServer::registerClient(uint64_t datacode){
 
 	mProtocol.answerRegisterMsg(answer, reg);
 	mCom.sendMsg(answer, mSocket);
+}
+
+void CServer::confirmFreq(int registry){
+	if(ut::find(mRegClients, registry, mIterator) == 0){
+		std::string m;
+		mProtocol.confirmFreqChange(m, registry);
+		mCom.sendMsg(m,  mSocket);
+
+	}else{
+		std::cout<<"client not registered yet!" << std::endl;
+	}
 }
 
 void CServer::dataRequest(int registry){
@@ -142,8 +188,9 @@ void CServer::createDataAnswer(std::string& msg, uint64_t dataCode) {
 
 
 	for(unsigned int i = 0; i < values.size(); i++){
-		mProtocol.addData(msg, values[i]);		//write all data values 
+		mProtocol.addData(msg, values[i]);		//write all data values 		
 	}
+
 }
 
 int CServer::createDataAnswer(void** answer, uint64_t dataCode) {

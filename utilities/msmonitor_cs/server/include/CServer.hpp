@@ -42,6 +42,8 @@ private:
 	void registerClient(uint64_t datacode);
 	void dataRequest(int registry);
 	void terminate(int registry);
+	void confirmFreq(int registry);
+	void setFrequencies(std::vector<uint64_t>& freq);
 	void createDataAnswer(std::string &msg, uint64_t dataCode);
 	int createDataAnswer(void** answer, uint64_t dataCode);
 	static void termHandler(int s);

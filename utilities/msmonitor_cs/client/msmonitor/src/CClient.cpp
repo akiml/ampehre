@@ -78,7 +78,7 @@ void CClient::requestData() {
 	std::string msg = mProtocol.requestMsg(mReg);
 	mCom.communicate(msg.c_str(), rep, rep_len);
 	mProtocol.parseMsg(rep, rep_len, reg, tsk, mValues);
-
+    std::cout << "size: " << mValues.size() << std::endl;
 	free(rep);
 	
 }
@@ -97,6 +97,26 @@ void CClient::terminate() {
 	mCom.communicate(msg.c_str(), rep, rep_len);
 
 	free(rep);
+}
+
+void CClient::setFreq(std::vector<int>& vals)
+{
+    initSocket();
+    void* rep = malloc(4096);
+    if (NULL == rep){
+        std::cout << "[FATAL] out of memory!" << std::endl;
+        exit(-1);
+    }
+    int rep_len = 0;
+
+    std::string msg = mProtocol.freqMsg(vals);
+
+    std::cout << "FREQUENCY: " << std::endl;
+    std::cout << msg << std::endl;
+
+    mCom.communicate(msg.c_str(), rep, rep_len);
+
+    free(rep);
 }
 
 void CClient::initSocket(){

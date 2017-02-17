@@ -194,6 +194,30 @@ __/include/CProtocol.cpp.s:
 	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/__/include/CProtocol.cpp.s
 .PHONY : __/include/CProtocol.cpp.s
 
+__/include/utils.o: __/include/utils.cpp.o
+.PHONY : __/include/utils.o
+
+# target to build an object file
+__/include/utils.cpp.o:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/__/include/utils.cpp.o
+.PHONY : __/include/utils.cpp.o
+
+__/include/utils.i: __/include/utils.cpp.i
+.PHONY : __/include/utils.i
+
+# target to preprocess a source file
+__/include/utils.cpp.i:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/__/include/utils.cpp.i
+.PHONY : __/include/utils.cpp.i
+
+__/include/utils.s: __/include/utils.cpp.s
+.PHONY : __/include/utils.s
+
+# target to generate assembly for a file
+__/include/utils.cpp.s:
+	cd /home/aelali/ampehre/utilities/msmonitor_cs && $(MAKE) -f server/CMakeFiles/server.dir/build.make server/CMakeFiles/server.dir/__/include/utils.cpp.s
+.PHONY : __/include/utils.cpp.s
+
 main.o: main.cpp.o
 .PHONY : main.o
 
@@ -331,6 +355,9 @@ help:
 	@echo "... __/include/CProtocol.o"
 	@echo "... __/include/CProtocol.i"
 	@echo "... __/include/CProtocol.s"
+	@echo "... __/include/utils.o"
+	@echo "... __/include/utils.i"
+	@echo "... __/include/utils.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

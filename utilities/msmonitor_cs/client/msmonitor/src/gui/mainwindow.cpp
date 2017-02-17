@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mClient(CClient()),
     mpTimer(new QTimer()),
     mpGuiTimer(new QTimer()),
-    mPlotInterval(100),
+    mPlotInterval(2000),
     mHeatmapInterval(150),
     mGuiInterval(500)
 {
@@ -147,6 +147,7 @@ void MainWindow::connectActions()
 
     connect(mpSettings, SIGNAL(signal_guiRate(int)), this, SLOT(setGuiInterval(int)));
     connect(mpSettings, SIGNAL(signal_dataPlot(int)), this, SLOT(setInterval(int)));
+    connect(mpSettings, SIGNAL(signal_freq(std::vector<int>&)), this, SLOT(setFreq(std::vector<int>&)));
 
     connect(ui->action_Power, SIGNAL(triggered()),this, SLOT(showPower()));
     connect(ui->action_Temperature, SIGNAL(triggered()),this, SLOT(showTemp()));
@@ -205,6 +206,12 @@ void MainWindow::setInterval(int val)
         mpTimer->setInterval(mPlotInterval);
     }
 }
+
+void MainWindow::setFreq(std::vector<int> &fv)
+{
+    mClient.setFreq(fv);
+}
+
 
 void MainWindow::showPower()
 {

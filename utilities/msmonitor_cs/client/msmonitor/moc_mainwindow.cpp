@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'mainwindow.h'
 **
-** Created: Mon Feb 6 15:03:54 2017
+** Created: Fri Feb 17 11:33:59 2017
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_MainWindow[] = {
        4,       // revision
        0,       // classname
        0,    0, // classinfo
-      21,   14, // methods
+      22,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -37,21 +37,22 @@ static const uint qt_meta_data_MainWindow[] = {
       35,   11,   11,   11, 0x0a,
       53,   49,   11,   11, 0x0a,
       73,   49,   11,   11, 0x0a,
-      90,   11,   11,   11, 0x0a,
-     102,   11,   11,   11, 0x0a,
-     113,   11,   11,   11, 0x0a,
-     125,   11,   11,   11, 0x0a,
-     136,   11,   11,   11, 0x0a,
-     149,   11,   11,   11, 0x0a,
-     167,   11,   11,   11, 0x0a,
-     185,   11,   11,   11, 0x0a,
-     200,   11,   11,   11, 0x0a,
-     214,   11,   11,   11, 0x0a,
-     227,   11,   11,   11, 0x0a,
-     241,   11,   11,   11, 0x0a,
-     254,   11,   11,   11, 0x0a,
-     269,   11,   11,   11, 0x0a,
-     289,   11,   11,   11, 0x0a,
+      93,   90,   11,   11, 0x0a,
+     120,   11,   11,   11, 0x0a,
+     132,   11,   11,   11, 0x0a,
+     143,   11,   11,   11, 0x0a,
+     155,   11,   11,   11, 0x0a,
+     166,   11,   11,   11, 0x0a,
+     179,   11,   11,   11, 0x0a,
+     197,   11,   11,   11, 0x0a,
+     215,   11,   11,   11, 0x0a,
+     230,   11,   11,   11, 0x0a,
+     244,   11,   11,   11, 0x0a,
+     257,   11,   11,   11, 0x0a,
+     271,   11,   11,   11, 0x0a,
+     284,   11,   11,   11, 0x0a,
+     299,   11,   11,   11, 0x0a,
+     319,   11,   11,   11, 0x0a,
 
        0        // eod
 };
@@ -59,11 +60,12 @@ static const uint qt_meta_data_MainWindow[] = {
 static const char qt_meta_stringdata_MainWindow[] = {
     "MainWindow\0\0start()\0stop()\0reset()\0"
     "requestData()\0val\0setGuiInterval(int)\0"
-    "setInterval(int)\0showPower()\0showTemp()\0"
-    "showClock()\0showUtil()\0showMemory()\0"
-    "showHeatmapUtil()\0showHeatmapTemp()\0"
-    "showSettings()\0updatePower()\0updateTemp()\0"
-    "updateClock()\0updateUtil()\0updateMemory()\0"
+    "setInterval(int)\0fv\0setFreq(std::vector<int>&)\0"
+    "showPower()\0showTemp()\0showClock()\0"
+    "showUtil()\0showMemory()\0showHeatmapUtil()\0"
+    "showHeatmapTemp()\0showSettings()\0"
+    "updatePower()\0updateTemp()\0updateClock()\0"
+    "updateUtil()\0updateMemory()\0"
     "updateHeatmapUtil()\0updateHeatmapTemp()\0"
 };
 
@@ -102,24 +104,25 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 3: requestData(); break;
         case 4: setGuiInterval((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 5: setInterval((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 6: showPower(); break;
-        case 7: showTemp(); break;
-        case 8: showClock(); break;
-        case 9: showUtil(); break;
-        case 10: showMemory(); break;
-        case 11: showHeatmapUtil(); break;
-        case 12: showHeatmapTemp(); break;
-        case 13: showSettings(); break;
-        case 14: updatePower(); break;
-        case 15: updateTemp(); break;
-        case 16: updateClock(); break;
-        case 17: updateUtil(); break;
-        case 18: updateMemory(); break;
-        case 19: updateHeatmapUtil(); break;
-        case 20: updateHeatmapTemp(); break;
+        case 6: setFreq((*reinterpret_cast< std::vector<int>(*)>(_a[1]))); break;
+        case 7: showPower(); break;
+        case 8: showTemp(); break;
+        case 9: showClock(); break;
+        case 10: showUtil(); break;
+        case 11: showMemory(); break;
+        case 12: showHeatmapUtil(); break;
+        case 13: showHeatmapTemp(); break;
+        case 14: showSettings(); break;
+        case 15: updatePower(); break;
+        case 16: updateTemp(); break;
+        case 17: updateClock(); break;
+        case 18: updateUtil(); break;
+        case 19: updateMemory(); break;
+        case 20: updateHeatmapUtil(); break;
+        case 21: updateHeatmapTemp(); break;
         default: ;
         }
-        _id -= 21;
+        _id -= 22;
     }
     return _id;
 }

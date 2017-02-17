@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Mon Feb 6 15:03:43 2017
+** Created: Fri Feb 17 11:33:48 2017
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -56,7 +56,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
-        MainWindow->resize(1050, 650);
+        MainWindow->resize(1130, 708);
         MainWindow->setMinimumSize(QSize(1050, 650));
         action_Quit = new QAction(MainWindow);
         action_Quit->setObjectName(QString::fromUtf8("action_Quit"));
@@ -101,7 +101,7 @@ public:
         MainWindow->setStatusBar(statusBar);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1050, 27));
+        menuBar->setGeometry(QRect(0, 0, 1130, 27));
         menu_File = new QMenu(menuBar);
         menu_File->setObjectName(QString::fromUtf8("menu_File"));
         menu_View = new QMenu(menuBar);

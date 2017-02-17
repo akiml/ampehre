@@ -17,8 +17,8 @@ SOURCES += src/main.cpp \
         src/CClient.cpp \
         src/CComC.cpp \
         src/CProtocolC.cpp \
-        src/CProtocol.cpp \
-        src/utils.cpp \
+        ../../include/CProtocol.cpp \
+        ../../include/utils.cpp \
         src/gui/mainwindow.cpp \
     	src/gui/QMSMpowerplot.cpp \
         src/gui/QMSMplot.cpp \
@@ -35,8 +35,8 @@ HEADERS  += include/gui/mainwindow.h \
         include/CClient.hpp \
         include/CComC.hpp \
         include/CProtocolC.hpp \
-        include/CProtocol.hpp \
-        include/utils.h \
+        ../../include/CProtocol.hpp \
+        ../../include/utils.h \
         include/gui/QMSMtemperatureplot.h \
         include/gui/QMSMclockplot.h \
         include/gui/QMSMutilplot.h \
