@@ -26,12 +26,11 @@ CProtocolS::CProtocolS(std::string version){
 
 CProtocolS::~CProtocolS(){}
 
-int CProtocolS::parseMsg(char* msg, const unsigned int length, int& tsk, int& reg, uint64_t& data, std::vector<uint64_t>& v){
+int CProtocolS::parseMsg(char* msg, const unsigned int length, int& tsk, int& reg, uint64_t& data){
 	unsigned int i = 0;
 	std::string msg_str (msg, length);
 	std::string end ("\r\n");
 	std::string submsg;
-	v.clear();
 	
 	std::size_t found = 1;
 	std::size_t next = 0;
@@ -60,7 +59,7 @@ int CProtocolS::parseMsg(char* msg, const unsigned int length, int& tsk, int& re
 						return -1;
 					}
 				}else if(tsk == SET_FREQ){
-					if(getFreq(submsg, v) < 0){
+					if(setReg(submsg, reg) < 0){
 						return -1;					
 					}
 				}else if(tsk == CLIENT_REG){
@@ -93,15 +92,6 @@ int CProtocolS::checkData(std::string msg, uint64_t* data) {
 	return 0;
 }
 
-int CProtocolS::getFreq(std::string msg, std::vector<uint64_t>& vals)
-{
-	const std::string s = msg;
-	int val;
-	std::istringstream ss(s);
-	ss >> val;
-	vals.push_back((uint64_t)val);
-	return 0;
-}
 
 void CProtocolS::answerRegisterMsg(std::string& msg, int reg) {
 	addCmdVersion(msg, CLIENT_REG, mVersion);
@@ -121,12 +111,15 @@ void CProtocolS::termComMsg(std::string& msg, int reg){
 	msg.append("\r\n");
 }
 
-void CProtocolS::confirmFreqChange(std::string &msg, int reg){
+void CProtocolS::freqMsg(std::string &msg, std::vector<uint64_t>& vals){
 	addCmdVersion(msg, SET_FREQ, mVersion);
-	msg.append("REG: ");
 	std::ostringstream ss;
-	ss << reg;
-	msg.append(ss.str());
-	msg.append("\r\n");
+  	for(unsigned int i = 0; i < vals.size(); i++)
+	{
+		ss.str("");
+		ss << vals[i];
+		msg.append(ss.str());
+		msg.append("\r\n");
+	}
 }
 

@@ -35,12 +35,11 @@ public:
 
 	CProtocolS(std::string version);
 	~CProtocolS();
-	int parseMsg(char *msg, const unsigned int length, int& tsk, int& reg, uint64_t& data, std::vector<uint64_t>& v);
+	int parseMsg(char *msg, const unsigned int length, int& tsk, int& reg, uint64_t& data);
 	int checkData(std::string msg, uint64_t* data);
-	int getFreq(std::string msg, std::vector<uint64_t>& vals);
 	void answerRegisterMsg(std::string &msg, int reg);
 	void termComMsg(std::string &msg, int reg);
-	void confirmFreqChange(std::string &msg, int reg);
+	void freqMsg(std::string &msg, std::vector<uint64_t>& vals);
 	
 private:
 	

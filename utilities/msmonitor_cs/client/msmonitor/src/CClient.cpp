@@ -99,7 +99,7 @@ void CClient::terminate() {
 	free(rep);
 }
 
-void CClient::setFreq(std::vector<int>& vals)
+void CClient::getFreq(std::vector<uint64_t>& vals)
 {
     initSocket();
     void* rep = malloc(4096);
@@ -109,12 +109,9 @@ void CClient::setFreq(std::vector<int>& vals)
     }
     int rep_len = 0;
 
-    std::string msg = mProtocol.freqMsg(vals);
-
-    std::cout << "FREQUENCY: " << std::endl;
-    std::cout << msg << std::endl;
-
+    std::string msg = mProtocol.freqMsg(mReg);
     mCom.communicate(msg.c_str(), rep, rep_len);
+    mProtocol.getData(rep, rep_len, vals);
 
     free(rep);
 }

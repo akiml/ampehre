@@ -80,7 +80,6 @@ public slots:
 
     void setGuiInterval(int val);
     void setInterval(int val);
-    void setFreq(std::vector<int>& fv);
 
 
 

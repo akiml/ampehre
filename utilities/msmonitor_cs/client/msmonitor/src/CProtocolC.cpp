@@ -66,10 +66,6 @@ int CProtocolC::parseMsg(void* msg, unsigned int length, int& reg, int& tsk, std
                     }
                     return 0;
                 }
-//                else if(tsk == SET_FREQ)
-//                {
-
-//                }
 				break;
 			}
 		}
@@ -105,19 +101,15 @@ std::string CProtocolC::requestMsg(int reg) {
 	return msg;
 }
 
-std::string CProtocolC::freqMsg(std::vector<int>& vals)
+std::string CProtocolC::freqMsg(int reg)
 {
-    std::cout << "value size: " << vals.size() << std::endl;
     std::string msg = "";
     addCmdVersion(msg, SET_FREQ, mVersion);
+    msg.append("REG: ");
     std::ostringstream ss;
-    for(unsigned int i = 0; i < vals.size(); i++)
-    {
-        ss.str("");
-        ss << vals[i];
-        msg.append(ss.str());
-        msg.append("\r\n");
-    }
+    ss << reg;
+    msg.append(ss.str());
+    msg.append("\r\n");
 
     return msg;
 }
@@ -143,8 +135,6 @@ int CProtocolC::getData(void* msg, int size, std::vector< double >& values) {
 
 	if(size % (sizeof(double)+2*sizeof(char)) != 0)
 		return -1;
-
-	std::cout << "DATA_RES / MSMP/0.1" << std::endl;
  
 	while(k < size+msg){
 		memcpy(&val, k, sizeof(double));
@@ -154,6 +144,28 @@ int CProtocolC::getData(void* msg, int size, std::vector< double >& values) {
 	}
 	
 	return 0;
+}
+
+int CProtocolC::getData(void *msg, int size, std::vector<uint64_t> &values)
+{
+    std::string str ((char*)msg, size);
+    std::size_t found = str.find('\n');
+    std::size_t before = 0;
+    std::string submsg= str.substr(found+1, str.size());
+    before = found+1;
+    uint64_t freqVal;
+
+    values.clear();
+    while(found != std::string::npos)
+    {
+        found = str.find('\n', before+1);
+        submsg = str.substr(before, found-2);
+        std::istringstream(submsg) >> freqVal;
+        values.push_back(freqVal);
+        before = found+1;
+    }
+
+    return 0;
 }
 
 void CProtocolC::addAll(std::vector< int >& values) {

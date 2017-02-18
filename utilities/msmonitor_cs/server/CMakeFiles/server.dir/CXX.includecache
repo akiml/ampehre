@@ -50,19 +50,11 @@ string
 utils.h
 /home/aelali/ampehre/utilities/msmonitor_cs/include/utils.h
 
-/home/aelali/ampehre/utilities/msmonitor_cs/include/utils.cpp
-utils.h
-/home/aelali/ampehre/utilities/msmonitor_cs/include/utils.h
-
 /home/aelali/ampehre/utilities/msmonitor_cs/include/utils.h
 list
 -
 inttypes.h
 -
-
-/home/aelali/ampehre/utilities/msmonitor_cs/server/src/CComS.cpp
-CComS.hpp
-/home/aelali/ampehre/utilities/msmonitor_cs/server/src/CComS.hpp
 
 /home/aelali/ampehre/utilities/msmonitor_cs/server/src/CMeasure.cpp
 CMeasure.hpp

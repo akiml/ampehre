@@ -147,7 +147,6 @@ void MainWindow::connectActions()
 
     connect(mpSettings, SIGNAL(signal_guiRate(int)), this, SLOT(setGuiInterval(int)));
     connect(mpSettings, SIGNAL(signal_dataPlot(int)), this, SLOT(setInterval(int)));
-    connect(mpSettings, SIGNAL(signal_freq(std::vector<int>&)), this, SLOT(setFreq(std::vector<int>&)));
 
     connect(ui->action_Power, SIGNAL(triggered()),this, SLOT(showPower()));
     connect(ui->action_Temperature, SIGNAL(triggered()),this, SLOT(showTemp()));
@@ -167,6 +166,10 @@ void MainWindow::start()
     std::vector<int> values;
     CProtocolC::addAll(values);
     mClient.registerToServer(values, 2900, "131.234.58.31");
+
+    std::vector<uint64_t> frequencies;
+    mClient.getFreq(frequencies);
+    mpSettings->setFreqLabels(frequencies);
 
     mpTimer->setInterval(mPlotInterval);
     mpGuiTimer->setInterval(mGuiInterval);
@@ -205,11 +208,6 @@ void MainWindow::setInterval(int val)
         this->mPlotInterval = val;
         mpTimer->setInterval(mPlotInterval);
     }
-}
-
-void MainWindow::setFreq(std::vector<int> &fv)
-{
-    mClient.setFreq(fv);
 }
 
 

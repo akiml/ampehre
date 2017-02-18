@@ -4,10 +4,12 @@
 #include <QWidget>
 #include <vector>
 #include <iostream>
+#include <sstream>
+#include <inttypes.h>
 
 enum SLIDER
 {
-  GUI, DATA_PLOT, DATA_HEAT, SLIDER_VALUESIZE
+  GUI, DATA_PLOT, SLIDER_VALUESIZE
 };
 
 enum FREQ
@@ -36,8 +38,6 @@ signals:
 
     void signal_guiRate(int);
     void signal_dataPlot(int);
-    void signal_dataHeatmap(int);
-    void signal_freq(std::vector<int>&);
 
 public slots:
     void emit_start();
@@ -45,17 +45,11 @@ public slots:
 
     void emit_guiRate(int v);
     void emit_dataPlot(int v);
-    void emit_dataHeatmap(int v);
 
-    void setFreqCpu(int v);
-    void setFreqGpu(int v);
-    void setFreqFpga(int v);
-    void setFreqMic(int v);
-    void setFreqSys(int v);
+    void setFreqLabels(std::vector<uint64_t> &v);
 
 private:
     Ui::QMSMSettings *ui;
-    std::vector<int> mFreq;
     void connectSignals();
 };
 

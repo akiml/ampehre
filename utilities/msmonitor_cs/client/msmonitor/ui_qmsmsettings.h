@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qmsmsettings.ui'
 **
-** Created: Fri Feb 17 11:33:48 2017
+** Created: Sat Feb 18 19:01:12 2017
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -16,9 +16,9 @@
 #include <QtGui/QButtonGroup>
 #include <QtGui/QHeaderView>
 #include <QtGui/QLabel>
+#include <QtGui/QLineEdit>
 #include <QtGui/QPushButton>
 #include <QtGui/QSlider>
-#include <QtGui/QSpinBox>
 #include <QtGui/QTabWidget>
 #include <QtGui/QWidget>
 
@@ -29,11 +29,6 @@ class Ui_QMSMSettings
 public:
     QTabWidget *tabWidget;
     QWidget *tab;
-    QSpinBox *spinBoxCPU;
-    QSpinBox *spinBoxGPU;
-    QSpinBox *spinBoxFPGA;
-    QSpinBox *spinBoxMIC;
-    QSpinBox *spinBoxSystem;
     QLabel *label_4;
     QLabel *label_6;
     QLabel *label_7;
@@ -44,13 +39,15 @@ public:
     QLabel *label_12;
     QLabel *label_13;
     QLabel *label_14;
+    QLineEdit *lineEdit_cpu;
+    QLineEdit *lineEdit_gpu;
+    QLineEdit *lineEdit_fpga;
+    QLineEdit *lineEdit_mic;
+    QLineEdit *lineEdit_sys;
     QWidget *tab_3;
     QLabel *label;
     QSlider *horizontalSlider_dataPlot;
     QLabel *label_dataPlot;
-    QLabel *label_2;
-    QSlider *horizontalSlider_dataHeatmap;
-    QLabel *label_dataHeatmap;
     QWidget *tab_2;
     QLabel *label_3;
     QSlider *horizontalSlider_guiRate;
@@ -71,40 +68,6 @@ public:
         tabWidget->setGeometry(QRect(30, 10, 331, 301));
         tab = new QWidget();
         tab->setObjectName(QString::fromUtf8("tab"));
-        spinBoxCPU = new QSpinBox(tab);
-        spinBoxCPU->setObjectName(QString::fromUtf8("spinBoxCPU"));
-        spinBoxCPU->setGeometry(QRect(140, 10, 61, 31));
-        spinBoxCPU->setMinimum(10);
-        spinBoxCPU->setMaximum(150);
-        spinBoxCPU->setSingleStep(10);
-        spinBoxGPU = new QSpinBox(tab);
-        spinBoxGPU->setObjectName(QString::fromUtf8("spinBoxGPU"));
-        spinBoxGPU->setGeometry(QRect(140, 60, 61, 31));
-        spinBoxGPU->setMinimum(10);
-        spinBoxGPU->setMaximum(150);
-        spinBoxGPU->setSingleStep(10);
-        spinBoxGPU->setValue(50);
-        spinBoxFPGA = new QSpinBox(tab);
-        spinBoxFPGA->setObjectName(QString::fromUtf8("spinBoxFPGA"));
-        spinBoxFPGA->setGeometry(QRect(140, 110, 61, 31));
-        spinBoxFPGA->setMinimum(10);
-        spinBoxFPGA->setMaximum(150);
-        spinBoxFPGA->setSingleStep(10);
-        spinBoxFPGA->setValue(60);
-        spinBoxMIC = new QSpinBox(tab);
-        spinBoxMIC->setObjectName(QString::fromUtf8("spinBoxMIC"));
-        spinBoxMIC->setGeometry(QRect(140, 160, 61, 31));
-        spinBoxMIC->setMinimum(10);
-        spinBoxMIC->setMaximum(150);
-        spinBoxMIC->setSingleStep(60);
-        spinBoxMIC->setValue(60);
-        spinBoxSystem = new QSpinBox(tab);
-        spinBoxSystem->setObjectName(QString::fromUtf8("spinBoxSystem"));
-        spinBoxSystem->setGeometry(QRect(140, 210, 61, 31));
-        spinBoxSystem->setMinimum(10);
-        spinBoxSystem->setMaximum(150);
-        spinBoxSystem->setSingleStep(10);
-        spinBoxSystem->setValue(100);
         label_4 = new QLabel(tab);
         label_4->setObjectName(QString::fromUtf8("label_4"));
         label_4->setGeometry(QRect(80, 20, 51, 21));
@@ -122,19 +85,34 @@ public:
         label_9->setGeometry(QRect(80, 220, 61, 21));
         label_10 = new QLabel(tab);
         label_10->setObjectName(QString::fromUtf8("label_10"));
-        label_10->setGeometry(QRect(210, 20, 21, 21));
+        label_10->setGeometry(QRect(260, 20, 21, 21));
         label_11 = new QLabel(tab);
         label_11->setObjectName(QString::fromUtf8("label_11"));
-        label_11->setGeometry(QRect(210, 70, 21, 21));
+        label_11->setGeometry(QRect(260, 70, 21, 21));
         label_12 = new QLabel(tab);
         label_12->setObjectName(QString::fromUtf8("label_12"));
-        label_12->setGeometry(QRect(210, 120, 21, 21));
+        label_12->setGeometry(QRect(260, 120, 21, 21));
         label_13 = new QLabel(tab);
         label_13->setObjectName(QString::fromUtf8("label_13"));
-        label_13->setGeometry(QRect(210, 170, 21, 21));
+        label_13->setGeometry(QRect(260, 170, 21, 21));
         label_14 = new QLabel(tab);
         label_14->setObjectName(QString::fromUtf8("label_14"));
-        label_14->setGeometry(QRect(210, 220, 21, 21));
+        label_14->setGeometry(QRect(260, 220, 21, 21));
+        lineEdit_cpu = new QLineEdit(tab);
+        lineEdit_cpu->setObjectName(QString::fromUtf8("lineEdit_cpu"));
+        lineEdit_cpu->setGeometry(QRect(140, 10, 113, 33));
+        lineEdit_gpu = new QLineEdit(tab);
+        lineEdit_gpu->setObjectName(QString::fromUtf8("lineEdit_gpu"));
+        lineEdit_gpu->setGeometry(QRect(140, 60, 113, 33));
+        lineEdit_fpga = new QLineEdit(tab);
+        lineEdit_fpga->setObjectName(QString::fromUtf8("lineEdit_fpga"));
+        lineEdit_fpga->setGeometry(QRect(140, 110, 113, 33));
+        lineEdit_mic = new QLineEdit(tab);
+        lineEdit_mic->setObjectName(QString::fromUtf8("lineEdit_mic"));
+        lineEdit_mic->setGeometry(QRect(140, 160, 113, 33));
+        lineEdit_sys = new QLineEdit(tab);
+        lineEdit_sys->setObjectName(QString::fromUtf8("lineEdit_sys"));
+        lineEdit_sys->setGeometry(QRect(140, 210, 113, 33));
         tabWidget->addTab(tab, QString());
         tab_3 = new QWidget();
         tab_3->setObjectName(QString::fromUtf8("tab_3"));
@@ -153,20 +131,6 @@ public:
         label_dataPlot = new QLabel(tab_3);
         label_dataPlot->setObjectName(QString::fromUtf8("label_dataPlot"));
         label_dataPlot->setGeometry(QRect(240, 20, 61, 21));
-        label_2 = new QLabel(tab_3);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
-        label_2->setGeometry(QRect(0, 70, 66, 21));
-        horizontalSlider_dataHeatmap = new QSlider(tab_3);
-        horizontalSlider_dataHeatmap->setObjectName(QString::fromUtf8("horizontalSlider_dataHeatmap"));
-        horizontalSlider_dataHeatmap->setGeometry(QRect(70, 70, 160, 18));
-        horizontalSlider_dataHeatmap->setMinimum(10);
-        horizontalSlider_dataHeatmap->setMaximum(500);
-        horizontalSlider_dataHeatmap->setSingleStep(10);
-        horizontalSlider_dataHeatmap->setPageStep(20);
-        horizontalSlider_dataHeatmap->setOrientation(Qt::Horizontal);
-        label_dataHeatmap = new QLabel(tab_3);
-        label_dataHeatmap->setObjectName(QString::fromUtf8("label_dataHeatmap"));
-        label_dataHeatmap->setGeometry(QRect(240, 70, 61, 21));
         tabWidget->addTab(tab_3, QString());
         tab_2 = new QWidget();
         tab_2->setObjectName(QString::fromUtf8("tab_2"));
@@ -226,8 +190,6 @@ public:
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("QMSMSettings", "Resource", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("QMSMSettings", "Plot:", 0, QApplication::UnicodeUTF8));
         label_dataPlot->setText(QApplication::translate("QMSMSettings", "250 ms", 0, QApplication::UnicodeUTF8));
-        label_2->setText(QApplication::translate("QMSMSettings", "Heatmap:", 0, QApplication::UnicodeUTF8));
-        label_dataHeatmap->setText(QApplication::translate("QMSMSettings", "0 ms", 0, QApplication::UnicodeUTF8));
         tabWidget->setTabText(tabWidget->indexOf(tab_3), QApplication::translate("QMSMSettings", "Data", 0, QApplication::UnicodeUTF8));
         label_3->setText(QApplication::translate("QMSMSettings", "redraw:", 0, QApplication::UnicodeUTF8));
         label_guiRate->setText(QApplication::translate("QMSMSettings", "250 ms", 0, QApplication::UnicodeUTF8));

@@ -35,7 +35,7 @@ public:
 	int registerToServer(std::vector<int>& values, int port, std::string ipaddr);
 	void requestData();
 	void terminate();
-    void setFreq(std::vector<int> &vals);
+    void getFreq(std::vector<uint64_t> &vals);
 
     std::vector<double> mValues;
 	

@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'QMSMsettings.h'
 **
-** Created: Fri Feb 17 11:34:01 2017
+** Created: Sat Feb 18 19:03:35 2017
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,32 +23,25 @@ static const uint qt_meta_data_QMSMSettings[] = {
        4,       // revision
        0,       // classname
        0,    0, // classinfo
-      16,   14, // methods
+       9,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       6,       // signalCount
+       4,       // signalCount
 
  // signals: signature, parameters, type, tag, flags
       14,   13,   13,   13, 0x05,
       29,   13,   13,   13, 0x05,
       43,   13,   13,   13, 0x05,
       63,   13,   13,   13, 0x05,
-      84,   13,   13,   13, 0x05,
-     108,   13,   13,   13, 0x05,
 
  // slots: signature, parameters, type, tag, flags
-     139,   13,   13,   13, 0x0a,
-     152,   13,   13,   13, 0x0a,
-     166,  164,   13,   13, 0x0a,
-     184,  164,   13,   13, 0x0a,
-     203,  164,   13,   13, 0x0a,
-     225,  164,   13,   13, 0x0a,
-     241,  164,   13,   13, 0x0a,
-     257,  164,   13,   13, 0x0a,
-     274,  164,   13,   13, 0x0a,
-     290,  164,   13,   13, 0x0a,
+      84,   13,   13,   13, 0x0a,
+      97,   13,   13,   13, 0x0a,
+     111,  109,   13,   13, 0x0a,
+     129,  109,   13,   13, 0x0a,
+     148,  109,   13,   13, 0x0a,
 
        0        // eod
 };
@@ -56,13 +49,9 @@ static const uint qt_meta_data_QMSMSettings[] = {
 static const char qt_meta_stringdata_QMSMSettings[] = {
     "QMSMSettings\0\0signal_start()\0signal_stop()\0"
     "signal_guiRate(int)\0signal_dataPlot(int)\0"
-    "signal_dataHeatmap(int)\0"
-    "signal_freq(std::vector<int>&)\0"
     "emit_start()\0emit_stop()\0v\0emit_guiRate(int)\0"
-    "emit_dataPlot(int)\0emit_dataHeatmap(int)\0"
-    "setFreqCpu(int)\0setFreqGpu(int)\0"
-    "setFreqFpga(int)\0setFreqMic(int)\0"
-    "setFreqSys(int)\0"
+    "emit_dataPlot(int)\0"
+    "setFreqLabels(std::vector<uint64_t>&)\0"
 };
 
 const QMetaObject QMSMSettings::staticMetaObject = {
@@ -98,21 +87,14 @@ int QMSMSettings::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 1: signal_stop(); break;
         case 2: signal_guiRate((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 3: signal_dataPlot((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 4: signal_dataHeatmap((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 5: signal_freq((*reinterpret_cast< std::vector<int>(*)>(_a[1]))); break;
-        case 6: emit_start(); break;
-        case 7: emit_stop(); break;
-        case 8: emit_guiRate((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 9: emit_dataPlot((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 10: emit_dataHeatmap((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 11: setFreqCpu((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 12: setFreqGpu((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 13: setFreqFpga((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 14: setFreqMic((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 15: setFreqSys((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 4: emit_start(); break;
+        case 5: emit_stop(); break;
+        case 6: emit_guiRate((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 7: emit_dataPlot((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 8: setFreqLabels((*reinterpret_cast< std::vector<uint64_t>(*)>(_a[1]))); break;
         default: ;
         }
-        _id -= 16;
+        _id -= 9;
     }
     return _id;
 }
@@ -141,19 +123,5 @@ void QMSMSettings::signal_dataPlot(int _t1)
 {
     void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 3, _a);
-}
-
-// SIGNAL 4
-void QMSMSettings::signal_dataHeatmap(int _t1)
-{
-    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
-    QMetaObject::activate(this, &staticMetaObject, 4, _a);
-}
-
-// SIGNAL 5
-void QMSMSettings::signal_freq(std::vector<int> & _t1)
-{
-    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
-    QMetaObject::activate(this, &staticMetaObject, 5, _a);
 }
 QT_END_MOC_NAMESPACE

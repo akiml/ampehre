@@ -29,7 +29,11 @@ CServer::CServer(int port, int maxClients):
      mMaxClients(maxClients),
      mSocket(0)
 {
-	//nothing to do here
+	for(unsigned int k = 0; k < 5; k++)
+	{
+		mFreq.push_back(0);
+	}
+	getFrequencies();
 }
 
 CServer::~CServer()
@@ -50,7 +54,6 @@ void CServer::acceptLoop() {
 	int task_code = 0;
 	int registry = 0;
 	uint64_t data = 0;
-	std::vector<uint64_t> freq;
 
 	struct sigaction act;
 	act.sa_handler = termHandler;
@@ -70,11 +73,10 @@ void CServer::acceptLoop() {
 		
 		std::cout<<"************************" << std::endl;
 		
-		if(mProtocol.parseMsg(buffer, recv_length, task_code, registry, data, freq) < 0){
+		if(mProtocol.parseMsg(buffer, recv_length, task_code, registry, data) < 0){
 			std::cout << "[!]error parsing message" << std::endl;
 		}
 		else{
-			setFrequencies(freq);
 			answer(task_code, registry, data);
 		}	
 
@@ -82,32 +84,30 @@ void CServer::acceptLoop() {
 	}
 }
 
-void CServer::setFrequencies(std::vector<uint64_t>& freq)
+void CServer::getFrequencies()
 {
-	if(freq.size() > 0){
-		std::cout<< "setting freq: " << std::endl;
-		NData::CDataSettings settings = mMeasure.getSettings();
-		for(unsigned int k = 0; k < freq.size(); k++){
-			std::cout << freq[k] << std::endl;
-			switch(k){
-				case(0):
-					settings.mCPUSamplingRate = freq[k];
-					break;
-				case(1):
-					settings.mGPUSamplingRate = freq[k];
-					break;
-				case(2):
-					settings.mFPGASamplingRate = freq[k];
-					break;
-				case(3):
-					settings.mMICSamplingRate = freq[k];
-					break;
-				case(4):
-					settings.mSystemSamplingRate = freq[k];
-					break;		
-			}	
+
+	NData::CDataSettings settings = mMeasure.getSettings();
+	for(unsigned int k = 0; k < 5; k++){
+		switch(k){
+			case(0):
+				mFreq[k] = settings.mCPUSamplingRate;
+				break;
+			case(1):
+				mFreq[k] = settings.mGPUSamplingRate;
+				break;
+			case(2):
+				mFreq[k] = settings.mFPGASamplingRate;
+				break;
+			case(3):
+				mFreq[k] = settings.mMICSamplingRate;
+				break;
+			case(4):
+				mFreq[k] = settings.mSystemSamplingRate;
+				break;		
 		}
-	}			
+	}
+				
 			
 }
 
@@ -149,7 +149,7 @@ void CServer::registerClient(uint64_t datacode){
 void CServer::confirmFreq(int registry){
 	if(ut::find(mRegClients, registry, mIterator) == 0){
 		std::string m;
-		mProtocol.confirmFreqChange(m, registry);
+		mProtocol.freqMsg(m, mFreq);
 		mCom.sendMsg(m,  mSocket);
 
 	}else{
