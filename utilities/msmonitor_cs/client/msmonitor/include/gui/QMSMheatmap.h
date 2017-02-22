@@ -64,6 +64,7 @@ private:
     int mIntervalStart;
     QVector<double> mTime;
     QVector<double> mY;
+    int mUpdate;
 };
 
 

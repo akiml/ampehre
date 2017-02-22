@@ -28,6 +28,7 @@ void QMSMUtilPlot::initPlot(QWidget *parent)
 
     mpPlot->setTitle("Utilization");
     mpPlot->setAxisTitle( QwtPlot::xBottom, "Time [s]" );
+    mpPlot->setAxisTitle(QwtPlot::yLeft, "Utilization");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
     mpCpu0->setPen(*mpPaintCpu0);
@@ -41,6 +42,8 @@ void QMSMUtilPlot::initPlot(QWidget *parent)
     mpGpu1->attach(mpPlot);
     mpFpga0->attach(mpPlot);
     mpMic0->attach(mpPlot);
+
+    makeGrid();
 
 }
 
@@ -66,4 +69,7 @@ void QMSMUtilPlot::updateValues(std::vector<double> &values)
     mGpu1values.push_back(values[YUtilGpuMem]);
     mFpga0values.push_back(values[YUtilFpga]);
     mMic0values.push_back(values[YUtilMic]);
+
+    scaleAxis(mTimevalues[mTimevalues.size()-1]);
+
 }

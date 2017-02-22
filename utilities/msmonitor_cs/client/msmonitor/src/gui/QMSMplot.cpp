@@ -51,3 +51,26 @@ QWidget* QMSMplot::getParent()
 {
     return this->parent;
 }
+
+void QMSMplot::makeGrid()
+{
+    QwtPlotGrid* mpGrid = new QwtPlotGrid();
+    mpGrid->enableXMin(true);
+    mpGrid->enableYMin(true);
+    mpGrid->setPen(QPen(Qt::black, 0, Qt::DotLine));
+    mpGrid->attach(mpPlot);
+}
+
+void QMSMplot::scaleAxis(double xValue)
+{
+    int32_t first_tick		= 0;
+    int32_t second_tick		= 0;
+    double time_show_data	= 60;
+
+    first_tick		= ((int)(xValue-time_show_data)/10)*10;
+    first_tick		= (first_tick >= 0 && (xValue-time_show_data) > 0) ? first_tick+10 : first_tick;
+    second_tick		= ((int)(xValue)/10)*10+10;
+
+    mpPlot->setAxisScale(QwtPlot::xBottom, first_tick, second_tick);
+//    mpPlot->setAxisScale(QwtPlot::yLeft, yValueMin, yValueMax);
+}

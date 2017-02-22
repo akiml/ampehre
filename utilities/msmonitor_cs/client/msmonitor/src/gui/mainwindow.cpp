@@ -15,13 +15,13 @@ MainWindow::MainWindow(QWidget *parent) :
     mpHeatmapGpuMemory(new QMSMHeatmap(parent, "GPU\nMemory\n[%]", 0 ,100)),
     mpHeatmapFpga(new QMSMHeatmap(parent, "Compute\nFPGA\n[%]", 0 ,100)),
     mpHeatmapMic(new QMSMHeatmap(parent, "MIC\n[%]\n", 0 ,100)),
-    mpTempCpu0( new QMSMHeatmap(parent, "CPU0\n\n[°C]", 20, 60)),
-    mpTempCpu1( new QMSMHeatmap(parent, "CPU1\n\n[°C]", 20, 60)),
-    mpTempGpu( new QMSMHeatmap(parent, "GPU\n\n[°C]", 30, 70)),
-    mpTempFpgaCompute( new QMSMHeatmap(parent, "Compute\nFPGA\n[°C]", 30, 70)),
-    mpTempFpgaInterface( new QMSMHeatmap(parent, "Interface\nFPGA\n[°C]", 30, 70)),
-    mpTempMic( new QMSMHeatmap(parent, "Mic\nDie\n[°C]", 40, 140)),
-    mpTempSystem( new QMSMHeatmap(parent, "Main-\nboard\n[°C]", 20, 40)),
+    mpTempCpu0( new QMSMHeatmap(parent, "CPU0\n\n[\xB0 C]", 0, 100)),
+    mpTempCpu1( new QMSMHeatmap(parent, "CPU1\n\n[\xB0 C]", 0, 100)),
+    mpTempGpu( new QMSMHeatmap(parent, "GPU\n\n[\xB0 C]", 0, 100)),
+    mpTempFpgaCompute( new QMSMHeatmap(parent, "Comp\nFPGA\n[\xB0 C]", 0, 100)),
+    mpTempFpgaInterface( new QMSMHeatmap(parent, "Inter\nFPGA\n[\xB0 C]", 0, 100)),
+    mpTempMic( new QMSMHeatmap(parent, "Mic\nDie\n[\xB0 C]", 40, 140)),
+    mpTempSystem( new QMSMHeatmap(parent, "Main-\nboard\n[\xB0 C]", 20, 40)),
     subwPower(new QMdiSubWindow()),
     subwTemp(new QMdiSubWindow()),
     subwClock(new QMdiSubWindow()),
@@ -115,7 +115,6 @@ void MainWindow::setSlider()
     v.resize(SLIDER_VALUESIZE);
     v[GUI] = mGuiInterval;
     v[DATA_PLOT] = mPlotInterval;
-    v[DATA_HEAT] = mHeatmapInterval;
 
     mpSettings->setSliderPos(v);
 }
@@ -135,7 +134,7 @@ void MainWindow::addHeatmap(QMdiSubWindow *heat, QVBoxLayout *layout)
     heat->setLayout(layout);
     ui->mdiArea->addSubWindow(heat);
     heat->resize(600, 600);
-    heat->setFixedHeight(600);
+    heat->setFixedHeight(800);
     heat->hide();
 }
 

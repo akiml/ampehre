@@ -29,6 +29,7 @@ void QMSMClockPlot::initPlot(QWidget *parent)
 
     mpPlot->setTitle("Clock");
     mpPlot->setAxisTitle( QwtPlot::xBottom, "Time [s]" );
+    mpPlot->setAxisTitle(QwtPlot::yLeft, "Frequency [1/s]");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
     mpCpu0->setPen(*mpPaintCpu0);
@@ -44,6 +45,8 @@ void QMSMClockPlot::initPlot(QWidget *parent)
     mpGpu1->attach(mpPlot);
     mpMic0->attach(mpPlot);
     mpMic1->attach(mpPlot);
+
+    makeGrid();
 
 }
 
@@ -71,4 +74,6 @@ void QMSMClockPlot::updateValues(std::vector<double> &values)
     mGpu1values.push_back(values[YClockGpuMem]);
     mMic0values.push_back(values[YClockMicCore]);
     mMic1values.push_back(values[YClockMicMem]);
+
+    scaleAxis(mTimevalues[mTimevalues.size()-1]);
 }

@@ -27,6 +27,7 @@ void QMSMMemoryPlot::initPlot(QWidget *parent)
 
     mpPlot->setTitle("Memory");
     mpPlot->setAxisTitle( QwtPlot::xBottom, "Time [s]" );
+    mpPlot->setAxisTitle(QwtPlot::yLeft, "Memory");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
     mpCpu0->setPen(*mpPaintCpu0);
@@ -38,6 +39,8 @@ void QMSMMemoryPlot::initPlot(QWidget *parent)
     mpCpu1->attach(mpPlot);
     mpGpu0->attach(mpPlot);
     mpMic0->attach(mpPlot);
+
+    makeGrid();
 
 }
 
@@ -61,4 +64,7 @@ void QMSMMemoryPlot::updateValues(std::vector<double> &values)
     mCpu1values.push_back(values[YSwapCpu]);
     mGpu0values.push_back(values[YMemoryGpu]);
     mMic0values.push_back(values[YMemoryMic]);
+
+    scaleAxis(mTimevalues[mTimevalues.size()-1]);
+
 }

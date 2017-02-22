@@ -29,6 +29,7 @@ void QMSMTemperaturePlot::initPlot(QWidget *parent)
 
     mpPlot->setTitle("Temperature");
     mpPlot->setAxisTitle( QwtPlot::xBottom, "Time [s]" );
+    mpPlot->setAxisTitle(QwtPlot::yLeft, "Temperature [C]");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
 
@@ -47,6 +48,8 @@ void QMSMTemperaturePlot::initPlot(QWidget *parent)
     mpFpga1->attach(mpPlot);
     mpMic0->attach(mpPlot);
     mpSystem->attach(mpPlot);
+
+    makeGrid();
 }
 
 void QMSMTemperaturePlot::redraw()
@@ -74,5 +77,8 @@ void QMSMTemperaturePlot::updateValues(std::vector<double> &values)
     mFpga1values.push_back(values[YTempFpgaM]);
     mMic0values.push_back(values[YTempMicDie]);
     mSystemvalues.push_back(values[YTempSystem]);
+
+    scaleAxis(mTimevalues[mTimevalues.size()-1]);
+
 }
 

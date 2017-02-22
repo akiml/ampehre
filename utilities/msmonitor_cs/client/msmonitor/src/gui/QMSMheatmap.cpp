@@ -104,8 +104,9 @@ QMSMHeatmap::QMSMHeatmap( QWidget *parent, QString caption, int zStart, int zEnd
     mpSpectrogram(new QwtPlotSpectrogram()),
     mpMatrix (new QwtMatrixRasterData()),
     mAlpha(255),
-    mIntervalEnd(60),
-    mIntervalStart(0)
+    mIntervalEnd(100),
+    mIntervalStart(0),
+    mUpdate(10)
 {
     mY.push_back(0);
     mpMatrix->setValueMatrix(mY, mY.size());
@@ -186,19 +187,28 @@ void QMSMHeatmap::updateValues(std::vector<double> &values, int val)
 
 void QMSMHeatmap::redraw()
 {
-    if(mTime.size() > 60)
-    {
-        mIntervalStart++;
-        mIntervalEnd++;
-        mTime.pop_front();
-        mY.pop_front();
-    }
     mpMatrix->setValueMatrix(mY, mY.size());
    // mpMatrix->setInterval( Qt::XAxis, QwtInterval( mIntervalStart, mIntervalEnd ) );
-    setAxisScale(QwtPlot::xBottom, mIntervalStart, mIntervalEnd);
     mpSpectrogram->setData( mpMatrix );
 
-    replot();
+    int32_t first_tick = 0, second_tick = 0;
+    double time_show_data	= 60;
+    double xValue = mTime.size();
+
+    first_tick		= ((int)(xValue-time_show_data)/10)*10;
+    first_tick		= (first_tick >= 0 && (xValue-time_show_data) > 0) ? first_tick+10 : first_tick;
+    second_tick		= ((int)(xValue)/10)*10+10;
+
+    setAxisScale(QwtPlot::xBottom, first_tick, second_tick);
+    mIntervalEnd = second_tick;
+    mpMatrix->setInterval( Qt::XAxis, QwtInterval( mIntervalStart, mIntervalEnd ) );
+    mUpdate++;
+
+    if(mUpdate >= 10)
+    {
+        replot();
+        mUpdate = 0;
+    }
 }
 
 void QMSMHeatmap::setColorMap( int type )

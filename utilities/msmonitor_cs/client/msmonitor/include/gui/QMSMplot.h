@@ -6,6 +6,7 @@
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_legend.h>
+#include <qwt_plot_grid.h>
 #include <vector>
 
 class QMSMplot : public QWidget
@@ -21,6 +22,8 @@ public slots:
     virtual void updateValues(std::vector<double>& values) = 0;
     virtual void redraw() = 0;
     virtual void initPlot(QWidget* parent) = 0;
+    virtual void makeGrid();
+    virtual void scaleAxis(double xValue);
 
 protected:
     QwtPlot* mpPlot;

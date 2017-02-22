@@ -27,6 +27,7 @@ void QMSMPowerPlot::initPlot(QWidget* parent)
 
     mpPlot->setTitle("Power");
     mpPlot->setAxisTitle( QwtPlot::xBottom, "Time [s]" );
+    mpPlot->setAxisTitle(QwtPlot::yLeft, "Power [W]");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
     mpCpu0->setPen(*mpPaintCpu0);
@@ -42,6 +43,8 @@ void QMSMPowerPlot::initPlot(QWidget* parent)
     mpFpga0->attach(mpPlot);
     mpMic0->attach(mpPlot);
     mpSystem->attach(mpPlot);
+
+    makeGrid();
 
 }
 
@@ -69,4 +72,7 @@ void QMSMPowerPlot::updateValues(std::vector<double> &values)
     mFpga0values.push_back(values[YPowerFpga]);
     mMic0values.push_back(values[YPowerMic]);
     mSystemvalues.push_back(values[YPowerSystem]);
+
+    scaleAxis(mTimevalues[mTimevalues.size()-1]);
+
 }
