@@ -17,9 +17,8 @@ QWidget* QMSMUtilPlot::getPlot()
 }
 
 
-void QMSMUtilPlot::initPlot(QWidget *parent)
+void QMSMUtilPlot::initPlot()
 {
-    mpPlot      = new QwtPlot(parent);
     mpCpu0      = new QwtPlotCurve("CPU");
     mpGpu0      = new QwtPlotCurve("GPU Core");
     mpGpu1      = new QwtPlotCurve("GPU Memory");
@@ -31,11 +30,7 @@ void QMSMUtilPlot::initPlot(QWidget *parent)
     mpPlot->setAxisTitle(QwtPlot::yLeft, "Utilization");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
-    mpCpu0->setPen(*mpPaintCpu0);
-    mpGpu0->setPen(*mpPaintGpu0);
-    mpGpu1->setPen(*mpPaintGpu1);
-    mpFpga0->setPen(*mpPaintFpga0);
-    mpMic0->setPen(*mpPaintMic0);
+    resetPen();
 
     mpCpu0->attach(mpPlot);
     mpGpu0->attach(mpPlot);
@@ -72,4 +67,13 @@ void QMSMUtilPlot::updateValues(std::vector<double> &values)
 
     scaleAxis(mTimevalues[mTimevalues.size()-1]);
 
+}
+
+void QMSMUtilPlot::resetPen()
+{
+    mpCpu0->setPen(*mpPaintCpu0);
+    mpGpu0->setPen(*mpPaintGpu0);
+    mpGpu1->setPen(*mpPaintGpu1);
+    mpFpga0->setPen(*mpPaintFpga0);
+    mpMic0->setPen(*mpPaintMic0);
 }

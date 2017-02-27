@@ -17,9 +17,8 @@ QWidget* QMSMMemoryPlot::getPlot()
 }
 
 
-void QMSMMemoryPlot::initPlot(QWidget *parent)
+void QMSMMemoryPlot::initPlot()
 {
-    mpPlot      = new QwtPlot(parent);
     mpCpu0      = new QwtPlotCurve("CPU Ram");
     mpCpu1      = new QwtPlotCurve("CPU Swap");
     mpGpu0      = new QwtPlotCurve("GPU");
@@ -30,10 +29,7 @@ void QMSMMemoryPlot::initPlot(QWidget *parent)
     mpPlot->setAxisTitle(QwtPlot::yLeft, "Memory");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
-    mpCpu0->setPen(*mpPaintCpu0);
-    mpCpu1->setPen(*mpPaintCpu1);
-    mpGpu0->setPen(*mpPaintGpu0);
-    mpMic0->setPen(*mpPaintMic0);
+    resetPen();
 
     mpCpu0->attach(mpPlot);
     mpCpu1->attach(mpPlot);
@@ -67,4 +63,12 @@ void QMSMMemoryPlot::updateValues(std::vector<double> &values)
 
     scaleAxis(mTimevalues[mTimevalues.size()-1]);
 
+}
+
+void QMSMMemoryPlot::resetPen()
+{
+    mpCpu0->setPen(*mpPaintCpu0);
+    mpCpu1->setPen(*mpPaintCpu1);
+    mpGpu0->setPen(*mpPaintGpu0);
+    mpMic0->setPen(*mpPaintMic0);
 }

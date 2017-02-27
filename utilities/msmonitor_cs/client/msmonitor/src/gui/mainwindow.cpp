@@ -121,8 +121,9 @@ void MainWindow::setSlider()
 
 void MainWindow::addPlot(QMSMplot *plot, QMdiSubWindow *subw)
 {
-    plot->initPlot(plot->getParent());
-    subw->setWidget(plot->getPlot());
+    plot->initPlot();
+    subw->setWidget(plot);
+
     ui->mdiArea->addSubWindow(subw);
     subw->resize(600, 400);
     subw->hide();
@@ -215,7 +216,7 @@ void MainWindow::showPower()
     connect(mpGuiTimer, SIGNAL(timeout()), mpPowerplot, SLOT(redraw()));
     connect(mpTimer, SIGNAL(timeout()), this, SLOT(updatePower()));
 
-    mpPowerplot->getPlot()->show();
+    mpPowerplot->show();
 
 }
 
@@ -224,7 +225,7 @@ void MainWindow::showTemp()
     connect(mpGuiTimer, SIGNAL(timeout()), mpTempplot, SLOT(redraw()));
     connect(mpTimer, SIGNAL(timeout()), this, SLOT(updateTemp()));
 
-    mpTempplot->getPlot()->show();
+    mpTempplot->show();
 
 }
 
@@ -233,7 +234,7 @@ void MainWindow::showClock()
     connect(mpGuiTimer, SIGNAL(timeout()), mpClockplot, SLOT(redraw()));
     connect(mpTimer, SIGNAL(timeout()), this, SLOT(updateClock()));
 
-    mpClockplot->getPlot()->show();
+    mpClockplot->show();
 
 }
 
@@ -242,7 +243,7 @@ void MainWindow::showUtil()
     connect(mpGuiTimer, SIGNAL(timeout()), mpUtilplot, SLOT(redraw()));
     connect(mpTimer, SIGNAL(timeout()), this, SLOT(updateUtil()));
 
-    mpUtilplot->getPlot()->show();
+    mpUtilplot->show();
 }
 
 void MainWindow::showMemory()
@@ -250,7 +251,7 @@ void MainWindow::showMemory()
     connect(mpGuiTimer, SIGNAL(timeout()), mpMemoryplot, SLOT(redraw()));
     connect(mpTimer, SIGNAL(timeout()), this, SLOT(updateMemory()));
 
-    mpMemoryplot->getPlot()->show();
+    mpMemoryplot->show();
 }
 
 void MainWindow::showHeatmapUtil()

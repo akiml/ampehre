@@ -49,8 +49,8 @@ SOURCES       = ../msmonitor/src/main.cpp \
 		../msmonitor/src/CClient.cpp \
 		../msmonitor/src/CComC.cpp \
 		../msmonitor/src/CProtocolC.cpp \
-		../msmonitor/src/CProtocol.cpp \
-		../msmonitor/src/utils.cpp \
+		../../include/CProtocol.cpp \
+		../../include/utils.cpp \
 		../msmonitor/src/gui/mainwindow.cpp \
 		../msmonitor/src/gui/QMSMpowerplot.cpp \
 		../msmonitor/src/gui/QMSMplot.cpp \
@@ -58,9 +58,11 @@ SOURCES       = ../msmonitor/src/main.cpp \
 		../msmonitor/src/gui/QMSMclockplot.cpp \
 		../msmonitor/src/gui/QMSMmemoryplot.cpp \
 		../msmonitor/src/gui/QMSMutilplot.cpp \
-		../msmonitor/src/gui/QMSMheatmap.cpp moc_mainwindow.cpp \
+		../msmonitor/src/gui/QMSMheatmap.cpp \
+		../msmonitor/src/gui/QMSMsettings.cpp moc_mainwindow.cpp \
 		moc_QMSMplot.cpp \
-		moc_QMSMheatmap.cpp
+		moc_QMSMheatmap.cpp \
+		moc_QMSMsettings.cpp
 OBJECTS       = main.o \
 		CClient.o \
 		CComC.o \
@@ -75,9 +77,11 @@ OBJECTS       = main.o \
 		QMSMmemoryplot.o \
 		QMSMutilplot.o \
 		QMSMheatmap.o \
+		QMSMsettings.o \
 		moc_mainwindow.o \
 		moc_QMSMplot.o \
-		moc_QMSMheatmap.o
+		moc_QMSMheatmap.o \
+		moc_QMSMsettings.o
 DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/shell-unix.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/unix.conf \
@@ -141,8 +145,8 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		../msmonitor/src/CClient.cpp \
 		../msmonitor/src/CComC.cpp \
 		../msmonitor/src/CProtocolC.cpp \
-		../msmonitor/src/CProtocol.cpp \
-		../msmonitor/src/utils.cpp \
+		../../include/CProtocol.cpp \
+		../../include/utils.cpp \
 		../msmonitor/src/gui/mainwindow.cpp \
 		../msmonitor/src/gui/QMSMpowerplot.cpp \
 		../msmonitor/src/gui/QMSMplot.cpp \
@@ -150,7 +154,8 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		../msmonitor/src/gui/QMSMclockplot.cpp \
 		../msmonitor/src/gui/QMSMmemoryplot.cpp \
 		../msmonitor/src/gui/QMSMutilplot.cpp \
-		../msmonitor/src/gui/QMSMheatmap.cpp
+		../msmonitor/src/gui/QMSMheatmap.cpp \
+		../msmonitor/src/gui/QMSMsettings.cpp
 QMAKE_TARGET  = msmonitor
 DESTDIR       = #avoid trailing-slash linebreak
 TARGET        = msmonitor
@@ -180,7 +185,7 @@ first: all
 
 all: Makefile $(TARGET)
 
-$(TARGET): ui_mainwindow.h $(OBJECTS)  
+$(TARGET): ui_mainwindow.h ui_qmsmsettings.h $(OBJECTS)  
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
 
 Makefile: ../msmonitor/msmonitor.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64/qmake.conf /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
@@ -317,7 +322,7 @@ qmake_all: FORCE
 
 dist: 
 	@test -d .tmp/msmonitor1.0.0 || mkdir -p .tmp/msmonitor1.0.0
-	$(COPY_FILE) --parents $(DIST) .tmp/msmonitor1.0.0/ && $(COPY_FILE) --parents ../msmonitor/include/gui/mainwindow.h ../msmonitor/include/gui/QMSMpowerplot.h ../msmonitor/include/gui/QMSMplot.h ../msmonitor/include/CClient.hpp ../msmonitor/include/CComC.hpp ../msmonitor/include/CProtocolC.hpp ../msmonitor/include/CProtocol.hpp ../msmonitor/include/utils.h ../msmonitor/include/gui/QMSMtemperatureplot.h ../msmonitor/include/gui/QMSMclockplot.h ../msmonitor/include/gui/QMSMutilplot.h ../msmonitor/include/gui/QMSMmemoryplot.h ../msmonitor/include/gui/QMSMheatmap.h .tmp/msmonitor1.0.0/ && $(COPY_FILE) --parents ../msmonitor/src/main.cpp ../msmonitor/src/CClient.cpp ../msmonitor/src/CComC.cpp ../msmonitor/src/CProtocolC.cpp ../msmonitor/src/CProtocol.cpp ../msmonitor/src/utils.cpp ../msmonitor/src/gui/mainwindow.cpp ../msmonitor/src/gui/QMSMpowerplot.cpp ../msmonitor/src/gui/QMSMplot.cpp ../msmonitor/src/gui/QMSMtemperatureplot.cpp ../msmonitor/src/gui/QMSMclockplot.cpp ../msmonitor/src/gui/QMSMmemoryplot.cpp ../msmonitor/src/gui/QMSMutilplot.cpp ../msmonitor/src/gui/QMSMheatmap.cpp .tmp/msmonitor1.0.0/ && $(COPY_FILE) --parents ../msmonitor/mainwindow.ui .tmp/msmonitor1.0.0/ && (cd `dirname .tmp/msmonitor1.0.0` && $(TAR) msmonitor1.0.0.tar msmonitor1.0.0 && $(COMPRESS) msmonitor1.0.0.tar) && $(MOVE) `dirname .tmp/msmonitor1.0.0`/msmonitor1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/msmonitor1.0.0
+	$(COPY_FILE) --parents $(DIST) .tmp/msmonitor1.0.0/ && $(COPY_FILE) --parents ../msmonitor/include/gui/mainwindow.h ../msmonitor/include/gui/QMSMpowerplot.h ../msmonitor/include/gui/QMSMplot.h ../msmonitor/include/CClient.hpp ../msmonitor/include/CComC.hpp ../msmonitor/include/CProtocolC.hpp ../../include/CProtocol.hpp ../../include/utils.h ../msmonitor/include/gui/QMSMtemperatureplot.h ../msmonitor/include/gui/QMSMclockplot.h ../msmonitor/include/gui/QMSMutilplot.h ../msmonitor/include/gui/QMSMmemoryplot.h ../msmonitor/include/gui/QMSMheatmap.h ../msmonitor/include/gui/QMSMsettings.h .tmp/msmonitor1.0.0/ && $(COPY_FILE) --parents ../msmonitor/src/main.cpp ../msmonitor/src/CClient.cpp ../msmonitor/src/CComC.cpp ../msmonitor/src/CProtocolC.cpp ../../include/CProtocol.cpp ../../include/utils.cpp ../msmonitor/src/gui/mainwindow.cpp ../msmonitor/src/gui/QMSMpowerplot.cpp ../msmonitor/src/gui/QMSMplot.cpp ../msmonitor/src/gui/QMSMtemperatureplot.cpp ../msmonitor/src/gui/QMSMclockplot.cpp ../msmonitor/src/gui/QMSMmemoryplot.cpp ../msmonitor/src/gui/QMSMutilplot.cpp ../msmonitor/src/gui/QMSMheatmap.cpp ../msmonitor/src/gui/QMSMsettings.cpp .tmp/msmonitor1.0.0/ && $(COPY_FILE) --parents ../msmonitor/mainwindow.ui ../msmonitor/qmsmsettings.ui .tmp/msmonitor1.0.0/ && (cd `dirname .tmp/msmonitor1.0.0` && $(TAR) msmonitor1.0.0.tar msmonitor1.0.0 && $(COMPRESS) msmonitor1.0.0.tar) && $(MOVE) `dirname .tmp/msmonitor1.0.0`/msmonitor1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/msmonitor1.0.0
 
 
 clean:compiler_clean 
@@ -340,9 +345,9 @@ check: first
 
 compiler_rcc_make_all:
 compiler_rcc_clean:
-compiler_moc_header_make_all: moc_mainwindow.cpp moc_QMSMplot.cpp moc_QMSMheatmap.cpp
+compiler_moc_header_make_all: moc_mainwindow.cpp moc_QMSMplot.cpp moc_QMSMheatmap.cpp moc_QMSMsettings.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_mainwindow.cpp moc_QMSMplot.cpp moc_QMSMheatmap.cpp
+	-$(DEL_FILE) moc_mainwindow.cpp moc_QMSMplot.cpp moc_QMSMheatmap.cpp moc_QMSMsettings.cpp
 moc_mainwindow.cpp: ../msmonitor/include/gui/QMSMpowerplot.h \
 		../msmonitor/include/gui/QMSMplot.h \
 		../msmonitor/include/CProtocol.hpp \
@@ -355,6 +360,7 @@ moc_mainwindow.cpp: ../msmonitor/include/gui/QMSMpowerplot.h \
 		../msmonitor/include/CClient.hpp \
 		../msmonitor/include/CComC.hpp \
 		../msmonitor/include/CProtocolC.hpp \
+		../msmonitor/include/gui/QMSMsettings.h \
 		../msmonitor/include/gui/mainwindow.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/aelali/ampehre/utilities/msmonitor_cs/client/msmonitor -I/home/aelali/ampehre/utilities/msmonitor_cs/client/msmonitor/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/4.9 -I/usr/include/x86_64-linux-gnu/c++/4.9 -I/usr/include/c++/4.9/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../msmonitor/include/gui/mainwindow.h -o moc_mainwindow.cpp
 
@@ -366,13 +372,19 @@ moc_QMSMheatmap.cpp: ../msmonitor/include/CProtocol.hpp \
 		../msmonitor/include/gui/QMSMheatmap.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/aelali/ampehre/utilities/msmonitor_cs/client/msmonitor -I/home/aelali/ampehre/utilities/msmonitor_cs/client/msmonitor/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/4.9 -I/usr/include/x86_64-linux-gnu/c++/4.9 -I/usr/include/c++/4.9/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../msmonitor/include/gui/QMSMheatmap.h -o moc_QMSMheatmap.cpp
 
+moc_QMSMsettings.cpp: ../msmonitor/include/gui/QMSMsettings.h
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/aelali/ampehre/utilities/msmonitor_cs/client/msmonitor -I/home/aelali/ampehre/utilities/msmonitor_cs/client/msmonitor/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/4.9 -I/usr/include/x86_64-linux-gnu/c++/4.9 -I/usr/include/c++/4.9/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../msmonitor/include/gui/QMSMsettings.h -o moc_QMSMsettings.cpp
+
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
-compiler_uic_make_all: ui_mainwindow.h
+compiler_uic_make_all: ui_mainwindow.h ui_qmsmsettings.h
 compiler_uic_clean:
-	-$(DEL_FILE) ui_mainwindow.h
+	-$(DEL_FILE) ui_mainwindow.h ui_qmsmsettings.h
 ui_mainwindow.h: ../msmonitor/mainwindow.ui
 	/usr/lib/x86_64-linux-gnu/qt5/bin/uic ../msmonitor/mainwindow.ui -o ui_mainwindow.h
+
+ui_qmsmsettings.h: ../msmonitor/qmsmsettings.ui
+	/usr/lib/x86_64-linux-gnu/qt5/bin/uic ../msmonitor/qmsmsettings.ui -o ui_qmsmsettings.h
 
 compiler_yacc_decl_make_all:
 compiler_yacc_decl_clean:
@@ -396,7 +408,8 @@ main.o: ../msmonitor/src/main.cpp ../msmonitor/include/gui/mainwindow.h \
 		../msmonitor/include/gui/QMSMheatmap.h \
 		../msmonitor/include/CClient.hpp \
 		../msmonitor/include/CComC.hpp \
-		../msmonitor/include/CProtocolC.hpp
+		../msmonitor/include/CProtocolC.hpp \
+		../msmonitor/include/gui/QMSMsettings.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../msmonitor/src/main.cpp
 
 CClient.o: ../msmonitor/src/CClient.cpp ../msmonitor/include/CClient.hpp \
@@ -414,12 +427,12 @@ CProtocolC.o: ../msmonitor/src/CProtocolC.cpp ../msmonitor/include/CProtocolC.hp
 		../msmonitor/include/utils.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o CProtocolC.o ../msmonitor/src/CProtocolC.cpp
 
-CProtocol.o: ../msmonitor/src/CProtocol.cpp ../msmonitor/include/CProtocol.hpp \
+CProtocol.o: ../../include/CProtocol.cpp ../msmonitor/include/CProtocol.hpp \
 		../msmonitor/include/utils.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o CProtocol.o ../msmonitor/src/CProtocol.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o CProtocol.o ../../include/CProtocol.cpp
 
-utils.o: ../msmonitor/src/utils.cpp ../msmonitor/include/utils.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o utils.o ../msmonitor/src/utils.cpp
+utils.o: ../../include/utils.cpp ../msmonitor/include/utils.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o utils.o ../../include/utils.cpp
 
 mainwindow.o: ../msmonitor/src/gui/mainwindow.cpp ../msmonitor/include/gui/mainwindow.h \
 		../msmonitor/include/gui/QMSMpowerplot.h \
@@ -434,6 +447,7 @@ mainwindow.o: ../msmonitor/src/gui/mainwindow.cpp ../msmonitor/include/gui/mainw
 		../msmonitor/include/CClient.hpp \
 		../msmonitor/include/CComC.hpp \
 		../msmonitor/include/CProtocolC.hpp \
+		../msmonitor/include/gui/QMSMsettings.h \
 		../msmonitor/ui_mainwindow.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../msmonitor/src/gui/mainwindow.cpp
 
@@ -475,6 +489,10 @@ QMSMheatmap.o: ../msmonitor/src/gui/QMSMheatmap.cpp ../msmonitor/include/gui/QMS
 		../msmonitor/include/utils.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o QMSMheatmap.o ../msmonitor/src/gui/QMSMheatmap.cpp
 
+QMSMsettings.o: ../msmonitor/src/gui/QMSMsettings.cpp ../msmonitor/include/gui/QMSMsettings.h \
+		../msmonitor/ui_qmsmsettings.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o QMSMsettings.o ../msmonitor/src/gui/QMSMsettings.cpp
+
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp
 
@@ -483,6 +501,9 @@ moc_QMSMplot.o: moc_QMSMplot.cpp
 
 moc_QMSMheatmap.o: moc_QMSMheatmap.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_QMSMheatmap.o moc_QMSMheatmap.cpp
+
+moc_QMSMsettings.o: moc_QMSMsettings.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_QMSMsettings.o moc_QMSMsettings.cpp
 
 ####### Install
 

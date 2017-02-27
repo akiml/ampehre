@@ -47,4 +47,5 @@ HEADERS  += include/gui/mainwindow.h \
 LIBS += -L/usr/local/qwt-6.1.3/lib -lqwt
 
 FORMS    += mainwindow.ui \
-            qmsmsettings.ui
+            qmsmsettings.ui \
+    qmsmplot.ui

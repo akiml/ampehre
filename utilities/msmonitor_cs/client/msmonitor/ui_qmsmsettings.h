@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qmsmsettings.ui'
 **
-** Created: Sat Feb 18 19:01:12 2017
+** Created: Mon Feb 27 12:11:43 2017
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -55,8 +55,6 @@ public:
     QPushButton *pushButton_start;
     QPushButton *pushButton_stop;
     QPushButton *pushButton_reset;
-    QPushButton *pushButton_save;
-    QLabel *label_5;
 
     void setupUi(QWidget *QMSMSettings)
     {
@@ -159,12 +157,6 @@ public:
         pushButton_reset = new QPushButton(QMSMSettings);
         pushButton_reset->setObjectName(QString::fromUtf8("pushButton_reset"));
         pushButton_reset->setGeometry(QRect(270, 350, 95, 31));
-        pushButton_save = new QPushButton(QMSMSettings);
-        pushButton_save->setObjectName(QString::fromUtf8("pushButton_save"));
-        pushButton_save->setGeometry(QRect(30, 420, 95, 31));
-        label_5 = new QLabel(QMSMSettings);
-        label_5->setObjectName(QString::fromUtf8("label_5"));
-        label_5->setGeometry(QRect(150, 430, 131, 21));
 
         retranslateUi(QMSMSettings);
 
@@ -197,8 +189,6 @@ public:
         pushButton_start->setText(QApplication::translate("QMSMSettings", "Start", 0, QApplication::UnicodeUTF8));
         pushButton_stop->setText(QApplication::translate("QMSMSettings", "Stop", 0, QApplication::UnicodeUTF8));
         pushButton_reset->setText(QApplication::translate("QMSMSettings", "Reset", 0, QApplication::UnicodeUTF8));
-        pushButton_save->setText(QApplication::translate("QMSMSettings", "Save", 0, QApplication::UnicodeUTF8));
-        label_5->setText(QApplication::translate("QMSMSettings", "save results to csv", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };

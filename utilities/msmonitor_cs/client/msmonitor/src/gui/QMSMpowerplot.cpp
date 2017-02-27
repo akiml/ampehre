@@ -15,9 +15,8 @@ QWidget* QMSMPowerPlot::getPlot()
     return QMSMplot::getPlot();
 }
 
-void QMSMPowerPlot::initPlot(QWidget* parent)
+void QMSMPowerPlot::initPlot()
 {
-    mpPlot      = new QwtPlot(parent);
     mpCpu0      = new QwtPlotCurve("CPU0");
     mpCpu1      = new QwtPlotCurve("CPU1");
     mpGpu0      = new QwtPlotCurve("GPU");
@@ -30,12 +29,7 @@ void QMSMPowerPlot::initPlot(QWidget* parent)
     mpPlot->setAxisTitle(QwtPlot::yLeft, "Power [W]");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
-    mpCpu0->setPen(*mpPaintCpu0);
-    mpCpu1->setPen(*mpPaintCpu1);
-    mpGpu0->setPen(*mpPaintGpu0);
-    mpFpga0->setPen(*mpPaintFpga0);
-    mpMic0->setPen(*mpPaintMic0);
-    mpSystem->setPen(*mpPaintSystem);
+    resetPen();
 
     mpCpu0->attach(mpPlot);
     mpCpu1->attach(mpPlot);
@@ -75,4 +69,14 @@ void QMSMPowerPlot::updateValues(std::vector<double> &values)
 
     scaleAxis(mTimevalues[mTimevalues.size()-1]);
 
+}
+
+void QMSMPowerPlot::resetPen()
+{
+    mpCpu0->setPen(*mpPaintCpu0);
+    mpCpu1->setPen(*mpPaintCpu1);
+    mpGpu0->setPen(*mpPaintGpu0);
+    mpFpga0->setPen(*mpPaintFpga0);
+    mpMic0->setPen(*mpPaintMic0);
+    mpSystem->setPen(*mpPaintSystem);
 }

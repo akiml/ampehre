@@ -20,7 +20,8 @@ public:
 public slots:
     virtual void updateValues(std::vector<double>& values);
     virtual void redraw();
-    virtual void initPlot(QWidget* parent);
+    virtual void initPlot();
+    virtual void resetPen();
 
 };
 

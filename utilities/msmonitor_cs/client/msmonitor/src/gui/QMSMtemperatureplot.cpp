@@ -16,9 +16,8 @@ QWidget* QMSMTemperaturePlot::getPlot()
 }
 
 
-void QMSMTemperaturePlot::initPlot(QWidget *parent)
+void QMSMTemperaturePlot::initPlot()
 {
-    mpPlot      = new QwtPlot(parent);
     mpCpu0      = new QwtPlotCurve("CPU0");
     mpCpu1      = new QwtPlotCurve("CPU1");
     mpGpu0      = new QwtPlotCurve("GPU");
@@ -32,14 +31,7 @@ void QMSMTemperaturePlot::initPlot(QWidget *parent)
     mpPlot->setAxisTitle(QwtPlot::yLeft, "Temperature [C]");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
-
-    mpCpu0->setPen(*mpPaintCpu0);
-    mpCpu1->setPen(*mpPaintCpu1);
-    mpGpu0->setPen(*mpPaintGpu0);
-    mpFpga0->setPen(*mpPaintFpga0);
-    mpFpga1->setPen(*mpPaintFpga1);
-    mpMic0->setPen(*mpPaintMic0);
-    mpSystem->setPen(*mpPaintSystem);
+    resetPen();
 
     mpCpu0->attach(mpPlot);
     mpCpu1->attach(mpPlot);
@@ -80,5 +72,16 @@ void QMSMTemperaturePlot::updateValues(std::vector<double> &values)
 
     scaleAxis(mTimevalues[mTimevalues.size()-1]);
 
+}
+
+void QMSMTemperaturePlot::resetPen()
+{
+    mpCpu0->setPen(*mpPaintCpu0);
+    mpCpu1->setPen(*mpPaintCpu1);
+    mpGpu0->setPen(*mpPaintGpu0);
+    mpFpga0->setPen(*mpPaintFpga0);
+    mpFpga1->setPen(*mpPaintFpga1);
+    mpMic0->setPen(*mpPaintMic0);
+    mpSystem->setPen(*mpPaintSystem);
 }
 

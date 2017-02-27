@@ -1,5 +1,6 @@
 #include "gui/QMSMclockplot.h"
 
+
 QMSMClockPlot::QMSMClockPlot(QWidget *parent):
     QMSMplot(parent)
 {
@@ -17,9 +18,8 @@ QWidget* QMSMClockPlot::getPlot()
 }
 
 
-void QMSMClockPlot::initPlot(QWidget *parent)
+void QMSMClockPlot::initPlot()
 {
-    mpPlot      = new QwtPlot(parent);
     mpCpu0      = new QwtPlotCurve("CPU0");
     mpCpu1      = new QwtPlotCurve("CPU1");
     mpGpu0      = new QwtPlotCurve("GPU Core");
@@ -32,12 +32,7 @@ void QMSMClockPlot::initPlot(QWidget *parent)
     mpPlot->setAxisTitle(QwtPlot::yLeft, "Frequency [1/s]");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
-    mpCpu0->setPen(*mpPaintCpu0);
-    mpCpu1->setPen(*mpPaintCpu1);
-    mpGpu0->setPen(*mpPaintGpu0);
-    mpGpu1->setPen(*mpPaintGpu1);
-    mpMic0->setPen(*mpPaintMic0);
-    mpMic1->setPen(*mpPaintMic1);
+    resetPen();
 
     mpCpu0->attach(mpPlot);
     mpCpu1->attach(mpPlot);
@@ -76,4 +71,14 @@ void QMSMClockPlot::updateValues(std::vector<double> &values)
     mMic1values.push_back(values[YClockMicMem]);
 
     scaleAxis(mTimevalues[mTimevalues.size()-1]);
+}
+
+void QMSMClockPlot::resetPen()
+{
+    mpCpu0->setPen(*mpPaintCpu0);
+    mpCpu1->setPen(*mpPaintCpu1);
+    mpGpu0->setPen(*mpPaintGpu0);
+    mpGpu1->setPen(*mpPaintGpu1);
+    mpMic0->setPen(*mpPaintMic0);
+    mpMic1->setPen(*mpPaintMic1);
 }

@@ -7,25 +7,44 @@
 #include <qwt_plot_curve.h>
 #include <qwt_legend.h>
 #include <qwt_plot_grid.h>
+#include <qwt_plot_renderer.h>
 #include <vector>
+#include <QVBoxLayout>
+#include <QPixmap>
+#include <QPainter>
+#include <QFileDialog>
+
+
+namespace Ui {
+class QMSMplot;
+}
+
 
 class QMSMplot : public QWidget
 {
     Q_OBJECT
 public:
-    QMSMplot(QWidget* parent);
+    explicit QMSMplot(QWidget* parent);
     virtual ~QMSMplot();
     virtual QWidget* getPlot() = 0;
     virtual QWidget* getParent();
 
+
 public slots:
     virtual void updateValues(std::vector<double>& values) = 0;
     virtual void redraw() = 0;
-    virtual void initPlot(QWidget* parent) = 0;
+    virtual void initPlot() = 0;
     virtual void makeGrid();
     virtual void scaleAxis(double xValue);
+    virtual void resetLineWidth(int lValue);
+    virtual void resetPen();
+    virtual void screenshot();
+
 
 protected:
+    Ui::QMSMplot* ui;
+    int mLineWidth;
+
     QwtPlot* mpPlot;
     QWidget* parent;
     QwtLegend* mpLegend;
