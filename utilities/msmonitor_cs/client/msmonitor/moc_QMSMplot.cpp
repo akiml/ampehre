@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'QMSMplot.h'
 **
-** Created: Mon Feb 27 12:11:55 2017
+** Created: Thu Mar 9 19:15:40 2017
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_QMSMplot[] = {
        4,       // revision
        0,       // classname
        0,    0, // classinfo
-       8,   14, // methods
+      10,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -39,6 +39,8 @@ static const uint qt_meta_data_QMSMplot[] = {
      115,  108,    9,    9, 0x0a,
      135,    9,    9,    9, 0x0a,
      146,    9,    9,    9, 0x0a,
+     159,    9,    9,    9, 0x0a,
+     176,  174,    9,    9, 0x0a,
 
        0        // eod
 };
@@ -47,7 +49,8 @@ static const char qt_meta_stringdata_QMSMplot[] = {
     "QMSMplot\0\0values\0updateValues(std::vector<double>&)\0"
     "redraw()\0initPlot()\0makeGrid()\0xValue\0"
     "scaleAxis(double)\0lValue\0resetLineWidth(int)\0"
-    "resetPen()\0screenshot()\0"
+    "resetPen()\0screenshot()\0makeZoomable()\0"
+    "v\0setMaxData(int)\0"
 };
 
 const QMetaObject QMSMplot::staticMetaObject = {
@@ -87,9 +90,11 @@ int QMSMplot::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 5: resetLineWidth((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 6: resetPen(); break;
         case 7: screenshot(); break;
+        case 8: makeZoomable(); break;
+        case 9: setMaxData((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
-        _id -= 8;
+        _id -= 10;
     }
     return _id;
 }

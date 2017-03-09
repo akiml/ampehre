@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qmsmsettings.ui'
 **
-** Created: Mon Feb 27 12:11:43 2017
+** Created: Thu Mar 9 18:10:58 2017
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -19,6 +19,7 @@
 #include <QtGui/QLineEdit>
 #include <QtGui/QPushButton>
 #include <QtGui/QSlider>
+#include <QtGui/QSpinBox>
 #include <QtGui/QTabWidget>
 #include <QtGui/QWidget>
 
@@ -48,6 +49,8 @@ public:
     QLabel *label;
     QSlider *horizontalSlider_dataPlot;
     QLabel *label_dataPlot;
+    QSpinBox *spinBox_savedata;
+    QLabel *label_2;
     QWidget *tab_2;
     QLabel *label_3;
     QSlider *horizontalSlider_guiRate;
@@ -116,7 +119,7 @@ public:
         tab_3->setObjectName(QString::fromUtf8("tab_3"));
         label = new QLabel(tab_3);
         label->setObjectName(QString::fromUtf8("label"));
-        label->setGeometry(QRect(0, 20, 41, 21));
+        label->setGeometry(QRect(20, 20, 41, 21));
         horizontalSlider_dataPlot = new QSlider(tab_3);
         horizontalSlider_dataPlot->setObjectName(QString::fromUtf8("horizontalSlider_dataPlot"));
         horizontalSlider_dataPlot->setGeometry(QRect(70, 20, 160, 18));
@@ -129,6 +132,14 @@ public:
         label_dataPlot = new QLabel(tab_3);
         label_dataPlot->setObjectName(QString::fromUtf8("label_dataPlot"));
         label_dataPlot->setGeometry(QRect(240, 20, 61, 21));
+        spinBox_savedata = new QSpinBox(tab_3);
+        spinBox_savedata->setObjectName(QString::fromUtf8("spinBox_savedata"));
+        spinBox_savedata->setGeometry(QRect(110, 70, 52, 31));
+        spinBox_savedata->setMinimum(60);
+        spinBox_savedata->setMaximum(500);
+        label_2 = new QLabel(tab_3);
+        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setGeometry(QRect(20, 70, 81, 21));
         tabWidget->addTab(tab_3, QString());
         tab_2 = new QWidget();
         tab_2->setObjectName(QString::fromUtf8("tab_2"));
@@ -160,7 +171,7 @@ public:
 
         retranslateUi(QMSMSettings);
 
-        tabWidget->setCurrentIndex(0);
+        tabWidget->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(QMSMSettings);
@@ -168,7 +179,7 @@ public:
 
     void retranslateUi(QWidget *QMSMSettings)
     {
-        QMSMSettings->setWindowTitle(QApplication::translate("QMSMSettings", "Form", 0, QApplication::UnicodeUTF8));
+        QMSMSettings->setWindowTitle(QApplication::translate("QMSMSettings", "Settings", 0, QApplication::UnicodeUTF8));
         label_4->setText(QApplication::translate("QMSMSettings", "CPU:", 0, QApplication::UnicodeUTF8));
         label_6->setText(QApplication::translate("QMSMSettings", "GPU:", 0, QApplication::UnicodeUTF8));
         label_7->setText(QApplication::translate("QMSMSettings", "FPGA:", 0, QApplication::UnicodeUTF8));
@@ -182,6 +193,7 @@ public:
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("QMSMSettings", "Resource", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("QMSMSettings", "Plot:", 0, QApplication::UnicodeUTF8));
         label_dataPlot->setText(QApplication::translate("QMSMSettings", "250 ms", 0, QApplication::UnicodeUTF8));
+        label_2->setText(QApplication::translate("QMSMSettings", "Save Data:", 0, QApplication::UnicodeUTF8));
         tabWidget->setTabText(tabWidget->indexOf(tab_3), QApplication::translate("QMSMSettings", "Data", 0, QApplication::UnicodeUTF8));
         label_3->setText(QApplication::translate("QMSMSettings", "redraw:", 0, QApplication::UnicodeUTF8));
         label_guiRate->setText(QApplication::translate("QMSMSettings", "250 ms", 0, QApplication::UnicodeUTF8));

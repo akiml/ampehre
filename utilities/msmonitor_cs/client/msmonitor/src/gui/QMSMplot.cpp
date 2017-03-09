@@ -5,6 +5,7 @@ QMSMplot::QMSMplot(QWidget* parent):
     QWidget(parent),
     ui(new Ui::QMSMplot),
     mLineWidth(1),
+    maxData(60),
     parent(parent),
     mpLegend(new QwtLegend()),
     mpPaintCpu0(new QPen(Qt::darkBlue, mLineWidth)),
@@ -15,11 +16,13 @@ QMSMplot::QMSMplot(QWidget* parent):
     mpPaintFpga1(new QPen(Qt::green, mLineWidth)),
     mpPaintMic0(new QPen(Qt::darkMagenta, mLineWidth)),
     mpPaintMic1(new QPen(Qt::magenta, mLineWidth)),
-    mpPaintSystem( new QPen(Qt::black, mLineWidth))
+    mpPaintSystem( new QPen(QColor(255,165,0), mLineWidth))
 {
     ui->setupUi(this);
     mpPlot = ui->qwtPlot;
     mpLegend->setFrameStyle(QFrame::Box | QFrame::Sunken);
+
+    resize(700,500);
 
     connect(ui->spinBox, SIGNAL(valueChanged(int)), this, SLOT(resetLineWidth(int)));
     connect(ui->pushButtonScreenshot, SIGNAL(clicked()), this, SLOT(screenshot()));
@@ -49,6 +52,8 @@ QMSMplot::~QMSMplot()
     delete mpPaintMic0;
     delete mpPaintMic1;
     delete mpPaintSystem;
+
+    delete mpMagnifier;
 }
 
 QWidget* QMSMplot::getPlot()
@@ -81,6 +86,19 @@ void QMSMplot::makeGrid()
     mpGrid->enableYMin(true);
     mpGrid->setPen(QPen(Qt::black, 0, Qt::DotLine));
     mpGrid->attach(mpPlot);
+}
+
+void QMSMplot::makeZoomable()
+{
+    mpPanner = new QwtPlotPanner(mpPlot->canvas());
+    mpPanner->setMouseButton(Qt::LeftButton);
+    mpMagnifier = new QwtPlotMagnifier(mpPlot->canvas());
+ //   mpPanner>setMouseButton(Qt::LeftButton);
+}
+
+void QMSMplot::setMaxData(int v)
+{
+    this->maxData = v;
 }
 
 void QMSMplot::scaleAxis(double xValue)

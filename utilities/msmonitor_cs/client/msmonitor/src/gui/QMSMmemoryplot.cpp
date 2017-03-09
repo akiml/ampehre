@@ -25,7 +25,8 @@ void QMSMMemoryPlot::initPlot()
     mpMic0      = new QwtPlotCurve("MIC");
 
     mpPlot->setTitle("Memory");
-    mpPlot->setAxisTitle( QwtPlot::xBottom, "Time [s]" );
+    setWindowTitle("Memory");
+    mpPlot->setAxisTitle( QwtPlot::xBottom, "Server uptime [s]" );
     mpPlot->setAxisTitle(QwtPlot::yLeft, "Memory");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
@@ -36,6 +37,7 @@ void QMSMMemoryPlot::initPlot()
     mpGpu0->attach(mpPlot);
     mpMic0->attach(mpPlot);
 
+    makeZoomable();
     makeGrid();
 
 }
@@ -55,6 +57,14 @@ void QMSMMemoryPlot::redraw()
 
 void QMSMMemoryPlot::updateValues(std::vector<double> &values)
 {
+    while(mTimevalues.size() > maxData)
+    {
+        mTimevalues.erase(mTimevalues.begin());
+        mCpu0values.erase(mCpu0values.begin());
+        mCpu1values.erase(mCpu1values.begin());
+        mGpu0values.erase(mGpu0values.begin());
+        mMic0values.erase(mMic0values.begin());
+    }
     mTimevalues.push_back(values[X]);
     mCpu0values.push_back(values[YMemoryCpu]);
     mCpu1values.push_back(values[YSwapCpu]);

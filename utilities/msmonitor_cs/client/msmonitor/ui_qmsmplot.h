@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qmsmplot.ui'
 **
-** Created: Mon Feb 27 12:11:43 2017
+** Created: Thu Mar 9 16:17:34 2017
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -101,7 +101,7 @@ public:
 
     void retranslateUi(QWidget *QMSMplot)
     {
-        QMSMplot->setWindowTitle(QApplication::translate("QMSMplot", "AbstractMeasurement", 0, QApplication::UnicodeUTF8));
+        QMSMplot->setWindowTitle(QString());
         label->setText(QApplication::translate("QMSMplot", "Line width:", 0, QApplication::UnicodeUTF8));
         pushButtonScreenshot->setText(QApplication::translate("QMSMplot", "Screenshot", 0, QApplication::UnicodeUTF8));
         pushButtonCSV->setText(QApplication::translate("QMSMplot", "Export to CSV", 0, QApplication::UnicodeUTF8));

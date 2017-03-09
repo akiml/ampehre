@@ -135,6 +135,7 @@ QMSMHeatmap::QMSMHeatmap( QWidget *parent, QString caption, int zStart, int zEnd
     rightAxis->setColorBarEnabled( true );
 
     enableAxis( QwtPlot::yRight );
+    enableAxis( QwtPlot::yLeft, false);
 
     plotLayout()->setAlignCanvasToScales( true );
 

@@ -8,6 +8,8 @@
 #include <qwt_legend.h>
 #include <qwt_plot_grid.h>
 #include <qwt_plot_renderer.h>
+#include <qwt_plot_magnifier.h>
+#include <qwt_plot_panner.h>
 #include <vector>
 #include <QVBoxLayout>
 #include <QPixmap>
@@ -39,11 +41,14 @@ public slots:
     virtual void resetLineWidth(int lValue);
     virtual void resetPen();
     virtual void screenshot();
+    virtual void makeZoomable();
+    virtual void setMaxData(int v);
 
 
 protected:
     Ui::QMSMplot* ui;
     int mLineWidth;
+    int maxData;
 
     QwtPlot* mpPlot;
     QWidget* parent;
@@ -68,6 +73,9 @@ protected:
     QPen* mpPaintMic0;
     QPen* mpPaintMic1;
     QPen* mpPaintSystem;
+
+    QwtPlotMagnifier* mpMagnifier;
+    QwtPlotPanner* mpPanner;
 
 
     std::vector<double> mTimevalues;

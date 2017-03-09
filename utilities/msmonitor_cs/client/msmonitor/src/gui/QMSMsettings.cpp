@@ -6,6 +6,7 @@ QMSMSettings::QMSMSettings(QWidget *parent) :
     ui(new Ui::QMSMSettings)
 {
     ui->setupUi(this);
+    setWindowTitle("Settings");
     connectSignals();
     ui->pushButton_stop->setDisabled(true);
     ui->pushButton_reset->setDisabled(true);
@@ -28,6 +29,7 @@ void QMSMSettings::connectSignals()
 
     connect(ui->horizontalSlider_guiRate, SIGNAL(valueChanged(int)), this, SLOT(emit_guiRate(int)));
     connect(ui->horizontalSlider_dataPlot, SIGNAL(valueChanged(int)), this, SLOT(emit_dataPlot(int)));
+    connect(ui->spinBox_savedata, SIGNAL(valueChanged(int)), this, SLOT(emit_saveData(int)));
 
 }
 
@@ -64,6 +66,12 @@ void QMSMSettings::emit_start()
     ui->pushButton_stop->setDisabled(false);
     ui->pushButton_reset->setDisabled(false);
 }
+
+void QMSMSettings::emit_saveData(int v)
+{
+    emit signal_saveData(v);
+}
+
 
 void QMSMSettings::emit_stop()
 {

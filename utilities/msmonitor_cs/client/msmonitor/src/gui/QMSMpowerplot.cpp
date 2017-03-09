@@ -25,7 +25,8 @@ void QMSMPowerPlot::initPlot()
     mpSystem    = new QwtPlotCurve("System");
 
     mpPlot->setTitle("Power");
-    mpPlot->setAxisTitle( QwtPlot::xBottom, "Time [s]" );
+    setWindowTitle("Power");
+    mpPlot->setAxisTitle( QwtPlot::xBottom, "Server uptime [s]" );
     mpPlot->setAxisTitle(QwtPlot::yLeft, "Power [W]");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
@@ -38,6 +39,7 @@ void QMSMPowerPlot::initPlot()
     mpMic0->attach(mpPlot);
     mpSystem->attach(mpPlot);
 
+    makeZoomable();
     makeGrid();
 
 }
@@ -59,6 +61,17 @@ void QMSMPowerPlot::redraw()
 
 void QMSMPowerPlot::updateValues(std::vector<double> &values)
 {
+
+    while(mTimevalues.size() > maxData)
+    {
+        mTimevalues.erase(mTimevalues.begin());
+        mCpu0values.erase(mCpu0values.begin());
+        mGpu0values.erase(mGpu0values.begin());
+        mFpga0values.erase(mFpga0values.begin());
+        mMic0values.erase(mMic0values.begin());
+        mSystemvalues.erase(mSystemvalues.begin());
+    }
+
     mTimevalues.push_back(values[X]);
     mCpu0values.push_back(values[YPowerCpu0]);
     mCpu1values.push_back(values[YPowerCpu1]);

@@ -27,7 +27,8 @@ void QMSMTemperaturePlot::initPlot()
     mpSystem    = new QwtPlotCurve("System");
 
     mpPlot->setTitle("Temperature");
-    mpPlot->setAxisTitle( QwtPlot::xBottom, "Time [s]" );
+    setWindowTitle("Temperature");
+    mpPlot->setAxisTitle( QwtPlot::xBottom, "Server uptime [s]" );
     mpPlot->setAxisTitle(QwtPlot::yLeft, "Temperature [C]");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
@@ -41,6 +42,7 @@ void QMSMTemperaturePlot::initPlot()
     mpMic0->attach(mpPlot);
     mpSystem->attach(mpPlot);
 
+    makeZoomable();
     makeGrid();
 }
 
@@ -61,6 +63,17 @@ void QMSMTemperaturePlot::redraw()
 
 void QMSMTemperaturePlot::updateValues(std::vector<double> &values)
 {
+    while(mTimevalues.size() > maxData)
+    {
+        mTimevalues.erase(mTimevalues.begin());
+        mCpu0values.erase(mCpu0values.begin());
+        mCpu1values.erase(mCpu1values.begin());
+        mGpu0values.erase(mGpu0values.begin());
+        mFpga0values.erase(mFpga0values.begin());
+        mFpga1values.erase(mFpga1values.begin());
+        mMic0values.erase(mMic0values.begin());
+        mSystemvalues.erase(mSystemvalues.begin());
+    }
     mTimevalues.push_back(values[X]);
     mCpu0values.push_back(values[YTempCpu0]);
     mCpu1values.push_back(values[YTempCpu1]);

@@ -38,6 +38,7 @@ signals:
 
     void signal_guiRate(int);
     void signal_dataPlot(int);
+    void signal_saveData(int);
 
 public slots:
     void emit_start();
@@ -45,6 +46,7 @@ public slots:
 
     void emit_guiRate(int v);
     void emit_dataPlot(int v);
+    void emit_saveData(int v);
 
     void setFreqLabels(std::vector<uint64_t> &v);
 

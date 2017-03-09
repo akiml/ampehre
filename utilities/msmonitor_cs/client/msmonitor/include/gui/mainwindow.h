@@ -81,7 +81,7 @@ public slots:
     void setGuiInterval(int val);
     void setInterval(int val);
 
-
+    void setMaxData(int val);
 
     void showPower();
     void showTemp();

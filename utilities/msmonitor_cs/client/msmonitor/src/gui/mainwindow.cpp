@@ -125,7 +125,7 @@ void MainWindow::addPlot(QMSMplot *plot, QMdiSubWindow *subw)
     subw->setWidget(plot);
 
     ui->mdiArea->addSubWindow(subw);
-    subw->resize(600, 400);
+    subw->resize(plot->width(), plot->height());
     subw->hide();
 }
 
@@ -134,7 +134,7 @@ void MainWindow::addHeatmap(QMdiSubWindow *heat, QVBoxLayout *layout)
     delete heat->layout();
     heat->setLayout(layout);
     ui->mdiArea->addSubWindow(heat);
-    heat->resize(600, 600);
+    heat->resize(600, 800);
     heat->setFixedHeight(800);
     heat->hide();
 }
@@ -144,6 +144,8 @@ void MainWindow::connectActions()
 
     connect(mpSettings, SIGNAL(signal_start()), this, SLOT(start()));
     connect(mpSettings, SIGNAL(signal_stop()), this, SLOT(stop()));
+    connect(mpSettings, SIGNAL(signal_saveData(int)), this, SLOT(setMaxData(int)));
+
 
     connect(mpSettings, SIGNAL(signal_guiRate(int)), this, SLOT(setGuiInterval(int)));
     connect(mpSettings, SIGNAL(signal_dataPlot(int)), this, SLOT(setInterval(int)));
@@ -156,6 +158,7 @@ void MainWindow::connectActions()
     connect(ui->action_Settings, SIGNAL(triggered()), this, SLOT(showSettings()));
     connect(ui->action_Utilization_2, SIGNAL(triggered()), this, SLOT(showHeatmapUtil()));
     connect(ui->action_Temperature_2, SIGNAL(triggered()), this, SLOT(showHeatmapTemp()));
+
 
     connect(mpTimer, SIGNAL(timeout()), this, SLOT(requestData()));
 
@@ -188,6 +191,14 @@ void MainWindow::requestData()
     mClient.requestData();
 }
 
+void MainWindow::setMaxData(int val)
+{
+    mpPowerplot->setMaxData(val);
+    mpTempplot->setMaxData(val);
+    mpUtilplot->setMaxData(val);
+    mpClockplot->setMaxData(val);
+    mpMemoryplot->setMaxData(val);
+}
 
 void MainWindow::reset(){}
 

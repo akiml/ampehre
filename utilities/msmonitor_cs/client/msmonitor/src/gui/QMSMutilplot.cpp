@@ -26,7 +26,8 @@ void QMSMUtilPlot::initPlot()
     mpMic0      = new QwtPlotCurve("MIC");
 
     mpPlot->setTitle("Utilization");
-    mpPlot->setAxisTitle( QwtPlot::xBottom, "Time [s]" );
+    setWindowTitle("Utilization");
+    mpPlot->setAxisTitle( QwtPlot::xBottom, "Server uptime [s]" );
     mpPlot->setAxisTitle(QwtPlot::yLeft, "Utilization");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
@@ -38,6 +39,7 @@ void QMSMUtilPlot::initPlot()
     mpFpga0->attach(mpPlot);
     mpMic0->attach(mpPlot);
 
+    makeZoomable();
     makeGrid();
 
 }
@@ -58,6 +60,15 @@ void QMSMUtilPlot::redraw()
 
 void QMSMUtilPlot::updateValues(std::vector<double> &values)
 {
+    while(mTimevalues.size() > maxData)
+    {
+        mTimevalues.erase(mTimevalues.begin());
+        mCpu0values.erase(mCpu0values.begin());
+        mGpu0values.erase(mGpu0values.begin());
+        mGpu1values.erase(mGpu1values.begin());
+        mFpga0values.erase(mFpga0values.begin());
+        mMic0values.erase(mMic0values.begin());
+    }
     mTimevalues.push_back(values[X]);
     mCpu0values.push_back(values[YUtilCpu]);
     mGpu0values.push_back(values[YUtilGpuCore]);

@@ -28,7 +28,8 @@ void QMSMClockPlot::initPlot()
     mpMic1      = new QwtPlotCurve("MIC Mem");
 
     mpPlot->setTitle("Clock");
-    mpPlot->setAxisTitle( QwtPlot::xBottom, "Time [s]" );
+    setWindowTitle("Clock");
+    mpPlot->setAxisTitle( QwtPlot::xBottom, "Server uptime [s]" );
     mpPlot->setAxisTitle(QwtPlot::yLeft, "Frequency [1/s]");
     mpPlot->insertLegend(mpLegend, QwtPlot::BottomLegend );
 
@@ -41,6 +42,7 @@ void QMSMClockPlot::initPlot()
     mpMic0->attach(mpPlot);
     mpMic1->attach(mpPlot);
 
+    makeZoomable();
     makeGrid();
 
 }
@@ -62,6 +64,16 @@ void QMSMClockPlot::redraw()
 
 void QMSMClockPlot::updateValues(std::vector<double> &values)
 {
+    while(mTimevalues.size() > maxData)
+    {
+        mTimevalues.erase(mTimevalues.begin());
+        mCpu0values.erase(mCpu0values.begin());
+        mCpu1values.erase(mCpu1values.begin());
+        mGpu0values.erase(mGpu0values.begin());
+        mGpu1values.erase(mGpu1values.begin());
+        mMic0values.erase(mMic0values.begin());
+        mMic1values.erase(mMic1values.begin());
+    }
     mTimevalues.push_back(values[X]);
     mCpu0values.push_back(values[YClockCpu0]);
     mCpu1values.push_back(values[YClockCpu1]);
