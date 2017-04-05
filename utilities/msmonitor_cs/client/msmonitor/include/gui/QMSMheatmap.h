@@ -46,7 +46,7 @@ public:
         HueMap,
         AlphaMap
     };
-    QMSMHeatmap(QWidget * , QString caption, int zStart, int zEnd);
+    QMSMHeatmap(QWidget * , int alpha, int intEnd, int intStart, int update, QString caption, int zStart, int zEnd);
 
 public Q_SLOTS:
     void setColorMap( int );

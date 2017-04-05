@@ -4,24 +4,25 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    mpPowerplot (new QMSMPowerPlot(parent)),
-    mpTempplot (new QMSMTemperaturePlot(parent)),
-    mpClockplot (new QMSMClockPlot(parent)),
-    mpUtilplot(new QMSMUtilPlot(parent)),
-    mpMemoryplot(new QMSMMemoryPlot(parent)),
+    mpConfig(new CConfig(QDir::currentPath() + "/include/default.conf")),
+    mpPowerplot (new QMSMPowerPlot(mpConfig->lineWidth, mpConfig->maxDataRecord, mpConfig->width, mpConfig->height, parent)),
+    mpTempplot (new QMSMTemperaturePlot(mpConfig->lineWidth, mpConfig->maxDataRecord, mpConfig->width, mpConfig->height, parent)),
+    mpClockplot (new QMSMClockPlot(mpConfig->lineWidth, mpConfig->maxDataRecord, mpConfig->width, mpConfig->height, parent)),
+    mpUtilplot(new QMSMUtilPlot(mpConfig->lineWidth, mpConfig->maxDataRecord, mpConfig->width, mpConfig->height, parent)),
+    mpMemoryplot(new QMSMMemoryPlot(mpConfig->lineWidth, mpConfig->maxDataRecord, mpConfig->width, mpConfig->height, parent)),
     mpSettings(new QMSMSettings(parent)),
-    mpHeatmapCpu(new QMSMHeatmap(parent, "CPU\n[%]\n", 0, 100)),
-    mpHeatmapGpuCore(new QMSMHeatmap(parent, "GPU\nCore\n[%]", 0 ,100)),
-    mpHeatmapGpuMemory(new QMSMHeatmap(parent, "GPU\nMemory\n[%]", 0 ,100)),
-    mpHeatmapFpga(new QMSMHeatmap(parent, "Compute\nFPGA\n[%]", 0 ,100)),
-    mpHeatmapMic(new QMSMHeatmap(parent, "MIC\n[%]\n", 0 ,100)),
-    mpTempCpu0( new QMSMHeatmap(parent, "CPU0\n\n[\xB0 C]", 0, 100)),
-    mpTempCpu1( new QMSMHeatmap(parent, "CPU1\n\n[\xB0 C]", 0, 100)),
-    mpTempGpu( new QMSMHeatmap(parent, "GPU\n\n[\xB0 C]", 0, 100)),
-    mpTempFpgaCompute( new QMSMHeatmap(parent, "Comp\nFPGA\n[\xB0 C]", 0, 100)),
-    mpTempFpgaInterface( new QMSMHeatmap(parent, "Inter\nFPGA\n[\xB0 C]", 0, 100)),
-    mpTempMic( new QMSMHeatmap(parent, "Mic\nDie\n[\xB0 C]", 40, 140)),
-    mpTempSystem( new QMSMHeatmap(parent, "Main-\nboard\n[\xB0 C]", 20, 40)),
+    mpHeatmapCpu(new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime,"CPU\n[%]\n", 0, 100)),
+    mpHeatmapGpuCore(new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime, "GPU\nCore\n[%]", 0 ,100)),
+    mpHeatmapGpuMemory(new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime, "GPU\nMemory\n[%]", 0 ,100)),
+    mpHeatmapFpga(new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime, "Compute\nFPGA\n[%]", 0 ,100)),
+    mpHeatmapMic(new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime, "MIC\n[%]\n", 0 ,100)),
+    mpTempCpu0( new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime, "CPU0\n\n[\xB0 C]", 0, 100)),
+    mpTempCpu1( new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime, "CPU1\n\n[\xB0 C]", 0, 100)),
+    mpTempGpu( new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime, "GPU\n\n[\xB0 C]", 0, 100)),
+    mpTempFpgaCompute( new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime, "Comp\nFPGA\n[\xB0 C]", 0, 100)),
+    mpTempFpgaInterface( new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime, "Inter\nFPGA\n[\xB0 C]", 0, 100)),
+    mpTempMic( new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime, "Mic\nDie\n[\xB0 C]", 40, 140)),
+    mpTempSystem( new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime, "Main-\nboard\n[\xB0 C]", 20, 40)),
     subwPower(new QMdiSubWindow()),
     subwTemp(new QMdiSubWindow()),
     subwClock(new QMdiSubWindow()),
@@ -33,13 +34,14 @@ MainWindow::MainWindow(QWidget *parent) :
     mClient(CClient()),
     mpTimer(new QTimer()),
     mpGuiTimer(new QTimer()),
-    mPlotInterval(2000),
-    mHeatmapInterval(150),
-    mGuiInterval(500)
+    mPlotInterval(mpConfig->plot),
+    mHeatmapInterval(mpConfig->heatmap),
+    mGuiInterval(mpConfig->gui)
 {
+
     ui->setupUi(this);
     connectActions();
-    setSlider();
+    setInitSettings();
 
     addPlot((QMSMplot*)mpPowerplot, subwPower);
     addPlot((QMSMplot*)mpClockplot, subwClock);
@@ -76,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete mpConfig;
     delete mpPowerplot;
     delete mpTempplot;
     delete mpClockplot;
@@ -107,6 +110,13 @@ MainWindow::~MainWindow()
 
     delete mpGuiTimer;
     delete mpTimer;
+}
+
+void MainWindow::setInitSettings()
+{
+    setSlider();
+    mpSettings->emit_guiRate(mpConfig->gui);
+    mpSettings->setSaveData(mpConfig->maxDataRecord);
 }
 
 void MainWindow::setSlider()
@@ -145,6 +155,13 @@ void MainWindow::connectActions()
     connect(mpSettings, SIGNAL(signal_start()), this, SLOT(start()));
     connect(mpSettings, SIGNAL(signal_stop()), this, SLOT(stop()));
     connect(mpSettings, SIGNAL(signal_saveData(int)), this, SLOT(setMaxData(int)));
+
+    connect((QMSMplot*)mpPowerplot, SIGNAL(signal_export(QMSMplot*)), mpConfig, SLOT(exportPlotToCSV(QMSMplot*)));
+    connect((QMSMplot*)mpTempplot, SIGNAL(signal_export(QMSMplot*)), mpConfig, SLOT(exportPlotToCSV(QMSMplot*)));
+    connect((QMSMplot*)mpClockplot, SIGNAL(signal_export(QMSMplot*)), mpConfig, SLOT(exportPlotToCSV(QMSMplot*)));
+    connect((QMSMplot*)mpUtilplot, SIGNAL(signal_export(QMSMplot*)), mpConfig, SLOT(exportPlotToCSV(QMSMplot*)));
+    connect((QMSMplot*)mpMemoryplot, SIGNAL(signal_export(QMSMplot*)), mpConfig, SLOT(exportPlotToCSV(QMSMplot*)));
+
 
 
     connect(mpSettings, SIGNAL(signal_guiRate(int)), this, SLOT(setGuiInterval(int)));
@@ -299,6 +316,7 @@ void MainWindow::showHeatmapTemp()
 void MainWindow::showSettings()
 {
     subwSettings->show();
+    subwSettings->widget()->show();
 }
 
 void MainWindow::updatePower()

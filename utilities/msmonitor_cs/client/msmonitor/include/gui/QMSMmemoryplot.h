@@ -12,7 +12,7 @@
 class QMSMMemoryPlot : public QMSMplot
 {
 public:
-    QMSMMemoryPlot(QWidget *parent);
+    QMSMMemoryPlot(int linewidth, int maxData, int width, int height, QWidget *parent);
     virtual ~QMSMMemoryPlot();
     virtual QWidget* getPlot();
 

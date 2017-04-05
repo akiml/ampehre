@@ -1,11 +1,11 @@
 #include "gui/QMSMplot.h"
 #include "ui_qmsmplot.h"
 
-QMSMplot::QMSMplot(QWidget* parent):
+QMSMplot::QMSMplot(int linewidth, int maxData, int width, int height, QWidget* parent):
     QWidget(parent),
     ui(new Ui::QMSMplot),
-    mLineWidth(1),
-    maxData(60),
+    mLineWidth(linewidth),
+    maxData(maxData),
     parent(parent),
     mpLegend(new QwtLegend()),
     mpPaintCpu0(new QPen(Qt::darkBlue, mLineWidth)),
@@ -22,10 +22,11 @@ QMSMplot::QMSMplot(QWidget* parent):
     mpPlot = ui->qwtPlot;
     mpLegend->setFrameStyle(QFrame::Box | QFrame::Sunken);
 
-    resize(700,500);
+    resize(width,height);
 
     connect(ui->spinBox, SIGNAL(valueChanged(int)), this, SLOT(resetLineWidth(int)));
     connect(ui->pushButtonScreenshot, SIGNAL(clicked()), this, SLOT(screenshot()));
+    connect(ui->pushButtonCSV, SIGNAL(clicked()), this, SLOT(exportToCSV()));
 }
 
 QMSMplot::~QMSMplot()
@@ -54,6 +55,11 @@ QMSMplot::~QMSMplot()
     delete mpPaintSystem;
 
     delete mpMagnifier;
+}
+
+void QMSMplot::exportToCSV()
+{
+    emit signal_export(this);
 }
 
 QWidget* QMSMplot::getPlot()

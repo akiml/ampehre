@@ -12,7 +12,7 @@
 class QMSMClockPlot : public QMSMplot
 {
 public:
-    QMSMClockPlot(QWidget *parent);
+    QMSMClockPlot(int linewidth, int maxData, int width, int height, QWidget *parent);
     virtual ~QMSMClockPlot();
     virtual QWidget* getPlot();
 

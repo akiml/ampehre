@@ -31,6 +31,7 @@ public:
     ~QMSMSettings();
 
     void setSliderPos(std::vector<int>& val);
+    void setSaveData(int value);
 
 signals:
     void signal_start();

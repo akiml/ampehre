@@ -12,7 +12,7 @@
 class QMSMTemperaturePlot :public QMSMplot
 {
 public:
-    QMSMTemperaturePlot(QWidget* parent);
+    QMSMTemperaturePlot(int linewidth, int maxData, int width, int height, QWidget* parent);
     virtual ~QMSMTemperaturePlot();
     virtual QWidget* getPlot();
 

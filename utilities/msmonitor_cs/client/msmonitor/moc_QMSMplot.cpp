@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'QMSMplot.h'
 **
-** Created: Thu Mar 9 19:15:40 2017
+** Created: Wed Apr 5 18:19:38 2017
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,34 +23,39 @@ static const uint qt_meta_data_QMSMplot[] = {
        4,       // revision
        0,       // classname
        0,    0, // classinfo
-      10,   14, // methods
+      12,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       0,       // signalCount
+       1,       // signalCount
+
+ // signals: signature, parameters, type, tag, flags
+      10,    9,    9,    9, 0x05,
 
  // slots: signature, parameters, type, tag, flags
-      17,   10,    9,    9, 0x0a,
-      52,    9,    9,    9, 0x0a,
-      61,    9,    9,    9, 0x0a,
-      72,    9,    9,    9, 0x0a,
-      90,   83,    9,    9, 0x0a,
+      42,   35,    9,    9, 0x0a,
+      77,    9,    9,    9, 0x0a,
+      86,    9,    9,    9, 0x0a,
+      97,    9,    9,    9, 0x0a,
      115,  108,    9,    9, 0x0a,
-     135,    9,    9,    9, 0x0a,
-     146,    9,    9,    9, 0x0a,
-     159,    9,    9,    9, 0x0a,
-     176,  174,    9,    9, 0x0a,
+     140,  133,    9,    9, 0x0a,
+     160,    9,    9,    9, 0x0a,
+     171,    9,    9,    9, 0x0a,
+     184,    9,    9,    9, 0x0a,
+     201,  199,    9,    9, 0x0a,
+     217,    9,    9,    9, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_QMSMplot[] = {
-    "QMSMplot\0\0values\0updateValues(std::vector<double>&)\0"
+    "QMSMplot\0\0signal_export(QMSMplot*)\0"
+    "values\0updateValues(std::vector<double>&)\0"
     "redraw()\0initPlot()\0makeGrid()\0xValue\0"
     "scaleAxis(double)\0lValue\0resetLineWidth(int)\0"
     "resetPen()\0screenshot()\0makeZoomable()\0"
-    "v\0setMaxData(int)\0"
+    "v\0setMaxData(int)\0exportToCSV()\0"
 };
 
 const QMetaObject QMSMplot::staticMetaObject = {
@@ -82,20 +87,29 @@ int QMSMplot::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: updateValues((*reinterpret_cast< std::vector<double>(*)>(_a[1]))); break;
-        case 1: redraw(); break;
-        case 2: initPlot(); break;
-        case 3: makeGrid(); break;
-        case 4: scaleAxis((*reinterpret_cast< double(*)>(_a[1]))); break;
-        case 5: resetLineWidth((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 6: resetPen(); break;
-        case 7: screenshot(); break;
-        case 8: makeZoomable(); break;
-        case 9: setMaxData((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 0: signal_export((*reinterpret_cast< QMSMplot*(*)>(_a[1]))); break;
+        case 1: updateValues((*reinterpret_cast< std::vector<double>(*)>(_a[1]))); break;
+        case 2: redraw(); break;
+        case 3: initPlot(); break;
+        case 4: makeGrid(); break;
+        case 5: scaleAxis((*reinterpret_cast< double(*)>(_a[1]))); break;
+        case 6: resetLineWidth((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 7: resetPen(); break;
+        case 8: screenshot(); break;
+        case 9: makeZoomable(); break;
+        case 10: setMaxData((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 11: exportToCSV(); break;
         default: ;
         }
-        _id -= 10;
+        _id -= 12;
     }
     return _id;
+}
+
+// SIGNAL 0
+void QMSMplot::signal_export(QMSMplot * _t1)
+{
+    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
+    QMetaObject::activate(this, &staticMetaObject, 0, _a);
 }
 QT_END_MOC_NAMESPACE

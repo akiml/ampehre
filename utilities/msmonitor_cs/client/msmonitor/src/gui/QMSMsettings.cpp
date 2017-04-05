@@ -22,6 +22,11 @@ QMSMSettings::~QMSMSettings()
     delete ui;
 }
 
+void QMSMSettings::setSaveData(int value)
+{
+    ui->spinBox_savedata->setValue(value);
+}
+
 void QMSMSettings::connectSignals()
 {
     connect(ui->pushButton_start, SIGNAL(clicked()), this, SLOT(emit_start()));

@@ -16,6 +16,7 @@
 #include "QMSMheatmap.h"
 #include "CClient.hpp"
 #include "QMSMsettings.h"
+#include "CConfig.h"
 
 namespace Ui {
 class MainWindow;
@@ -31,6 +32,8 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    CConfig* mpConfig;
+
     QMSMPowerPlot* mpPowerplot;
     QMSMTemperaturePlot* mpTempplot;
     QMSMClockPlot* mpClockplot;
@@ -91,6 +94,8 @@ public slots:
     void showHeatmapUtil();
     void showHeatmapTemp();
     void showSettings();
+
+    void setInitSettings();
 
     void updatePower();
     void updateTemp();

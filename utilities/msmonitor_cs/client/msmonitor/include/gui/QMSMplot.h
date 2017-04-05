@@ -26,10 +26,21 @@ class QMSMplot : public QWidget
 {
     Q_OBJECT
 public:
-    explicit QMSMplot(QWidget* parent);
+    explicit QMSMplot(int linewidth, int maxData, int width, int height,QWidget* parent);
     virtual ~QMSMplot();
     virtual QWidget* getPlot() = 0;
     virtual QWidget* getParent();
+
+    std::vector<double> mTimevalues;
+    std::vector<double> mCpu0values;
+    std::vector<double> mCpu1values;
+    std::vector<double> mGpu0values;
+    std::vector<double> mGpu1values;
+    std::vector<double> mFpga0values;
+    std::vector<double> mFpga1values;
+    std::vector<double> mMic0values;
+    std::vector<double> mMic1values;
+    std::vector<double> mSystemvalues;
 
 
 public slots:
@@ -43,6 +54,11 @@ public slots:
     virtual void screenshot();
     virtual void makeZoomable();
     virtual void setMaxData(int v);
+    virtual void exportToCSV();
+
+signals:
+    virtual void signal_export(QMSMplot*);
+
 
 
 protected:
@@ -76,18 +92,6 @@ protected:
 
     QwtPlotMagnifier* mpMagnifier;
     QwtPlotPanner* mpPanner;
-
-
-    std::vector<double> mTimevalues;
-    std::vector<double> mCpu0values;
-    std::vector<double> mCpu1values;
-    std::vector<double> mGpu0values;
-    std::vector<double> mGpu1values;
-    std::vector<double> mFpga0values;
-    std::vector<double> mFpga1values;
-    std::vector<double> mMic0values;
-    std::vector<double> mMic1values;
-    std::vector<double> mSystemvalues;
 
 };
 

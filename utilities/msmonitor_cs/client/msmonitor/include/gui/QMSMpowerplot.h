@@ -13,7 +13,7 @@ class QMSMPowerPlot :public QMSMplot
 {
 
 public:
-    QMSMPowerPlot(QWidget *parent);
+    QMSMPowerPlot(int linewidth, int maxData, int width, int height, QWidget *parent);
     virtual ~QMSMPowerPlot();
     virtual QWidget* getPlot();
 

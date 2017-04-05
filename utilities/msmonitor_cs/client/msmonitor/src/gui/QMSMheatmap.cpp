@@ -99,14 +99,14 @@ public:
     }
 };
 
-QMSMHeatmap::QMSMHeatmap( QWidget *parent, QString caption, int zStart, int zEnd):
+QMSMHeatmap::QMSMHeatmap( QWidget *parent, int alpha, int intEnd, int intStart, int update, QString caption, int zStart, int zEnd):
     QwtPlot( parent ),
     mpSpectrogram(new QwtPlotSpectrogram()),
     mpMatrix (new QwtMatrixRasterData()),
-    mAlpha(255),
-    mIntervalEnd(100),
-    mIntervalStart(0),
-    mUpdate(10)
+    mAlpha(alpha),
+    mIntervalEnd(intEnd),
+    mIntervalStart(intStart),
+    mUpdate(update)
 {
     mY.push_back(0);
     mpMatrix->setValueMatrix(mY, mY.size());

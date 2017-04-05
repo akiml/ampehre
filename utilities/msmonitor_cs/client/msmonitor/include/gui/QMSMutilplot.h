@@ -12,7 +12,7 @@
 class QMSMUtilPlot : public QMSMplot
 {
 public:
-    QMSMUtilPlot(QWidget *parent);
+    QMSMUtilPlot(int linewidth, int maxData, int width, int height, QWidget *parent);
     virtual ~QMSMUtilPlot();
     virtual QWidget* getPlot();
 

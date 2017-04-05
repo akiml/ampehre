@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qmsmsettings.ui'
 **
-** Created: Thu Mar 9 18:10:58 2017
+** Created: Wed Apr 5 17:54:33 2017
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -168,6 +168,10 @@ public:
         pushButton_reset = new QPushButton(QMSMSettings);
         pushButton_reset->setObjectName(QString::fromUtf8("pushButton_reset"));
         pushButton_reset->setGeometry(QRect(270, 350, 95, 31));
+        tabWidget->raise();
+        pushButton_start->raise();
+        pushButton_stop->raise();
+        pushButton_reset->raise();
 
         retranslateUi(QMSMSettings);
 

@@ -1,8 +1,8 @@
 #include "gui/QMSMclockplot.h"
 
 
-QMSMClockPlot::QMSMClockPlot(QWidget *parent):
-    QMSMplot(parent)
+QMSMClockPlot::QMSMClockPlot(int linewidth, int maxData, int width, int height, QWidget *parent):
+    QMSMplot(linewidth, maxData, width, height, parent)
 {
     //nothing to be done
 }
