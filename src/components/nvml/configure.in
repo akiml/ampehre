@@ -36,13 +36,6 @@ AC_CHECK_LIB( [nvidia-ml], [nvmlInit], [], [AC_MSG_ERROR([NVML component: libnvi
 NVML_INCDIR=$nvml_incdir
 NVML_LIBDIR=$nvml_libdir
 
-AC_ARG_WITH(cuda-dir, 
-    [--with-cuda-dir=<path> Specify path to cuda root directory], 
-    [ CUDA_DIR=$withval
-        LDFLAGS="$LDFLAGS -L$withval/lib64 -Wl,-rpath,$withval/lib64"
-        AC_CHECK_LIB( [cudart], [cudaMalloc], [], [AC_MSG_ERROR([CUDA cudart library not found!])])],
-    [ AC_MSG_ERROR([Component requires path to cuda library.])])
-
 AC_CONFIG_FILES([Makefile.nvml])
 AC_SUBST(NVML_INCDIR)
 AC_SUBST(NVML_LIBDIR)

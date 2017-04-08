@@ -49,6 +49,7 @@ typedef struct nvml_native_event_entry
 	char units[PAPI_MIN_STR_LEN];
 	char description[PAPI_MAX_STR_LEN];
 	int type;
+    int deviceId;
 } nvml_native_event_entry_t;
 
 #endif

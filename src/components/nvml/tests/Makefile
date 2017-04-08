@@ -2,11 +2,12 @@ NAME=nvml
 include ../../Makefile_comp_tests
 include ../Makefile.nvml
 
-NVCC = $(CUDA_DIR)/bin/nvcc
-NVCFLAGS = -arch=sm_13
-CUDALIBS = -L$(NVML_DIR)/lib64 -L$(CUDA_DIR)/lib64 -lcuda -lcudart -lnvidia-ml
+#NVCC = $(CUDA_DIR)/bin/nvcc
+NVCC = gcc
+NVCFLAGS =
+CUDALIBS = -L$(NVML_DIR)/lib64 -lnvidia-ml
 
-%.o:%.cu
+%.o:%.c
 	$(NVCC) $(INCLUDE) $(NVCFLAGS) -c -o $@ $<
 
 TESTS = HelloWorld

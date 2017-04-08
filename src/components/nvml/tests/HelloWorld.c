@@ -23,15 +23,11 @@
  *	The string "Hello World!" is mangled and then restored.
  */
 
-#include <cuda.h>
 #include <stdio.h>
 #include "papi_test.h"
 
-#define NUM_EVENTS 1
+#define NUM_EVENTS 6
 #define PAPI
-
-// Prototypes
-__global__ void helloWorld(char*);
 
 
 // Host function
@@ -45,7 +41,7 @@ int main(int argc, char** argv)
 	   FOR THE CUDA DEVICE YOU ARE RUNNING ON.
 	   RUN papi_native_avail to get a list of CUDA events that are 
 	   supported on your machine */
-    char *EventName[] = { "PAPI_FP_OPS" };
+    char *EventName[] = { "nvml:::Tesla_K20c:power", "nvml:::Tesla_K20c:fan_speed", "nvml:::Tesla_K20c:total_memory", "nvml:::Tesla_K20c:unallocated_memory", "nvml:::Tesla_K20c:allocated_memory", "nvml:::Tesla_K20c:temperature" };
 	int events[NUM_EVENTS];
 	int eventCount = 0;
 	
@@ -90,9 +86,7 @@ int main(int argc, char** argv)
 	int count;
 	int cuda_device;
 
-	cudaGetDeviceCount( &count );
-	for ( cuda_device = 0; cuda_device < count; cuda_device++ ) {
-			cudaSetDevice( cuda_device );
+	for ( cuda_device = 0; cuda_device < 1; cuda_device++ ) {
 #ifdef PAPI	
 			retval = PAPI_start( EventSet );
 			if( retval != PAPI_OK )
@@ -109,28 +103,9 @@ int main(int argc, char** argv)
 					//printf("str=%s\n", str);
 			}
 
-
-			// allocate memory on the device
-			char *d_str;
-			size_t size = sizeof(str);
-			cudaMalloc((void**)&d_str, size);
-
-			// copy the string to the device
-			cudaMemcpy(d_str, str, size, cudaMemcpyHostToDevice);
-
-			// set the grid and block sizes
-			dim3 dimGrid(2); // one block per word
-			dim3 dimBlock(6); // one thread per character
-
-
-			// invoke the kernel
-			helloWorld<<< dimGrid, dimBlock >>>(d_str);
-
-			// retrieve the results from the device
-			cudaMemcpy(str, d_str, size, cudaMemcpyDeviceToHost);
+            sleep(10);
 
 			// free up the allocated memory on the device
-			cudaFree(d_str);
 
 			printf("END: %s\n", str);
 
@@ -149,13 +124,4 @@ int main(int argc, char** argv)
 }
 
 
-// Device kernel
-__global__ void
-helloWorld(char* str)
-{
-	// determine where in the thread grid we are
-	int idx = blockIdx.x * blockDim.x + threadIdx.x;
-	// unmangle output
-	str[idx] += idx;
-}
 

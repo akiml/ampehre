@@ -33,8 +33,6 @@
 #include "linux-nvml.h"
 
 #include "nvml.h"
-#include "cuda.h"
-#include "cuda_runtime_api.h"
 
 void (*_dl_non_dynamic_init)(void) __attribute__((weak));
 
@@ -53,21 +51,6 @@ void (*_dl_non_dynamic_init)(void) __attribute__((weak));
  *  component initialization time.  The component then calls the cuda library   *
  *  functions through these function pointers.                                  *
  ********************************************************************************/
-#undef CUDAAPI
-#define CUDAAPI __attribute__((weak))
-CUresult CUDAAPI cuInit(unsigned int);
-
-CUresult (*cuInitPtr)(unsigned int);
-
-#undef CUDARTAPI
-#define CUDARTAPI __attribute__((weak))
-cudaError_t CUDARTAPI cudaGetDevice(int *);
-cudaError_t CUDARTAPI cudaGetDeviceCount(int *);
-cudaError_t CUDARTAPI cudaDeviceGetPCIBusId(char *, int, int);
-
-cudaError_t (*cudaGetDevicePtr)(int *);
-cudaError_t (*cudaGetDeviceCountPtr)(int *);
-cudaError_t (*cudaDeviceGetPCIBusIdPtr)(char *, int, int);
 
 #undef DECLDIR
 #define DECLDIR __attribute__((weak))
@@ -111,11 +94,9 @@ nvmlReturn_t       (*nvmlShutdownPtr)                      (void);
 
 
 // file handles used to access cuda libraries with dlopen
-static void* dl1 = NULL;
-static void* dl2 = NULL;
 static void* dl3 = NULL;
 
-static int linkCudaLibraries ();
+static int linkNvmlLibraries ();
 
 
 /* Declare our vector in advance */
@@ -397,21 +378,20 @@ nvml_hardware_read( long long *value, int which_one)
 {
 		nvml_native_event_entry_t *entry;
 		nvmlDevice_t handle;
-		int cudaIdx = -1;
+		int deviceId = -1;
 
 		entry = &nvml_native_table[which_one];
 		*value = (long long) -1;
-		/* replace entry->resources with the current cuda_device->nvml device */
-		(*cudaGetDevicePtr)( &cudaIdx );
+        deviceId = entry->deviceId;
 
-		if ( cudaIdx < 0 || cudaIdx > device_count )
+		if ( deviceId < 0 || deviceId > device_count )
 			return PAPI_EINVAL;
 
 		/* Make sure the device we are running on has the requested event */
-		if ( !HAS_FEATURE( features[cudaIdx] , entry->type) ) 
+		if ( !HAS_FEATURE( features[deviceId] , entry->type) ) 
 				return PAPI_EINVAL;
 
-		handle = devices[cudaIdx];
+		handle = devices[deviceId];
 
 		switch (entry->type) {
 				case FEATURE_CLOCK_INFO:
@@ -483,8 +463,6 @@ detectDevices( )
 		nvmlDevice_t handle;
 		nvmlPciInfo_t info;
 
-		cudaError_t cuerr;
-
 		char busId[16];
 		char name[64];
 		char inforomECC[16];
@@ -520,23 +498,13 @@ detectDevices( )
 		nvml_busIds[i][sizeof(nvml_busIds[i])-1] = '\0';
 	}
 
-	/* We want to key our list of nvmlDevice_ts by each device's cuda index */
+	/* We want to key our list of nvmlDevice_ts by each device's nvml index */
 	for (i=0; i < device_count; i++) {
-			cuerr = (*cudaDeviceGetPCIBusIdPtr)( busId, 16, i );
-			if ( CUDA_SUCCESS != cuerr ) {
-				SUBDBG("cudaDeviceGetPCIBusId failed.\n");
+			ret = (*nvmlDeviceGetHandleByIndexPtr)(i, &devices[i] );
+			if ( NVML_SUCCESS != ret ) {
+				SUBDBG("nvmlDeviceGetHandleByIndex(%d, &devices[%d]) failed.\n", i, i);
 				return PAPI_ESYS;
 			}
-			for (j=0; j < device_count; j++ ) {
-					if ( !strncmp( busId, nvml_busIds[j], 16) ) {
-							ret = (*nvmlDeviceGetHandleByIndexPtr)(j, &devices[i] );
-							if ( NVML_SUCCESS != ret ) {
-								SUBDBG("nvmlDeviceGetHandleByIndex(%d, &devices[%d]) failed.\n", j, i);
-								return PAPI_ESYS;
-							}
-							break;
-					}
-			}	
 	}
 
 		memset(names, 0x0, device_count*64);
@@ -705,18 +673,21 @@ createNativeEvents( )
 								strncpy(entry->description,"Graphics clock domain (MHz).", PAPI_MAX_STR_LEN );
 								entry->options.clock = NVML_CLOCK_GRAPHICS;
 								entry->type = FEATURE_CLOCK_INFO;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf( entry->name, "%s:sm_clock", sanitized_name);
 								strncpy(entry->description,"SM clock domain (MHz).", PAPI_MAX_STR_LEN);
 								entry->options.clock = NVML_CLOCK_SM;
 								entry->type = FEATURE_CLOCK_INFO;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf( entry->name, "%s:memory_clock", sanitized_name);
 								strncpy(entry->description,"Memory clock domain (MHz).", PAPI_MAX_STR_LEN);
 								entry->options.clock = NVML_CLOCK_MEM;
 								entry->type = FEATURE_CLOCK_INFO;
+                                entry->deviceId = i;
 								entry++;
 						}	
 
@@ -728,6 +699,7 @@ createNativeEvents( )
 												.which_one = LOCAL_ECC_L1,
 								};
 								entry->type = FEATURE_ECC_LOCAL_ERRORS;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf(entry->name, "%s:l2_single_ecc_errors", sanitized_name);
@@ -737,6 +709,7 @@ createNativeEvents( )
 												.which_one = LOCAL_ECC_L2,
 								};
 								entry->type = FEATURE_ECC_LOCAL_ERRORS;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf(entry->name, "%s:memory_single_ecc_errors", sanitized_name);
@@ -746,6 +719,7 @@ createNativeEvents( )
 												.which_one = LOCAL_ECC_MEM,
 								};
 								entry->type = FEATURE_ECC_LOCAL_ERRORS;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf(entry->name, "%s:regfile_single_ecc_errors", sanitized_name);
@@ -755,6 +729,7 @@ createNativeEvents( )
 												.which_one = LOCAL_ECC_REGFILE,
 								};
 								entry->type = FEATURE_ECC_LOCAL_ERRORS;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf(entry->name, "%s:1l_double_ecc_errors", sanitized_name);
@@ -764,6 +739,7 @@ createNativeEvents( )
 												.which_one = LOCAL_ECC_L1,
 								};
 								entry->type = FEATURE_ECC_LOCAL_ERRORS;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf(entry->name, "%s:l2_double_ecc_errors", sanitized_name);
@@ -773,6 +749,7 @@ createNativeEvents( )
 												.which_one = LOCAL_ECC_L2,
 								};
 								entry->type = FEATURE_ECC_LOCAL_ERRORS;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf(entry->name, "%s:memory_double_ecc_errors", sanitized_name);
@@ -782,6 +759,7 @@ createNativeEvents( )
 												.which_one = LOCAL_ECC_MEM,
 								};
 								entry->type = FEATURE_ECC_LOCAL_ERRORS;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf(entry->name, "%s:regfile_double_ecc_errors", sanitized_name);
@@ -791,6 +769,7 @@ createNativeEvents( )
 												.which_one = LOCAL_ECC_REGFILE,
 								};
 								entry->type = FEATURE_ECC_LOCAL_ERRORS;
+                                entry->deviceId = i;
 								entry++;
 						}
 
@@ -798,6 +777,7 @@ createNativeEvents( )
 								sprintf( entry->name, "%s:fan_speed", sanitized_name);
 								strncpy(entry->description,"The fan speed expressed as a percent of the maximum, i.e. full speed is 100%", PAPI_MAX_STR_LEN);
 								entry->type = FEATURE_FAN_SPEED;
+                                entry->deviceId = i;
 								entry++;
 						}
 
@@ -806,18 +786,21 @@ createNativeEvents( )
 								strncpy(entry->description,"Maximal Graphics clock domain (MHz).", PAPI_MAX_STR_LEN);
 								entry->options.clock = NVML_CLOCK_GRAPHICS;
 								entry->type = FEATURE_MAX_CLOCK;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf( entry->name, "%s:sm_max_clock", sanitized_name);
 								strncpy(entry->description,"Maximal SM clock domain (MHz).", PAPI_MAX_STR_LEN);
 								entry->options.clock = NVML_CLOCK_SM;
 								entry->type = FEATURE_MAX_CLOCK;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf( entry->name, "%s:memory_max_clock", sanitized_name);
 								strncpy(entry->description,"Maximal Memory clock domain (MHz).", PAPI_MAX_STR_LEN);
 								entry->options.clock = NVML_CLOCK_MEM;
 								entry->type = FEATURE_MAX_CLOCK;
+                                entry->deviceId = i;
 								entry++;
 						}
 
@@ -826,18 +809,21 @@ createNativeEvents( )
 								strncpy(entry->description,"Total installed FB memory (in bytes).", PAPI_MAX_STR_LEN);
 								entry->options.which_one = MEMINFO_TOTAL_MEMORY;
 								entry->type = FEATURE_MEMORY_INFO;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf( entry->name, "%s:unallocated_memory", sanitized_name);
 								strncpy(entry->description,"Uncallocated FB memory (in bytes).", PAPI_MAX_STR_LEN);
 								entry->options.which_one = MEMINFO_UNALLOCED;
 								entry->type = FEATURE_MEMORY_INFO;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf( entry->name, "%s:allocated_memory", sanitized_name);
 								strncpy(entry->description,	"Allocated FB memory (in bytes). Note that the driver/GPU always sets aside a small amount of memory for bookkeeping.", PAPI_MAX_STR_LEN);
 								entry->options.which_one = MEMINFO_ALLOCED;
 								entry->type = FEATURE_MEMORY_INFO;
+                                entry->deviceId = i;
 								entry++;
 						}
 
@@ -845,6 +831,7 @@ createNativeEvents( )
 								sprintf( entry->name, "%s:pstate", sanitized_name);
 								strncpy(entry->description,"The performance state of the device.", PAPI_MAX_STR_LEN);
 								entry->type = FEATURE_PERF_STATES;
+                                entry->deviceId = i;
 								entry++;
 						}
 
@@ -854,6 +841,7 @@ createNativeEvents( )
 								strncpy( entry->units, "mW",PAPI_MIN_STR_LEN);
 								strncpy(entry->description,"Power usage reading for the device, in miliwatts. This is the power draw (+/-5 watts) for the entire board: GPU, memory, etc.", PAPI_MAX_STR_LEN);
 								entry->type = FEATURE_POWER;
+                                entry->deviceId = i;
 								entry++;
 						}
 
@@ -861,6 +849,7 @@ createNativeEvents( )
 								sprintf( entry->name, "%s:temperature", sanitized_name);
 								strncpy(entry->description,"Current temperature readings for the device, in degrees C.", PAPI_MAX_STR_LEN);
 								entry->type = FEATURE_TEMP;
+                                entry->deviceId = i;
 								entry++;
 						}
 
@@ -871,6 +860,7 @@ createNativeEvents( )
 										.bits = NVML_SINGLE_BIT_ECC, 
 								};
 								entry->type = FEATURE_ECC_TOTAL_ERRORS;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf( entry->name, "%s:total_ecc_errors", sanitized_name);
@@ -879,6 +869,7 @@ createNativeEvents( )
 										.bits = NVML_DOUBLE_BIT_ECC, 
 								};
 								entry->type = FEATURE_ECC_TOTAL_ERRORS;
+                                entry->deviceId = i;
 								entry++;
 						}
 
@@ -887,12 +878,14 @@ createNativeEvents( )
 								strncpy(entry->description,"Percent of time over the past second during which one or more kernels was executing on the GPU.", PAPI_MAX_STR_LEN);
 								entry->options.which_one = GPU_UTILIZATION;
 								entry->type = FEATURE_UTILIZATION;
+                                entry->deviceId = i;
 								entry++;
 
 								sprintf( entry->name, "%s:memory_utilization", sanitized_name);
 								strncpy(entry->description,"Percent of time over the past second during which global (device) memory was being read or written.", PAPI_MAX_STR_LEN);
 								entry->options.which_one = MEMORY_UTILIZATION;
 								entry->type = FEATURE_UTILIZATION;
+                                entry->deviceId = i;
 								entry++;
 						}
 						strncpy( names[i], name, sizeof(names[0])-1);
@@ -910,15 +903,13 @@ _papi_nvml_init_component( int cidx )
 {
 		SUBDBG ("Entry: cidx: %d\n", cidx);
 		nvmlReturn_t ret;
-		cudaError_t cuerr;
 		int papi_errorcode;
 
-		int cuda_count = 0;
 		unsigned int nvml_count = 0;
 
-		/* link in the cuda and nvml libraries and resolve the symbols we need to use */
-		if (linkCudaLibraries() != PAPI_OK) {
-			SUBDBG ("Dynamic link of CUDA libraries failed, component will be disabled.\n");
+		/* link in the nvml library and resolve the symbols we need to use */
+		if (linkNvmlLibraries() != PAPI_OK) {
+			SUBDBG ("Dynamic link of NVML libraries failed, component will be disabled.\n");
 			SUBDBG ("See disable reason in papi_component_avail output for more details.\n");
 			return (PAPI_ENOSUPP);
 		}
@@ -929,12 +920,6 @@ _papi_nvml_init_component( int cidx )
 				return PAPI_ENOSUPP;
 		}
 
-		cuerr = (*cuInitPtr)( 0 );
-		if ( CUDA_SUCCESS != cuerr ) {
-				strcpy(_nvml_vector.cmp_info.disabled_reason, "The CUDA library failed to initialize.");
-				return PAPI_ENOSUPP;
-		}
-
 		/* Figure out the number of CUDA devices in the system */
 		ret = (*nvmlDeviceGetCountPtr)( &nvml_count );
 		if ( NVML_SUCCESS != ret ) {
@@ -942,19 +927,7 @@ _papi_nvml_init_component( int cidx )
 				return PAPI_ENOSUPP;
 		}
 
-		cuerr = (*cudaGetDeviceCountPtr)( &cuda_count );
-		if ( CUDA_SUCCESS != cuerr ) {
-				strcpy(_nvml_vector.cmp_info.disabled_reason, "Unable to get a device count from CUDA.");
-				return PAPI_ENOSUPP;
-		}
-
-		/* We can probably recover from this, when we're clever */
-		if ( (cuda_count > 0) && (nvml_count != (unsigned int)cuda_count ) ) {
-				strcpy(_nvml_vector.cmp_info.disabled_reason, "Cuda and the NVIDIA managament library have different device counts.");
-				return PAPI_ENOSUPP;
-		}
-
-		device_count = cuda_count;
+		device_count = nvml_count;
 
 		/* A per device representation of what events are present */
 		features = (int*)papi_malloc(sizeof(int) * device_count );
@@ -995,51 +968,12 @@ _papi_nvml_init_component( int cidx )
  * and on systems where these libraries are not installed.
  */
 static int
-linkCudaLibraries ()
+linkNvmlLibraries ()
 {
 	/* Attempt to guess if we were statically linked to libc, if so bail */
 	if ( _dl_non_dynamic_init != NULL ) {
 		strncpy(_nvml_vector.cmp_info.disabled_reason, "NVML component does not support statically linking of libc.", PAPI_MAX_STR_LEN);
 		return PAPI_ENOSUPP;
-	}
-
-	/* Need to link in the cuda libraries, if not found disable the component */
-	dl1 = dlopen("libcuda.so", RTLD_NOW | RTLD_GLOBAL);
-	if (!dl1)
-	{
-		strncpy(_nvml_vector.cmp_info.disabled_reason, "CUDA library libcuda.so not found.",PAPI_MAX_STR_LEN);
-		return ( PAPI_ENOSUPP );
-	}
-	cuInitPtr = dlsym(dl1, "cuInit");
-	if (dlerror() != NULL)
-	{
-		strncpy(_nvml_vector.cmp_info.disabled_reason, "CUDA function cuInit not found.",PAPI_MAX_STR_LEN);
-		return ( PAPI_ENOSUPP );
-	}
-
-	dl2 = dlopen("libcudart.so", RTLD_NOW | RTLD_GLOBAL);
-	if (!dl2)
-	{
-		strncpy(_nvml_vector.cmp_info.disabled_reason, "CUDA runtime library libcudart.so not found.",PAPI_MAX_STR_LEN);
-		return ( PAPI_ENOSUPP );
-	}
-	cudaGetDevicePtr = dlsym(dl2, "cudaGetDevice");
-	if (dlerror() != NULL)
-	{
-		strncpy(_nvml_vector.cmp_info.disabled_reason, "CUDART function cudaGetDevice not found.",PAPI_MAX_STR_LEN);
-		return ( PAPI_ENOSUPP );
-	}
-	cudaGetDeviceCountPtr = dlsym(dl2, "cudaGetDeviceCount");
-	if (dlerror() != NULL)
-	{
-		strncpy(_nvml_vector.cmp_info.disabled_reason, "CUDART function cudaGetDeviceCount not found.",PAPI_MAX_STR_LEN);
-		return ( PAPI_ENOSUPP );
-	}
-	cudaDeviceGetPCIBusIdPtr = dlsym(dl2, "cudaDeviceGetPCIBusId");
-	if (dlerror() != NULL)
-	{
-		strncpy(_nvml_vector.cmp_info.disabled_reason, "CUDART function cudaDeviceGetPCIBusId not found.",PAPI_MAX_STR_LEN);
-		return ( PAPI_ENOSUPP );
 	}
 
 	dl3 = dlopen("libnvidia-ml.so", RTLD_NOW | RTLD_GLOBAL);
@@ -1329,8 +1263,6 @@ _papi_nvml_shutdown_component()
 		num_events = 0;
 
 		// close the dynamic libraries needed by this component (opened in the init component call)
-		dlclose(dl1);
-		dlclose(dl2);
 		dlclose(dl3);
 
 		return PAPI_OK;
