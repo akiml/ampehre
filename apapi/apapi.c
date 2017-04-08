@@ -25,7 +25,7 @@ long long getcurrenttime() {
     return (long long)result.tv_sec* 1000000000LL + (long long)result.tv_nsec;
 }
 
-int APAPI_create_eventset_list(char **names, int num, int cidx, int *EventSet, int *num_events){
+int APAPI_create_eventset_list(char **names, int cidx, int *EventSet, int *num_events){
 
     int retv;
 
@@ -35,7 +35,7 @@ int APAPI_create_eventset_list(char **names, int num, int cidx, int *EventSet, i
         return retv;
     int eventIx;
     *num_events = 0;
-    for(eventIx = 0; eventIx < num; eventIx++) {
+    for(eventIx = 0; names[eventIx] != NULL; eventIx++) {
         retv = PAPI_add_named_event(*EventSet, names[eventIx]);
         if (retv == PAPI_OK) {
             (*num_events)++;
@@ -518,16 +518,16 @@ int APAPI_destroy_timer(struct apapi_timer **timer){
 }
 
 
-int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **names, int num) {
+int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **names) {
     int retv;
     struct apapi_eventset *newset;
     *set = calloc(1, sizeof(struct apapi_eventset));
     newset = *set;
     newset->EventSet = PAPI_NULL;
-    if (names == NULL || num == 0) {
+    if (names == NULL) {
         retv = APAPI_create_eventset_cmp_all(cidx, &(newset->EventSet), &(newset->num_events));
     } else {
-        retv = APAPI_create_eventset_list(names, num, cidx, &(newset->EventSet), &(newset->num_events));
+        retv = APAPI_create_eventset_list(names, cidx, &(newset->EventSet), &(newset->num_events));
     }
     #ifdef DEBUG
         printf("apapi %d %d\n", __LINE__, retv);

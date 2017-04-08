@@ -101,7 +101,7 @@ void APAPI_dummy();
 
 void APAPI_init();
 
-int APAPI_create_eventset_list(char **names, int num, int cidx, int *EventSet, int *num_events);
+int APAPI_create_eventset_list(char **names, int cidx, int *EventSet, int *num_events);
 
 int APAPI_create_eventset_cmp_all(int cidx, int *EventSet, int *num_events);
 
@@ -115,7 +115,7 @@ int APAPI_stop_timer(struct apapi_timer *timer);
 
 int APAPI_destroy_timer(struct apapi_timer **timer);
 
-int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **names, int num);
+int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **names);
 
 int APAPI_destroy_apapi_eventset(struct apapi_eventset **set);
 

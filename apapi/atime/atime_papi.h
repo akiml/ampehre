@@ -33,7 +33,8 @@ char *RAPL_DEFAULT_SET[] = {
 "rapl:::DRAM_ENERGY:PACKAGE0",
 "rapl:::DRAM_ENERGY:PACKAGE1",
 "rapl:::PP0_ENERGY:PACKAGE0",
-"rapl:::PP0_ENERGY:PACKAGE1"
+"rapl:::PP0_ENERGY:PACKAGE1",
+NULL
 };
 
 int NVML_DEFAULT_SET_NUM = 6;
@@ -43,11 +44,13 @@ char *NVML_DEFAULT_SET[] = {
 "nvml:::Tesla_K20c:unallocated_memory",
 "nvml:::Tesla_K20c:allocated_memory",
 "nvml:::Tesla_K20c:power",
-"nvml:::Tesla_K20c:temperature"
+"nvml:::Tesla_K20c:temperature",
+NULL
 };
 
 char *my_events[] = {
-"rapl:::PACKAGE_ENERGY_CNT:PACKAGE0"
+"rapl:::PACKAGE_ENERGY_CNT:PACKAGE0",
+NULL
 };
 
 void quit(unsigned int line, char* msg){
@@ -96,10 +99,10 @@ void papi_init(){
     int cidx;
     cidx = PAPI_get_component_index("rapl");
     //retv = APAPI_init_apapi_eventset_cmp(&set, cidx);
-    //retv = APAPI_init_apapi_eventset_cmp(&set, cidx, my_events, 1);
-    retv = APAPI_init_apapi_eventset_cmp(&set, cidx, NULL, 0);
+    //retv = APAPI_init_apapi_eventset_cmp(&set, cidx, my_events);
+    retv = APAPI_init_apapi_eventset_cmp(&set, cidx, NULL);
     cidx = PAPI_get_component_index("nvml");
-    retv = APAPI_init_apapi_eventset_cmp(&nvml_set, cidx, NULL, 0);
+    retv = APAPI_init_apapi_eventset_cmp(&nvml_set, cidx, NULL);
     #ifdef DEBUG
     printf("atime %d %d\n", __LINE__, retv);
     printf("atime %d events used\n", set->num_events);
