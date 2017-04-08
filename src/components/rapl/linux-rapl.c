@@ -911,10 +911,12 @@ _rapl_update_control_state( hwd_control_state_t *ctl,
        control->being_measured[index]=1;
 
        /* Only need to subtract if it's a PACKAGE_ENERGY or ENERGY_CNT type */
+/*
        control->need_difference[index]=
 	 	(rapl_native_events[index].type==PACKAGE_ENERGY ||
 		rapl_native_events[index].type==DRAM_ENERGY ||
 	 	rapl_native_events[index].type==PACKAGE_ENERGY_CNT);
+*/
     }
 
     return PAPI_OK;
