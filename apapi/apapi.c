@@ -170,7 +170,8 @@ void exec_op2(enum APAPI_op2 op2, double value1, long long time0, long long time
 }
 */
 
-void stats(enum APAPI_stats stats_op, double value, long long sample_count, double *stats){
+void stats(enum APAPI_stats stats_op, long long value, long long avg_value_weight, 
+    long long avg_last_total_weight, long long avg_new_total_weight, int sample_count, double *stats){
 
     // stats = {min, max, avg, acc}
 
@@ -182,7 +183,17 @@ void stats(enum APAPI_stats stats_op, double value, long long sample_count, doub
         stats[3] += value;
 
         // average
-        stats[2] = stats[3] / sample_count;
+        if (sample_count > 2) {
+            // normal measurements between second and last measurment
+            stats[2] = stats[2] * ((double)avg_last_total_weight / (double)avg_new_total_weight) + 
+                value * ((double)avg_value_weight / (double)avg_new_total_weight);
+            // TODO: order of division/multiplication: make avg value less precise or make weight factor less precise?
+            // TODO: test different orders with "real" values
+        } else
+        if (sample_count == 2) {
+            // second measurement hold first useful value, weight equals total weight
+            stats[2] = value; // weight    
+        } // else first not-useful value or something's terribly wrong
 
         // min
         if (value < stats[0]) {
@@ -205,12 +216,10 @@ void APAPI_timer_measure_stats(struct apapi_eventset *set) {
 
     int eventIx;
     double value1 = 0.0;
-    double value2 = 0.0;
     for(eventIx = 0; eventIx < set->num_events; eventIx++) {
 
         #ifdef DEBUG
-        printf("in event %d prev %llx cur %llx prevtime %llx curtime %llx min0 %f max0 %f avg0 %f acc0 %f min1 %f max1 %f avg1 %f acc1 %f \n", eventIx,
-            set->previous_values[eventIx],
+        printf("in event %d cur %llx prevtime %llx curtime %llx min0 %f max0 %f avg0 %f acc0 %f min1 %f max1 %f avg1 %f acc1 %f \n", eventIx,
             set->current_values[eventIx],
             set->previous_time,
             set->current_time,
@@ -224,14 +233,12 @@ void APAPI_timer_measure_stats(struct apapi_eventset *set) {
             set->values1[eventIx*4 + 3]);
         #endif
 
-
-        if (set->count == 1 && set->max_samples[eventIx] > 0) {
-            //printf("skip first stats for event %d\n", eventIx);
+        // always skip first measurement
+        if (set->count == 1) {
             continue;
         }
 
         value1 = 0.0;
-        value2 = 0.0;
 
 
         exec_op1(set->values_op1[eventIx], set->previous_values[eventIx], set->current_values[eventIx], set->previous_time, set->current_time,
@@ -240,10 +247,14 @@ void APAPI_timer_measure_stats(struct apapi_eventset *set) {
 //        exec_op2(set->values_op2[eventIx], value1, set->previous_time, set->current_time, &value2);
 
         if (set->values0_stats[eventIx] != STAT_NO) {
-            stats(set->values0_stats[eventIx], set->current_values[eventIx], set->count, &(set->values0[eventIx*4]));
+            stats(set->values0_stats[eventIx], set->current_values[eventIx],
+                set->current_time - set->previous_time, set->previous_time - set->first_time, set->current_time - set->first_time,
+                set->count, &(set->values0[eventIx*4]));
         }
         if (set->values1_stats[eventIx] != STAT_NO) {
-            stats(set->values1_stats[eventIx], value1, set->count, &(set->values1[eventIx*4]));
+            stats(set->values1_stats[eventIx], value1,
+                set->current_time - set->previous_time, set->previous_time - set->first_time, set->current_time - set->first_time,
+                set->count, &(set->values1[eventIx*4]));
         }
 //        if (set->values2_stats[eventIx] != STAT_NO) {
 //            stats(set->values2_stats[eventIx], value2, set->count, &(set->values2[eventIx]));
@@ -271,23 +282,23 @@ void APAPI_timer_measure_stats(struct apapi_eventset *set) {
 
 }
 
-void fix_overflow(long long *current_values, long long *previous_values, long long *max_values, long long *new_values, int values_num) {
+void fix_overflow(long long *current_samples, long long *previous_samples, long long *max_values, long long *new_values, int values_num) {
 
     int eventIx;
     for(eventIx=0; eventIx<values_num; eventIx++) {
         //printf("last %lld cur %lld new %lld\n", previous_values[eventIx], current_values[eventIx], new_values[eventIx]);
         if (max_values[eventIx] != 0) {
-            if (current_values[eventIx] < previous_values[eventIx]) {
+            if (current_samples[eventIx] < previous_samples[eventIx]) {
                 // overflow detected
-                new_values[eventIx] = max_values[eventIx] - previous_values[eventIx] + current_values[eventIx];
+                new_values[eventIx] = max_values[eventIx] - previous_samples[eventIx] + current_samples[eventIx];
                 printf("overflow\n");
             } else {
                 // just compute difference
-                new_values[eventIx] = current_values[eventIx] - previous_values[eventIx];
+                new_values[eventIx] = current_samples[eventIx] - previous_samples[eventIx];
             }
         } else {
             // value is not accumulating
-            new_values[eventIx] = current_values[eventIx];
+            new_values[eventIx] = current_samples[eventIx];
         }
         //printf("last %lld cur %lld new %lld\n", previous_values[eventIx], current_values[eventIx], new_values[eventIx]);
     }
@@ -295,43 +306,44 @@ void fix_overflow(long long *current_values, long long *previous_values, long lo
 
 // internal
 int APAPI_timer_measure(struct apapi_timer *timer) {
-    int retv;
+    int retv = PAPI_OK;
+    // TODO: is last_measurement bool necessary/useful?
 
-    // swap arrays so current values become last values and new values overwrite last ones
-    // swap before other operations, so most current values will reside in current_values for later access
     if (timer->set != NULL) {
-        //swap_pointer((void**) (timer->current_values), (void**) (timer->previous_values));
+
+        // swap arrays so current values become last values and new values overwrite last ones
+        // swap before other operations, so most current values will reside in current_values for later access
+        swap_pointer((void**) &(timer->set->current_samples), (void**) &(timer->set->previous_samples));
         swap_pointer((void**) &(timer->set->current_values), (void**) &(timer->set->previous_values));
-    }
-    swap_pointer((void**) (timer->current_samples), (void**) (timer->previous_samples));
-
-    retv = PAPI_read(timer->EventSet, *(timer->current_samples));
-
-    // check for overflow
-    fix_overflow(*(timer->current_samples), *(timer->previous_samples), timer->max_samples, *(timer->current_values), timer->num_values);
-    
-    if (retv == PAPI_OK && timer->set != NULL) {
-        struct apapi_eventset *set = timer->set;
 
         // swap timestamps
-        long long tmp_time = set->previous_time;
-        set->previous_time = set->current_time;
-        set->current_time = tmp_time;
+        long long tmp_time = timer->set->previous_time;
+        timer->set->previous_time = timer->set->current_time;
+        timer->set->current_time = tmp_time;
 
-        set->current_time = getcurrenttime();
-        set->last_time = set->current_time;
-        if (set->first_time == 0) {
-            set->first_time = set->current_time;
+        retv = PAPI_read(timer->set->EventSet, timer->set->current_samples);
+        if (retv != PAPI_OK) {
+            // TODO:
         }
-        set->count++;
+
+        timer->set->current_time = getcurrenttime();
+
+        // check for overflow
+        fix_overflow(timer->set->current_samples, timer->set->previous_samples, timer->set->max_samples, 
+            timer->set->current_values, timer->set->num_events);
+    
+        timer->set->last_time = timer->set->current_time;
+        if (timer->set->first_time == 0) {
+            timer->set->first_time = timer->set->current_time;
+        }
+        timer->set->count++;
         APAPI_timer_measure_stats(timer->set);
         
     }
 
-    if (retv == PAPI_OK && timer->measure != NULL){
+    if (timer->measure != NULL){
         (*(timer->measure))(timer->measure_arg);
     }
-
 
     return retv;
 }
@@ -383,7 +395,7 @@ void* APAPI_timer_thread(void *args) {
     return NULL;
 }
 
-int APAPI_create_timer(struct apapi_timer **timer, time_t tv_sec, long tv_nsec, int EventSet, long long **current_values, long long **current_samples, long long **previous_samples, long long *max_samples, void(measure)(void*), void* measure_arg, struct apapi_eventset *set) {
+int APAPI_create_timer(struct apapi_timer **timer, time_t tv_sec, long tv_nsec, void(measure)(void**), void** measure_arg, struct apapi_eventset *set) {
     int retv;
     *timer = calloc(1, sizeof(struct apapi_timer));
     if (*timer == NULL) {
@@ -396,15 +408,15 @@ int APAPI_create_timer(struct apapi_timer **timer, time_t tv_sec, long tv_nsec, 
         // TODO:
     }
 
-    newtimer->state = APAPI_TIMER_STATE_DONE;
-    retv = APAPI_reset_timer(newtimer, tv_sec, tv_nsec, EventSet, current_values, current_samples, previous_samples, max_samples, measure, measure_arg, set);
+    newtimer->state = APAPI_TIMER_STATE_DONE; // set state to DONE so reset_timer will work
+    retv = APAPI_reset_timer(newtimer, tv_sec, tv_nsec, measure, measure_arg, set);
     if (retv != PAPI_OK) {
         // TODO:
     }
     return PAPI_OK;
 }
 
-int APAPI_reset_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, int EventSet, long long **current_values, long long **current_samples, long long **previous_samples, long long *max_samples, void(measure)(void*), void* measure_arg, struct apapi_eventset *set) {
+int APAPI_reset_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, void(measure)(void**), void** measure_arg, struct apapi_eventset *set) {
 
     if (timer->state != APAPI_TIMER_STATE_DONE)
         return -1;
@@ -412,34 +424,29 @@ int APAPI_reset_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, in
     int retv;
     timer->interval.tv_sec = tv_sec;
     timer->interval.tv_nsec = tv_nsec;
-
-    timer->EventSet = EventSet;
-    int num_events, eventIx;
-    num_events = PAPI_num_events(EventSet);
-    timer->num_values = num_events;
-    timer->current_values = current_values;
-    timer->current_samples = current_samples;
-    memset(*current_samples, 0, num_events);
-    timer->previous_samples = previous_samples;
-    memset(*previous_samples, 0, num_events);
-    timer->max_samples = max_samples;
     timer->measure = measure;
     timer->measure_arg = measure_arg;
-    timer->set = set;
-    if (timer->set != NULL) {
-        timer->set->first_time = 0;
-        timer->set->previous_time = 0;
-        timer->set->count = 0;
-        for(eventIx=0; eventIx<num_events; eventIx++) {
-            timer->set->values0[eventIx*4] = DBL_MAX;
-            timer->set->values0[eventIx*4 + 1] = 0;
-            timer->set->values0[eventIx*4 + 2] = 0;
-            timer->set->values0[eventIx*4 + 3] = 0;
-            timer->set->values1[eventIx*4] = DBL_MAX;
-            timer->set->values1[eventIx*4 + 1] = 0;
-            timer->set->values1[eventIx*4 + 2] = 0;
-            timer->set->values1[eventIx*4 + 3] = 0;
 
+    // clean up old values
+
+    if (set != NULL) {
+        timer->set = set;
+        memset(set->current_samples, 0, set->num_events);
+        memset(set->previous_samples, 0, set->num_events);
+        memset(set->current_values, 0, set->num_events);
+        set->first_time = 0;
+        set->previous_time = 0;
+        set->count = 0;
+        int eventIx;
+        for(eventIx=0; eventIx < set->num_events; eventIx++) {
+            set->values0[eventIx*4] = DBL_MAX;
+            set->values0[eventIx*4 + 1] = 0;
+            set->values0[eventIx*4 + 2] = 0;
+            set->values0[eventIx*4 + 3] = 0;
+            set->values1[eventIx*4] = DBL_MAX;
+            set->values1[eventIx*4 + 1] = 0;
+            set->values1[eventIx*4 + 2] = 0;
+            set->values1[eventIx*4 + 3] = 0;
         }
     }
     
@@ -460,10 +467,12 @@ int APAPI_start_timer(struct apapi_timer *timer) {
     if (timer->state != APAPI_TIMER_STATE_READY) {
         return -1;
     }
-    int retv;
-    retv = PAPI_start(timer->EventSet);
-    if (retv != PAPI_OK) {
-        // TODO:
+    int retv = PAPI_OK;
+    if (timer->set != NULL) {
+        retv = PAPI_start(timer->set->EventSet);
+        if (retv != PAPI_OK) {
+            // TODO:
+        }
     }
     pthread_mutex_unlock(&(timer->mutex));
     timer->state = APAPI_TIMER_STATE_STARTED;
@@ -474,7 +483,7 @@ int APAPI_stop_timer(struct apapi_timer *timer) {
     if (timer->state != APAPI_TIMER_STATE_STARTED) {
         return -1;
     }
-    int retv;
+    int retv = PAPI_OK;
     retv = pthread_mutex_unlock(&(timer->mutex));
 
     #ifdef DEBUG
@@ -482,9 +491,11 @@ int APAPI_stop_timer(struct apapi_timer *timer) {
     #endif
     retv = pthread_join(timer->thread, NULL);
     timer->state = APAPI_TIMER_STATE_DONE;
-    retv = PAPI_stop(timer->EventSet, NULL);
-    if (retv != PAPI_OK) {
-        // TODO:
+    if (timer->set != NULL) {
+        retv = PAPI_stop(timer->set->EventSet, NULL);
+        if (retv != PAPI_OK) {
+            // TODO:
+        }
     }
     return PAPI_OK;
 }

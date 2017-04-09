@@ -70,7 +70,7 @@ struct apapi_timer *timer;
 struct apapi_eventset *nvml_set;
 struct apapi_timer *nvml_timer;
 
-void measure(void* arg){
+void measure(void** arg){
     printf("%ld measure\n", gettime());
     printf("%020lld %020lld\n", set->previous_samples[0], set->current_samples[0]);
     printf("%020lld %020lld\n", set->previous_values[0], set->current_values[0]);
@@ -108,9 +108,9 @@ void papi_init(){
     printf("atime %d events used\n", set->num_events);
     #endif
 
-    retv = APAPI_create_timer(&timer, 0, 100000000, set->EventSet, &(set->current_values), &(set->current_samples), &(set->previous_samples), set->max_samples, NULL, NULL, set);
-//    retv = APAPI_create_timer(&timer, 0, 100000000, set->EventSet, &(set->current_values), &(set->current_samples), &(set->previous_samples), set->max_samples, &measure, NULL, NULL);
-    retv = APAPI_create_timer(&nvml_timer, 0, 133000000, nvml_set->EventSet, &(nvml_set->current_values), &(nvml_set->current_samples), &(nvml_set->previous_samples), nvml_set->max_samples, NULL, NULL, nvml_set);
+    retv = APAPI_create_timer(&timer, 0, 100000000, NULL, NULL, set);
+//    retv = APAPI_create_timer(&timer, 0, 100000000, set->EventSet, &measure, NULL, NULL);
+    retv = APAPI_create_timer(&nvml_timer, 0, 133000000, NULL, NULL, nvml_set);
     #ifdef DEBUG
     printf("atime %d %d\n", __LINE__, retv);
     #endif

@@ -83,15 +83,9 @@ struct apapi_timer {
     pthread_t thread;
     struct timespec interval;
     pthread_mutex_t mutex;
-    int EventSet;
-    long long **current_values;
-    long long **current_samples;
-    long long **previous_samples;
-    long long *max_samples;
-    int num_values;
     int interrupt;
-    void (*measure)(void*);
-    void* measure_arg;
+    void (*measure)(void**);
+    void** measure_arg;
     struct apapi_eventset *set;
 };
 
@@ -105,9 +99,9 @@ int APAPI_create_eventset_list(char **names, int cidx, int *EventSet, int *num_e
 
 int APAPI_create_eventset_cmp_all(int cidx, int *EventSet, int *num_events);
 
-int APAPI_create_timer(struct apapi_timer **timer, time_t tv_sec, long tv_nsec, int EventSet, long long **current_values, long long **current_samples, long long **previous_samples, long long *max_samples, void(measure)(void*), void* measure_arg, struct apapi_eventset *set);
+int APAPI_create_timer(struct apapi_timer **timer, time_t tv_sec, long tv_nsec, void(measure)(void**), void** measure_arg, struct apapi_eventset *set);
 
-int APAPI_reset_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, int EventSet, long long **current_values, long long **current_samples, long long**previous_samples, long long *max_samples, void(measure)(void*), void* measure_arg, struct apapi_eventset *set);
+int APAPI_reset_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, void(measure)(void**), void** measure_arg, struct apapi_eventset *set);
 
 int APAPI_start_timer(struct apapi_timer *timer);
 
