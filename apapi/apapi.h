@@ -7,11 +7,11 @@
 // sample1 at time1: current sample
 // sample0 at time0: last sample
 enum APAPI_op1 {
-    OP1_NOP,                        // no operation
-    OP1_SAMPLE_DIFF,                // sample1-sample0
-    OP1_DIV_DIFF_TIME,              // value / (time1-time0)
-    OP1_SAMPLE1_MUL_DIFF_TIME,      // sample1 * (time1-time0)
-    OP1_AVG_SAMPLE_MUL_DIFF_TIME    // (sample0+sample1)/2 * (time1-time0)
+    APAPI_OP1_NOP,                        // no operation
+    APAPI_OP1_SAMPLE_DIFF,                // sample1-sample0
+    APAPI_OP1_DIV_DIFF_TIME,              // value / (time1-time0)
+    APAPI_OP1_SAMPLE1_MUL_DIFF_TIME,      // sample1 * (time1-time0)
+    APAPI_OP1_AVG_SAMPLE_MUL_DIFF_TIME    // (sample0+sample1)/2 * (time1-time0)
 };
 
 
@@ -20,20 +20,28 @@ enum APAPI_op2 {
     OP2_DIV_DIFF_TIME               // value / (time1-time0)
 };
 
-
+// to be used as bit mask values
 enum APAPI_stats {
-    STAT_NO    = 0,
-    STAT_STATS = 1, // e.g. min,max,avg,acc
+    APAPI_STAT_NO  = 0,
+    APAPI_STAT_MIN = 1,
+    APAPI_STAT_MAX = 2,
+    APAPI_STAT_AVG = 4,
+    APAPI_STAT_ACC = 8,
+    APAPI_STAT_ALL = -1
 };
 
 struct apapi_event_ops {
     char *event_name;
     enum APAPI_op1 op1;
-    enum APAPI_op2 op2;
     enum APAPI_stats value0;
     enum APAPI_stats value1;
-    enum APAPI_stats value2;
     long long max_sample; // max value - for overflow check
+    char *value0_type;
+    char *value0_unit;
+    double value0_prefix;
+    char *value1_type;
+    char *value1_unit;
+    double value1_prefix;
 };
 
 extern int APAPI_DEFAULT_SET_NUM;
@@ -70,6 +78,7 @@ struct apapi_eventset {
     enum APAPI_stats *values0_stats;
     enum APAPI_stats *values1_stats;
 //    enum APAPI_stats *values2_stats;
+    struct apapi_event_ops *event_ops;
 };
 
 enum APAPI_timer_state {

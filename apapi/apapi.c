@@ -154,16 +154,15 @@ void exec_op2(enum APAPI_op2 op2, double value1, long long time0, long long time
 void stats(enum APAPI_stats stats_op, long long value, long long avg_value_weight, 
     long long avg_last_total_weight, long long avg_new_total_weight, int sample_count, double *stats){
 
-    // stats = {min, max, avg, acc}
+    // accumulate
+    if ((stats_op & APAPI_STAT_ACC) == APAPI_STAT_ACC) {
 
-    //if ((stats_op) & STAT_STATS == STAT_STATS) {
-
-    //printf("%x\n", stats);
-
-        // accumulate
         stats[3] += value;
+    }
 
-        // average
+    // average
+    if ((stats_op & APAPI_STAT_AVG) == APAPI_STAT_AVG) {
+
         if (sample_count > 2) {
             // normal measurements between second and last measurment
             stats[2] = stats[2] * ((double)avg_last_total_weight / (double)avg_new_total_weight) + 
@@ -175,17 +174,22 @@ void stats(enum APAPI_stats stats_op, long long value, long long avg_value_weigh
             // second measurement hold first useful value, weight equals total weight
             stats[2] = value; // weight    
         } // else first not-useful value or something's terribly wrong
+    }
 
-        // min
+    // min
+    if ((stats_op & APAPI_STAT_MIN) == APAPI_STAT_MIN) {
         if (value < stats[0]) {
             stats[0] = value;
         }
+    }
 
-        // max
+    // max
+    if ((stats_op & APAPI_STAT_MAX) == APAPI_STAT_MAX) {
+
         if (value > stats[1]) {
             stats[1] = value;
         }
-    //}
+    }
 }
 
 // internal
@@ -227,17 +231,17 @@ void APAPI_timer_measure_stats(struct apapi_eventset *set) {
         
 //        exec_op2(set->values_op2[eventIx], value1, set->previous_time, set->current_time, &value2);
 
-        if (set->values0_stats[eventIx] != STAT_NO) {
+        if (set->values0_stats[eventIx] != APAPI_STAT_NO) {
             stats(set->values0_stats[eventIx], set->current_values[eventIx],
                 set->current_time - set->previous_time, set->previous_time - set->first_time, set->current_time - set->first_time,
                 set->count, &(set->values0[eventIx*4]));
         }
-        if (set->values1_stats[eventIx] != STAT_NO) {
+        if (set->values1_stats[eventIx] != APAPI_STAT_NO) {
             stats(set->values1_stats[eventIx], value1,
                 set->current_time - set->previous_time, set->previous_time - set->first_time, set->current_time - set->first_time,
                 set->count, &(set->values1[eventIx*4]));
         }
-//        if (set->values2_stats[eventIx] != STAT_NO) {
+//        if (set->values2_stats[eventIx] != APAPI_STAT_NO) {
 //            stats(set->values2_stats[eventIx], value2, set->count, &(set->values2[eventIx]));
 //        }
 
@@ -558,6 +562,8 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
     newset->values1_stats = &(newset->values0_stats[newset->num_events]);
 //    newset->values2_stats = &(newset->values0_stats[newset->num_events*2]);
 
+    newset->event_ops = calloc(newset->num_events, sizeof(struct apapi_event_ops));
+
     // load default event ops
 
     int events[newset->num_events];
@@ -590,7 +596,9 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
         newset->values1_stats[eventIx] = ops->value1;
 //        newset->values2_stats[eventIx] = ops->value2;
         newset->max_samples[eventIx] = ops->max_sample;
-        printf("%s %d %d %d %d %d %llx\n", name, ops->op1, ops->op2, ops->value0, ops->value1, ops->value2, ops->max_sample);
+        newset->event_ops[eventIx] = *ops;
+        printf("%s %d %d %d %llx %s %s %f %s %s %f\n", name, ops->op1, ops->value0, ops->value1, ops->max_sample,
+            ops->value0_type, ops->value0_unit, ops->value0_prefix, ops->value1_type, ops->value1_unit, ops->value1_prefix);
     }
 
 
@@ -638,14 +646,33 @@ void APAPI_print_apapi_eventset(struct apapi_eventset *set) {
             // TODO:
         }
         printf("%s %lld\n", name, set->current_values[eventIx]);
-        if (set->values0_stats[eventIx] != STAT_NO) {
+        if (set->values0_stats[eventIx] != APAPI_STAT_NO) {
             values = &(set->values0[eventIx*4]);
-            printf("  min: %20.6f max: %20.6f avg: %20.6f acc: %20.6f\n", values[0], values[1], values[2], values[3]);
+                printf("  %s %s %f\n", set->event_ops[eventIx].value0_type, 
+                    set->event_ops[eventIx].value0_unit, set->event_ops[eventIx].value0_prefix);
+                if ((set->values0_stats[eventIx] & APAPI_STAT_MIN) == APAPI_STAT_MIN)
+                    printf("    min: %20.6f\n", values[0]);
+                if ((set->values0_stats[eventIx] & APAPI_STAT_MAX) == APAPI_STAT_MAX)
+                    printf("    max: %20.6f\n", values[1]);
+                if ((set->values0_stats[eventIx] & APAPI_STAT_AVG) == APAPI_STAT_AVG)
+                    printf("    avg: %20.6f\n", values[2]);
+                if ((set->values0_stats[eventIx] & APAPI_STAT_ACC) == APAPI_STAT_ACC)
+                    printf("    acc: %20.6f\n", values[3]);
         }
-        if (set->values1_stats[eventIx] != STAT_NO) {
+        if (set->values1_stats[eventIx] != APAPI_STAT_NO) {
             values = &(set->values1[eventIx*4]);
-            printf("  min: %20.6f max: %20.6f avg: %20.6f acc: %20.6f\n", values[0], values[1], values[2], values[3]);
+                printf("  %s %s %f\n", set->event_ops[eventIx].value1_type, 
+                    set->event_ops[eventIx].value1_unit, set->event_ops[eventIx].value1_prefix);
+                if ((set->values1_stats[eventIx] & APAPI_STAT_MIN) == APAPI_STAT_MIN)
+                    printf("    min: %20.6f\n", values[0]);
+                if ((set->values1_stats[eventIx] & APAPI_STAT_MAX) == APAPI_STAT_MAX)
+                    printf("    max: %20.6f\n", values[1]);
+                if ((set->values1_stats[eventIx] & APAPI_STAT_AVG) == APAPI_STAT_AVG)
+                    printf("    avg: %20.6f\n", values[2]);
+                if ((set->values1_stats[eventIx] & APAPI_STAT_ACC) == APAPI_STAT_ACC)
+                    printf("    acc: %20.6f\n", values[3]);
         }
+        printf("\n");
 //        if (set->values2_stats[eventIx] != STAT_NO) {
 //            values = &(set->values2[eventIx]);
 //            printf("  min: %f max: %f avg: %f acc: %f\n", values[0], values[1], values[2], values[3]);
