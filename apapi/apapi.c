@@ -7,6 +7,7 @@
 #include "papi.h"
 //#define DEBUG
 #include "apapi_defaults.c"
+#include "apapi_op1.c"
 
 void APAPI_dummy() {
     printf("apapi dummy method\n");
@@ -135,26 +136,6 @@ void swap_pointer(void **pointer1, void**pointer2){
     *pointer2 = tmp;
 }
 
-void exec_op1(enum APAPI_op1 op1, long long sample0, long long sample1, long long time0, long long time1, double *value1){
-
-    switch(op1) {
-        case OP1_SAMPLE_DIFF:
-            *value1 = sample1 - sample0;
-        break;
-        case OP1_SAMPLE1_MUL_DIFF_TIME:
-            *value1 = sample1 * (time1 - time0);
-        break;
-        case OP1_AVG_SAMPLE_MUL_DIFF_TIME:
-            *value1 = (sample0 + sample1) / 2.0 * (time1 - time0);
-        break;
-        case OP1_DIV_DIFF_TIME:
-            *value1 = sample1 / (time1 - time0);
-        break;
-        //case OP1_NOP:
-        default:
-        break;
-    }
-}
 
 /*
 void exec_op2(enum APAPI_op2 op2, double value1, long long time0, long long time1, double *value2) {
