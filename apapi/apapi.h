@@ -118,10 +118,12 @@ int APAPI_stop_timer(struct apapi_timer *timer);
 
 int APAPI_destroy_timer(struct apapi_timer **timer);
 
-int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **names);
+int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **names, struct apapi_event_ops *event_defaults);
 
 int APAPI_destroy_apapi_eventset(struct apapi_eventset **set);
 
 void APAPI_print_apapi_eventset(struct apapi_eventset *set);
+
+int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops **events_out, int *num_events_out);
 
 #endif

@@ -13,6 +13,7 @@ void help(char* appname){
     printf("Executes and measures the binary FILENAME using the PAPI library.\n");
 }
 
+char* optional_events_file = NULL;
 
 int main(int argc, char *argv[]) {
 
@@ -22,13 +23,15 @@ int main(int argc, char *argv[]) {
 
     int c = 0;
 
-    while((c = getopt (argc, argv, "+h?")) != -1) {
+    while((c = getopt (argc, argv, "+e:h?")) != -1) {
         switch(c) {
+            case 'e':
+                optional_events_file = optarg;
+            break;
             case 'h':
             case '?':
                 help(argv[0]);
                 exit(EXIT_SUCCESS);
-    
             default:
                 help(argv[0]);
                 exit(EXIT_FAILURE);
@@ -47,7 +50,6 @@ int main(int argc, char *argv[]) {
     int i;
     for (i=0; i<program_argc; i++) {
         program_argv[i] = argv[optind + i];
-        #ifdef DEBUG
             if (i==0) {
                 printf("Program: ");
             }
@@ -55,7 +57,6 @@ int main(int argc, char *argv[]) {
             if (i+1==program_argc) {
                 printf("\n");
             }
-        #endif
     }
 
 
@@ -90,7 +91,7 @@ int main(int argc, char *argv[]) {
         retv = nanosleep(&tosleep, &tosleep);
     } while(retv != 0);
 
-    papi_init();
+    papi_init(optional_events_file);
 
     papi_start();
 

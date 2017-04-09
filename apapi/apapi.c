@@ -8,6 +8,7 @@
 //#define DEBUG
 #include "apapi_defaults.c"
 #include "apapi_op1.c"
+#include "apapi_csv.c"
 
 void APAPI_dummy() {
     printf("apapi dummy method\n");
@@ -165,8 +166,8 @@ void stats(enum APAPI_stats stats_op, long long value, long long avg_value_weigh
 
         if (sample_count > 2) {
             // normal measurements between second and last measurment
-            stats[2] = stats[2] * ((double)avg_last_total_weight / (double)avg_new_total_weight) + 
-                value * ((double)avg_value_weight / (double)avg_new_total_weight);
+            stats[2] = stats[2] * (double)((long double)avg_last_total_weight / (long double)avg_new_total_weight) + 
+                value * (double)((long double)avg_value_weight / (long double)avg_new_total_weight);
             // TODO: order of division/multiplication: make avg value less precise or make weight factor less precise?
             // TODO: test different orders with "real" values
         } else
@@ -514,7 +515,7 @@ int APAPI_destroy_timer(struct apapi_timer **timer){
 }
 
 
-int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **names) {
+int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **names, struct apapi_event_ops *event_defaults) {
     int retv;
     struct apapi_eventset *newset;
     *set = calloc(1, sizeof(struct apapi_eventset));
@@ -544,17 +545,17 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
     newset->previous_samples = &(newset->current_values[newset->num_events*3]);
     newset->max_samples = &(newset->current_values[newset->num_events*4]);
 
-    printf("cur values%p %p %p %p %p\n", newset->current_values, newset->previous_values, newset->current_samples, newset->previous_samples, newset->max_samples);
+    //printf("cur values%p %p %p %p %p\n", newset->current_values, newset->previous_values, newset->current_samples, newset->previous_samples, newset->max_samples);
 
     // (4*3*num) * sizeof(double) - space for stats
-    printf("calloc %d, %ld\n", newset->num_events, sizeof(double)*4*3);
+    //printf("calloc %d, %ld\n", newset->num_events, sizeof(double)*4*3);
     newset->values0 = calloc(newset->num_events, sizeof(double)*4*3);
     newset->values1 = &(newset->values0[4*newset->num_events]);
 //    newset->values2 = &(newset->values0[8*newset->num_events]);
-    printf("values %p %p\n", newset->values0, newset->values1);
-    printf("long long %ld double %ld\n", sizeof(long long), sizeof(double));
-    printf("%f %f %f %f\n", newset->values0[0], newset->values0[1], newset->values0[2], newset->values0[3]);
-    printf("%f %f %f %f\n", newset->values1[0], newset->values1[1], newset->values1[2], newset->values1[3]);
+    //printf("values %p %p\n", newset->values0, newset->values1);
+    //printf("long long %ld double %ld\n", sizeof(long long), sizeof(double));
+    //printf("%f %f %f %f\n", newset->values0[0], newset->values0[1], newset->values0[2], newset->values0[3]);
+    //printf("%f %f %f %f\n", newset->values1[0], newset->values1[1], newset->values1[2], newset->values1[3]);
 
     newset->values_op1 = calloc(newset->num_events, sizeof(enum APAPI_op1));
 //    newset->values_op2 = calloc(newset->num_events, sizeof(enum APAPI_op2));
@@ -580,12 +581,25 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
         //printf("%s %lld\n", name, set->current_values[i]);
         // try to find default op
         ops = NULL;
-        for(defaultIx=0; defaultIx<APAPI_DEFAULT_SET_NUM; defaultIx++) {
-            if (strcmp(APAPI_DEFAULT_EVENT_OPS[defaultIx].event_name, name) == 0) {
-                ops = &(APAPI_DEFAULT_EVENT_OPS[defaultIx]);
-                break;
+        // first check user defined ops from event_defaults parameter
+        if (event_defaults != NULL) {
+            for(defaultIx=0; event_defaults[defaultIx].event_name!=NULL; defaultIx++) {
+                if (strcmp(event_defaults[defaultIx].event_name, name) == 0) {
+                    ops = &(event_defaults[defaultIx]);
+                    break;
+                }
             }
         }
+        // if not user defined then check predefines from apapi_defaults.c
+        if (ops == NULL) {
+            for(defaultIx=0; APAPI_DEFAULT_EVENT_OPS[defaultIx].event_name!=NULL; defaultIx++) {
+                if (strcmp(APAPI_DEFAULT_EVENT_OPS[defaultIx].event_name, name) == 0) {
+                    ops = &(APAPI_DEFAULT_EVENT_OPS[defaultIx]);
+                    break;
+                }
+            }
+        }
+        // if not defined use default
         if (ops == NULL) {
             ops = &(APAPI_DEFAULT_OPS);
         }
