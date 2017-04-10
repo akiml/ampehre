@@ -9,7 +9,6 @@ QMSMSettings::QMSMSettings(QWidget *parent) :
     setWindowTitle("Settings");
     connectSignals();
     ui->pushButton_stop->setDisabled(true);
-    ui->pushButton_reset->setDisabled(true);
     ui->lineEdit_cpu->setReadOnly(true);
     ui->lineEdit_fpga->setReadOnly(true);
     ui->lineEdit_gpu->setReadOnly(true);
@@ -32,6 +31,11 @@ void QMSMSettings::connectSignals()
     connect(ui->pushButton_start, SIGNAL(clicked()), this, SLOT(emit_start()));
     connect(ui->pushButton_stop, SIGNAL(clicked()), this, SLOT(emit_stop()));
 
+    connect(ui->lineEdit_ipaddr, SIGNAL(textChanged(QString)), this, SLOT(emit_ipChanged(QString)));
+    connect(ui->spinBox_port, SIGNAL(valueChanged(int)), this, SLOT(emit_portChanged(int)));
+
+    connect(ui->pushButton_exportSettings, SIGNAL(clicked()), this, SLOT(emit_exportConfig()));
+    connect(ui->pushButton_loadSettings, SIGNAL(clicked()), this, SLOT(emit_loadConfig()));
     connect(ui->horizontalSlider_guiRate, SIGNAL(valueChanged(int)), this, SLOT(emit_guiRate(int)));
     connect(ui->horizontalSlider_dataPlot, SIGNAL(valueChanged(int)), this, SLOT(emit_dataPlot(int)));
     connect(ui->spinBox_savedata, SIGNAL(valueChanged(int)), this, SLOT(emit_saveData(int)));
@@ -66,10 +70,8 @@ void QMSMSettings::setFreqLabels(std::vector<uint64_t> &v)
 
 void QMSMSettings::emit_start()
 {
+    start();
     emit signal_start();
-    ui->pushButton_start->setDisabled(true);
-    ui->pushButton_stop->setDisabled(false);
-    ui->pushButton_reset->setDisabled(false);
 }
 
 void QMSMSettings::emit_saveData(int v)
@@ -80,7 +82,18 @@ void QMSMSettings::emit_saveData(int v)
 
 void QMSMSettings::emit_stop()
 {
+    stop();
     emit signal_stop();
+}
+
+void QMSMSettings::start()
+{
+    ui->pushButton_start->setDisabled(true);
+    ui->pushButton_stop->setDisabled(false);
+}
+
+void QMSMSettings::stop()
+{
     ui->pushButton_start->setDisabled(false);
     ui->pushButton_stop->setDisabled(true);
 }
@@ -99,8 +112,51 @@ void QMSMSettings::emit_dataPlot(int v)
     ui->label_dataPlot->setText(s);
 }
 
+void QMSMSettings::set_port(int v)
+{
+    if(v >= 0)
+        ui->spinBox_port->setValue(v);
+}
 
+void QMSMSettings::set_ip(QString v)
+{
+    ui->lineEdit_ipaddr->setText(v);
+}
 
+void QMSMSettings::emit_ipChanged(QString s)
+{
+    emit signal_ipChanged(s);
+}
+
+void QMSMSettings::emit_portChanged(int v)
+{
+    emit signal_portChanged(v);
+}
+
+void QMSMSettings::emit_exportConfig()
+{
+    emit signal_exportConfig();
+}
+
+void QMSMSettings::emit_loadConfig()
+{
+    emit signal_loadConfig();
+}
+
+int QMSMSettings::get_port()
+{
+    return ui->spinBox_port->value();
+}
+
+QString QMSMSettings::get_ip()
+{
+    return ui->lineEdit_ipaddr->text();
+}
+
+int QMSMSettings::get_maxData()
+{
+    return ui->spinBox_savedata->value();
+}
 
 void QMSMSettings::setSliderPos(std::vector<int>& val)
 {

@@ -5,7 +5,6 @@ CConfig::CConfig(const QString path, QWidget* parent):
     serverIP("131.234.58.31"),
     serverPort(2900),
     plot(2000),
-    heatmap(150),
     gui(500),
     lineWidth(1),
     maxDataRecord(60),
@@ -26,7 +25,10 @@ CConfig::~CConfig()
 
 void CConfig::exportConfig()
 {
-    QString filename = QFileDialog::getOpenFileName(this, tr("Save as"), "/");
+    QFileDialog dialog;
+    dialog.setFileMode(QFileDialog::AnyFile);
+    QString filename = dialog.getSaveFileName(NULL, "Create New File","","*.conf");
+    setEnding(filename, ".conf");
     QFile file(filename);
     file.open(QIODevice::WriteOnly);
     QString txt = "";
@@ -36,8 +38,6 @@ void CConfig::exportConfig()
     txt = QString("serverPort") + QString("=") + QString::number(serverPort) + QString(QChar('\n'));
     file.write(txt.toUtf8());
     txt = QString("plot") + QString("=") + QString::number(plot) + QString(QChar('\n'));
-    file.write(txt.toUtf8());
-    txt = QString("heatmap") + QString("=") + QString::number(heatmap) + QString(QChar('\n'));
     file.write(txt.toUtf8());
     txt = QString("gui") + QString("=") + QString::number(gui) + QString(QChar('\n'));
     file.write(txt.toUtf8());
@@ -94,11 +94,30 @@ void CConfig::exportPlotToCSV(QMSMplot *plot)
 {
     QFileDialog dialog;
     dialog.setFileMode(QFileDialog::AnyFile);
-    QString filename = dialog.getSaveFileName(NULL, "Create New File","","");
+    QString filename = dialog.getSaveFileName(NULL, "Create New File","","*.csv");
+    setEnding(filename, ".csv");
     QFile file(filename);
     file.open(QIODevice::WriteOnly);
     QString txt = "";
-    txt = QString("TimeStamp,CPU0,CPU1,GPU0,GPU1,FPGA0,FPGA1,MIC0,MIC1,SYSTEM,\n");
+    switch(plot->mType)
+    {
+    case MEMORY:
+        txt = QString("TimeStamp,CPU0,CPU1,GPU0,MIC0,") + "\n";
+        break;
+    case POWER:
+        txt = QString("TimeStamp,CPU0,CPU1,GPU0,FPGA0,MIC0,SYSTEM,") + "\n";
+        break;
+    case UTIL:
+        txt = QString("TimeStamp,CPU0,GPU0,GPU1,FPGA0,MIC0,") + "\n";
+        break;
+    case TEMP:
+        txt = QString("TimeStamp,CPU0,CPU1,GPU0,FPGA0,FPGA1,MIC0,SYSTEM") + "\n";
+        break;
+    case CLOCK:
+        txt = QString("TimeStamp,CPU0,CPU1,GPU0,GPU1,MIC0,MIC1,") + "\n";
+        break;
+    }
+    //change txt depending on task
     file.write(txt.toUtf8());
     for(unsigned int i = 0; i < plot->mTimevalues.size(); i ++)
     {
@@ -128,6 +147,13 @@ void CConfig::exportPlotToCSV(QMSMplot *plot)
     file.close();
 }
 
+void CConfig::setEnding(QString &name, const QString ending)
+{
+    if(!name.endsWith(ending))
+    {
+        name += ending;
+    }
+}
 
 void CConfig::removeSpaces(QString &line)
 {
@@ -138,7 +164,6 @@ void CConfig::removeSpaces(QString &line)
             line = line.remove(i, 1);
         }
     }
-    qDebug() << line;
 }
 
 
@@ -169,10 +194,6 @@ void CConfig::setVariable(const QString line)
     else if(var_name == "plot")
     {
         plot = var.toInt();
-    }
-    else if(var_name == "heatmap")
-    {
-        heatmap = var.toInt();
     }
     else if(var_name == "gui")
     {

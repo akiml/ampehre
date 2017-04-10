@@ -19,7 +19,6 @@ public:
     QString serverIP;
     int serverPort;
     int plot;
-    int heatmap;
     int gui;
     int lineWidth;
     int maxDataRecord;
@@ -32,6 +31,7 @@ public:
 
     void exportConfig();
     void importConfig(const QString path);
+    void setEnding(QString& name, const QString ending);
 
 public slots:
     void exportPlotToCSV(QMSMplot* plot);

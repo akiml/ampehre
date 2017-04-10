@@ -41,6 +41,8 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
 	
 	initSocket();
 	
+    if(mSocket < 0)
+        return -1;
 	void* rep = malloc(2048);
 	if (NULL == rep){
 		std::cout << "[FATAL] out of memory!" << std::endl;
@@ -80,6 +82,9 @@ void CClient::requestData() {
 	mProtocol.parseMsg(rep, rep_len, reg, tsk, mValues);
     std::cout << "size: " << mValues.size() << std::endl;
 	free(rep);
+
+    for(unsigned int i = 0; i < mValues.size(); i++)
+        std::cout << "value: " << (int)mValues[i] << std::endl;
 	
 }
 

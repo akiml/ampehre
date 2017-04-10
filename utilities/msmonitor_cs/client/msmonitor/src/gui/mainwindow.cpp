@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mpTempFpgaInterface( new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime, "Inter\nFPGA\n[\xB0 C]", 0, 100)),
     mpTempMic( new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime, "Mic\nDie\n[\xB0 C]", 40, 140)),
     mpTempSystem( new QMSMHeatmap(parent,mpConfig->alpha, mpConfig->intervalEnd, mpConfig->intervalStart, mpConfig->updateTime, "Main-\nboard\n[\xB0 C]", 20, 40)),
+    mpSystemOverview (new QMSMSystemOverview()),
     subwPower(new QMdiSubWindow()),
     subwTemp(new QMdiSubWindow()),
     subwClock(new QMdiSubWindow()),
@@ -35,13 +36,13 @@ MainWindow::MainWindow(QWidget *parent) :
     mpTimer(new QTimer()),
     mpGuiTimer(new QTimer()),
     mPlotInterval(mpConfig->plot),
-    mHeatmapInterval(mpConfig->heatmap),
     mGuiInterval(mpConfig->gui)
 {
-
     ui->setupUi(this);
     connectActions();
     setInitSettings();
+
+
 
     addPlot((QMSMplot*)mpPowerplot, subwPower);
     addPlot((QMSMplot*)mpClockplot, subwClock);
@@ -73,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent) :
     layout1->addWidget(mpTempSystem);
 
     addHeatmap(subwHeatmapTemp, layout1);
+
 }
 
 MainWindow::~MainWindow()
@@ -90,6 +92,7 @@ MainWindow::~MainWindow()
     delete mpHeatmapGpuCore;
     delete mpHeatmapGpuMemory;
     delete mpHeatmapMic;
+    delete mpSystemOverview;
 
     delete mpTempCpu0;
     delete mpTempCpu1;
@@ -117,6 +120,14 @@ void MainWindow::setInitSettings()
     setSlider();
     mpSettings->emit_guiRate(mpConfig->gui);
     mpSettings->setSaveData(mpConfig->maxDataRecord);
+    mpSettings->set_ip(mpConfig->serverIP);
+    mpSettings->set_port(mpConfig->serverPort);
+
+    mpPowerplot->setLineWidth(mpConfig->lineWidth);
+    mpTempplot->setLineWidth(mpConfig->lineWidth);
+    mpUtilplot->setLineWidth(mpConfig->lineWidth);
+    mpClockplot->setLineWidth(mpConfig->lineWidth);
+    mpMemoryplot->setLineWidth(mpConfig->lineWidth);
 }
 
 void MainWindow::setSlider()
@@ -149,18 +160,69 @@ void MainWindow::addHeatmap(QMdiSubWindow *heat, QVBoxLayout *layout)
     heat->hide();
 }
 
+void MainWindow::exportConfig()
+{
+    mpConfig->serverIP = mpSettings->get_ip();
+    mpConfig->serverPort = mpSettings->get_port();
+    mpConfig->plot = mPlotInterval;
+    mpConfig->gui = mGuiInterval;
+    //lineWidth export not possible -> can be changed individually
+    mpConfig->maxDataRecord= mpSettings->get_maxData();
+    //width
+    //height has to be set manually
+    //rest cannot be set from gui
+    mpConfig->exportConfig();
+
+}
+
+void MainWindow::importConfig()
+{
+    QFileDialog dialog;
+    dialog.setFileMode(QFileDialog::AnyFile);
+    QString filename = dialog.getOpenFileName(NULL, "Load config file","","*.conf");
+    if(mpTimer->isActive())
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Please stop current measurement before importing new configuration!");
+        msgBox.exec();
+        return;
+    }
+    else
+    {
+        mpConfig->importConfig(filename);
+        setInitSettings();
+    }
+}
+
+void MainWindow::setServerIP(QString v)
+{
+    mpConfig->serverIP = v;
+}
+
+void MainWindow::setServerPort(int v)
+{
+    mpConfig->serverPort = v;
+}
+
 void MainWindow::connectActions()
 {
 
     connect(mpSettings, SIGNAL(signal_start()), this, SLOT(start()));
     connect(mpSettings, SIGNAL(signal_stop()), this, SLOT(stop()));
     connect(mpSettings, SIGNAL(signal_saveData(int)), this, SLOT(setMaxData(int)));
+    connect(mpSettings, SIGNAL(signal_exportConfig()), this, SLOT(exportConfig()));
+    connect(mpSettings, SIGNAL(signal_loadConfig()), this, SLOT(importConfig()));
+    connect(mpSettings, SIGNAL(signal_ipChanged(QString)), this, SLOT(setServerIP(QString)));
+    connect(mpSettings, SIGNAL(signal_portChanged(int)), this, SLOT(setServerPort(int)));
+
+
 
     connect((QMSMplot*)mpPowerplot, SIGNAL(signal_export(QMSMplot*)), mpConfig, SLOT(exportPlotToCSV(QMSMplot*)));
     connect((QMSMplot*)mpTempplot, SIGNAL(signal_export(QMSMplot*)), mpConfig, SLOT(exportPlotToCSV(QMSMplot*)));
     connect((QMSMplot*)mpClockplot, SIGNAL(signal_export(QMSMplot*)), mpConfig, SLOT(exportPlotToCSV(QMSMplot*)));
     connect((QMSMplot*)mpUtilplot, SIGNAL(signal_export(QMSMplot*)), mpConfig, SLOT(exportPlotToCSV(QMSMplot*)));
     connect((QMSMplot*)mpMemoryplot, SIGNAL(signal_export(QMSMplot*)), mpConfig, SLOT(exportPlotToCSV(QMSMplot*)));
+
 
 
 
@@ -176,7 +238,7 @@ void MainWindow::connectActions()
     connect(ui->action_Utilization_2, SIGNAL(triggered()), this, SLOT(showHeatmapUtil()));
     connect(ui->action_Temperature_2, SIGNAL(triggered()), this, SLOT(showHeatmapTemp()));
 
-
+    connect(ui->action_Systemoverview, SIGNAL(triggered()), this, SLOT(showSystemOverview()));
     connect(mpTimer, SIGNAL(timeout()), this, SLOT(requestData()));
 
 }
@@ -185,7 +247,14 @@ void MainWindow::start()
 {
     std::vector<int> values;
     CProtocolC::addAll(values);
-    mClient.registerToServer(values, 2900, "131.234.58.31");
+    if(mClient.registerToServer(values, mpConfig->serverPort, mpConfig->serverIP.toStdString())  < 0)
+    {
+        mpSettings->stop();
+        QMessageBox msgBox;
+        msgBox.setText("Server Port or IP incorrect! Please reconfigure in default.conf");
+        msgBox.exec();
+        return;
+    }
 
     std::vector<uint64_t> frequencies;
     mClient.getFreq(frequencies);
@@ -199,8 +268,11 @@ void MainWindow::start()
 
 void MainWindow::stop()
 {
-    mpTimer->stop();
-    mClient.terminate();
+    if(mpTimer->isActive())
+    {
+        mpTimer->stop();
+        mClient.terminate();
+    }
 }
 
 void MainWindow::requestData()
@@ -317,6 +389,17 @@ void MainWindow::showSettings()
 {
     subwSettings->show();
     subwSettings->widget()->show();
+}
+
+void MainWindow::showSystemOverview()
+{
+    connect(mpGuiTimer, SIGNAL(timeout()), this, SLOT(updateSystemOverview()));
+    mpSystemOverview->show();
+}
+
+void MainWindow::updateSystemOverview()
+{
+    mpSystemOverview->update(mClient.mValues);
 }
 
 void MainWindow::updatePower()

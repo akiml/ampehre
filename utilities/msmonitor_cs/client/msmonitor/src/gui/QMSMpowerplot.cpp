@@ -1,7 +1,7 @@
 #include "gui/QMSMpowerplot.h"
 
 QMSMPowerPlot::QMSMPowerPlot(int linewidth, int maxData, int width, int height, QWidget *parent):
-    QMSMplot(linewidth, maxData, width, height, parent)
+    QMSMplot(POWER, linewidth, maxData, width, height, parent)
 {
     //nothing to be done
 }

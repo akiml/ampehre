@@ -1,7 +1,7 @@
 #include "gui/QMSMmemoryplot.h"
 
 QMSMMemoryPlot::QMSMMemoryPlot(int linewidth, int maxData, int width, int height,QWidget *parent):
-    QMSMplot(linewidth, maxData, width, height, parent)
+    QMSMplot(MEMORY, linewidth, maxData, width, height, parent)
 {
     //nothing to be done
 }

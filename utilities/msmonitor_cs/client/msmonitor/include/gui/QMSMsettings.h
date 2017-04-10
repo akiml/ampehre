@@ -40,14 +40,31 @@ signals:
     void signal_guiRate(int);
     void signal_dataPlot(int);
     void signal_saveData(int);
+    void signal_portChanged(int);
+    void signal_ipChanged(QString);
+    void signal_loadConfig();
+    void signal_exportConfig();
 
 public slots:
     void emit_start();
     void emit_stop();
+    void stop();
+    void start();
 
     void emit_guiRate(int v);
     void emit_dataPlot(int v);
     void emit_saveData(int v);
+    void emit_ipChanged(QString s);
+    void emit_portChanged(int v);
+    void emit_loadConfig();
+    void emit_exportConfig();
+
+    void set_port(int v);
+    void set_ip(QString v);
+
+    int get_port();
+    QString get_ip();
+    int get_maxData();
 
     void setFreqLabels(std::vector<uint64_t> &v);
 

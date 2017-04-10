@@ -1,7 +1,8 @@
 #include "gui/QMSMplot.h"
 #include "ui_qmsmplot.h"
 
-QMSMplot::QMSMplot(int linewidth, int maxData, int width, int height, QWidget* parent):
+QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, QWidget* parent):
+    mType(type),
     QWidget(parent),
     ui(new Ui::QMSMplot),
     mLineWidth(linewidth),
@@ -19,6 +20,7 @@ QMSMplot::QMSMplot(int linewidth, int maxData, int width, int height, QWidget* p
     mpPaintSystem( new QPen(QColor(255,165,0), mLineWidth))
 {
     ui->setupUi(this);
+    setLineWidth(mLineWidth);
     mpPlot = ui->qwtPlot;
     mpLegend->setFrameStyle(QFrame::Box | QFrame::Sunken);
 
@@ -55,6 +57,92 @@ QMSMplot::~QMSMplot()
     delete mpPaintSystem;
 
     delete mpMagnifier;
+}
+
+double QMSMplot::getCurrentCpu0()
+{
+    if(mCpu0values.size())
+        return mCpu0values.back();
+    else
+        return 0;
+}
+
+double QMSMplot::getCurrentCpu1()
+{
+    if(mCpu1values.size())
+        return mCpu1values.back();
+    else
+        return 0;
+}
+
+double QMSMplot::getCurrentTime()
+{
+    if(mTimevalues.size())
+        return mTimevalues.back();
+    else
+        return 0;
+}
+
+double QMSMplot::getCurrentGpu0()
+{
+    if(mGpu0values.size())
+        return mGpu0values.back();
+    else
+        return 0;
+}
+
+double QMSMplot::getCurrentGpu1()
+{
+    if(mGpu1values.size())
+        return mGpu1values.back();
+    else
+        return 0;
+}
+
+double QMSMplot::getCurrentFpga0()
+{
+    if(mFpga0values.size())
+        return mFpga0values.back();
+    else
+        return 0;
+}
+
+double QMSMplot::getCurrentFpga1()
+{
+    if(mFpga1values.size())
+        return mFpga1values.back();
+    else
+        return 0;
+}
+
+double QMSMplot::getCurrentMic0()
+{
+    if(mMic0values.size())
+        return mMic0values.back();
+    else
+        return 0;
+}
+
+double QMSMplot::getCurrentMic1()
+{
+    if(mMic1values.size())
+        return mMic1values.back();
+    else
+        return 0;
+}
+
+double QMSMplot::getCurrentSystem()
+{
+    if(mSystemvalues.size())
+        return mSystemvalues.back();
+    else
+        return 0;
+}
+
+
+void QMSMplot::setLineWidth(int val)
+{
+    ui->spinBox->setValue(val);
 }
 
 void QMSMplot::exportToCSV()

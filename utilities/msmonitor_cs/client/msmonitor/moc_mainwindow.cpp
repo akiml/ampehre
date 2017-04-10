@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'mainwindow.h'
 **
-** Created: Wed Apr 5 18:36:32 2017
+** Created: Mon Apr 10 19:06:02 2017
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_MainWindow[] = {
        4,       // revision
        0,       // classname
        0,    0, // classinfo
-      23,   14, // methods
+      29,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -47,13 +47,19 @@ static const uint qt_meta_data_MainWindow[] = {
      183,   11,   11,   11, 0x0a,
      201,   11,   11,   11, 0x0a,
      216,   11,   11,   11, 0x0a,
-     234,   11,   11,   11, 0x0a,
-     248,   11,   11,   11, 0x0a,
-     261,   11,   11,   11, 0x0a,
-     275,   11,   11,   11, 0x0a,
-     288,   11,   11,   11, 0x0a,
-     303,   11,   11,   11, 0x0a,
-     323,   11,   11,   11, 0x0a,
+     237,   11,   11,   11, 0x0a,
+     255,   11,   11,   11, 0x0a,
+     269,   11,   11,   11, 0x0a,
+     282,   11,   11,   11, 0x0a,
+     296,   11,   11,   11, 0x0a,
+     309,   11,   11,   11, 0x0a,
+     324,   11,   11,   11, 0x0a,
+     344,   11,   11,   11, 0x0a,
+     364,   11,   11,   11, 0x0a,
+     387,   11,   11,   11, 0x0a,
+     402,   11,   11,   11, 0x0a,
+     419,  417,   11,   11, 0x0a,
+     440,  417,   11,   11, 0x0a,
 
        0        // eod
 };
@@ -65,10 +71,13 @@ static const char qt_meta_stringdata_MainWindow[] = {
     "showPower()\0showTemp()\0showClock()\0"
     "showUtil()\0showMemory()\0showHeatmapUtil()\0"
     "showHeatmapTemp()\0showSettings()\0"
-    "setInitSettings()\0updatePower()\0"
-    "updateTemp()\0updateClock()\0updateUtil()\0"
-    "updateMemory()\0updateHeatmapUtil()\0"
-    "updateHeatmapTemp()\0"
+    "showSystemOverview()\0setInitSettings()\0"
+    "updatePower()\0updateTemp()\0updateClock()\0"
+    "updateUtil()\0updateMemory()\0"
+    "updateHeatmapUtil()\0updateHeatmapTemp()\0"
+    "updateSystemOverview()\0exportConfig()\0"
+    "importConfig()\0v\0setServerIP(QString)\0"
+    "setServerPort(int)\0"
 };
 
 const QMetaObject MainWindow::staticMetaObject = {
@@ -115,17 +124,23 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 12: showHeatmapUtil(); break;
         case 13: showHeatmapTemp(); break;
         case 14: showSettings(); break;
-        case 15: setInitSettings(); break;
-        case 16: updatePower(); break;
-        case 17: updateTemp(); break;
-        case 18: updateClock(); break;
-        case 19: updateUtil(); break;
-        case 20: updateMemory(); break;
-        case 21: updateHeatmapUtil(); break;
-        case 22: updateHeatmapTemp(); break;
+        case 15: showSystemOverview(); break;
+        case 16: setInitSettings(); break;
+        case 17: updatePower(); break;
+        case 18: updateTemp(); break;
+        case 19: updateClock(); break;
+        case 20: updateUtil(); break;
+        case 21: updateMemory(); break;
+        case 22: updateHeatmapUtil(); break;
+        case 23: updateHeatmapTemp(); break;
+        case 24: updateSystemOverview(); break;
+        case 25: exportConfig(); break;
+        case 26: importConfig(); break;
+        case 27: setServerIP((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 28: setServerPort((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
-        _id -= 23;
+        _id -= 29;
     }
     return _id;
 }

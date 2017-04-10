@@ -21,15 +21,34 @@ namespace Ui {
 class QMSMplot;
 }
 
+enum PLOTTYPE
+{
+    POWER,
+    CLOCK,
+    MEMORY,
+    TEMP,
+    UTIL
+};
 
 class QMSMplot : public QWidget
 {
     Q_OBJECT
 public:
-    explicit QMSMplot(int linewidth, int maxData, int width, int height,QWidget* parent);
+    explicit QMSMplot(int type, int linewidth, int maxData, int width, int height, QWidget* parent);
     virtual ~QMSMplot();
     virtual QWidget* getPlot() = 0;
     virtual QWidget* getParent();
+
+    virtual double getCurrentTime();
+    virtual double getCurrentCpu0();
+    virtual double getCurrentCpu1();
+    virtual double getCurrentGpu0();
+    virtual double getCurrentGpu1();
+    virtual double getCurrentFpga0();
+    virtual double getCurrentFpga1();
+    virtual double getCurrentMic0();
+    virtual double getCurrentMic1();
+    virtual double getCurrentSystem();
 
     std::vector<double> mTimevalues;
     std::vector<double> mCpu0values;
@@ -41,6 +60,10 @@ public:
     std::vector<double> mMic0values;
     std::vector<double> mMic1values;
     std::vector<double> mSystemvalues;
+    int mType;
+
+    virtual void setLineWidth(int val);
+
 
 
 public slots:
@@ -57,14 +80,14 @@ public slots:
     virtual void exportToCSV();
 
 signals:
-    virtual void signal_export(QMSMplot*);
+    void signal_export(QMSMplot*);
 
 
 
 protected:
     Ui::QMSMplot* ui;
     int mLineWidth;
-    int maxData;
+    unsigned int maxData;
 
     QwtPlot* mpPlot;
     QWidget* parent;
@@ -92,6 +115,7 @@ protected:
 
     QwtPlotMagnifier* mpMagnifier;
     QwtPlotPanner* mpPanner;
+
 
 };
 

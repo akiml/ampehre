@@ -8,6 +8,7 @@
 #include <QMdiSubWindow>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QMessageBox>
 #include "QMSMpowerplot.h"
 #include "QMSMtemperatureplot.h"
 #include "QMSMclockplot.h"
@@ -17,6 +18,7 @@
 #include "CClient.hpp"
 #include "QMSMsettings.h"
 #include "CConfig.h"
+#include "QMSMsystemoverview.h"
 
 namespace Ui {
 class MainWindow;
@@ -55,6 +57,8 @@ private:
     QMSMHeatmap* mpTempMic;
     QMSMHeatmap* mpTempSystem;
 
+    QMSMSystemOverview* mpSystemOverview;
+
     QMdiSubWindow* subwPower;
     QMdiSubWindow* subwTemp;
     QMdiSubWindow* subwClock;
@@ -67,8 +71,8 @@ private:
     CClient mClient;
     QTimer* mpTimer;
     QTimer* mpGuiTimer;
+
     int mPlotInterval;
-    int mHeatmapInterval;
     int mGuiInterval;
     void connectActions();
     void addPlot(QMSMplot* plot, QMdiSubWindow* subw);
@@ -94,6 +98,7 @@ public slots:
     void showHeatmapUtil();
     void showHeatmapTemp();
     void showSettings();
+    void showSystemOverview();
 
     void setInitSettings();
 
@@ -104,6 +109,12 @@ public slots:
     void updateMemory();
     void updateHeatmapUtil();
     void updateHeatmapTemp();
+    void updateSystemOverview();
+
+    void exportConfig();
+    void importConfig();
+    void setServerIP(QString v);
+    void setServerPort(int v);
 
 };
 

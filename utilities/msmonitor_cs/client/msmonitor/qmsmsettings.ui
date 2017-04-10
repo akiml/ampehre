@@ -13,21 +13,30 @@
   <property name="windowTitle">
    <string>Settings</string>
   </property>
+  <property name="toolTip">
+   <string>settings window</string>
+  </property>
   <widget class="QTabWidget" name="tabWidget">
    <property name="geometry">
     <rect>
-     <x>30</x>
+     <x>20</x>
      <y>10</y>
-     <width>331</width>
+     <width>361</width>
      <height>301</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>interval to redraw GUI</string>
+   </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>3</number>
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
      <string>Resource</string>
+    </attribute>
+    <attribute name="toolTip">
+     <string>resource information</string>
     </attribute>
     <widget class="QLabel" name="label_4">
      <property name="geometry">
@@ -214,6 +223,9 @@
     <attribute name="title">
      <string>Data</string>
     </attribute>
+    <attribute name="toolTip">
+     <string>data settings</string>
+    </attribute>
     <widget class="QLabel" name="label">
      <property name="geometry">
       <rect>
@@ -236,11 +248,14 @@
        <height>18</height>
       </rect>
      </property>
+     <property name="toolTip">
+      <string>interval to receive new data</string>
+     </property>
      <property name="minimum">
-      <number>10</number>
+      <number>1</number>
      </property>
      <property name="maximum">
-      <number>500</number>
+      <number>2000</number>
      </property>
      <property name="singleStep">
       <number>10</number>
@@ -249,7 +264,7 @@
       <number>20</number>
      </property>
      <property name="sliderPosition">
-      <number>250</number>
+      <number>1</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -277,6 +292,9 @@
        <height>31</height>
       </rect>
      </property>
+     <property name="toolTip">
+      <string>amount of data to be plotted</string>
+     </property>
      <property name="minimum">
       <number>60</number>
      </property>
@@ -301,6 +319,9 @@
    <widget class="QWidget" name="tab_2">
     <attribute name="title">
      <string>GUI</string>
+    </attribute>
+    <attribute name="toolTip">
+     <string>gui refresh rate</string>
     </attribute>
     <widget class="QLabel" name="label_3">
      <property name="geometry">
@@ -328,7 +349,7 @@
       <number>10</number>
      </property>
      <property name="maximum">
-      <number>1000</number>
+      <number>2000</number>
      </property>
      <property name="singleStep">
       <number>10</number>
@@ -357,15 +378,84 @@
      </property>
     </widget>
    </widget>
+   <widget class="QWidget" name="tab_4">
+    <attribute name="title">
+     <string>Server</string>
+    </attribute>
+    <attribute name="toolTip">
+     <string>server settings</string>
+    </attribute>
+    <widget class="QSpinBox" name="spinBox_port">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>30</y>
+       <width>121</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Server Port</string>
+     </property>
+     <property name="maximum">
+      <number>20000</number>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>40</y>
+       <width>31</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Port</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_ipaddr">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>110</y>
+       <width>161</width>
+       <height>33</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Server IP-Address</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_15">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>120</y>
+       <width>81</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>IP Address</string>
+     </property>
+    </widget>
+   </widget>
   </widget>
   <widget class="QPushButton" name="pushButton_start">
    <property name="geometry">
     <rect>
-     <x>30</x>
+     <x>20</x>
      <y>350</y>
-     <width>95</width>
+     <width>171</width>
      <height>31</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>start data transmission</string>
    </property>
    <property name="text">
     <string>Start</string>
@@ -374,27 +464,49 @@
   <widget class="QPushButton" name="pushButton_stop">
    <property name="geometry">
     <rect>
-     <x>150</x>
+     <x>210</x>
      <y>350</y>
-     <width>95</width>
+     <width>171</width>
      <height>31</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>stop data transmission</string>
    </property>
    <property name="text">
     <string>Stop</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_reset">
+  <widget class="QPushButton" name="pushButton_loadSettings">
    <property name="geometry">
     <rect>
-     <x>270</x>
-     <y>350</y>
-     <width>95</width>
+     <x>20</x>
+     <y>430</y>
+     <width>171</width>
      <height>31</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>load other settings.conf</string>
+   </property>
    <property name="text">
-    <string>Reset</string>
+    <string>load new settings</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_exportSettings">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>480</y>
+     <width>171</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>save current settings to custom .conf file</string>
+   </property>
+   <property name="text">
+    <string>export current settings</string>
    </property>
   </widget>
  </widget>

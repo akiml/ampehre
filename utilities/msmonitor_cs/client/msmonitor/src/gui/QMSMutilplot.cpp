@@ -1,7 +1,7 @@
 #include "gui/QMSMutilplot.h"
 
 QMSMUtilPlot::QMSMUtilPlot(int linewidth, int maxData, int width, int height, QWidget *parent):
-    QMSMplot(linewidth, maxData, width, height, parent)
+    QMSMplot(UTIL, linewidth, maxData, width, height, parent)
 {
     //nothing to be done
 }
@@ -15,7 +15,6 @@ QWidget* QMSMUtilPlot::getPlot()
 {
     return QMSMplot::getPlot();
 }
-
 
 void QMSMUtilPlot::initPlot()
 {

@@ -1,15 +1,15 @@
 /****************************************************************************
-** Meta object code from reading C++ file 'CConfig.h'
+** Meta object code from reading C++ file 'QMSMsystemoverview.h'
 **
-** Created: Mon Apr 10 18:45:45 2017
+** Created: Mon Apr 10 19:06:03 2017
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.2)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
-#include "include/CConfig.h"
+#include "include/gui/QMSMsystemoverview.h"
 #if !defined(Q_MOC_OUTPUT_REVISION)
-#error "The header file 'CConfig.h' doesn't include <QObject>."
+#error "The header file 'QMSMsystemoverview.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 62
 #error "This file was generated using the moc from 4.6.2. It"
 #error "cannot be used with the include files from this version of Qt."
@@ -17,7 +17,7 @@
 #endif
 
 QT_BEGIN_MOC_NAMESPACE
-static const uint qt_meta_data_CConfig[] = {
+static const uint qt_meta_data_QMSMSystemOverview[] = {
 
  // content:
        4,       // revision
@@ -31,45 +31,46 @@ static const uint qt_meta_data_CConfig[] = {
        0,       // signalCount
 
  // slots: signature, parameters, type, tag, flags
-      14,    9,    8,    8, 0x0a,
+      22,   20,   19,   19, 0x0a,
 
        0        // eod
 };
 
-static const char qt_meta_stringdata_CConfig[] = {
-    "CConfig\0\0plot\0exportPlotToCSV(QMSMplot*)\0"
+static const char qt_meta_stringdata_QMSMSystemOverview[] = {
+    "QMSMSystemOverview\0\0v\0"
+    "update(std::vector<double>&)\0"
 };
 
-const QMetaObject CConfig::staticMetaObject = {
-    { &QWidget::staticMetaObject, qt_meta_stringdata_CConfig,
-      qt_meta_data_CConfig, 0 }
+const QMetaObject QMSMSystemOverview::staticMetaObject = {
+    { &QWidget::staticMetaObject, qt_meta_stringdata_QMSMSystemOverview,
+      qt_meta_data_QMSMSystemOverview, 0 }
 };
 
 #ifdef Q_NO_DATA_RELOCATION
-const QMetaObject &CConfig::getStaticMetaObject() { return staticMetaObject; }
+const QMetaObject &QMSMSystemOverview::getStaticMetaObject() { return staticMetaObject; }
 #endif //Q_NO_DATA_RELOCATION
 
-const QMetaObject *CConfig::metaObject() const
+const QMetaObject *QMSMSystemOverview::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->metaObject : &staticMetaObject;
 }
 
-void *CConfig::qt_metacast(const char *_clname)
+void *QMSMSystemOverview::qt_metacast(const char *_clname)
 {
     if (!_clname) return 0;
-    if (!strcmp(_clname, qt_meta_stringdata_CConfig))
-        return static_cast<void*>(const_cast< CConfig*>(this));
+    if (!strcmp(_clname, qt_meta_stringdata_QMSMSystemOverview))
+        return static_cast<void*>(const_cast< QMSMSystemOverview*>(this));
     return QWidget::qt_metacast(_clname);
 }
 
-int CConfig::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int QMSMSystemOverview::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = QWidget::qt_metacall(_c, _id, _a);
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: exportPlotToCSV((*reinterpret_cast< QMSMplot*(*)>(_a[1]))); break;
+        case 0: update((*reinterpret_cast< std::vector<double>(*)>(_a[1]))); break;
         default: ;
         }
         _id -= 1;
