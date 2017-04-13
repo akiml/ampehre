@@ -152,7 +152,7 @@ void exec_op2(enum APAPI_op2 op2, double value1, long long time0, long long time
 }
 */
 
-void stats(enum APAPI_stats stats_op, long long value, long long avg_value_weight, 
+void stats(enum APAPI_stats stats_op, long double value, long long avg_value_weight, 
     long long avg_last_total_weight, long long avg_new_total_weight, int sample_count, double *stats){
 
     // accumulate
@@ -166,8 +166,8 @@ void stats(enum APAPI_stats stats_op, long long value, long long avg_value_weigh
 
         if (sample_count > 2) {
             // normal measurements between second and last measurment
-            stats[2] = stats[2] * (double)((long double)avg_last_total_weight / (long double)avg_new_total_weight) + 
-                value * (double)((long double)avg_value_weight / (long double)avg_new_total_weight);
+            stats[2] = stats[2] * ((long double)avg_last_total_weight / (long double)avg_new_total_weight) + 
+                value * ((long double)avg_value_weight / (long double)avg_new_total_weight);
             // TODO: order of division/multiplication: make avg value less precise or make weight factor less precise?
             // TODO: test different orders with "real" values
         } else
