@@ -28,6 +28,7 @@
 #include <list>
 #include <signal.h>
 #include <stdlib.h>
+#include <ctime>
 
 class CServer{
 
@@ -47,6 +48,7 @@ private:
 	void createDataAnswer(std::string &msg, uint64_t dataCode);
 	int createDataAnswer(void** answer, uint64_t dataCode);
 	static void termHandler(int s);
+	void controlClients();
 	
 	std::string mVERSION;
 	CMeasure mMeasure;
@@ -58,6 +60,7 @@ private:
 	int mMaxClients;
 	int mSocket;
 	std::vector<uint64_t> mFreq;
+	std::vector<clock_t> mTimesForClients;
 	
 };
 

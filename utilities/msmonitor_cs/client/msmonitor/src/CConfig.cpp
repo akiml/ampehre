@@ -13,7 +13,8 @@ CConfig::CConfig(const QString path, QWidget* parent):
     alpha(255),
     intervalStart(0),
     intervalEnd(100),
-    updateTime(10)
+    updateTime(10),
+    safetyTimeServer(500)
 {
     importConfig(path);
 }
@@ -102,19 +103,19 @@ void CConfig::exportPlotToCSV(QMSMplot *plot)
     switch(plot->mType)
     {
     case MEMORY:
-        txt = QString("TimeStamp,CPU0,CPU1,GPU0,MIC0,") + "\n";
+        txt = QString("TimeStamp;CPU0;CPU1;GPU0;MIC0;") + "\n";
         break;
     case POWER:
-        txt = QString("TimeStamp,CPU0,CPU1,GPU0,FPGA0,MIC0,SYSTEM,") + "\n";
+        txt = QString("TimeStamp;CPU0;CPU1;GPU0;FPGA0;MIC0;SYSTEM;") + "\n";
         break;
     case UTIL:
-        txt = QString("TimeStamp,CPU0,GPU0,GPU1,FPGA0,MIC0,") + "\n";
+        txt = QString("TimeStamp;CPU0;GPU0;GPU1;FPGA0;MIC0;") + "\n";
         break;
     case TEMP:
-        txt = QString("TimeStamp,CPU0,CPU1,GPU0,FPGA0,FPGA1,MIC0,SYSTEM") + "\n";
+        txt = QString("TimeStamp;CPU0;CPU1;GPU0;FPGA0;FPGA1;MIC0;SYSTEM") + "\n";
         break;
     case CLOCK:
-        txt = QString("TimeStamp,CPU0,CPU1,GPU0,GPU1,MIC0,MIC1,") + "\n";
+        txt = QString("TimeStamp;CPU0;CPU1;GPU0;GPU1;MIC0;MIC1;") + "\n";
         break;
     }
     //change txt depending on task
@@ -122,25 +123,25 @@ void CConfig::exportPlotToCSV(QMSMplot *plot)
     for(unsigned int i = 0; i < plot->mTimevalues.size(); i ++)
     {
         txt = "";
-        txt += QString::number(plot->mTimevalues[i]) + ",";
+        txt += QString::number(plot->mTimevalues[i]) + ";";
         if(plot->mCpu0values.size() > i)
-            txt += QString::number(plot->mCpu0values[i]) + ",";
+            txt += QString::number(plot->mCpu0values[i]) + ";";
         if(plot->mCpu1values.size() > i)
-            txt += QString::number(plot->mCpu1values[i]) + ",";
+            txt += QString::number(plot->mCpu1values[i]) + ";";
         if(plot->mGpu0values.size() > i)
-            txt += QString::number(plot->mGpu0values[i]) + ",";
+            txt += QString::number(plot->mGpu0values[i]) + ";";
         if(plot->mGpu1values.size() > i)
-            txt += QString::number(plot->mGpu1values[i]) + ",";
+            txt += QString::number(plot->mGpu1values[i]) + ";";
         if(plot->mFpga0values.size() > i)
-            txt += QString::number(plot->mFpga0values[i]) + ",";
+            txt += QString::number(plot->mFpga0values[i]) + ";";
         if(plot->mFpga1values.size() > i)
-            txt += QString::number(plot->mFpga1values[i]) + ",";
+            txt += QString::number(plot->mFpga1values[i]) + ";";
         if(plot->mMic0values.size() > i)
-            txt += QString::number(plot->mMic0values[i]) + ",";
+            txt += QString::number(plot->mMic0values[i]) + ";";
         if(plot->mMic1values.size() > i)
-            txt += QString::number(plot->mMic1values[i]) + ",";
+            txt += QString::number(plot->mMic1values[i]) + ";";
         if(plot->mSystemvalues.size() > i)
-            txt += QString::number(plot->mSystemvalues[i]) + ",";
+            txt += QString::number(plot->mSystemvalues[i]) + ";";
         txt += "\n";
         file.write(txt.toUtf8());
     }
@@ -230,6 +231,10 @@ void CConfig::setVariable(const QString line)
     else if(var_name == "updateTime")
     {
         updateTime = var.toInt();
+    }
+    else if(var_name == "safetyTimeServer")
+    {
+        safetyTimeServer = var.toInt();
     }
     else
     {

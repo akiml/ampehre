@@ -34,6 +34,12 @@ CServer::CServer(int port, int maxClients):
 		mFreq.push_back(0);
 	}
 	getFrequencies();
+	
+	for(unsigned int i = 0; i < maxClients; i++)
+	{
+		mTimesForClients.push_back(-1);
+	}
+	
 }
 
 CServer::~CServer()
@@ -46,6 +52,26 @@ void CServer::init(){
 	if(mCom.initSocket(mPort) < 0)
 		exit(-1);
 }
+
+void CServer::controlClients() 
+{
+	double dur;
+	for(unsigned int i = 0; i < mTimesForClients.size(); i++)
+	{
+		if(mTimesForClients[i] >= 0)
+		{
+			dur = (std::clock() - mTimesForClients[i]) / (double) CLOCKS_PER_SEC;
+			std::cout << "client: " << i << ", with duration: " << dur << ", clock: " <<std::clock() << std::endl;
+			printf("time client: %f\n", (float)mTimesForClients[i]);
+			if(dur > 2)
+			{
+				std::cout << "exceeded maximal interval!" << std::endl;
+				terminate(i);
+			}
+		}
+	}
+}
+
 
 
 void CServer::acceptLoop() {
@@ -62,6 +88,7 @@ void CServer::acceptLoop() {
 	sigaction(SIGINT, &act, 0);
 
 	while(1){
+		controlClients();
 		mCom.acceptSocket(mSocket);
 		recv_length = recv(mSocket, buffer, 4096, 0);
 		
@@ -141,7 +168,7 @@ void CServer::registerClient(uint64_t datacode){
 	clReg a = {reg, datacode};
 	mRegClients.push_back(a);							//add to register
 	std::string answer;
-
+	mTimesForClients[reg] = std::clock();
 	mProtocol.answerRegisterMsg(answer, reg);
 	mCom.sendMsg(answer, mSocket);
 }
@@ -162,6 +189,7 @@ void CServer::dataRequest(int registry){
 		void* m;
 		int s = createDataAnswer(&m, mIterator->dataCode);
 		mCom.sendMsg(m, s, mSocket);
+		mTimesForClients[registry] = std::clock();
 		free(m);
 
 	}else{
@@ -173,6 +201,7 @@ void CServer::terminate(int registry){
 	if(ut::find(mRegClients, registry, mIterator) == 0){
 		mRegClients.erase(mIterator);
 		std::string msg;
+		mTimesForClients[registry] = -1;
 		mProtocol.termComMsg(msg, registry);
 		mCom.sendMsg(msg, mSocket);
 	}
@@ -188,7 +217,8 @@ void CServer::createDataAnswer(std::string& msg, uint64_t dataCode) {
 
 
 	for(unsigned int i = 0; i < values.size(); i++){
-		mProtocol.addData(msg, values[i]);		//write all data values 		
+		mProtocol.addData(msg, values[i]);		//write all data values 	
+		std::cout << "value: " << values[i] << std::endl;
 	}
 
 }
@@ -198,12 +228,20 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 	mProtocol.addCmdVersion(msg, DATA_RES, mVERSION);
 	std::vector<int> d;
 	std::vector<double> values;
+	std::vector<std::string> values_pid;
 	char *rn = "\r\n";
 
 	mProtocol.extractData(d, dataCode);		//extract wanted data from 64Bit dataCode
 	mMeasure.getValues(values, d);			//read needed values into double vector
+	mMeasure.getProcesses(values_pid);
 
-	std::size_t size = msg.size()+values.size()*(sizeof(double)+2*sizeof(char));
+	std::size_t size_str = 0;
+	for(unsigned int i = 0; i < values_pid.size(); i++)
+	{
+		std::cout<<"process: " << values_pid[i] << std::endl;
+		size_str += values_pid[i].size();
+	}
+	std::size_t size = msg.size()+values.size()*(sizeof(double)+2*sizeof(char)) + size_str;
 	
 	*answer = malloc(size);
 	if (NULL == *answer){
@@ -214,14 +252,28 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 	memcpy(*answer, str_c, strlen(str_c));
 
 	void* b = *answer+msg.size();	
+	const char* c;
 
-	for(unsigned int i = 0; i < values.size(); i++){
+	for(unsigned int i = 0; i < values.size(); i++)
+	{
+//		std::cout << "value: " << values[i] << std::endl;
 		//mProtocol.addData(msg, values[i]);		//write all data values 
 		memcpy(b, &values[i], sizeof(double));
 		b+=sizeof(double);
 		memcpy(b, rn, strlen(rn));
 		b += strlen(rn);
 	}
+	for(unsigned int i = 0; i < values_pid.size(); i++)	
+	{
+		if(values_pid[i].size() > 2)
+		{
+			c = values_pid[i].c_str();
+			std::cout << std::string(c, values_pid[i].size()) << std::endl;
+			memcpy(b, c, values_pid[i].size());
+			b+=values_pid[i].size();
+		}
+	}
+	
 
 	return size;
 }

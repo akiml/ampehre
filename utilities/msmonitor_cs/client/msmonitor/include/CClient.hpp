@@ -33,14 +33,15 @@ public:
 	~CClient();
 
 	int registerToServer(std::vector<int>& values, int port, std::string ipaddr);
-	void requestData();
-	void terminate();
+    int requestData();
+    int terminate();
     void getFreq(std::vector<uint64_t> &vals);
 
     std::vector<double> mValues;
+    std::vector<std::string> mValues_pid;
 	
 private:
-	void initSocket();
+    int initSocket();
 	std::string mVERSION;
 	CComC mCom;
 	CProtocolC mProtocol;

@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTimer>
+#include <QTime>
 #include <QString>
 #include <vector>
 #include <QMdiSubWindow>
@@ -74,10 +75,12 @@ private:
 
     int mPlotInterval;
     int mGuiInterval;
+    int mSafetyTimeServer;
     void connectActions();
     void addPlot(QMSMplot* plot, QMdiSubWindow* subw);
     void addHeatmap(QMdiSubWindow* heat, QVBoxLayout* layout);
     void setSlider();
+    void controlTimer(const int time);
 
 public slots:
     void start();

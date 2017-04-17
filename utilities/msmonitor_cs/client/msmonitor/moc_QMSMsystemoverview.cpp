@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'QMSMsystemoverview.h'
 **
-** Created: Mon Apr 10 19:06:03 2017
+** Created: Mon Apr 17 12:36:19 2017
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_QMSMSystemOverview[] = {
        4,       // revision
        0,       // classname
        0,    0, // classinfo
-       1,   14, // methods
+       2,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -32,13 +32,15 @@ static const uint qt_meta_data_QMSMSystemOverview[] = {
 
  // slots: signature, parameters, type, tag, flags
       22,   20,   19,   19, 0x0a,
+      55,   51,   19,   19, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_QMSMSystemOverview[] = {
     "QMSMSystemOverview\0\0v\0"
-    "update(std::vector<double>&)\0"
+    "update(std::vector<double>&)\0str\0"
+    "updatePID(std::vector<std::string>&)\0"
 };
 
 const QMetaObject QMSMSystemOverview::staticMetaObject = {
@@ -71,9 +73,10 @@ int QMSMSystemOverview::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
         case 0: update((*reinterpret_cast< std::vector<double>(*)>(_a[1]))); break;
+        case 1: updatePID((*reinterpret_cast< std::vector<std::string>(*)>(_a[1]))); break;
         default: ;
         }
-        _id -= 1;
+        _id -= 2;
     }
     return _id;
 }

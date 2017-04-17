@@ -39,6 +39,7 @@ public:
 	void start();
 	void stop();
 	void getValues(std::vector<double>& sol, std::vector<int>& req);
+	void getProcesses(std::vector<std::string>& processes);
 	NData::CDataSettings& getSettings();
 	
 private:

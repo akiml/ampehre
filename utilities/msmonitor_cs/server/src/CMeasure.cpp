@@ -46,6 +46,42 @@ NData::CDataSettings& CMeasure::getSettings(){
 	return mHandler.getSettings();
 }
 
+void CMeasure::getProcesses(std::vector< std::string >& processes) 
+{
+	processes.clear();
+	NData::CDataMeasurement &mData = mHandler.getMeasurement();
+	
+	std::stringstream ss;
+	std::string s;
+	ss << mData.mMaxelerActiveProcessPid;
+	s = ss.str();
+	
+	std::string maxeler = "f ";
+	maxeler += s;
+	maxeler += " ";
+	maxeler += mData.mMaxelerActiveProcessName;
+	maxeler += " ";
+	maxeler += mData.mMaxelerActiveProcessUser;
+	maxeler += "\r\n";
+	if(mData.mMaxelerActiveProcessName != "")
+		processes.push_back(maxeler);
+	
+	for(unsigned int i = 0; i < mData.mNVMLActiveProcessesCount; i++)
+	{
+		std::string a = "g ";
+		std::stringstream ss;
+		std::string s;
+		ss << mData.mNVMLActiveProcessesPid[i];
+		s = ss.str();
+		a += s;
+		a += " ";
+		a += mData.mNVMLActiveProcessesName[i];
+		a += "\r\n";
+		processes.push_back(a);
+	}
+}
+
+
 void CMeasure::getValues(std::vector<double>& sol, std::vector<int>& req){
 	sol.clear();
 	
@@ -81,10 +117,16 @@ void CMeasure::getValues(std::vector<double>& sol, std::vector<int>& req){
 				break;
 			}
 			case YTempCpu0:{
+				uint32_t x = mData.mpYTempCpu0->getLast();
+				//x = x >> 32;
+				std::cout << "!!!!!!!!!!!!!tmpCpu0: "<< x <<std::endl;
 				sol.push_back(mData.mpYTempCpu0->getLast());
 				break;
 			}
 			case YTempCpu1:{
+				uint32_t x = mData.mpYTempCpu1->getLast();
+				//x = x >> 32;
+				std::cout << "!!!!!!!!!!!!!tmpCpu1: "<< x <<std::endl;
 				sol.push_back(mData.mpYTempCpu1->getLast());
 				break;
 			}
@@ -133,6 +175,7 @@ void CMeasure::getValues(std::vector<double>& sol, std::vector<int>& req){
 				break;
 			}
 			case YUtilCpu:{
+				std::cout << "utilCpu: "<< (int32_t)mData.mpYUtilCpu->getLast() <<std::endl;
 				sol.push_back(mData.mpYUtilCpu->getLast());
 				break;
 			}

@@ -54,9 +54,10 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
 	uint64_t code = mProtocol.createDataCode(values);
 	std::string msg = mProtocol.regMsg(code);
 	std::vector<double> ignore;
+    std::vector<std::string> ig;
 	
 	mCom.communicate(msg.c_str() ,rep, rep_len);
-	mProtocol.parseMsg(rep, rep_len, reg, tsk, ignore);
+    mProtocol.parseMsg(rep, rep_len, reg, tsk, ignore, ig);
 	
 	free(rep);
 	if(reg >= 0){
@@ -67,29 +68,33 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
 		return -1;
 }
 
-void CClient::requestData() {
-	initSocket();
-	void* rep= malloc(8192);
+int CClient::requestData() {
+    if(initSocket() < 0)
+    {
+        return -1;
+    }
+    void* rep= malloc(10000);
 	if (NULL == rep){
 		std::cout << "[FATAL] out of memory!" << std::endl;
 		exit(-1);
 	}
 	int rep_len = 0;
 	int reg = -1, tsk;
-	
 	std::string msg = mProtocol.requestMsg(mReg);
 	mCom.communicate(msg.c_str(), rep, rep_len);
-	mProtocol.parseMsg(rep, rep_len, reg, tsk, mValues);
-    std::cout << "size: " << mValues.size() << std::endl;
+
+    mProtocol.parseMsg(rep, rep_len, reg, tsk, mValues, mValues_pid);
 	free(rep);
 
-    for(unsigned int i = 0; i < mValues.size(); i++)
-        std::cout << "value: " << (int)mValues[i] << std::endl;
+    return 0;
 	
 }
 
-void CClient::terminate() {
-	initSocket();
+int CClient::terminate() {
+    if(initSocket() < 0)
+    {
+        return -1;
+    }
 	void* rep = malloc(4096);
 	if (NULL == rep){
 		std::cout << "[FATAL] out of memory!" << std::endl;
@@ -102,6 +107,8 @@ void CClient::terminate() {
 	mCom.communicate(msg.c_str(), rep, rep_len);
 
 	free(rep);
+
+    return 0;
 }
 
 void CClient::getFreq(std::vector<uint64_t>& vals)
@@ -121,7 +128,8 @@ void CClient::getFreq(std::vector<uint64_t>& vals)
     free(rep);
 }
 
-void CClient::initSocket(){
+int CClient::initSocket(){
 	mCom.setAddr(mIPaddr);
 	mSocket = mCom.initSocket(mPort);
+    return mSocket;
 }

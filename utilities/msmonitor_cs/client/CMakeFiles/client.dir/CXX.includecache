@@ -10,10 +10,6 @@
 CClient.hpp
 /home/aelali/ampehre/utilities/msmonitor_cs/client/msmonitor/src/CClient.hpp
 
-/home/aelali/ampehre/utilities/msmonitor_cs/client/msmonitor/src/CComC.cpp
-CComC.hpp
-/home/aelali/ampehre/utilities/msmonitor_cs/client/msmonitor/src/CComC.hpp
-
 /home/aelali/ampehre/utilities/msmonitor_cs/client/msmonitor/src/CProtocolC.cpp
 CProtocolC.hpp
 /home/aelali/ampehre/utilities/msmonitor_cs/client/msmonitor/src/CProtocolC.hpp
@@ -33,10 +29,6 @@ sstream
 -
 string
 -
-utils.h
-/home/aelali/ampehre/utilities/msmonitor_cs/include/utils.h
-
-/home/aelali/ampehre/utilities/msmonitor_cs/include/utils.cpp
 utils.h
 /home/aelali/ampehre/utilities/msmonitor_cs/include/utils.h
 

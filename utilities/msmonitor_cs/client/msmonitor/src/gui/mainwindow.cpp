@@ -36,12 +36,12 @@ MainWindow::MainWindow(QWidget *parent) :
     mpTimer(new QTimer()),
     mpGuiTimer(new QTimer()),
     mPlotInterval(mpConfig->plot),
-    mGuiInterval(mpConfig->gui)
+    mGuiInterval(mpConfig->gui),
+    mSafetyTimeServer(500)
 {
     ui->setupUi(this);
     connectActions();
     setInitSettings();
-
 
 
     addPlot((QMSMplot*)mpPowerplot, subwPower);
@@ -251,7 +251,7 @@ void MainWindow::start()
     {
         mpSettings->stop();
         QMessageBox msgBox;
-        msgBox.setText("Server Port or IP incorrect! Please reconfigure in default.conf");
+        msgBox.setText("Error connecting to Server.\nPlease check if Server is running or its Port and IP address are correct.");
         msgBox.exec();
         return;
     }
@@ -277,7 +277,33 @@ void MainWindow::stop()
 
 void MainWindow::requestData()
 {
-    mClient.requestData();
+    QTime exchangeTimer;
+    exchangeTimer.start();
+
+    if(mClient.requestData() < 0)
+    {
+        qDebug() << "Error connecting to Server!";
+        mpSettings->stop();
+        mpTimer->stop();
+        QMessageBox msgBox;
+        msgBox.setText("Error connecting to Server! Possible Server Crash detected.");
+        msgBox.exec();
+        return;
+    }
+    controlTimer(exchangeTimer.elapsed());
+}
+
+void MainWindow::controlTimer(const int time)
+{
+    if(time >= mpTimer->interval()-mSafetyTimeServer)
+    {
+        mPlotInterval = time+mSafetyTimeServer+20;
+        mpTimer->setInterval(mPlotInterval);
+        setSlider();
+        QMessageBox msgBox;
+        msgBox.setText("Timer had to be set automatically, due to network delay!");
+        msgBox.exec();
+    }
 }
 
 void MainWindow::setMaxData(int val)
@@ -400,6 +426,7 @@ void MainWindow::showSystemOverview()
 void MainWindow::updateSystemOverview()
 {
     mpSystemOverview->update(mClient.mValues);
+    mpSystemOverview->updatePID(mClient.mValues_pid);
 }
 
 void MainWindow::updatePower()

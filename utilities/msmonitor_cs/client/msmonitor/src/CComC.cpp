@@ -67,7 +67,7 @@ int CComC::communicate(const char* msg, void* reply, int& length) {
 		std::cout << "error sending msg from client to server" << std::endl;
 		return -1;
 	}
-	length = recv(mSockfd , reply , 4096 , 0);
+    length = recv(mSockfd , reply , 14000, 0);
 	//Receive a reply from the server
 	if( length < 0){
 		std::cout << "error receiving reply from server" << std::endl;

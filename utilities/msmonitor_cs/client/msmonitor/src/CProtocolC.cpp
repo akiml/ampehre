@@ -28,7 +28,7 @@ CProtocolC::~CProtocolC() {
 
 }
 
-int CProtocolC::parseMsg(void* msg, unsigned int length, int& reg, int& tsk, std::vector< double >& values){
+int CProtocolC::parseMsg(void* msg, unsigned int length, int& reg, int& tsk, std::vector< double >& values, std::vector<std::string>& values_pid){
 	unsigned int i = 0;
 	std::string msg_str ((char*)msg, length);
 	std::string submsg;
@@ -61,7 +61,7 @@ int CProtocolC::parseMsg(void* msg, unsigned int length, int& reg, int& tsk, std
                     return 0;
                 }
                 else if(tsk == DATA_RES){
-                    if(getData(msg+before, length-before, values) < 0){
+                    if(getData(msg+before, length-before, values, values_pid) < 0){
                         return -1;
                     }
                     return 0;
@@ -126,22 +126,38 @@ std::string CProtocolC::termMsg(int reg) {
 	return msg;
 }
 
-int CProtocolC::getData(void* msg, int size, std::vector< double >& values) {
+int CProtocolC::getData(void* msg, int size, std::vector< double >& values, std::vector<std::string> &v) {
 
 	values.clear();
+    v.clear();
 	void* k = msg;
 	double val = 0;
+    int i = 0;
 
-
-	if(size % (sizeof(double)+2*sizeof(char)) != 0)
-		return -1;
  
-	while(k < size+msg){
+    while(k < size+msg && i < 29){
 		memcpy(&val, k, sizeof(double));
 		std::cout << val << std::endl;
 		values.push_back(val);
 		k+= sizeof(double)+2*sizeof(char);
+        i++;
 	}
+    char* cptr = (char*)k;
+    std::string tmp = "";
+    while(cptr < size+(char*)msg)
+    {
+        while(cptr < size+(char*)msg && *cptr != '\r')
+        {
+            cptr++;
+            tmp += *cptr;
+        }
+        v.push_back(tmp);
+        std::cout << tmp <<std::endl;
+        tmp = "";
+        cptr+=2;
+    }
+
+
 	
 	return 0;
 }

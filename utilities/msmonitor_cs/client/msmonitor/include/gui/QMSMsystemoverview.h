@@ -20,6 +20,7 @@ public:
 
 public slots:
     void update(std::vector<double>& v);
+    void updatePID(std::vector<std::string>& str);
 
 private:
     Ui::QMSMSystemOverview *ui;

@@ -28,6 +28,7 @@ public:
     int intervalStart;
     int intervalEnd;
     int updateTime;
+    int safetyTimeServer;
 
     void exportConfig();
     void importConfig(const QString path);
