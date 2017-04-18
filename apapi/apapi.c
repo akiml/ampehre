@@ -132,21 +132,6 @@ void swap_pointer(void **pointer1, void**pointer2){
     *pointer2 = tmp;
 }
 
-
-/*
-void exec_op2(enum APAPI_op2 op2, double value1, long long time0, long long time1, double *value2) {
-
-    switch(op2) {
-        case OP2_DIV_DIFF_TIME:
-            *value2 = value1 / (time1 - time0);
-        break;
-        //case OP2_NOP:
-        default:
-        break;
-    }
-}
-*/
-
 void stats(enum APAPI_stats stats_op, long double value, long long avg_value_weight, 
     long long avg_last_total_weight, long long avg_new_total_weight, int sample_count, double *stats){
 
@@ -547,17 +532,14 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
     //printf("calloc %d, %ld\n", newset->num_events, sizeof(double)*4*3);
     newset->values0 = calloc(newset->num_events, sizeof(double)*4*3);
     newset->values1 = &(newset->values0[4*newset->num_events]);
-//    newset->values2 = &(newset->values0[8*newset->num_events]);
     //printf("values %p %p\n", newset->values0, newset->values1);
     //printf("long long %ld double %ld\n", sizeof(long long), sizeof(double));
     //printf("%f %f %f %f\n", newset->values0[0], newset->values0[1], newset->values0[2], newset->values0[3]);
     //printf("%f %f %f %f\n", newset->values1[0], newset->values1[1], newset->values1[2], newset->values1[3]);
 
     newset->values_op1 = calloc(newset->num_events, sizeof(enum APAPI_op1));
-//    newset->values_op2 = calloc(newset->num_events, sizeof(enum APAPI_op2));
     newset->values0_stats = calloc(newset->num_events, sizeof(enum APAPI_stats)*3);
     newset->values1_stats = &(newset->values0_stats[newset->num_events]);
-//    newset->values2_stats = &(newset->values0_stats[newset->num_events*2]);
 
     newset->event_ops = calloc(newset->num_events, sizeof(struct apapi_event_ops));
 
@@ -601,10 +583,8 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
         }
         // set ops
         newset->values_op1[eventIx] = ops->op1;
-//        newset->values_op2[eventIx] = ops->op2;
         newset->values0_stats[eventIx] = ops->value0;
         newset->values1_stats[eventIx] = ops->value1;
-//        newset->values2_stats[eventIx] = ops->value2;
         newset->max_counters[eventIx] = ops->max_sample;
         newset->event_ops[eventIx] = *ops;
         printf("%s %d %d %d %llx %s %s %f %s %s %f\n", name, ops->op1, ops->value0, ops->value1, ops->max_sample,
@@ -628,7 +608,6 @@ int APAPI_destroy_apapi_eventset(struct apapi_eventset **set) {
     }
     free(oldset->values0);
     free(oldset->values_op1);
-//    free(oldset->values_op2);
     free(oldset->values0_stats);
     free(oldset);
     *set = NULL;
@@ -683,11 +662,6 @@ void APAPI_print_apapi_eventset(struct apapi_eventset *set) {
                     printf("    acc: %20.6f\n", values[3]);
         }
         printf("\n");
-//        if (set->values2_stats[eventIx] != STAT_NO) {
-//            values = &(set->values2[eventIx]);
-//            printf("  min: %f max: %f avg: %f acc: %f\n", values[0], values[1], values[2], values[3]);
-//        }
-
     }
     printf("------\n\n");
 }
