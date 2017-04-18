@@ -10,15 +10,10 @@
 #include "apapi_op1.c"
 #include "apapi_csv.c"
 
-void APAPI_dummy() {
-    printf("apapi dummy method\n");
-};
-
-void APAPI_init() {
+int APAPI_init() {
     int retval;
     retval = PAPI_library_init(1);
-    if (retval == 1)
-        printf("bla init\n");
+    return retval;
 };
 
 long long getcurrenttime() {
@@ -206,7 +201,7 @@ void APAPI_timer_measure_stats(struct apapi_eventset *set) {
 
         #ifdef DEBUG
         printf("in event %d cur %llx prevtime %llx curtime %llx min0 %f max0 %f avg0 %f acc0 %f min1 %f max1 %f avg1 %f acc1 %f \n", eventIx,
-            set->current_values[eventIx],
+            set->current_samples[eventIx],
             set->previous_time,
             set->current_time,
             set->values0[eventIx*4 + 0],
@@ -227,13 +222,13 @@ void APAPI_timer_measure_stats(struct apapi_eventset *set) {
         value1 = 0.0;
 
 
-        exec_op1(set->values_op1[eventIx], set->previous_values[eventIx], set->current_values[eventIx], set->previous_time, set->current_time,
+        exec_op1(set->values_op1[eventIx], set->previous_samples[eventIx], set->current_samples[eventIx], set->previous_time, set->current_time,
             &value1);
         
 //        exec_op2(set->values_op2[eventIx], value1, set->previous_time, set->current_time, &value2);
 
         if (set->values0_stats[eventIx] != APAPI_STAT_NO) {
-            stats(set->values0_stats[eventIx], set->current_values[eventIx],
+            stats(set->values0_stats[eventIx], set->current_samples[eventIx],
                 set->current_time - set->previous_time, set->previous_time - set->first_time, set->current_time - set->first_time,
                 set->count, &(set->values0[eventIx*4]));
         }
@@ -248,8 +243,8 @@ void APAPI_timer_measure_stats(struct apapi_eventset *set) {
 
         #ifdef DEBUG
         printf("out event %d prev %llx cur %llx prevtime %llx curtime %llx min0 %f max0 %f avg0 %f acc0 %f min1 %f max1 %f avg1 %f acc1 %f \n", eventIx,
-            set->previous_values[eventIx],
-            set->current_values[eventIx],
+            set->previous_samples[eventIx],
+            set->current_samples[eventIx],
             set->previous_time,
             set->current_time,
             set->values0[eventIx*4 + 0],
@@ -268,25 +263,25 @@ void APAPI_timer_measure_stats(struct apapi_eventset *set) {
 
 }
 
-void fix_overflow(long long *current_samples, long long *previous_samples, long long *max_values, long long *new_values, int values_num) {
+void fix_overflow(long long *current_counters, long long *previous_counters, long long *max_counters, long long *new_samples, int values_num) {
 
     int eventIx;
     for(eventIx=0; eventIx<values_num; eventIx++) {
-        //printf("last %lld cur %lld new %lld\n", previous_values[eventIx], current_values[eventIx], new_values[eventIx]);
-        if (max_values[eventIx] != 0) {
-            if (current_samples[eventIx] < previous_samples[eventIx]) {
+        //printf("last %lld cur %lld new %lld\n", previous_values[eventIx], current_samples[eventIx], new_values[eventIx]);
+        if (max_counters[eventIx] != 0) {
+            if (current_counters[eventIx] < previous_counters[eventIx]) {
                 // overflow detected
-                new_values[eventIx] = max_values[eventIx] - previous_samples[eventIx] + current_samples[eventIx];
+                new_samples[eventIx] = max_counters[eventIx] - previous_counters[eventIx] + current_counters[eventIx];
                 printf("overflow\n");
             } else {
                 // just compute difference
-                new_values[eventIx] = current_samples[eventIx] - previous_samples[eventIx];
+                new_samples[eventIx] = current_counters[eventIx] - previous_counters[eventIx];
             }
         } else {
             // value is not accumulating
-            new_values[eventIx] = current_samples[eventIx];
+            new_samples[eventIx] = current_counters[eventIx];
         }
-        //printf("last %lld cur %lld new %lld\n", previous_values[eventIx], current_values[eventIx], new_values[eventIx]);
+        //printf("last %lld cur %lld new %lld\n", previous_values[eventIx], current_samples[eventIx], new_values[eventIx]);
     }
 }
 
@@ -298,16 +293,16 @@ int APAPI_timer_measure(struct apapi_timer *timer) {
     if (timer->set != NULL) {
 
         // swap arrays so current values become last values and new values overwrite last ones
-        // swap before other operations, so most current values will reside in current_values for later access
+        // swap before other operations, so most current values will reside in current_samples for later access
+        swap_pointer((void**) &(timer->set->current_counters), (void**) &(timer->set->previous_counters));
         swap_pointer((void**) &(timer->set->current_samples), (void**) &(timer->set->previous_samples));
-        swap_pointer((void**) &(timer->set->current_values), (void**) &(timer->set->previous_values));
 
         // swap timestamps
         long long tmp_time = timer->set->previous_time;
         timer->set->previous_time = timer->set->current_time;
         timer->set->current_time = tmp_time;
 
-        retv = PAPI_read(timer->set->EventSet, timer->set->current_samples);
+        retv = PAPI_read(timer->set->EventSet, timer->set->current_counters);
         if (retv != PAPI_OK) {
             // TODO:
         }
@@ -315,8 +310,8 @@ int APAPI_timer_measure(struct apapi_timer *timer) {
         timer->set->current_time = getcurrenttime();
 
         // check for overflow
-        fix_overflow(timer->set->current_samples, timer->set->previous_samples, timer->set->max_samples, 
-            timer->set->current_values, timer->set->num_events);
+        fix_overflow(timer->set->current_counters, timer->set->previous_counters, timer->set->max_counters, 
+            timer->set->current_samples, timer->set->num_events);
     
         timer->set->last_time = timer->set->current_time;
         if (timer->set->first_time == 0) {
@@ -417,9 +412,10 @@ int APAPI_reset_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, vo
 
     if (set != NULL) {
         timer->set = set;
+        memset(set->current_counters, 0, set->num_events);
+        memset(set->previous_counters, 0, set->num_events);
         memset(set->current_samples, 0, set->num_events);
         memset(set->previous_samples, 0, set->num_events);
-        memset(set->current_values, 0, set->num_events);
         set->first_time = 0;
         set->previous_time = 0;
         set->count = 0;
@@ -539,13 +535,13 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
     }
 
     // (5*num) * sizeof(long long) - space for papi samples, max samples and cleared values
-    newset->current_values = calloc(newset->num_events, sizeof(long long)*5);
-    newset->previous_values = &(newset->current_values[newset->num_events]);
-    newset->current_samples = &(newset->current_values[newset->num_events*2]);
-    newset->previous_samples = &(newset->current_values[newset->num_events*3]);
-    newset->max_samples = &(newset->current_values[newset->num_events*4]);
+    newset->current_samples = calloc(newset->num_events, sizeof(long long)*5);
+    newset->previous_samples = &(newset->current_samples[newset->num_events]);
+    newset->current_counters = &(newset->current_samples[newset->num_events*2]);
+    newset->previous_counters = &(newset->current_samples[newset->num_events*3]);
+    newset->max_counters = &(newset->current_samples[newset->num_events*4]);
 
-    //printf("cur values%p %p %p %p %p\n", newset->current_values, newset->previous_values, newset->current_samples, newset->previous_samples, newset->max_samples);
+    //printf("cur values%p %p %p %p %p\n", newset->current_samples, newset->previous_values, newset->current_counters, newset->previous_counters, newset->max_counters);
 
     // (4*3*num) * sizeof(double) - space for stats
     //printf("calloc %d, %ld\n", newset->num_events, sizeof(double)*4*3);
@@ -578,7 +574,7 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
         if (retv != PAPI_OK) {
             // TODO:
         }
-        //printf("%s %lld\n", name, set->current_values[i]);
+        //printf("%s %lld\n", name, set->current_samples[i]);
         // try to find default op
         ops = NULL;
         // first check user defined ops from event_defaults parameter
@@ -609,7 +605,7 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
         newset->values0_stats[eventIx] = ops->value0;
         newset->values1_stats[eventIx] = ops->value1;
 //        newset->values2_stats[eventIx] = ops->value2;
-        newset->max_samples[eventIx] = ops->max_sample;
+        newset->max_counters[eventIx] = ops->max_sample;
         newset->event_ops[eventIx] = *ops;
         printf("%s %d %d %d %llx %s %s %f %s %s %f\n", name, ops->op1, ops->value0, ops->value1, ops->max_sample,
             ops->value0_type, ops->value0_unit, ops->value0_prefix, ops->value1_type, ops->value1_unit, ops->value1_prefix);
@@ -625,10 +621,10 @@ int APAPI_destroy_apapi_eventset(struct apapi_eventset **set) {
     PAPI_destroy_eventset(&(oldset->EventSet));
 
     // because of swap_pointer the original pointer maybe at one of both places
-    if (oldset->current_values < oldset->previous_values) {
-        free(oldset->current_values);
+    if (oldset->current_samples < oldset->previous_samples) {
+        free(oldset->current_samples);
     } else {
-        free(oldset->previous_values);
+        free(oldset->previous_samples);
     }
     free(oldset->values0);
     free(oldset->values_op1);
@@ -659,7 +655,7 @@ void APAPI_print_apapi_eventset(struct apapi_eventset *set) {
         if (retv != PAPI_OK) {
             // TODO:
         }
-        printf("%s %lld\n", name, set->current_values[eventIx]);
+        printf("%s %lld\n", name, set->current_samples[eventIx]);
         if (set->values0_stats[eventIx] != APAPI_STAT_NO) {
             values = &(set->values0[eventIx*4]);
                 printf("  %s %s %f\n", set->event_ops[eventIx].value0_type, 

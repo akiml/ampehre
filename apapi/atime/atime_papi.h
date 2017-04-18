@@ -138,8 +138,8 @@ struct apapi_timer *nvml_timer;
 
 void measure(void** arg){
     printf("%ld measure\n", gettime());
+    printf("%020lld %020lld\n", set->previous_counters[0], set->current_counters[0]);
     printf("%020lld %020lld\n", set->previous_samples[0], set->current_samples[0]);
-    printf("%020lld %020lld\n", set->previous_values[0], set->current_values[0]);
     
 }
 

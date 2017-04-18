@@ -14,12 +14,6 @@ enum APAPI_op1 {
     APAPI_OP1_AVG_SAMPLE_MUL_DIFF_TIME    // (sample0+sample1)/2 * (time1-time0)
 };
 
-
-enum APAPI_op2 {
-    OP2_NOP,                        // no operation
-    OP2_DIV_DIFF_TIME               // value / (time1-time0)
-};
-
 // to be used as bit mask values
 enum APAPI_stats {
     APAPI_STAT_NO  = 0,
@@ -53,13 +47,13 @@ struct apapi_eventset {
     int EventSet;
     int num_events;
     // papi samples
+    long long *current_counters;
+    long long *previous_counters;
+    // maximal values for events - important for overflow check
+    long long *max_counters; // if value > 0 then do overflow_check else just apply new value
+    // samples - overflow cleared
     long long *current_samples;
     long long *previous_samples;
-    // maximal values for events - important for overflow check
-    long long *max_samples; // if value > 0 then do overflow_check else just apply new value
-    // values - overflow cleared
-    long long *current_values;
-    long long *previous_values;
     // sample counter
     long long count;
     // time
@@ -70,14 +64,11 @@ struct apapi_eventset {
     // min,max,avg,acc values - as arrays of size 4
     double *values0;
     double *values1;
-    double *values2;
     // operations
     enum APAPI_op1 *values_op1;
-//    enum APAPI_op2 *values_op2;
     // value statistics
     enum APAPI_stats *values0_stats;
     enum APAPI_stats *values1_stats;
-//    enum APAPI_stats *values2_stats;
     struct apapi_event_ops *event_ops;
 };
 
@@ -100,9 +91,7 @@ struct apapi_timer {
 
 
 
-void APAPI_dummy();
-
-void APAPI_init();
+int APAPI_init();
 
 int APAPI_create_eventset_list(char **names, int cidx, int *EventSet, int *num_events);
 

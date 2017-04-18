@@ -9,8 +9,9 @@
 //#define DEBUG
 
 void help(char* appname){
-    printf("%s FILENAME [ARGUMENTS]\n", appname);
+    printf("%s [-e EVENTDEFFILE] FILENAME [ARGUMENTS]\n", appname);
     printf("Executes and measures the binary FILENAME using the PAPI library.\n");
+    printf("  -e EVENTDEFFILE\t\tEvent definition file\n");
 }
 
 char* optional_events_file = NULL;
