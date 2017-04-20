@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export LD_LIBRARY_PATH=.
+
 echo tokenmismatch1.csv
 ./testcsv -e tokenmismatch1.csv
 echo

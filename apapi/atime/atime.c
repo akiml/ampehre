@@ -5,15 +5,18 @@
 #include <signal.h>
 #include <time.h>
 #include "apapi.h"
+#include "atime_eventlist.h"
 #include "atime_papi.h"
 //#define DEBUG
 
 void help(char* appname){
-    printf("%s [-e EVENTDEFFILE] FILENAME [ARGUMENTS]\n", appname);
+    printf("%s [-e EVENTFILE] [-d EVENTDEFFILE] FILENAME [ARGUMENTS]\n", appname);
     printf("Executes and measures the binary FILENAME using the PAPI library.\n");
-    printf("  -e EVENTDEFFILE\t\tEvent definition file\n");
+    printf("  -e EVENTFILE\t\tLists events to be used\n");
+    printf("  -d EVENTDEFFILE\t\tEvent definition file\n");
 }
 
+char* optional_definition_file = NULL;
 char* optional_events_file = NULL;
 
 int main(int argc, char *argv[]) {
@@ -24,10 +27,13 @@ int main(int argc, char *argv[]) {
 
     int c = 0;
 
-    while((c = getopt (argc, argv, "+e:h?")) != -1) {
+    while((c = getopt (argc, argv, "+e:d:h?")) != -1) {
         switch(c) {
             case 'e':
                 optional_events_file = optarg;
+            break;
+            case 'd':
+                optional_definition_file = optarg;
             break;
             case 'h':
             case '?':
@@ -44,6 +50,9 @@ int main(int argc, char *argv[]) {
         help(argv[0]);
         exit(EXIT_FAILURE);
     }
+
+    printf("Event list file: %s\n", optional_events_file);
+    printf("Event definition file: %s\n", optional_definition_file);
 
     // prepare program arguments
     program_argc = argc-optind;
@@ -62,7 +71,7 @@ int main(int argc, char *argv[]) {
 
 
     // run the program
-    pid_t parent_pid = getpid();
+    //pid_t parent_pid = getpid();
     pid_t child_pid;
 
     child_pid = fork();
@@ -92,7 +101,7 @@ int main(int argc, char *argv[]) {
         retv = nanosleep(&tosleep, &tosleep);
     } while(retv != 0);
 
-    papi_init(optional_events_file);
+    papi_init(optional_definition_file, optional_events_file);
 
     papi_start();
 
@@ -108,7 +117,7 @@ int main(int argc, char *argv[]) {
 
     printf("done\n");
  
-
+    free(program_argv);
 
     return EXIT_SUCCESS;
 }

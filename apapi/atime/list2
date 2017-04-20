@@ -1,0 +1,17 @@
+rapl:::PACKAGE_ENERGY:PACKAGE0
+rapl:::PACKAGE_ENERGY:PACKAGE1
+rapl:::DRAM_ENERGY:PACKAGE0
+rapl:::DRAM_ENERGY:PACKAGE1
+rapl:::PP0_ENERGY:PACKAGE0
+rapl:::PP0_ENERGY:PACKAGE1
+
+
+# foobar
+#nvml bla
+nvml:::Tesla_K20c:fan_speed
+nvml:::Tesla_K20c:total_memory
+nvml:::Tesla_K20c:allocated_memory
+nvml:::Tesla_K20c:power
+nvml:::Tesla_K20c:temperature
+
+

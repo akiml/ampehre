@@ -22,7 +22,7 @@ long long getcurrenttime() {
     return (long long)result.tv_sec* 1000000000LL + (long long)result.tv_nsec;
 }
 
-int APAPI_create_eventset_list(char **names, int cidx, int *EventSet, int *num_events){
+int APAPI_create_eventset_list(char **events, int cidx, int *EventSet, int *num_events){
 
     int retv;
 
@@ -32,12 +32,12 @@ int APAPI_create_eventset_list(char **names, int cidx, int *EventSet, int *num_e
         return retv;
     int eventIx;
     *num_events = 0;
-    for(eventIx = 0; names[eventIx] != NULL; eventIx++) {
-        retv = PAPI_add_named_event(*EventSet, names[eventIx]);
+    for(eventIx = 0; events[eventIx] != NULL; eventIx++) {
+        retv = PAPI_add_named_event(*EventSet, events[eventIx]);
         if (retv == PAPI_OK) {
             (*num_events)++;
         } else {
-            printf("Failed to add event \"%s\" to EventSet.\n", names[eventIx]);
+            printf("Failed to add event \"%s\" to EventSet.\n", events[eventIx]);
         }
     }
 
@@ -609,6 +609,7 @@ int APAPI_destroy_apapi_eventset(struct apapi_eventset **set) {
     free(oldset->values0);
     free(oldset->values_op1);
     free(oldset->values0_stats);
+    free(oldset->event_ops);
     free(oldset);
     *set = NULL;
     return PAPI_OK;

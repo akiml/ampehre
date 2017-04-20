@@ -93,7 +93,7 @@ struct apapi_timer {
 
 int APAPI_init();
 
-int APAPI_create_eventset_list(char **names, int cidx, int *EventSet, int *num_events);
+int APAPI_create_eventset_list(char **events, int cidx, int *EventSet, int *num_events);
 
 int APAPI_create_eventset_cmp_all(int cidx, int *EventSet, int *num_events);
 
