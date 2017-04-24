@@ -1,1 +1,0 @@
-/usr/bin/c++       CMakeFiles/msm_srv.dir/main.cpp.o  -o msm_srv  -L/home/aelali/ampehre/utilities/msmonitor_cs/.. -rdynamic libserver.so -lmsmonitor_data -Wl,-rpath,/home/aelali/ampehre/utilities/msmonitor_cs/..:/home/aelali/ampehre/utilities/msmonitor_cs/server: 

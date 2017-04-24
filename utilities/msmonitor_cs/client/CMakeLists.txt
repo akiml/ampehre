@@ -32,8 +32,8 @@ set(DATA_SOURCES
 
 add_library(client SHARED ${DATA_SOURCES})
 
-add_executable(msm_client_test main.cpp)
-target_link_libraries(msm_client_test client)
+#add_executable(msm_client_test main.cpp)
+#target_link_libraries(msm_client_test client)
 
 
 
