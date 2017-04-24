@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qmsmsystemoverview.ui'
 **
-** Created: Mon Apr 17 12:36:00 2017
+** Created: Mon Apr 24 14:40:04 2017
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -80,7 +80,7 @@ public:
     {
         if (QMSMSystemOverview->objectName().isEmpty())
             QMSMSystemOverview->setObjectName(QString::fromUtf8("QMSMSystemOverview"));
-        QMSMSystemOverview->resize(960, 770);
+        QMSMSystemOverview->resize(960, 794);
         verticalLayout_5 = new QVBoxLayout(QMSMSystemOverview);
         verticalLayout_5->setObjectName(QString::fromUtf8("verticalLayout_5"));
         groupBox_cpu = new QGroupBox(QMSMSystemOverview);
@@ -321,10 +321,10 @@ public:
 
     void retranslateUi(QWidget *QMSMSystemOverview)
     {
-        QMSMSystemOverview->setWindowTitle(QApplication::translate("QMSMSystemOverview", "Form", 0, QApplication::UnicodeUTF8));
+        QMSMSystemOverview->setWindowTitle(QApplication::translate("QMSMSystemOverview", "System Overview", 0, QApplication::UnicodeUTF8));
         groupBox_cpu->setTitle(QApplication::translate("QMSMSystemOverview", "CPU", 0, QApplication::UnicodeUTF8));
-        groupBox_cpu_util->setTitle(QApplication::translate("QMSMSystemOverview", "Utilization", 0, QApplication::UnicodeUTF8));
-        groupBox_cpu_temp->setTitle(QApplication::translate("QMSMSystemOverview", "Temperature", 0, QApplication::UnicodeUTF8));
+        groupBox_cpu_util->setTitle(QApplication::translate("QMSMSystemOverview", "Utilization (%)", 0, QApplication::UnicodeUTF8));
+        groupBox_cpu_temp->setTitle(QApplication::translate("QMSMSystemOverview", "Temperature (\302\260C)", 0, QApplication::UnicodeUTF8));
         textEdit_cpu_temp0->setHtml(QApplication::translate("QMSMSystemOverview", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
@@ -336,7 +336,7 @@ public:
 "</style></head><body style=\" font-family:'Cantarell'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">CPU 1</p></body></html>", 0, QApplication::UnicodeUTF8));
         groupBox_gpu->setTitle(QApplication::translate("QMSMSystemOverview", "GPU", 0, QApplication::UnicodeUTF8));
-        groupBox_gpu_util->setTitle(QApplication::translate("QMSMSystemOverview", "Utilization", 0, QApplication::UnicodeUTF8));
+        groupBox_gpu_util->setTitle(QApplication::translate("QMSMSystemOverview", "Utilization (%)", 0, QApplication::UnicodeUTF8));
         textEdit_gpu_core->setHtml(QApplication::translate("QMSMSystemOverview", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
@@ -347,14 +347,14 @@ public:
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:'Cantarell'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Memory</p></body></html>", 0, QApplication::UnicodeUTF8));
-        groupBox_gpu_temp->setTitle(QApplication::translate("QMSMSystemOverview", "Temperature", 0, QApplication::UnicodeUTF8));
+        groupBox_gpu_temp->setTitle(QApplication::translate("QMSMSystemOverview", "Temperature (\302\260C)", 0, QApplication::UnicodeUTF8));
         QTableWidgetItem *___qtablewidgetitem = tableWidget_gpu->horizontalHeaderItem(0);
         ___qtablewidgetitem->setText(QApplication::translate("QMSMSystemOverview", "PID", 0, QApplication::UnicodeUTF8));
         QTableWidgetItem *___qtablewidgetitem1 = tableWidget_gpu->horizontalHeaderItem(1);
         ___qtablewidgetitem1->setText(QApplication::translate("QMSMSystemOverview", "Name", 0, QApplication::UnicodeUTF8));
         groupBox_fpga->setTitle(QApplication::translate("QMSMSystemOverview", "FPGA", 0, QApplication::UnicodeUTF8));
-        groupBox_fpga_util->setTitle(QApplication::translate("QMSMSystemOverview", "Utilization", 0, QApplication::UnicodeUTF8));
-        groupBox_fpga_temp->setTitle(QApplication::translate("QMSMSystemOverview", "Temperature", 0, QApplication::UnicodeUTF8));
+        groupBox_fpga_util->setTitle(QApplication::translate("QMSMSystemOverview", "Utilization (%)", 0, QApplication::UnicodeUTF8));
+        groupBox_fpga_temp->setTitle(QApplication::translate("QMSMSystemOverview", "Temperature (\302\260C)", 0, QApplication::UnicodeUTF8));
         textEdit_fpga_comp->setHtml(QApplication::translate("QMSMSystemOverview", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
@@ -372,8 +372,8 @@ public:
         QTableWidgetItem *___qtablewidgetitem4 = tableWidget_fpga->horizontalHeaderItem(2);
         ___qtablewidgetitem4->setText(QApplication::translate("QMSMSystemOverview", "User", 0, QApplication::UnicodeUTF8));
         groupBox_mic->setTitle(QApplication::translate("QMSMSystemOverview", "MIC", 0, QApplication::UnicodeUTF8));
-        groupBox_mic_util->setTitle(QApplication::translate("QMSMSystemOverview", "Utilization", 0, QApplication::UnicodeUTF8));
-        groupBox_mic_temp->setTitle(QApplication::translate("QMSMSystemOverview", "Temperature", 0, QApplication::UnicodeUTF8));
+        groupBox_mic_util->setTitle(QApplication::translate("QMSMSystemOverview", "Utilization (%)", 0, QApplication::UnicodeUTF8));
+        groupBox_mic_temp->setTitle(QApplication::translate("QMSMSystemOverview", "Temperature (\302\260C)", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };

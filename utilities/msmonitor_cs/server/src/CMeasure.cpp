@@ -22,7 +22,7 @@
 
 
 CMeasure::CMeasure():
-	mHandler(NData::CDataHandler())
+	mpHandler(new NData::CDataHandler())
 {
 	//nothing to do
 }
@@ -34,22 +34,22 @@ CMeasure::~CMeasure()
 
 
 void CMeasure::start() {
-	mHandler.startCollectData();
+	mpHandler->startCollectData();
 }
 
 
 void CMeasure::stop() {
-	mHandler.stopCollectData();
+	mpHandler->stopCollectData();
 }
 
 NData::CDataSettings& CMeasure::getSettings(){
-	return mHandler.getSettings();
+	return mpHandler->getSettings();
 }
 
 void CMeasure::getProcesses(std::vector< std::string >& processes) 
 {
 	processes.clear();
-	NData::CDataMeasurement &mData = mHandler.getMeasurement();
+	NData::CDataMeasurement &mData = mpHandler->getMeasurement();
 	
 	std::stringstream ss;
 	std::string s;
@@ -85,7 +85,7 @@ void CMeasure::getProcesses(std::vector< std::string >& processes)
 void CMeasure::getValues(std::vector<double>& sol, std::vector<int>& req){
 	sol.clear();
 	
-	NData::CDataMeasurement &mData = mHandler.getMeasurement();
+	NData::CDataMeasurement &mData = mpHandler->getMeasurement();
 	for(unsigned int i = 0; i < req.size(); i++) {
 		switch(req[i]){
 			case X:{
@@ -117,16 +117,10 @@ void CMeasure::getValues(std::vector<double>& sol, std::vector<int>& req){
 				break;
 			}
 			case YTempCpu0:{
-				uint32_t x = mData.mpYTempCpu0->getLast();
-				//x = x >> 32;
-				std::cout << "!!!!!!!!!!!!!tmpCpu0: "<< x <<std::endl;
 				sol.push_back(mData.mpYTempCpu0->getLast());
 				break;
 			}
 			case YTempCpu1:{
-				uint32_t x = mData.mpYTempCpu1->getLast();
-				//x = x >> 32;
-				std::cout << "!!!!!!!!!!!!!tmpCpu1: "<< x <<std::endl;
 				sol.push_back(mData.mpYTempCpu1->getLast());
 				break;
 			}
@@ -175,7 +169,6 @@ void CMeasure::getValues(std::vector<double>& sol, std::vector<int>& req){
 				break;
 			}
 			case YUtilCpu:{
-				std::cout << "utilCpu: "<< (int32_t)mData.mpYUtilCpu->getLast() <<std::endl;
 				sol.push_back(mData.mpYUtilCpu->getLast());
 				break;
 			}

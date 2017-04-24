@@ -61,9 +61,7 @@ void CServer::controlClients()
 		if(mTimesForClients[i] >= 0)
 		{
 			dur = (std::clock() - mTimesForClients[i]) / (double) CLOCKS_PER_SEC;
-			std::cout << "client: " << i << ", with duration: " << dur << ", clock: " <<std::clock() << std::endl;
-			printf("time client: %f\n", (float)mTimesForClients[i]);
-			if(dur > 2)
+			if(dur > 1)
 			{
 				std::cout << "exceeded maximal interval!" << std::endl;
 				terminate(i);

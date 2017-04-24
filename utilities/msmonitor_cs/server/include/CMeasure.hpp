@@ -43,7 +43,7 @@ public:
 	NData::CDataSettings& getSettings();
 	
 private:
-	NData::CDataHandler mHandler;
+	NData::CDataHandler* mpHandler;
 
 
 };

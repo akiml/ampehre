@@ -135,7 +135,8 @@ int CProtocolC::getData(void* msg, int size, std::vector< double >& values, std:
     int i = 0;
 
  
-    while(k < size+msg && i < 29){
+    while(k < size+msg && i < 29)
+    {
 		memcpy(&val, k, sizeof(double));
 		std::cout << val << std::endl;
 		values.push_back(val);
@@ -148,8 +149,8 @@ int CProtocolC::getData(void* msg, int size, std::vector< double >& values, std:
     {
         while(cptr < size+(char*)msg && *cptr != '\r')
         {
-            cptr++;
             tmp += *cptr;
+            cptr++;
         }
         v.push_back(tmp);
         std::cout << tmp <<std::endl;
