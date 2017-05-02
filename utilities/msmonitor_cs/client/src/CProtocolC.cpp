@@ -20,12 +20,15 @@
 
 #include "CProtocolC.hpp"
 
-CProtocolC::CProtocolC(std::string version) {
-	mVersion = version;
+CProtocolC::CProtocolC(std::string version) :
+	CProtocol(version)
+	{
+	
+	// nothing todo
 }
 
 CProtocolC::~CProtocolC() {
-
+	// nothing todo
 }
 
 int CProtocolC::parseMsg(void* msg, unsigned int length, int& reg, int& tsk, std::vector< double >& values, std::vector<std::string>& values_pid){

@@ -18,4 +18,4 @@
 include_directories(server/include)
 include_directories(include)
 
-add_subdirectory(server)
+#add_subdirectory(server)

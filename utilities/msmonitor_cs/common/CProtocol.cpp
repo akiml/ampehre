@@ -23,15 +23,9 @@ CProtocol::CProtocol(std::string version) {
 	mVersion = version;
 }
 
-CProtocol::CProtocol() {
-
-}
-
-
 CProtocol::~CProtocol() {
-
+	// nothing todo
 }
-
 
 uint64_t CProtocol::createDataCode(std::vector<int>& values){
 	uint64_t sol = 0;
@@ -50,18 +44,19 @@ int CProtocol::checkCmdVersion(std::string msg){
 	
 	if(found != std::string::npos){
 		std::string subs = msg.substr(0, found);
-		if(subs == "DATA_REQ"){
+		if (subs == "DATA_REQ"){
 			cmd = DATA_REQ;
-		}else if(subs== "CLIENT_REG"){
+		} else if (subs== "CLIENT_REG") {
 			cmd = CLIENT_REG;
-		}else if(subs == "DATA_RES"){
+		} else if (subs == "DATA_RES") {
 			cmd = DATA_RES;
-		}else if(subs == "TERM_COM"){
+		} else if (subs == "TERM_COM") {
 			cmd = TERM_COM;
-        }else if(subs == "SET_FREQ"){
-            cmd = SET_FREQ;
-        }else
+		} else if (subs == "SET_FREQ") {
+			cmd = SET_FREQ;
+		} else {
 			return -1;
+		}
 		
 		std::string sub2 = msg.substr(found+3);
 		if(sub2 == ver_str){
@@ -76,8 +71,6 @@ int CProtocol::checkCmdVersion(std::string msg){
 		return -1;
 	}
 }
-
-
 
 int CProtocol::setReg(std::string msg, int& registry) {
 	std::size_t found = msg.find("REG: ");
@@ -95,8 +88,8 @@ int CProtocol::setReg(std::string msg, int& registry) {
 
 void CProtocol::addData(std::string& msg, double value) {
 	std::ostringstream ss;
-	ss.str("");			//clear the stream
-		
+	ss.str(""); //clear the stream
+	
 	ss << value;
 	msg.append(ss.str());
 	
@@ -118,7 +111,7 @@ void CProtocol::extractData(std::vector< int >& sol, uint64_t dataCode) {
 
 void CProtocol::addCmdVersion(std::string& msg, int cmd, std::string version){
 	msg = "";
-		switch(cmd){
+	switch(cmd){
 		case CLIENT_REG:{
 			msg.append("CLIENT_REG");
 			break;
@@ -135,16 +128,12 @@ void CProtocol::addCmdVersion(std::string& msg, int cmd, std::string version){
 			msg.append("TERM_COM");
 			break;
 		}
-        case SET_FREQ:{
-            msg.append("SET_FREQ");
-            break;
-        }
+		case SET_FREQ:{
+			msg.append("SET_FREQ");
+			break;
+		}
 	}
 	msg.append(" / MSMP/");
 	msg.append(version);
 	msg.append("\r\n");
 }
-
-
-
-

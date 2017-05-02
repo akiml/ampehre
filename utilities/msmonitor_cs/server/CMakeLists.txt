@@ -17,10 +17,10 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-include_directories(include/)
-include_directories(../../../include/)
-include_directories(../include/)
-include_directories(../../msmonitor/data/)
+include_directories(include)
+include_directories(../../../include)
+include_directories(../include)
+include_directories(../../msmonitor/data)
 
 set(DATA_SOURCES
 	src/CComS.cpp

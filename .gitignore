@@ -16,5 +16,5 @@ build
 *.tex.backup
 *.kilepr
 *.toc
-utilities/msmonitor_cs/client/msmonitor/build
-utilities/msmonitor_cs/client/msmonitor/Makefile
+utilities/msmonitor_cs/client/build
+utilities/msmonitor_cs/client/Makefile
