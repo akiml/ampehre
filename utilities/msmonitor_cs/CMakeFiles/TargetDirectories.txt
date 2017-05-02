@@ -1,4 +1,0 @@
-/home/aelali/ampehre/utilities/msmonitor_cs/client/CMakeFiles/client.dir
-/home/aelali/ampehre/utilities/msmonitor_cs/client/CMakeFiles/msm_client_test.dir
-/home/aelali/ampehre/utilities/msmonitor_cs/server/CMakeFiles/msm_srv.dir
-/home/aelali/ampehre/utilities/msmonitor_cs/server/CMakeFiles/server.dir

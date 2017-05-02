@@ -15,19 +15,7 @@
 # version: 0.8.0 - extend libmeasure and add application for online monitoring
 #
 
-cmake_minimum_required(VERSION 2.6)
+include_directories(server/include)
+include_directories(include)
 
-#project(msmonitor)
-
-#set(CMAKE_C_FLAGS "-O3 -Wall")
-#set(CMAKE_CXX_FLAGS "-O3 -Wall")
-
-include_directories(server/include/)
-include_directories(client/include/)
-include_directories(include/)
-
-link_directories(${CMAKE_BINARY_DIR}/..)
-
-add_subdirectory(client)
 add_subdirectory(server)
-#add_subdirectory(include)
