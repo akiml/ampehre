@@ -33,11 +33,11 @@ void ampehre_init(void) {
 	ml = ms_alloc_measurement(ms);
 	
 	// Set timer for ml. Measurements perform every (10ms/30ms)*10 = 100ms/300ms.
-	ms_set_timer(ml, CPU   , 0,  10000000, 10);
-	ms_set_timer(ml, GPU   , 0,  30000000, 10);
-	ms_set_timer(ml, FPGA  , 0,  30000000, 10);
-	ms_set_timer(ml, SYSTEM, 0, 100000000, 10);
-	ms_set_timer(ml, MIC   , 0,  30000000, 10);
+	ms_set_timer(ml, CPU   , 0,  30000000, 1);
+	ms_set_timer(ml, GPU   , 0,  40000000, 1);
+	ms_set_timer(ml, FPGA  , 0,  50000000, 1);
+	ms_set_timer(ml, SYSTEM, 0, 100000000, 1);
+	ms_set_timer(ml, MIC   , 0, 100000000, 1);
 	ms_init_measurement(ms, ml, CPU|GPU|FPGA);
 }
 
