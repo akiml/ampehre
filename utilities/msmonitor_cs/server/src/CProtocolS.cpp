@@ -20,11 +20,16 @@
 
 #include "CProtocolS.hpp"
 
-CProtocolS::CProtocolS(std::string version){
-	mVersion = version;
+CProtocolS::CProtocolS(std::string version) :
+	CProtocol(version)
+	{
+	
+	// nothing todo
 }
 
-CProtocolS::~CProtocolS(){}
+CProtocolS::~CProtocolS() {
+	// nothing todo
+}
 
 int CProtocolS::parseMsg(char* msg, const unsigned int length, int& tsk, int& reg, uint64_t& data){
 	unsigned int i = 0;

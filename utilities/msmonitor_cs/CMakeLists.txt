@@ -15,7 +15,4 @@
 # version: 0.8.0 - extend libmeasure and add application for online monitoring
 #
 
-include_directories(server/include)
-include_directories(include)
-
-#add_subdirectory(server)
+add_subdirectory(server)

@@ -23,7 +23,7 @@ BASE_DIR=/usr/ampehre/
 GCC=/usr/bin/gcc-4.6
 GXX=/usr/bin/g++-4.6
 
-.PHONY: all install debug clean driver driver_install gaussblur gaussblur_install correlation correlation_install mic_start docs
+.PHONY: all install debug clean driver driver_install gaussblur gaussblur_install correlation correlation_install mic_start docs client client_clean
 
 all:
 	mkdir -p build
@@ -76,3 +76,9 @@ correlation_install:
 
 mic_start:
 	sudo service mpss restart
+
+client:
+	cd utilities/msmonitor_cs/client && qmake-qt4 PREFIX=/usr/local/bin msmonitor.pro && make
+
+clean_client:
+	cd utilities/msmonitor_cs/client && rm -rf build Makefile
