@@ -79,8 +79,8 @@ int CComC::communicate(const char* msg, void* reply, int& length) {
 		std::string str((char*)reply, length);
 		std::size_t found = 2; 
 		found = str.find("DATA_RES /", 0);
-		if(found != 0)
-			std::cout << str;
+//		if(found != 0)
+//			std::cout << str;
 	}
 
 	return 0;

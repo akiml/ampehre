@@ -127,12 +127,14 @@ void CConfig::exportPlotToCSV(QMSMplot *plot)
         break;
     case POWER:
         txt = QString("TimeStamp;CPU0;CPU1;GPU0;FPGA0;MIC0;SYSTEM;") + "\n";
+        txt += QString("[s];[W];[W];[W];[W];[W];[W];") + "\n";
         break;
     case UTIL:
         txt = QString("TimeStamp;CPU0;GPU0;GPU1;FPGA0;MIC0;") + "\n";
         break;
     case TEMP:
         txt = QString("TimeStamp;CPU0;CPU1;GPU0;FPGA0;FPGA1;MIC0;SYSTEM") + "\n";
+        txt += QString("[s];[C];[C];[C];[C];[C];[C];[C]") + "\n";
         break;
     case CLOCK:
         txt = QString("TimeStamp;CPU0;CPU1;GPU0;GPU1;MIC0;MIC1;") + "\n";

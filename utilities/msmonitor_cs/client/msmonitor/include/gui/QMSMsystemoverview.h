@@ -23,7 +23,7 @@
 #ifndef QMSMSYSTEMOVERVIEW_H
 #define QMSMSYSTEMOVERVIEW_H
 
-#include <QWidget>
+#include <QMdiSubWindow>
 #include "gui/QMSMutilplot.h"
 #include "gui/QMSMtemperatureplot.h"
 
@@ -31,7 +31,7 @@ namespace Ui {
 class QMSMSystemOverview;
 }
 
-class QMSMSystemOverview : public QWidget
+class QMSMSystemOverview : public QMdiSubWindow
 {
     Q_OBJECT
 

@@ -70,6 +70,8 @@ MainWindow::MainWindow(QWidget *parent) :
     addPlot((QMSMplot*)mpTempplot, subwTemp);
     addPlot((QMSMplot*)mpMemoryplot, subwMemory);
     addPlot((QMSMplot*)mpUtilplot, subwUtil);
+    ui->mdiArea->addSubWindow(mpSystemOverview);
+    mpSystemOverview->hide();
 
     subwSettings->setWidget(mpSettings);
     ui->mdiArea->addSubWindow(subwSettings);

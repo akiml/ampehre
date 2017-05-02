@@ -23,9 +23,10 @@
 #include "ui_qmsmsystemoverview.h"
 
 QMSMSystemOverview::QMSMSystemOverview(QWidget *parent) :
-    QWidget(parent),
+    QMdiSubWindow(parent),
     ui(new Ui::QMSMSystemOverview)
 {
+    delete this->layout();
     ui->setupUi(this);
     ui->tableWidget_fpga->horizontalHeader()->setStretchLastSection(true);
     ui->tableWidget_gpu->horizontalHeader()->setStretchLastSection(true);
