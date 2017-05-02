@@ -11,7 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = msmonitor
 TEMPLATE = app
 
-INCLUDEPATH += $$PWD/include/
+INCLUDEPATH += $$PWD/include/ \
+	    /usr/local/qwt-6.1.3/include/
 
 SOURCES += src/main.cpp \
         src/CClient.cpp \

@@ -1,4 +1,4 @@
-file(REMOVE_RECURSE
+FILE(REMOVE_RECURSE
   "CMakeFiles/client.dir/msmonitor/src/CComC.cpp.o"
   "CMakeFiles/client.dir/msmonitor/src/CClient.cpp.o"
   "CMakeFiles/client.dir/msmonitor/src/CProtocolC.cpp.o"
@@ -9,6 +9,6 @@ file(REMOVE_RECURSE
 )
 
 # Per-language clean rules from dependency scanning.
-foreach(lang CXX)
-  include(CMakeFiles/client.dir/cmake_clean_${lang}.cmake OPTIONAL)
-endforeach()
+FOREACH(lang CXX)
+  INCLUDE(CMakeFiles/client.dir/cmake_clean_${lang}.cmake OPTIONAL)
+ENDFOREACH(lang)
