@@ -80,10 +80,20 @@
 #define MAXIMUM_POWER_SHIFT          32
 #define MAXIMUM_TIME_WINDOW_SHIFT    48
 
+/* RAPL TEMPERATURE */
+/*temperature of a processor core (a core of a CPU) */
+#define IA32_THERM_STATUS           0x19C
+/* temperature of a processor package */
+#define IA32_PACKAGE_THERM_STATUS   0x1B1
+/*minimum TCC activation temperature
+ * the temperature PROCHOT# bus signal rises */
+#define MSR_TEMPERATURE_TARGET      0x1A2
+
 
 typedef struct _rapl_register
 {
 	unsigned int selector;
+	unsigned int package;
 } _rapl_register_t;
 
 typedef struct _rapl_native_event_entry
@@ -136,6 +146,7 @@ static int num_packages=0,num_cpus=0;
 
 int power_divisor,time_divisor;
 int cpu_energy_divisor,dram_energy_divisor;
+uint32_t *package_temperature_targets = NULL;
 
 #define PACKAGE_ENERGY      	0
 #define PACKAGE_THERMAL     	1
@@ -148,6 +159,8 @@ int cpu_energy_divisor,dram_energy_divisor;
 #define PACKAGE_MAXIMUM_CNT     8
 #define PACKAGE_TIME_WINDOW_CNT 9
 #define DRAM_ENERGY		10
+#define PACKAGE_TEMPERATURE		11
+#define PACKAGE_TEMPERATURE_CNT	12
 
 /***************************************************************************/
 /******  BEGIN FUNCTIONS  USED INTERNALLY SPECIFIC TO THIS COMPONENT *******/
@@ -256,6 +269,14 @@ static long long convert_rapl_energy(int index, long long value) {
       return_val.ll = ((value>>MAXIMUM_TIME_WINDOW_SHIFT)&POWER_INFO_UNIT_MASK);
    }
 
+   if (rapl_native_events[index].type==PACKAGE_TEMPERATURE) {
+		return_val.ll = package_temperature_targets[rapl_native_events[index].resources.package] - ((value>>16) & 0x7f);
+   }
+
+   if (rapl_native_events[index].type==PACKAGE_TEMPERATURE_CNT) {
+		return_val.ll = value;
+   }
+
    return return_val.ll;
 }
 
@@ -312,11 +333,13 @@ _rapl_init_component( int cidx )
      int nr_cpus = get_kernel_nr_cpus();
      int packages[nr_cpus];
      int cpu_to_use[nr_cpus];
+	 int cpu_package[nr_cpus];
 
      /* Fill with sentinel values */
      for (i=0; i<nr_cpus; ++i) {
        packages[i] = -1;
        cpu_to_use[i] = -1;
+	   cpu_package[i] = -1;
      }
 
 
@@ -442,10 +465,11 @@ _rapl_init_component( int cidx )
        if ((package >= 0) && (package < nr_cpus)) {
          if (packages[package] == -1) {
            SUBDBG("Found package %d out of total %d\n",package,num_packages);
-	   packages[package]=package;
-	   cpu_to_use[package]=j;
-	   num_packages++;
+	 	   packages[package]=package;
+		   cpu_to_use[package]=j;
+		   num_packages++;
          }
+		 cpu_package[j] = package;
        } else {
 	 SUBDBG("Package outside of allowed range\n");
 	 strncpy(_rapl_vector.cmp_info.disabled_reason,
@@ -510,6 +534,15 @@ _rapl_init_component( int cidx )
      SUBDBG("DRAM Energy units = %.8fJ\n",1.0/dram_energy_divisor);
      SUBDBG("Time units = %.8fs\n",1.0/time_divisor);
 
+	/* find out temperature target for each packuint32_t); */
+	 package_temperature_targets = papi_calloc(sizeof(uint32_t), num_packages);
+     for(j=0;j<num_packages;j++) {
+	   fd = open_fd(cpu_to_use[j]);
+	   long long target_raw;
+	   target_raw = read_msr(fd,MSR_TEMPERATURE_TARGET);
+	   package_temperature_targets[j] = (target_raw>>16) & 0xff;
+ 	 }
+
      /* Allocate space for events */
      /* Include room for both counts and scaled values */
 
@@ -517,7 +550,10 @@ _rapl_init_component( int cidx )
                  (pp0_avail*num_packages) +
                  (pp1_avail*num_packages) +
                  (dram_avail*num_packages) +
-                 (4*num_packages)) * 2;
+                 (4*num_packages) +
+				 num_packages +						// package temperature
+				 num_cpus							// cpu temperature
+				 ) * 2;
 
      rapl_native_events = (_rapl_native_event_entry_t*)
           papi_calloc(sizeof(_rapl_native_event_entry_t),num_events);
@@ -536,6 +572,7 @@ _rapl_init_component( int cidx )
 		rapl_native_events[i].fd_offset=cpu_to_use[j];
 		rapl_native_events[i].msr=MSR_PKG_POWER_INFO;
 		rapl_native_events[i].resources.selector = i + 1;
+		rapl_native_events[i].resources.package = j;
 		rapl_native_events[i].type=PACKAGE_THERMAL_CNT;
 		rapl_native_events[i].return_type=PAPI_DATATYPE_UINT64;
 
@@ -547,6 +584,7 @@ _rapl_init_component( int cidx )
 		rapl_native_events[k].fd_offset=cpu_to_use[j];
 		rapl_native_events[k].msr=MSR_PKG_POWER_INFO;
 		rapl_native_events[k].resources.selector = k + 1;
+		rapl_native_events[k].resources.package = j;
 		rapl_native_events[k].type=PACKAGE_THERMAL;
 		rapl_native_events[k].return_type=PAPI_DATATYPE_FP64;
 
@@ -562,6 +600,7 @@ _rapl_init_component( int cidx )
 		rapl_native_events[i].fd_offset=cpu_to_use[j];
 		rapl_native_events[i].msr=MSR_PKG_POWER_INFO;
 		rapl_native_events[i].resources.selector = i + 1;
+		rapl_native_events[i].resources.package = j;
 		rapl_native_events[i].type=PACKAGE_MINIMUM_CNT;
 		rapl_native_events[i].return_type=PAPI_DATATYPE_UINT64;
 
@@ -573,6 +612,7 @@ _rapl_init_component( int cidx )
 		rapl_native_events[k].fd_offset=cpu_to_use[j];
 		rapl_native_events[k].msr=MSR_PKG_POWER_INFO;
 		rapl_native_events[k].resources.selector = k + 1;
+		rapl_native_events[k].resources.package = j;
 		rapl_native_events[k].type=PACKAGE_MINIMUM;
 		rapl_native_events[k].return_type=PAPI_DATATYPE_FP64;
 
@@ -588,6 +628,7 @@ _rapl_init_component( int cidx )
 		rapl_native_events[i].fd_offset=cpu_to_use[j];
 		rapl_native_events[i].msr=MSR_PKG_POWER_INFO;
 		rapl_native_events[i].resources.selector = i + 1;
+		rapl_native_events[i].resources.package = j;
 		rapl_native_events[i].type=PACKAGE_MAXIMUM_CNT;
 		rapl_native_events[i].return_type=PAPI_DATATYPE_UINT64;
 
@@ -599,6 +640,7 @@ _rapl_init_component( int cidx )
 		rapl_native_events[k].fd_offset=cpu_to_use[j];
 		rapl_native_events[k].msr=MSR_PKG_POWER_INFO;
 		rapl_native_events[k].resources.selector = k + 1;
+		rapl_native_events[k].resources.package = j;
 		rapl_native_events[k].type=PACKAGE_MAXIMUM;
 		rapl_native_events[k].return_type=PAPI_DATATYPE_FP64;
 
@@ -614,6 +656,7 @@ _rapl_init_component( int cidx )
 		rapl_native_events[i].fd_offset=cpu_to_use[j];
 		rapl_native_events[i].msr=MSR_PKG_POWER_INFO;
 		rapl_native_events[i].resources.selector = i + 1;
+		rapl_native_events[i].resources.package = j;
 		rapl_native_events[i].type=PACKAGE_TIME_WINDOW_CNT;
 		rapl_native_events[i].return_type=PAPI_DATATYPE_UINT64;
 
@@ -625,6 +668,7 @@ _rapl_init_component( int cidx )
 		rapl_native_events[k].fd_offset=cpu_to_use[j];
 		rapl_native_events[k].msr=MSR_PKG_POWER_INFO;
 		rapl_native_events[k].resources.selector = k + 1;
+		rapl_native_events[k].resources.package = j;
 		rapl_native_events[k].type=PACKAGE_TIME_WINDOW;
 		rapl_native_events[k].return_type=PAPI_DATATYPE_FP64;
 
@@ -643,6 +687,7 @@ _rapl_init_component( int cidx )
 	   		rapl_native_events[i].fd_offset=cpu_to_use[j];
 	   		rapl_native_events[i].msr=MSR_PKG_ENERGY_STATUS;
 	   		rapl_native_events[i].resources.selector = i + 1;
+	   		rapl_native_events[i].resources.package = j;
 	   		rapl_native_events[i].type=PACKAGE_ENERGY_CNT;
 	   		rapl_native_events[i].return_type=PAPI_DATATYPE_UINT64;
 
@@ -654,6 +699,7 @@ _rapl_init_component( int cidx )
 	   		rapl_native_events[k].fd_offset=cpu_to_use[j];
 	   		rapl_native_events[k].msr=MSR_PKG_ENERGY_STATUS;
 	   		rapl_native_events[k].resources.selector = k + 1;
+	   		rapl_native_events[k].resources.package = j;
 	   		rapl_native_events[k].type=PACKAGE_ENERGY;
 	   		rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
 
@@ -671,6 +717,7 @@ _rapl_init_component( int cidx )
            	rapl_native_events[i].fd_offset=cpu_to_use[j];
 	   		rapl_native_events[i].msr=MSR_PP1_ENERGY_STATUS;
 	   		rapl_native_events[i].resources.selector = i + 1;
+	   		rapl_native_events[i].resources.package = j;
 	   		rapl_native_events[i].type=PACKAGE_ENERGY_CNT;
 	   		rapl_native_events[i].return_type=PAPI_DATATYPE_UINT64;
 
@@ -682,6 +729,7 @@ _rapl_init_component( int cidx )
            	rapl_native_events[k].fd_offset=cpu_to_use[j];
 	   		rapl_native_events[k].msr=MSR_PP1_ENERGY_STATUS;
 	   		rapl_native_events[k].resources.selector = k + 1;
+	   		rapl_native_events[k].resources.package = j;
 	   		rapl_native_events[k].type=PACKAGE_ENERGY;
 	   		rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
 
@@ -699,6 +747,7 @@ _rapl_init_component( int cidx )
 	   		rapl_native_events[i].fd_offset=cpu_to_use[j];
 	   		rapl_native_events[i].msr=MSR_DRAM_ENERGY_STATUS;
 	   		rapl_native_events[i].resources.selector = i + 1;
+	   		rapl_native_events[i].resources.package = j;
 	   		rapl_native_events[i].type=PACKAGE_ENERGY_CNT;
 	   		rapl_native_events[i].return_type=PAPI_DATATYPE_UINT64;
 
@@ -710,6 +759,7 @@ _rapl_init_component( int cidx )
 	   		rapl_native_events[k].fd_offset=cpu_to_use[j];
 	   		rapl_native_events[k].msr=MSR_DRAM_ENERGY_STATUS;
 	   		rapl_native_events[k].resources.selector = k + 1;
+	   		rapl_native_events[k].resources.package = j;
 	   		rapl_native_events[k].type=DRAM_ENERGY;
 	   		rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
 
@@ -727,6 +777,7 @@ _rapl_init_component( int cidx )
 	   		rapl_native_events[i].fd_offset=cpu_to_use[j];
 	   		rapl_native_events[i].msr=MSR_PP0_ENERGY_STATUS;
 	   		rapl_native_events[i].resources.selector = i + 1;
+	   		rapl_native_events[i].resources.package = j;
 	   		rapl_native_events[i].type=PACKAGE_ENERGY_CNT;
 	   		rapl_native_events[i].return_type=PAPI_DATATYPE_UINT64;
 
@@ -738,6 +789,7 @@ _rapl_init_component( int cidx )
 	   		rapl_native_events[k].fd_offset=cpu_to_use[j];
 	   		rapl_native_events[k].msr=MSR_PP0_ENERGY_STATUS;
 	   		rapl_native_events[k].resources.selector = k + 1;
+	   		rapl_native_events[k].resources.package = j;
 	   		rapl_native_events[k].type=PACKAGE_ENERGY;
 	   		rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
 
@@ -745,6 +797,66 @@ _rapl_init_component( int cidx )
 			k++;
 		}
      }
+
+	 // add package temperature events
+	 for(j=0;j<num_packages;j++) {
+			sprintf(rapl_native_events[i].name,
+		   		"THERM_STATUS_CNT:PACKAGE%d",j);
+	   		sprintf(rapl_native_events[i].description,
+		   		"Raw temperature register for package %d",j);
+	   		rapl_native_events[i].fd_offset=cpu_to_use[j];
+	   		rapl_native_events[i].msr=IA32_PACKAGE_THERM_STATUS;
+	   		rapl_native_events[i].resources.selector = i + 1;
+	   		rapl_native_events[i].resources.package = j;
+	   		rapl_native_events[i].type=PACKAGE_TEMPERATURE_CNT;
+	   		rapl_native_events[i].return_type=PAPI_DATATYPE_UINT64;
+
+			sprintf(rapl_native_events[k].name,
+		   		"THERM_STATUS:PACKAGE%d",j);
+	   		strncpy(rapl_native_events[k].units,"°C",PAPI_MIN_STR_LEN);
+	   		sprintf(rapl_native_events[k].description,
+		   		"Temperature for package %d",j);
+	   		rapl_native_events[k].fd_offset=cpu_to_use[j];
+	   		rapl_native_events[k].msr=IA32_PACKAGE_THERM_STATUS;
+	   		rapl_native_events[k].resources.selector = k + 1;
+	   		rapl_native_events[k].resources.package = j;
+	   		rapl_native_events[k].type=PACKAGE_TEMPERATURE;
+	   		rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+
+		 i++;
+		 k++;
+	 }
+
+	 // add cpu temperature events
+	 for(j=0;j<num_cpus;j++) {
+			sprintf(rapl_native_events[i].name,
+		   		"THERM_STATUS_CNT:CPU%d",j);
+	   		sprintf(rapl_native_events[i].description,
+		   		"Raw temperature register for cpu %d",j);
+	   		rapl_native_events[i].fd_offset=j;
+	   		rapl_native_events[i].msr=IA32_THERM_STATUS;
+	   		rapl_native_events[i].resources.selector = i + 1;
+	   		rapl_native_events[i].resources.package = cpu_package[j];
+	   		rapl_native_events[i].type=PACKAGE_TEMPERATURE_CNT;
+	   		rapl_native_events[i].return_type=PAPI_DATATYPE_UINT64;
+
+
+			sprintf(rapl_native_events[k].name,
+		   		"THERM_STATUS:CPU%d",j);
+	   		strncpy(rapl_native_events[k].units,"°C",PAPI_MIN_STR_LEN);
+	   		sprintf(rapl_native_events[k].description,
+		   		"Temperature for cpu %d",j);
+	   		rapl_native_events[k].fd_offset=j;
+	   		rapl_native_events[k].msr=IA32_THERM_STATUS;
+	   		rapl_native_events[k].resources.selector = k + 1;
+	   		rapl_native_events[k].resources.package = cpu_package[j];
+	   		rapl_native_events[k].type=PACKAGE_TEMPERATURE;
+	   		rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+
+		 i++;
+		 k++;
+	 }
+
 
      /* Export the total number of events available */
      _rapl_vector.cmp_info.num_native_events = num_events;
