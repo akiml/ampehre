@@ -37,25 +37,24 @@ void CComC::setAddr(std::string addr)
 
 int CComC::initSocket(int port) {
 	struct sockaddr_in dest;
-
+	
 	if ( (mSockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ){
 		std::cout << "error creating socket" << std::endl;
 		return -1;
 	}
-
+	
 	/*---Initialize server address/port struct---*/
 	bzero(&dest, sizeof(dest));
 	dest.sin_addr.s_addr = inet_addr(mAddress.c_str());
 	dest.sin_family = AF_INET;
 	dest.sin_port = htons(port);
-	    
+	
 	/*---Connect to server---*/
 	if ( connect(mSockfd, (struct sockaddr*)&dest, sizeof(dest)) < 0 ){
 		std::cout << "error connecting to server" << std::endl;
 		return -1;
 	}
 	
-
 	return 0;
 	
 }

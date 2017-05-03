@@ -24,7 +24,8 @@ TEMPLATE	= app
 
 INCLUDEPATH	+= $$PWD/include/ \
 		$$PWD/../common/ \
-		/usr/local/qwt-6.1.3/include/
+		/usr/local/qwt-6.1.3/include/ \
+		/usr/include/qwt/
 
 SOURCES	+= src/main.cpp \
 		src/CClient.cpp \

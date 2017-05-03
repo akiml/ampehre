@@ -22,12 +22,12 @@
 
 CConfig::CConfig(const QString path, QWidget* parent):
     parent(parent),
-    serverIP("131.234.58.31"),
+    serverIP("127.0.0.1"),
     serverPort(2900),
-    plot(2000),
+    plot(1000),
     gui(500),
     lineWidth(1),
-    maxDataRecord(60),
+    maxDataRecord(120),
     width(700),
     height(500),
     alpha(255),
