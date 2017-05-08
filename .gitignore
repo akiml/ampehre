@@ -18,3 +18,4 @@ build
 *.toc
 utilities/msmonitor_cs/client/build
 utilities/msmonitor_cs/client/Makefile
+*.pro.user*

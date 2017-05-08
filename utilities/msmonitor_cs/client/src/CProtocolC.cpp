@@ -117,7 +117,8 @@ std::string CProtocolC::freqMsg(int reg)
     return msg;
 }
 
-std::string CProtocolC::termMsg(int reg) {
+std::string CProtocolC::termMsg(int reg)
+{
 	std::string msg = "";
 	addCmdVersion(msg, TERM_COM, mVersion);
 	msg.append("REG: ");
@@ -138,6 +139,7 @@ int CProtocolC::getData(void* msg, int size, std::vector< double >& values, std:
     int i = 0;
 
  
+    //read static values first (minimum response)
     while(k < size+msg && i < 29)
     {
 		memcpy(&val, k, sizeof(double));
@@ -146,6 +148,7 @@ int CProtocolC::getData(void* msg, int size, std::vector< double >& values, std:
 		k+= sizeof(double)+2*sizeof(char);
         i++;
 	}
+    //read the rest (pid/user) + start stop of applications
     char* cptr = (char*)k;
     std::string tmp = "";
     while(cptr < size+(char*)msg)

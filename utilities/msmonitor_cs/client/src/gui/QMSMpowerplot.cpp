@@ -92,6 +92,7 @@ void QMSMPowerPlot::updateValues(std::vector<double> &values)
     {
         mTimevalues.erase(mTimevalues.begin());
         mCpu0values.erase(mCpu0values.begin());
+        mCpu1values.erase(mCpu1values.begin());
         mGpu0values.erase(mGpu0values.begin());
         mFpga0values.erase(mFpga0values.begin());
         mMic0values.erase(mMic0values.begin());
