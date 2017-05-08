@@ -41,7 +41,7 @@ CConfig::CConfig(const QString path, QWidget* parent):
 
 CConfig::~CConfig()
 {
-
+    std::cout << "delete config" << std::endl;
 }
 
 void CConfig::exportConfig()

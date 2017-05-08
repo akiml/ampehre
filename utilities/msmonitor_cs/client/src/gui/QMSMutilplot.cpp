@@ -30,6 +30,8 @@ QMSMUtilPlot::QMSMUtilPlot(int linewidth, int maxData, int width, int height, QW
 
 QMSMUtilPlot::~QMSMUtilPlot()
 {
+    std::cout << "delete utilPlot" << std::endl;
+
 }
 
 QWidget* QMSMUtilPlot::getPlot()

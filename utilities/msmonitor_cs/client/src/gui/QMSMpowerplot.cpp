@@ -28,6 +28,12 @@ QMSMPowerPlot::QMSMPowerPlot(int linewidth, int maxData, int width, int height, 
 
 QMSMPowerPlot::~QMSMPowerPlot()
 {
+    std::cout << "delete powerPlot" << std::endl;
+    delete mpCpu0;
+    delete mpCpu1;
+    delete mpFpga0;
+    delete mpMic0;
+    delete mpSystem;
 }
 
 QWidget* QMSMPowerPlot::getPlot()

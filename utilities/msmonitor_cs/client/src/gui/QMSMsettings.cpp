@@ -39,6 +39,7 @@ QMSMSettings::QMSMSettings(QWidget *parent) :
 
 QMSMSettings::~QMSMSettings()
 {
+    std::cout << "delete settings" << std::endl;
     delete ui;
 }
 

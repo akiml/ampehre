@@ -30,6 +30,7 @@ QMSMMemoryPlot::QMSMMemoryPlot(int linewidth, int maxData, int width, int height
 
 QMSMMemoryPlot::~QMSMMemoryPlot()
 {
+    std::cout << "delete memPlot" << std::endl;
 }
 
 QWidget* QMSMMemoryPlot::getPlot()

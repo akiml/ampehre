@@ -30,6 +30,7 @@ QMSMClockPlot::QMSMClockPlot(int linewidth, int maxData, int width, int height, 
 
 QMSMClockPlot::~QMSMClockPlot()
 {
+    std::cout << "delete clcokPlot" << std::endl;
 }
 
 QWidget* QMSMClockPlot::getPlot()

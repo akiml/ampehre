@@ -22,10 +22,12 @@
 #include "gui/mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <cstdlib>
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    mpConfig(new CConfig(QDir::currentPath() + "/include/default.conf")),
+    mpConfig(new CConfig(QString(getenv("HOME")) + "/default.conf")),
     mpPowerplot (new QMSMPowerPlot(mpConfig->lineWidth, mpConfig->maxDataRecord, mpConfig->width, mpConfig->height, parent)),
     mpTempplot (new QMSMTemperaturePlot(mpConfig->lineWidth, mpConfig->maxDataRecord, mpConfig->width, mpConfig->height, parent)),
     mpClockplot (new QMSMClockPlot(mpConfig->lineWidth, mpConfig->maxDataRecord, mpConfig->width, mpConfig->height, parent)),
@@ -102,28 +104,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    std::cout << "delete mainwindow" << std::endl;
     delete ui;
-    delete mpConfig;
-    delete mpPowerplot;
-    delete mpTempplot;
-    delete mpClockplot;
-    delete mpUtilplot;
-    delete mpMemoryplot;
-    delete mpSettings;
-    delete mpHeatmapCpu;
-    delete mpHeatmapFpga;
-    delete mpHeatmapGpuCore;
-    delete mpHeatmapGpuMemory;
-    delete mpHeatmapMic;
-    delete mpSystemOverview;
-
-    delete mpTempCpu0;
-    delete mpTempCpu1;
-    delete mpTempGpu;
-    delete mpTempFpgaCompute;
-    delete mpTempFpgaInterface;
-    delete mpTempMic;
-    delete mpTempSystem;
 
     delete subwClock;
     delete subwTemp;
@@ -134,8 +116,12 @@ MainWindow::~MainWindow()
     delete subwHeatmapTemp;
     delete subwSettings;
 
+    delete mpConfig;
+    delete mpSystemOverview;
+
     delete mpGuiTimer;
     delete mpTimer;
+    std::cout << "reached end" << std::endl;
 }
 
 void MainWindow::setInitSettings()
@@ -260,8 +246,9 @@ void MainWindow::connectActions()
     connect(ui->action_Settings, SIGNAL(triggered()), this, SLOT(showSettings()));
     connect(ui->action_Utilization_2, SIGNAL(triggered()), this, SLOT(showHeatmapUtil()));
     connect(ui->action_Temperature_2, SIGNAL(triggered()), this, SLOT(showHeatmapTemp()));
-
     connect(ui->action_Systemoverview, SIGNAL(triggered()), this, SLOT(showSystemOverview()));
+    connect(ui->action_Quit, SIGNAL(triggered()), this, SLOT(close()));
+
     connect(mpTimer, SIGNAL(timeout()), this, SLOT(requestData()));
 
 }

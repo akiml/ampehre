@@ -37,6 +37,7 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QFileDialog>
+#include <iostream>
 
 
 namespace Ui {
@@ -137,6 +138,7 @@ protected:
 
     QwtPlotMagnifier* mpMagnifier;
     QwtPlotPanner* mpPanner;
+    QwtPlotGrid* mpGrid;
 
 
 };

@@ -43,7 +43,8 @@ SOURCES	+= src/main.cpp \
 		src/gui/QMSMsettings.cpp \
 		src/gui/QMSMsystemoverview.cpp \
 		../common/CProtocol.cpp \
-		../common/utils.cpp
+		../common/utils.cpp \
+                src/gui/QMSMlinearcolormaprgb.cpp
 
 HEADERS	+= include/gui/mainwindow.h \
 		include/gui/QMSMpowerplot.h \
@@ -60,7 +61,8 @@ HEADERS	+= include/gui/mainwindow.h \
 		include/gui/QMSMsettings.h \
 		include/gui/QMSMsystemoverview.h \
 		../common/CProtocol.hpp \
-		../common/utils.h
+		../common/utils.h \
+                include/gui/QMSMlinearcolormaprgb.h
 
 LIBS	+= -L/usr/local/qwt-6.1.3/lib -lqwt
 

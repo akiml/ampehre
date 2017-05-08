@@ -51,6 +51,7 @@ QMSMSystemOverview::QMSMSystemOverview(QWidget *parent) :
 QMSMSystemOverview::~QMSMSystemOverview()
 {
     delete ui;
+    std::cout << "delete sysoverview" << std::endl;
 }
 
 void QMSMSystemOverview::update(std::vector<double> &v)
@@ -122,7 +123,6 @@ void QMSMSystemOverview::updateUtil(std::vector<double> &v)
 {
     if(v.size() > 0)
     {
-        qDebug() << "Util: "<<v[YUtilCpu];
         QString s = QString::number((int)v[YUtilCpu]);
         ui->textEdit_cpu_util->setPlainText(s);
 
@@ -144,8 +144,6 @@ void QMSMSystemOverview::updateTemp(std::vector<double> &v)
 {
     if(v.size() > 0)
     {
-        qDebug() << "Temp Cpu0: " << v[YTempCpu0];
-
         QString s = QString::number((int)v[YTempCpu0]);
         ui->textEdit_cpu_temp0->setPlainText(s);
 

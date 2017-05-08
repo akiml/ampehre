@@ -29,6 +29,7 @@ QMSMTemperaturePlot::QMSMTemperaturePlot(int linewidth, int maxData, int width, 
 
 QMSMTemperaturePlot::~QMSMTemperaturePlot()
 {
+    std::cout << "delete tempPlot" << std::endl;
 }
 
 QWidget* QMSMTemperaturePlot::getPlot()

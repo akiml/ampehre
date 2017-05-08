@@ -55,18 +55,8 @@ QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, 
 QMSMplot::~QMSMplot()
 {
     delete ui;
-    delete mpPlot;
-    delete parent;
-    delete mpCpu0;
-    delete mpCpu1;
-    delete mpGpu0;
-    delete mpGpu1;
-    delete mpFpga0;
-    delete mpFpga1;
-    delete mpMic0;
-    delete mpMic1;
-    delete mpSystem;
 
+    delete mpLegend;
     delete mpPaintCpu0;
     delete mpPaintCpu1;
     delete mpPaintGpu0;
@@ -78,6 +68,8 @@ QMSMplot::~QMSMplot()
     delete mpPaintSystem;
 
     delete mpMagnifier;
+    delete mpPanner;
+    delete mpGrid;
 }
 
 double QMSMplot::getCurrentCpu0()
@@ -196,7 +188,7 @@ QWidget* QMSMplot::getParent()
 
 void QMSMplot::makeGrid()
 {
-    QwtPlotGrid* mpGrid = new QwtPlotGrid();
+    mpGrid = new QwtPlotGrid();
     mpGrid->enableXMin(true);
     mpGrid->enableYMin(true);
     mpGrid->setPen(QPen(Qt::black, 0, Qt::DotLine));
