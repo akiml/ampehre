@@ -12,8 +12,6 @@
  *  and implements three example counters.
  */
 
-//#define DEBUG
-//#define DEBUG_SUBSTRATE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -27,11 +25,6 @@
 #include "maxdsd.h"
 #include "cJSON.h"
 
-/** This driver supports three counters counting at once      */
-/*  This is artificially low to allow testing of multiplexing */
-#define EXAMPLE_MAX_SIMULTANEOUS_COUNTERS 3
-#define EXAMPLE_MAX_MULTIPLEX_COUNTERS 4
-
 /* Declare our vector in advance */
 /* This allows us to modify the component info */
 papi_vector_t _maxeler_vector;
@@ -39,9 +32,6 @@ papi_vector_t _maxeler_vector;
 /** Structure that stores private information for each event */
 typedef struct maxeler_register
 {
-   unsigned int selector;
-		           /**< Signifies which counter slot is being used */
-			   /**< Indexed from 1 as 0 has a special meaning  */
 } maxeler_register_t;
 
 /** This structure is used to build the table of events  */
@@ -109,19 +99,6 @@ static int num_devices = 0;
 struct maxeler_raw_values *current_values = NULL;
 
 /*
-power  avg   vcc1v0_c   [mW ]: 7842.296279
-power  avg   vcc1v5_ddr [mW ]: 784.734149
-power  avg   vcc2v5_aux [mW ]: 3174.661889
-power  avg   imgt_1v0   [mW ]: 1802.884615
-power  avg   imgt_1v2   [mW ]: 1961.538462
-power  avg   mgt_1v0    [mW ]: 4125.004765
-power  avg   mgt_1v2    [mW ]: 4125.000000
-power  avg   fpga       [mW ]: 23816.120229
-temp   max   fpga  imgt [°C ]: 41.834381
-temp   max   fpga  mmgt [°C ]: 38.389252
-util   avg   fpga  comp [ % ]: 0.000000
-*/
-/*
 char **rail_names = {
 	"vcc1v0_core",
 	"vcc1v5_ddr",
@@ -169,114 +146,11 @@ typedef struct maxeler_raw_values
 /*************************************************************************/
 /* Below is the actual "hardware implementation" of our example counters */
 /*************************************************************************/
-#ifdef blablu
-#define EXAMPLE_ZERO_REG             0
-#define EXAMPLE_CONSTANT_REG         1
-#define EXAMPLE_AUTOINC_REG          2
-#define EXAMPLE_GLOBAL_AUTOINC_REG   3
-
-
-static long long example_global_autoinc_value = 0;
-
-/** Code that resets the hardware.  */
-static void
-example_hardware_reset( example_context_t *ctx )
-{
-   /* reset per-thread count */
-   ctx->autoinc_value=0;
-   /* reset global count */
-   example_global_autoinc_value = 0;
-
-}
-
-/** Code that reads event values.                         */
-/*   You might replace this with code that accesses       */
-/*   hardware or reads values from the operatings system. */
-static long long
-example_hardware_read( int which_one, example_context_t *ctx )
-{
-	long long old_value;
-
-	switch ( which_one ) {
-	case EXAMPLE_ZERO_REG:
-		return 0;
-	case EXAMPLE_CONSTANT_REG:
-		return 42;
-	case EXAMPLE_AUTOINC_REG:
-		old_value = ctx->autoinc_value;
-		ctx->autoinc_value++;
-		return old_value;
-	case EXAMPLE_GLOBAL_AUTOINC_REG:
-		old_value = example_global_autoinc_value;
-		example_global_autoinc_value++;
-		return old_value;
-	default:
-	        fprintf(stderr,"Invalid counter read %#x\n",which_one );
-		return -1;
-	}
-
-	return 0;
-}
-
-/** Code that writes event values.                        */
-static int
-example_hardware_write( int which_one, 
-			example_context_t *ctx,
-			long long value)
-{
-
-	switch ( which_one ) {
-	case EXAMPLE_ZERO_REG:
-	case EXAMPLE_CONSTANT_REG:
-		return PAPI_OK; /* can't be written */
-	case EXAMPLE_AUTOINC_REG:
-		ctx->autoinc_value=value;
-		return PAPI_OK;
-	case EXAMPLE_GLOBAL_AUTOINC_REG:
-	        example_global_autoinc_value=value;
-		return PAPI_OK;
-	default:
-		perror( "Invalid counter write" );
-		return -1;
-	}
-
-	return 0;
-}
-
-static int
-detect_example(void) {
- 
-   return PAPI_OK;
-}
-#endif
 
 static int
 detect_maxeler_devices(int *out_num_devices) {
 
 	*out_num_devices = max_daemon_device_count(maxelerosd);
-/*
-	cJSON *json_response = NULL;
-	
-	char* jstr_response = NULL;
-
-	int ret = max_daemon_exchange_json_string(maxelerosd, &jstr_response, jstr_power_request);
-	if (ret || NULL == response) {
-		return -1;
-	}
-
-	json_response = cJSON_Parse(jstr_response);
-	if (NULL == json_response) {
-		return -1;
-	}
-
-	int success = cJSON_GetObjectItem(cJSON_GetArrayItem(json_response, 0), "success")->type;
-	if (!success) {
-		return -1;
-	}
-
-	*out_num_devices = cJSON_GetArraySize( cJSON_GetObjectItem(cJSON_GetArrayItem(json_response, 0), "data") );
-*/
-
 	return PAPI_OK;
 }
 
@@ -284,6 +158,7 @@ int
 read_maxeler_utilization() {
 	cJSON *json_response        = NULL;
 	cJSON *json_measurements    = NULL;
+	cJSON *temp 				= NULL;
 
 	char *jstr_response = NULL;
 
@@ -293,10 +168,26 @@ read_maxeler_utilization() {
 	}
 
 	json_response = cJSON_Parse(jstr_response);
+	if (NULL == json_response) {
+		free(jstr_response);
+		return -1;
+	}
 
-	//TODO: check intermediate retunr values
-	int success = cJSON_GetObjectItem(cJSON_GetArrayItem(json_response, 0), "success")->type;
+	temp = cJSON_GetArrayItem(json_response, 0);
+	if (NULL == temp) {
+		cJSON_Delete(json_response);
+		free(jstr_response);
+		return -1;
+	}
+	temp = cJSON_GetObjectItem(temp, "success");
+	if (NULL == temp) {
+		cJSON_Delete(json_response);
+		free(jstr_response);
+		return -1;
+	}
+	int success = temp->type;
 	if (!success) {
+		cJSON_Delete(json_response);
 		free(jstr_response);
 		return -1;
 	}
@@ -306,9 +197,32 @@ read_maxeler_utilization() {
 	for(deviceIx = 0; deviceIx < num_devices; ++deviceIx) {
 
 		snprintf(engineStr, 10, "engine%d", deviceIx);
-		json_measurements = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetArrayItem(json_response, 0), "data"), engineStr);
+		temp = cJSON_GetArrayItem(json_response, 0);
+		if (NULL == temp) {
+			cJSON_Delete(json_response);
+			free(jstr_response);
+			return -1;
+		}
+		temp = cJSON_GetObjectItem(temp, "data");
+		if (NULL == temp) {
+			cJSON_Delete(json_response);
+			free(jstr_response);
+			return -1;
+		}
+		json_measurements = cJSON_GetObjectItem(temp, engineStr);
+		if (NULL == json_measurements) {
+			cJSON_Delete(json_response);
+			free(jstr_response);
+			return -1;
+		}
 
-		current_values[deviceIx].compute_utilization = cJSON_GetObjectItem(json_measurements, "usage")->valuedouble;
+		temp = cJSON_GetObjectItem(json_measurements, "usage");
+		if (NULL == temp) {
+			cJSON_Delete(json_response);
+			free(jstr_response);
+			return -1;
+		}
+		current_values[deviceIx].compute_utilization = temp->valuedouble;
 	}
 
 	cJSON_Delete(json_response);
@@ -323,6 +237,7 @@ read_maxeler_power() {
 	cJSON *json_response 		= NULL;
 	cJSON *json_measurements    = NULL;
 	cJSON *json_single          = NULL;
+	cJSON *temp					= NULL;
 	
 	char* jstr_response = NULL;
 
@@ -333,12 +248,26 @@ read_maxeler_power() {
 
 	json_response = cJSON_Parse(jstr_response);
 	if (NULL == json_response) {
+		cJSON_Delete(json_response);
 		free(jstr_response);
 		return -1;
 	}
 
 	//TODO: Add additional checks, in case the interediate pointers are NULL (some structural item do not exist)
-	int success = cJSON_GetObjectItem(cJSON_GetArrayItem(json_response, 0), "success")->type;
+	temp = cJSON_GetArrayItem(json_response, 0);
+	if (NULL == temp) {
+		cJSON_Delete(json_response);
+		free(jstr_response);
+		return -1;
+	}
+	temp = cJSON_GetObjectItem(temp, "success");
+	if (NULL == temp) {
+		cJSON_Delete(json_response);
+		free(jstr_response);
+		return -1;
+	}
+	
+	int success = temp->type;
 	if (!success) {
 		cJSON_Delete(json_response);
 		free(jstr_response);
@@ -347,37 +276,88 @@ read_maxeler_power() {
 
 	int deviceIx;
 	int itemIx;
+	double voltage = 0.0;
+	double current = 0.0;
 	char engineStr[10];
 	for(deviceIx = 0; deviceIx < num_devices; ++deviceIx) {
 
 		snprintf(engineStr, 10, "engine%d", deviceIx);
-		json_measurements = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetArrayItem(json_response, 0), "data"), engineStr);
-		current_values[deviceIx].fpga_power = cJSON_GetObjectItem(json_measurements, "power_usage")->valuedouble*1000;		
+		temp = cJSON_GetArrayItem(json_response, 0);
+		if (NULL == temp) {
+			cJSON_Delete(json_response);
+			free(jstr_response);
+			return -1;
+		}
+		temp = cJSON_GetObjectItem(temp, "data");
+		if (NULL == temp) {
+			cJSON_Delete(json_response);
+			free(jstr_response);
+			return -1;
+		}
+		json_measurements = cJSON_GetObjectItem(temp, engineStr);
+		if (NULL == json_measurements) {
+			cJSON_Delete(json_response);
+			free(jstr_response);
+			return -1;
+		}
+		
+		temp = cJSON_GetObjectItem(json_measurements, "power_usage");
+		if (NULL == temp) {
+			cJSON_Delete(json_response);
+			free(jstr_response);
+			return -1;
+		}
+		
+		current_values[deviceIx].fpga_power = temp->valuedouble*1000;		
 
 		json_measurements = cJSON_GetObjectItem(json_measurements, "measurements");
+		if (NULL == json_measurements) {
+			cJSON_Delete(json_response);
+			free(jstr_response);
+			return -1;
+		}
 		
-		for (itemIx=0; itemIx<cJSON_GetArraySize(json_measurements); ++itemIx) {
+		int size = cJSON_GetArraySize(json_measurements);
+		for (itemIx = 0; itemIx < size; ++itemIx) {
 			json_single = cJSON_GetArrayItem(json_measurements, itemIx);
-			if (strcmp(cJSON_GetObjectItem(json_single, "rail_name")->valuestring, "vcc1v0_core") == 0) {
-				current_values[deviceIx].vcc1v0_c_power = cJSON_GetObjectItem(json_single, "voltage")->valuedouble * cJSON_GetObjectItem(json_single, "current")->valuedouble*1000 / 0.85;
+			if (NULL == json_single) {
+				continue;
+			}
+			temp = cJSON_GetObjectItem(json_single, "voltage");
+			if (NULL == temp) {
+				continue;
+			}
+			voltage = temp->valuedouble;
+			temp = cJSON_GetObjectItem(json_single, "current");
+			if (NULL == temp) {
+				continue;
+			}
+			current = temp->valuedouble;
+			temp = cJSON_GetObjectItem(json_single, "rail_name");
+			if (NULL == temp) {
+				continue;
+			}
+
+			if (strcmp(temp->valuestring, "vcc1v0_core") == 0) {
+				current_values[deviceIx].vcc1v0_c_power = voltage * current*1000.0 / 0.85;
 			} else
-			if (strcmp(cJSON_GetObjectItem(json_single, "rail_name")->valuestring, "vcc1v5_ddr") == 0) {
-				current_values[deviceIx].vcc1v5_ddr_power = cJSON_GetObjectItem(json_single, "voltage")->valuedouble * cJSON_GetObjectItem(json_single, "current")->valuedouble*1000 / 0.85;
+			if (strcmp(temp->valuestring, "vcc1v5_ddr") == 0) {
+				current_values[deviceIx].vcc1v5_ddr_power = voltage * current*1000.0 / 0.85;
 			} else
-			if (strcmp(cJSON_GetObjectItem(json_single, "rail_name")->valuestring, "vcc2v5_aux") == 0) {
-				current_values[deviceIx].vcc2v5_aux_power = cJSON_GetObjectItem(json_single, "voltage")->valuedouble * cJSON_GetObjectItem(json_single, "current")->valuedouble*1000 / 0.85;
+			if (strcmp(temp->valuestring, "vcc2v5_aux") == 0) {
+				current_values[deviceIx].vcc2v5_aux_power = voltage * current*1000.0 / 0.85;
 			} else
-			if (strcmp(cJSON_GetObjectItem(json_single, "rail_name")->valuestring, "imgt_1v0") == 0) {
-				current_values[deviceIx].imgt_1v0_power = cJSON_GetObjectItem(json_single, "voltage")->valuedouble * cJSON_GetObjectItem(json_single, "current")->valuedouble*1000 / 0.65;
+			if (strcmp(temp->valuestring, "imgt_1v0") == 0) {
+				current_values[deviceIx].imgt_1v0_power = voltage * current*1000.0 / 0.65;
 			} else
-			if (strcmp(cJSON_GetObjectItem(json_single, "rail_name")->valuestring, "imgt_1v2") == 0) {
-				current_values[deviceIx].imgt_1v2_power = cJSON_GetObjectItem(json_single, "voltage")->valuedouble * cJSON_GetObjectItem(json_single, "current")->valuedouble*1000 / 0.65;
+			if (strcmp(temp->valuestring, "imgt_1v2") == 0) {
+				current_values[deviceIx].imgt_1v2_power = voltage * current*1000.0 / 0.65;
 			} else
-			if (strcmp(cJSON_GetObjectItem(json_single, "rail_name")->valuestring, "mgt_1v0") == 0) {
-				current_values[deviceIx].mgt_1v0_power = cJSON_GetObjectItem(json_single, "voltage")->valuedouble * cJSON_GetObjectItem(json_single, "current")->valuedouble*1000 / 0.65;
+			if (strcmp(temp->valuestring, "mgt_1v0") == 0) {
+				current_values[deviceIx].mgt_1v0_power = voltage * current*1000.0 / 0.65;
 			} else
-			if (strcmp(cJSON_GetObjectItem(json_single, "rail_name")->valuestring, "mgt_1v2") == 0) {
-				current_values[deviceIx].mgt_1v2_power = cJSON_GetObjectItem(json_single, "voltage")->valuedouble * cJSON_GetObjectItem(json_single, "current")->valuedouble*1000 / 0.65;
+			if (strcmp(temp->valuestring, "mgt_1v2") == 0) {
+				current_values[deviceIx].mgt_1v2_power = voltage * current*1000.0 / 0.65;
 			}
 		}
 
