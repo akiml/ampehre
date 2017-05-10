@@ -1,0 +1,9 @@
+include components/maxeler/Makefile.maxeler
+
+COMPSRCS += components/maxeler/maxeler.c
+COMPOBJS += maxeler.o
+CFLAGS += -I$(MAXELER_INCDIR) -I$(CJSON_INCDIR)
+LDFLAGS += -L$(CJSON_LIBDIR) -L$(MAXELER_LIBDIR) -lmaxeleros -lcjson -lm
+
+maxeler.o: components/maxeler/maxeler.c components/maxeler/maxeler.h $(HEADERS) 
+	$(CC) $(LIBCFLAGS) $(OPTFLAGS) -c components/maxeler/maxeler.c -o maxeler.o
