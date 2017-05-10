@@ -270,7 +270,10 @@ static long long convert_rapl_energy(int index, long long value) {
    }
 
    if (rapl_native_events[index].type==PACKAGE_TEMPERATURE) {
-		return_val.ll = package_temperature_targets[rapl_native_events[index].resources.package] - ((value>>16) & 0x7f);
+		// Temperature = Maximal temperature - Margin to throttle
+		// Temperature = target[23:16] - therm_status[22:16]
+		long long temp_target = package_temperature_targets[rapl_native_events[index].resources.package];
+		return_val.ll = ((temp_target>>16) & 0xff) - ((value>>16) & 0x7f);
    }
 
    if (rapl_native_events[index].type==PACKAGE_TEMPERATURE_CNT) {
@@ -333,13 +336,15 @@ _rapl_init_component( int cidx )
      int nr_cpus = get_kernel_nr_cpus();
      int packages[nr_cpus];
      int cpu_to_use[nr_cpus];
-	 int cpu_package[nr_cpus];
+	 int cpu_package[nr_cpus];  // package id
+	 int cpu_core_id[nr_cpus]; // core id inside package
 
      /* Fill with sentinel values */
      for (i=0; i<nr_cpus; ++i) {
        packages[i] = -1;
        cpu_to_use[i] = -1;
 	   cpu_package[i] = -1;
+	   cpu_core_id[i] = -1;
      }
 
 
@@ -454,6 +459,14 @@ _rapl_init_component( int cidx )
        if (fff==NULL) break;
        num_read=fscanf(fff,"%d",&package);
        fclose(fff);
+
+       sprintf(filename,
+	       "/sys/devices/system/cpu/cpu%d/topology/core_id",j);
+       fff=fopen(filename,"r");
+       if (fff==NULL) break;
+       num_read=fscanf(fff,"%d",&(cpu_core_id[j]));
+       fclose(fff);
+	   
        if (num_read!=1) {
     		 strcpy(_rapl_vector.cmp_info.disabled_reason, "Error reading file: ");
     		 strncat(_rapl_vector.cmp_info.disabled_reason, filename, PAPI_MAX_STR_LEN - strlen(_rapl_vector.cmp_info.disabled_reason) - 1);
@@ -540,7 +553,7 @@ _rapl_init_component( int cidx )
 	   fd = open_fd(cpu_to_use[j]);
 	   long long target_raw;
 	   target_raw = read_msr(fd,MSR_TEMPERATURE_TARGET);
-	   package_temperature_targets[j] = (target_raw>>16) & 0xff;
+	   package_temperature_targets[j] = target_raw;
  	 }
 
      /* Allocate space for events */
@@ -830,9 +843,9 @@ _rapl_init_component( int cidx )
 	 // add cpu temperature events
 	 for(j=0;j<num_cpus;j++) {
 			sprintf(rapl_native_events[i].name,
-		   		"THERM_STATUS_CNT:CPU%d",j);
+		   		"THERM_STATUS_CNT:PACKAGE%d:CPU%d", cpu_package[j], cpu_core_id[j]);
 	   		sprintf(rapl_native_events[i].description,
-		   		"Raw temperature register for cpu %d",j);
+		   		"Raw temperature register for package %d cpu %d", cpu_package[j], cpu_core_id[j]);
 	   		rapl_native_events[i].fd_offset=j;
 	   		rapl_native_events[i].msr=IA32_THERM_STATUS;
 	   		rapl_native_events[i].resources.selector = i + 1;
@@ -842,10 +855,10 @@ _rapl_init_component( int cidx )
 
 
 			sprintf(rapl_native_events[k].name,
-		   		"THERM_STATUS:CPU%d",j);
+		   		"THERM_STATUS:PACKAGE%d:CPU%d", cpu_package[j], cpu_core_id[j]);
 	   		strncpy(rapl_native_events[k].units,"°C",PAPI_MIN_STR_LEN);
 	   		sprintf(rapl_native_events[k].description,
-		   		"Temperature for cpu %d",j);
+		   		"Temperature for package %d cpu %d", cpu_package[j], cpu_core_id[j]);
 	   		rapl_native_events[k].fd_offset=j;
 	   		rapl_native_events[k].msr=IA32_THERM_STATUS;
 	   		rapl_native_events[k].resources.selector = k + 1;
