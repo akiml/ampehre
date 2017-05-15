@@ -84,6 +84,7 @@ int CClient::requestData() {
 	mCom.communicate(msg.c_str(), rep, rep_len);
 
     mProtocol.parseMsg(rep, rep_len, reg, tsk, mValues, mValues_pid);
+    extractAppSignals();
 	free(rep);
 
     return 0;
@@ -109,6 +110,65 @@ int CClient::terminate() {
 	free(rep);
 
     return 0;
+}
+
+void CClient::extractAppSignals()
+{
+    std::string tmp = "";
+    Application app;
+    for(unsigned int i = 0; i < mValues_pid.size(); i++)
+    {
+        if(mValues_pid[i][0] == 'y')    //application started
+        {
+            int k = 2;
+            while(k < mValues_pid[i].size() && mValues_pid[i][k] != ' ')
+            {
+                tmp += mValues_pid[i][k];
+                k++;
+            }
+            //got pid
+            app.mPid = atoi(tmp.c_str());
+            tmp = "";
+            k++;
+
+            while(k < mValues_pid[i].size() && mValues_pid[i][k] != ' ')
+            {
+                tmp += mValues_pid[i][k];
+                k++;
+            }
+            //got time
+            app.mTime = atoi(tmp.c_str());
+            tmp = "";
+            app.start = true;
+
+            mSigPid.push_back(app);
+        }
+        else if(mValues_pid[i][0] == 'z')    //application terminated
+        {
+            int k = 2;
+            while(k < mValues_pid[i].size() && mValues_pid[i][k] != ' ')
+            {
+                tmp += mValues_pid[i][k];
+                k++;
+            }
+            //got pid
+            app.mPid = atoi(tmp.c_str());
+            tmp = "";
+            k++;
+
+            while(k < mValues_pid[i].size() && mValues_pid[i][k] != ' ')
+            {
+                tmp += mValues_pid[i][k];
+                k++;
+            }
+            //got time
+            app.mTime = atoi(tmp.c_str());
+            tmp = "";
+            app.start = false;
+
+            mSigPid.push_back(app);
+        }
+    }
 }
 
 void CClient::getFreq(std::vector<uint64_t>& vals)

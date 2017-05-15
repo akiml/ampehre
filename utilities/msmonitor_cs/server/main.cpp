@@ -25,6 +25,8 @@
 #include <signal.h>
 #include "CServer.hpp"
 
+static void termHandler(int s, siginfo_t* info, void* context);
+CServer srv = CServer(2900, 5);
 
 int main(int argc, char **argv) {
 
@@ -43,12 +45,53 @@ int main(int argc, char **argv) {
 
 
 	std::cout << "initiating server..." << std::endl; 
-	CServer srv = CServer(2900, 5);
 	
+	struct sigaction act;
+	memset (&act, '\0', sizeof(act));
+	act.sa_sigaction = &termHandler;
+	act.sa_flags = SA_SIGINFO;
+	if(sigaction(SIGUSR1, &act, NULL) < 0)
+	{
+		std::cout << "cannot catch SIGUSR1!" << std::endl;
+	}
+	if(sigaction(SIGUSR2, &act, NULL) < 0)
+	{
+		std::cout << "cannot catch SIGUSR2!" << std::endl;
+	}	
 	srv.init();
 	srv.acceptLoop();
 
 	return 0;
+}
+
+void termHandler(int s, siginfo_t* info, void* context) 
+{
+	std::cout << "termHandler:" << std::endl;
+	if(s == SIGINT)
+	{
+		std::cout << "terminating server..." << std::endl;
+		exit(0);
+	}
+	else if(s == SIGUSR1)
+	{
+		std::cout << "Application started!" << std::endl;
+		Application a;
+		pid_t sender = info->si_pid;
+		a.mPid = sender;
+		srv.getCurrentTime(a.mTime);
+		a.start = true;
+		srv.mApplications.push_back(a);
+	}
+	else if(s == SIGUSR2)
+	{
+		std::cout << "Application finished!" << std::endl;
+		Application a;
+		pid_t sender = info->si_pid;
+		a.mPid = sender;
+		srv.getCurrentTime(a.mTime);
+		a.start = false;
+		srv.mApplications.push_back(a);
+	}
 }
 
 

@@ -64,12 +64,12 @@ int CComS::initSocket(int port){
 void CComS::acceptSocket(int& new_socket) {
 	struct sockaddr_in client_addr;
 	socklen_t sin_size = sizeof(struct sockaddr_in);
-
-	new_socket = accept(mSockfd, (struct sockaddr *)& client_addr, &sin_size);		
-	if(new_socket == -1){
-		std::cout << "error while accepting connection" << std::endl;
-		exit(-1);
-	}
+	new_socket = -1;
+	
+	while(new_socket == -1)
+	{
+		new_socket = accept(mSockfd, (struct sockaddr *)& client_addr, &sin_size);	
+	}	
 }
 
 int CComS::sendMsg(std::string msg, int socket) {

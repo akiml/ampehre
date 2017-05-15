@@ -26,6 +26,12 @@
 #include "CComC.hpp"
 #include "CProtocolC.hpp"
 
+struct Application
+{
+    unsigned int mPid;
+    double mTime;
+    bool start;
+};
 
 class CClient{
 public:
@@ -39,9 +45,11 @@ public:
 
     std::vector<double> mValues;
     std::vector<std::string> mValues_pid;
+    std::vector<Application> mSigPid;
 	
 private:
     int initSocket();
+    void extractAppSignals();
 	std::string mVERSION;
 	CComC mCom;
 	CProtocolC mProtocol;

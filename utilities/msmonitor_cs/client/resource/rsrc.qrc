@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/Pictures">
+        <file>ampehre_logo.png</file>
+        <file>hetnode_logo.png</file>
+    </qresource>
+</RCC>

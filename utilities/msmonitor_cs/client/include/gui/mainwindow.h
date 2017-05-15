@@ -42,6 +42,7 @@
 #include "QMSMsettings.h"
 #include "CConfig.h"
 #include "QMSMsystemoverview.h"
+#include "QMSMabout.h"
 
 namespace Ui {
 class MainWindow;
@@ -90,6 +91,7 @@ private:
     QMdiSubWindow* subwHeatmapUtil;
     QMdiSubWindow* subwHeatmapTemp;
     QMdiSubWindow* subwSettings;
+    QMSMabout* mpAbout;
 
     CClient mClient;
     QTimer* mpTimer;
@@ -124,6 +126,7 @@ public slots:
     void showHeatmapTemp();
     void showSettings();
     void showSystemOverview();
+    void showAbout();
 
     void setInitSettings();
 

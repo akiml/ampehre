@@ -55,6 +55,7 @@ MainWindow::MainWindow(QWidget *parent) :
     subwHeatmapUtil( new QMdiSubWindow()),
     subwHeatmapTemp( new QMdiSubWindow()),
     subwSettings( new QMdiSubWindow()),
+    mpAbout ( new QMSMabout()),
     mClient(CClient()),
     mpTimer(new QTimer()),
     mpGuiTimer(new QTimer()),
@@ -248,6 +249,7 @@ void MainWindow::connectActions()
     connect(ui->action_Temperature_2, SIGNAL(triggered()), this, SLOT(showHeatmapTemp()));
     connect(ui->action_Systemoverview, SIGNAL(triggered()), this, SLOT(showSystemOverview()));
     connect(ui->action_Quit, SIGNAL(triggered()), this, SLOT(close()));
+    connect(ui->action_About, SIGNAL(triggered()), this, SLOT(showAbout()));
 
     connect(mpTimer, SIGNAL(timeout()), this, SLOT(requestData()));
 
@@ -431,6 +433,11 @@ void MainWindow::showSystemOverview()
 {
     connect(mpGuiTimer, SIGNAL(timeout()), this, SLOT(updateSystemOverview()));
     mpSystemOverview->show();
+}
+
+void MainWindow::showAbout()
+{
+    mpAbout->show();
 }
 
 void MainWindow::updateSystemOverview()

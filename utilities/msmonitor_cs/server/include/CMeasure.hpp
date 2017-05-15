@@ -40,6 +40,7 @@ public:
 	void stop();
 	void getValues(std::vector<double>& sol, std::vector<int>& req);
 	void getProcesses(std::vector<std::string>& processes);
+	void getCurrentTime(double& time);
 	NData::CDataSettings& getSettings();
 	
 private:

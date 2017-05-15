@@ -27,7 +27,8 @@ CServer::CServer(int port, int maxClients):
      mProtocol(CProtocolS(mVERSION)),
      mPort(port),
      mMaxClients(maxClients),
-     mSocket(0)
+     mSocket(0),
+     mCurrentTime(0)
 {
 	for(unsigned int k = 0; k < 5; k++)
 	{
@@ -52,6 +53,12 @@ void CServer::init(){
 	if(mCom.initSocket(mPort) < 0)
 		exit(-1);
 }
+
+void CServer::getCurrentTime(double& time) 
+{
+	mMeasure.getCurrentTime(time);
+}
+
 
 void CServer::controlClients() 
 {
@@ -79,13 +86,15 @@ void CServer::acceptLoop() {
 	int registry = 0;
 	uint64_t data = 0;
 
-	struct sigaction act;
-	act.sa_handler = termHandler;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;
-	sigaction(SIGINT, &act, 0);
 
 	while(1){
+		for(unsigned int n = 0; n < mApplications.size(); n++)
+		{
+			if(mApplications[n].mTime == 0)
+			{
+				mApplications[n].mTime = mCurrentTime;
+			}
+		}
 		controlClients();
 		mCom.acceptSocket(mSocket);
 		recv_length = recv(mSocket, buffer, 4096, 0);
@@ -108,6 +117,7 @@ void CServer::acceptLoop() {
 		close(mSocket);
 	}
 }
+
 
 void CServer::getFrequencies()
 {
@@ -227,6 +237,7 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 	std::vector<int> d;
 	std::vector<double> values;
 	std::vector<std::string> values_pid;
+	std::vector<std::string> values_app;
 	char *rn = "\r\n";
 
 	mProtocol.extractData(d, dataCode);		//extract wanted data from 64Bit dataCode
@@ -238,6 +249,30 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 	{
 		std::cout<<"process: " << values_pid[i] << std::endl;
 		size_str += values_pid[i].size();
+	}
+	for(unsigned int i = 0; i < mApplications.size(); i++)	//write apps into values_app and count string size
+	{
+		std::string tmp = "";
+		if(mApplications[i].start)
+		{
+			tmp += "y ";
+		}
+		else
+		{
+			tmp += "z ";
+		}
+		std::stringstream ss;
+		ss << mApplications[i].mPid;
+		std::string pid_str = ss.str();
+		tmp += pid_str; 
+		tmp += " ";
+		ss.clear();
+		ss << (unsigned long)mApplications[i].mTime;
+		std::string time_str = ss.str();
+		tmp += time_str;
+		tmp += "\r\n";
+		size_str += tmp.size();
+		values_app.push_back(tmp);
 	}
 	std::size_t size = msg.size()+values.size()*(sizeof(double)+2*sizeof(char)) + size_str;
 	
@@ -271,14 +306,18 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 			b+=values_pid[i].size();
 		}
 	}
+	for(unsigned int i = 0; i < values_app.size(); i++)	
+	{
+		if(values_app[i].size() > 2)
+		{
+			c = values_app[i].c_str();
+			std::cout << values_app[i] << std::endl;
+			memcpy(b, c, values_app[i].size());
+			b+=values_app[i].size();
+		}
+	}
 	
 
 	return size;
 }
 
-
-
-void CServer::termHandler(int s) {
-	std::cout << "terminating server..." << std::endl;
-	exit(0);
-}

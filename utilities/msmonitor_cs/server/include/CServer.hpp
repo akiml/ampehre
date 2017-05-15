@@ -30,6 +30,13 @@
 #include <stdlib.h>
 #include <ctime>
 
+struct Application
+{
+	unsigned int mPid;
+	double mTime;
+	bool start;
+};
+
 class CServer{
 
 public:
@@ -37,6 +44,8 @@ public:
 	~CServer();
 	void init();
 	void acceptLoop();
+	void getCurrentTime(double& time);
+	std::vector<Application> mApplications;
 	
 private:
 	void answer(int taskCode, int registry, uint64_t datacode);
@@ -47,8 +56,8 @@ private:
 	void getFrequencies();
 	void createDataAnswer(std::string &msg, uint64_t dataCode);
 	int createDataAnswer(void** answer, uint64_t dataCode);
-	static void termHandler(int s);
 	void controlClients();
+	
 	
 	std::string mVERSION;
 	CMeasure mMeasure;
@@ -59,8 +68,10 @@ private:
 	int mPort;
 	int mMaxClients;
 	int mSocket;
+	double mCurrentTime;
 	std::vector<uint64_t> mFreq;
 	std::vector<clock_t> mTimesForClients;
+	
 	
 };
 

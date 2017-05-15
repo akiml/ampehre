@@ -81,6 +81,11 @@ void CMeasure::getProcesses(std::vector< std::string >& processes)
 	}
 }
 
+void CMeasure::getCurrentTime(double& time) 
+{
+	time = mpHandler->getMeasurement().mpX->getLast();
+}
+
 
 void CMeasure::getValues(std::vector<double>& sol, std::vector<int>& req){
 	sol.clear();

@@ -22,7 +22,7 @@
 
 CProtocolC::CProtocolC(std::string version) :
 	CProtocol(version)
-	{
+{
 	
 	// nothing todo
 }
