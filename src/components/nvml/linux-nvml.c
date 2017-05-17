@@ -134,7 +134,7 @@ static nvmlDevice_t* devices=NULL;
 static int*			 features=NULL;
 
 unsigned long long
-getClockSpeed( nvmlDevice_t dev, nvmlClockType_t which_one )
+nvml_getClockSpeed( nvmlDevice_t dev, nvmlClockType_t which_one )
 {
 		unsigned int ret = 0;
 		nvmlReturn_t bad; 
@@ -148,7 +148,7 @@ getClockSpeed( nvmlDevice_t dev, nvmlClockType_t which_one )
 }
 
 		unsigned long long
-getEccLocalErrors( nvmlDevice_t dev, nvmlEccBitType_t bits, int which_one)
+nvml_getEccLocalErrors( nvmlDevice_t dev, nvmlEccBitType_t bits, int which_one)
 {
 		nvmlEccErrorCounts_t counts;
 
@@ -176,7 +176,7 @@ getEccLocalErrors( nvmlDevice_t dev, nvmlEccBitType_t bits, int which_one)
 }
 
 		unsigned long long 
-getFanSpeed( nvmlDevice_t dev ) 
+nvml_getFanSpeed( nvmlDevice_t dev ) 
 {
 		unsigned int ret = 0;
 		nvmlReturn_t bad; 
@@ -191,7 +191,7 @@ getFanSpeed( nvmlDevice_t dev )
 }
 
 		unsigned long long
-getMaxClockSpeed( nvmlDevice_t dev, nvmlClockType_t which_one)
+nvml_getMaxClockSpeed( nvmlDevice_t dev, nvmlClockType_t which_one)
 {
 		unsigned int ret = 0;
 		nvmlReturn_t bad; 
@@ -206,7 +206,7 @@ getMaxClockSpeed( nvmlDevice_t dev, nvmlClockType_t which_one)
 }
 
 		unsigned long long
-getMemoryInfo( nvmlDevice_t dev, int which_one )
+nvml_getMemoryInfo( nvmlDevice_t dev, int which_one )
 {
 		nvmlMemory_t meminfo;
 		nvmlReturn_t bad; 
@@ -230,7 +230,7 @@ getMemoryInfo( nvmlDevice_t dev, int which_one )
 }
 
 		unsigned long long
-getPState( nvmlDevice_t dev ) 
+nvml_getPState( nvmlDevice_t dev ) 
 {
 		unsigned int ret = 0;
 		nvmlPstates_t state = NVML_PSTATE_15;
@@ -286,7 +286,7 @@ getPState( nvmlDevice_t dev )
 }
 
 		unsigned long long
-getPowerUsage( nvmlDevice_t dev )
+nvml_getPowerUsage( nvmlDevice_t dev )
 {
 		unsigned int power;
 		nvmlReturn_t bad; 
@@ -301,7 +301,7 @@ getPowerUsage( nvmlDevice_t dev )
 }
 
 		unsigned long long
-getTemperature( nvmlDevice_t dev )
+nvml_getTemperature( nvmlDevice_t dev )
 {
 		unsigned int ret = 0;
 		nvmlReturn_t bad; 
@@ -316,7 +316,7 @@ getTemperature( nvmlDevice_t dev )
 }
 
 		unsigned long long
-getTotalEccErrors( nvmlDevice_t dev, nvmlEccBitType_t bits) 
+nvml_getTotalEccErrors( nvmlDevice_t dev, nvmlEccBitType_t bits) 
 {
 		unsigned long long counts = 0;
 		nvmlReturn_t bad; 
@@ -334,7 +334,7 @@ getTotalEccErrors( nvmlDevice_t dev, nvmlEccBitType_t bits)
 	1 => memory util
  */
 		unsigned long long
-getUtilization( nvmlDevice_t dev, int which_one )
+nvml_getUtilization( nvmlDevice_t dev, int which_one )
 {
 		nvmlUtilization_t util;
 		nvmlReturn_t bad; 
@@ -395,40 +395,40 @@ nvml_hardware_read( long long *value, int which_one)
 
 		switch (entry->type) {
 				case FEATURE_CLOCK_INFO:
-						*value =  getClockSpeed( 	handle, 
+						*value =  nvml_getClockSpeed( 	handle, 
 										(nvmlClockType_t)entry->options.clock );
 						break;
 				case FEATURE_ECC_LOCAL_ERRORS:
-						*value = getEccLocalErrors( 	handle, 
+						*value = nvml_getEccLocalErrors( 	handle, 
 										(nvmlEccBitType_t)entry->options.ecc_opts.bits, 
 										(int)entry->options.ecc_opts.which_one);
 						break;
 				case FEATURE_FAN_SPEED:
-						*value = getFanSpeed( handle );
+						*value = nvml_getFanSpeed( handle );
 						break;
 				case FEATURE_MAX_CLOCK:
-						*value = getMaxClockSpeed( 	handle, 
+						*value = nvml_getMaxClockSpeed( 	handle, 
 										(nvmlClockType_t)entry->options.clock );
 						break;
 				case FEATURE_MEMORY_INFO:
-						*value = getMemoryInfo( 	handle, 
+						*value = nvml_getMemoryInfo( 	handle, 
 										(int)entry->options.which_one );
 						break;
 				case FEATURE_PERF_STATES:
-						*value = getPState( handle );
+						*value = nvml_getPState( handle );
 						break;
 				case FEATURE_POWER:
-						*value = getPowerUsage( handle );
+						*value = nvml_getPowerUsage( handle );
 						break;
 				case FEATURE_TEMP:
-						*value = getTemperature( handle );
+						*value = nvml_getTemperature( handle );
 						break;
 				case FEATURE_ECC_TOTAL_ERRORS:
-						*value = getTotalEccErrors( 	handle, 
+						*value = nvml_getTotalEccErrors( 	handle, 
 										(nvmlEccBitType_t)entry->options.ecc_opts.bits );
 						break;
 				case FEATURE_UTILIZATION:
-						*value = getUtilization( 	handle, 
+						*value = nvml_getUtilization( 	handle, 
 										(int)entry->options.which_one );
 						break;
 				default:
