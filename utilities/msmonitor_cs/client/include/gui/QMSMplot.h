@@ -37,7 +37,9 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QFileDialog>
+#include <qwt_plot_marker.h>
 #include <iostream>
+#include "utils.h"
 
 
 namespace Ui {
@@ -83,6 +85,10 @@ public:
     std::vector<double> mMic0values;
     std::vector<double> mMic1values;
     std::vector<double> mSystemvalues;
+
+    std::vector<QwtPlotMarker> mMarker;
+    std::vector<QwtSymbol*> mSymbols;
+    std::vector<Application> mApplications;
     int mType;
 
     virtual void setLineWidth(int val);
@@ -101,6 +107,8 @@ public slots:
     virtual void makeZoomable();
     virtual void setMaxData(int v);
     virtual void exportToCSV();
+    virtual void updateApplications(const std::vector<Application>& apps);
+    virtual void redrawApplications();
 
 signals:
     void signal_export(QMSMplot*);

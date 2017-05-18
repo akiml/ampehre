@@ -88,13 +88,6 @@ void CServer::acceptLoop() {
 
 
 	while(1){
-		for(unsigned int n = 0; n < mApplications.size(); n++)
-		{
-			if(mApplications[n].mTime == 0)
-			{
-				mApplications[n].mTime = mCurrentTime;
-			}
-		}
 		controlClients();
 		mCom.acceptSocket(mSocket);
 		recv_length = recv(mSocket, buffer, 4096, 0);

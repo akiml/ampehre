@@ -245,3 +245,31 @@ void QMSMplot::resetPen()
 {
     //nothing to do here
 }
+
+void QMSMplot::updateApplications(const std::vector<Application> &apps)
+{
+    this->mApplications = apps;
+}
+
+void QMSMplot::redrawApplications()
+{
+//    mMarker.clear();
+//    for(unsigned int i = 0; i < mSymbols.size(); i++)
+//    {
+//        delete mSymbols[i];
+//    }
+//    mSymbols.clear();
+
+//    int width = 2;
+
+//    for(unsigned int i = 0; i < mApplications.size(); i++)
+//    {
+//        QwtPlotMarker marker;
+//        marker.setLabel(QwtText(QString::number(mApplications[i].mPid)));
+//        mSymbols.push_back(new QwtSymbol(QwtSymbol::VLine, QBrush(QColor("#000000")), QPen( Qt::black, 1 ), QSize( width,0 )));
+//        marker.setSymbol(&mSymbols.back());
+//        mMarker.push_back(marker);
+//        mMarker.back().attach(mpPlot);
+//        mMarker.back().show();
+//    }
+}

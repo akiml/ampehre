@@ -30,12 +30,6 @@
 #include <stdlib.h>
 #include <ctime>
 
-struct Application
-{
-	unsigned int mPid;
-	double mTime;
-	bool start;
-};
 
 class CServer{
 

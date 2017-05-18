@@ -29,6 +29,14 @@ struct clReg{
 	uint64_t dataCode;
 };
 
+struct Application
+{
+    unsigned int mPid;
+    double mTime;
+    bool start;
+};
+
+
 namespace ut{
 	
 	//returns first value found

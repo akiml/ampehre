@@ -26,13 +26,6 @@
 #include "CComC.hpp"
 #include "CProtocolC.hpp"
 
-struct Application
-{
-    unsigned int mPid;
-    double mTime;
-    bool start;
-};
-
 class CClient{
 public:
 	CClient();
