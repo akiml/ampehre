@@ -13,6 +13,7 @@
 #define FEATURE_TEMP				128
 #define FEATURE_ECC_TOTAL_ERRORS 	256 
 #define FEATURE_UTILIZATION			512
+#define FEATURE_PROCESSES			1024
 
 #define HAS_FEATURE( features, query ) ( features & query )
 

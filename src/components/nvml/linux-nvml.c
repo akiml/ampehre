@@ -72,6 +72,7 @@ nvmlReturn_t DECLDIR nvmlDeviceGetEccMode                  (nvmlDevice_t, nvmlEn
 nvmlReturn_t DECLDIR nvmlInit                              (void);
 nvmlReturn_t DECLDIR nvmlDeviceGetCount                    (unsigned int *);
 nvmlReturn_t DECLDIR nvmlShutdown                          (void);
+nvmlReturn_t DECLDIR nvmlDeviceGetComputeRunningProcesses  (nvmlDevice_t, unsigned int *, nvmlProcessInfo_t *);
 
 nvmlReturn_t       (*nvmlDeviceGetClockInfoPtr)            (nvmlDevice_t, nvmlClockType_t, unsigned int *);
 char*              (*nvmlErrorStringPtr)                   (nvmlReturn_t);
@@ -91,7 +92,7 @@ nvmlReturn_t       (*nvmlDeviceGetEccModePtr)              (nvmlDevice_t, nvmlEn
 nvmlReturn_t       (*nvmlInitPtr)                          (void);
 nvmlReturn_t       (*nvmlDeviceGetCountPtr)                (unsigned int *);
 nvmlReturn_t       (*nvmlShutdownPtr)                      (void);
-
+nvmlReturn_t       (*nvmlDeviceGetComputeRunningProcessesPtr) (nvmlDevice_t, unsigned int *, nvmlProcessInfo_t *);
 
 // file handles used to access cuda libraries with dlopen
 static void* dl3 = NULL;
@@ -357,6 +358,14 @@ nvml_getUtilization( nvmlDevice_t dev, int which_one )
 		return (unsigned long long) -1;
 }
 
+unsigned long long
+nvml_getComputeRunningProcesses( nvmlDevice_t dev)
+{
+        uint32_t infoCount = 0;
+        (*nvmlDeviceGetComputeRunningProcessesPtr)(dev, &infoCount, NULL);
+        return infoCount;
+}
+
 		static void
 nvml_hardware_reset(  )
 {
@@ -431,6 +440,9 @@ nvml_hardware_read( long long *value, int which_one)
 						*value = nvml_getUtilization( 	handle, 
 										(int)entry->options.which_one );
 						break;
+				case FEATURE_PROCESSES:
+						*value = nvml_getComputeRunningProcesses( handle);
+						break;
 				default:
 						return PAPI_EINVAL;
 		}
@@ -463,7 +475,6 @@ detectDevices( )
 		nvmlDevice_t handle;
 		nvmlPciInfo_t info;
 
-		char busId[16];
 		char name[64];
 		char inforomECC[16];
 		char inforomPower[16];
@@ -533,11 +544,13 @@ detectDevices( )
 						}
 
 				if ( isUnique ) {
+						memset(inforomECC, 0, 16);
 						ret = (*nvmlDeviceGetInforomVersionPtr)( devices[i], NVML_INFOROM_ECC, inforomECC, 16);
 						if ( NVML_SUCCESS != ret ) {
 								SUBDBG("nvmlGetInforomVersion carps %s\n", (*nvmlErrorStringPtr)(ret ) );
 								isFermi = 0;
 						}
+						memset(inforomPower, 0, 16);
 						ret = (*nvmlDeviceGetInforomVersionPtr)( devices[i], NVML_INFOROM_POWER, inforomPower, 16);
 						if ( NVML_SUCCESS != ret ) {
 								/* This implies the card is older then Fermi */
@@ -552,7 +565,7 @@ detectDevices( )
 						isTesla = ( NULL == strstr(name, "Tesla") ) ? 0:1;
 
 						/* For Tesla and Quadro products from Fermi and Kepler families. */
-						if ( isFermi ) {
+						if ( isTesla ) {
 								features[i] |= FEATURE_CLOCK_INFO;
 								num_events += 3;
 						}
@@ -617,10 +630,14 @@ this card. (nvml return code %d)\n", ret );
 						num_events++;
 
 						/* For Tesla and Quadro products from the Fermi and Kepler families */
-						if (isFermi) {
+						if (isTesla) {
 								features[i] |= FEATURE_UTILIZATION;
 								num_events += 2;
 						}
+
+						/* Number of processes event */
+						features[i] |= FEATURE_PROCESSES;
+						num_events += 1;
 
 						strncpy( names[i], name, sizeof(names[0])-1);
 						names[i][sizeof(names[0])-1] = '\0';
@@ -640,7 +657,6 @@ createNativeEvents( )
 		int isUnique = 1;
 
 		nvml_native_event_entry_t* entry;
-		nvmlReturn_t ret;
 
 		nvml_native_table = (nvml_native_event_entry_t*) papi_malloc( 
 						sizeof(nvml_native_event_entry_t) * num_events ); 	
@@ -650,7 +666,7 @@ createNativeEvents( )
 		for (i=0; i < device_count; i++ ) {
 				memset( names[i], 0x0, 64 );
 				isUnique = 1;
-				ret = (*nvmlDeviceGetNamePtr)( devices[i], name, sizeof(name)-1 );
+				(*nvmlDeviceGetNamePtr)( devices[i], name, sizeof(name)-1 );
 				name[sizeof(name)-1] = '\0';	// to safely use strlen operation below, the variable 'name' must be null terminated
 
 				for (j=0; j < i; j++ ) 
@@ -888,6 +904,13 @@ createNativeEvents( )
                                 entry->deviceId = i;
 								entry++;
 						}
+
+                                sprintf( entry->name, "%s:processes", sanitized_name);
+                                strncpy(entry->description,"number of computing processes active on the device", PAPI_MAX_STR_LEN);
+                                entry->type = FEATURE_PROCESSES;
+                                entry->deviceId = i;
+                                entry++;
+
 						strncpy( names[i], name, sizeof(names[0])-1);
 						names[i][sizeof(names[0])-1] = '\0';
 				}
@@ -1088,6 +1111,12 @@ linkNvmlLibraries ()
 	if (dlerror() != NULL)
 	{
 		strncpy(_nvml_vector.cmp_info.disabled_reason, "NVML function nvmlShutdown not found.",PAPI_MAX_STR_LEN);
+		return ( PAPI_ENOSUPP );
+	}
+	nvmlDeviceGetComputeRunningProcessesPtr = dlsym(dl3, "nvmlDeviceGetComputeRunningProcesses");
+	if (dlerror() != NULL)
+	{
+		strncpy(_nvml_vector.cmp_info.disabled_reason, "NVML function nvmlDeviceGetComputeRunningProcesses not found.",PAPI_MAX_STR_LEN);
 		return ( PAPI_ENOSUPP );
 	}
 
