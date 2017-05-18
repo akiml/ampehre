@@ -402,12 +402,10 @@ int extractTemperature(char* response, double *mtemp, double *itemp) {
 	int ret;
     ret = sscanf(meq, "%lf", mtemp);
 	if (ret < 0) {
-		errno;
 		return -1;
 	}
     ret = sscanf(ieq, "%lf", itemp);
 	if (ret < 0) {
-		errno;
 		return -1;
 	}
 
@@ -417,14 +415,13 @@ int extractTemperature(char* response, double *mtemp, double *itemp) {
 static int
 read_maxeler_temperature() {
 	char *response;
-	int ret;
 
 	int deviceIx;
 	for(deviceIx = 0; deviceIx < num_devices; ++deviceIx) {
 
 		max_daemon_device_hw_monitor(maxelerosd, 0, &response);
 
-		ret = extractTemperature(response, &(current_values[deviceIx].mmgt_temperature), &(current_values[deviceIx].imgt_temperature));
+		extractTemperature(response, &(current_values[deviceIx].mmgt_temperature), &(current_values[deviceIx].imgt_temperature));
 
 		free(response);
 	}
@@ -754,10 +751,9 @@ _maxeler_read( hwd_context_t *ctx, hwd_control_state_t *ctl,
 
 	(void) flags;
 
-	maxeler_context_t *maxeler_ctx = (maxeler_context_t *) ctx;
 	maxeler_control_state_t *maxeler_ctl = ( maxeler_control_state_t *) ctl;
 
-	SUBDBG( "maxeler_read... %p %d", ctx, flags );
+	SUBDBG( "maxeler_read...%d"flags );
 
 	int i;
 
