@@ -97,9 +97,8 @@ static int num_events = 0;
 /*************************************************************************/
 
 long long ipmi_read_system_power(){
-	int32_t completion_code;
 	uint16_t result_power_current;
-	completion_code = dellCurrentPower(&result_power_current);
+	dellCurrentPower(&result_power_current);
 	return result_power_current;
 }
 long long ipmi_read_board_power(){
@@ -309,10 +308,9 @@ _ipmi_read( hwd_context_t *ctx, hwd_control_state_t *ctl,
 
    (void) flags;
 
-   ipmi_context_t *ipmi_ctx = (ipmi_context_t *) ctx;
    ipmi_control_state_t *ipmi_ctl = ( ipmi_control_state_t *) ctl;   
 
-   SUBDBG( "ipmi_read... %p %d", ctx, flags );
+   SUBDBG( "ipmi_read...%d", flags );
 
 	int i;
 	int event_id;
@@ -347,11 +345,7 @@ _ipmi_write( hwd_context_t *ctx, hwd_control_state_t *ctl,
 			   long long *events )
 {
 
-        ipmi_context_t *ipmi_ctx = (ipmi_context_t *) ctx;
-        ipmi_control_state_t *ipmi_ctl = ( ipmi_control_state_t *) ctl;   
-   
-   
-	SUBDBG( "ipmi_write... %p %p", ctx, ctl );
+	SUBDBG( "ipmi_write...");
 
 	return PAPI_OK;
 }
@@ -363,11 +357,7 @@ _ipmi_write( hwd_context_t *ctx, hwd_control_state_t *ctl,
 static int
 _ipmi_reset( hwd_context_t *ctx, hwd_control_state_t *ctl )
 {
-        ipmi_context_t *event_ctx = (ipmi_context_t *)ctx;
-	(void) ctl;
-
-	SUBDBG( "ipmi_reset ctx=%p ctrl=%p...", ctx, ctl );
-
+	SUBDBG( "ipmi_reset...");
 
 	return PAPI_OK;
 }
