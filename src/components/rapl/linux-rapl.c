@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <errno.h>
+#include <time.h>
 
 /* Headers required by PAPI */
 #include "papi.h"
@@ -81,7 +82,7 @@
 #define MAXIMUM_TIME_WINDOW_SHIFT    48
 
 /* RAPL TEMPERATURE */
-/*temperature of a processor core (a core of a CPU) */
+/* temperature of a processor core (a core of a CPU) */
 #define IA32_THERM_STATUS           0x19C
 /* temperature of a processor package */
 #define IA32_PACKAGE_THERM_STATUS   0x1B1
@@ -89,11 +90,27 @@
  * the temperature PROCHOT# bus signal rises */
 #define MSR_TEMPERATURE_TARGET      0x1A2
 
+/* RAPL FREQUENCY */
+/* get the time stamp counter to calculate average
+ * frequency over a specific time period */
+#define IA32_TIME_STAMP_COUNTER     0x10
+/* get maximum performance counter
+ * Intel advises us to use delta(IA32_APERF)/delta(IA32_MPERF) ratio as
+ * IA32_MPERF unrelated to IA32_APERF makes no sense.*/
+#define IA32_MPERF                  0xE7
+/* get actual performance counter
+ * Intel advises us to use delate(IA32_APERF)/delate(IA32_MPERF) ratio as
+ * IA32_APERF unrelated to IA32_MPERF makes no sense.*/
+#define IA32_APERF                  0xE8
+
+
 
 typedef struct _rapl_register
 {
 	unsigned int selector;
-	unsigned int package;
+	unsigned int package;		// global package number
+	unsigned int cpu;			// global system cpu count
+	unsigned int package_cpu;	// index of cpu according to package
 } _rapl_register_t;
 
 typedef struct _rapl_native_event_entry
@@ -122,6 +139,7 @@ typedef struct _rapl_control_state
   long long count[RAPL_MAX_COUNTERS];
   int need_difference[RAPL_MAX_COUNTERS];
   long long lastupdate;
+  int need_frequency;
 } _rapl_control_state_t;
 
 
@@ -147,6 +165,19 @@ static int num_packages=0,num_cpus=0;
 int power_divisor,time_divisor;
 int cpu_energy_divisor,dram_energy_divisor;
 uint32_t *package_temperature_targets = NULL;
+struct cpu_freq_counter {
+	long long avg_freq;
+	long long eff_freq;
+	long long aperf;
+	long long mperf;
+	long long tsc;
+	uint64_t time;
+	
+};
+struct cpu_freq_counter *cpu_freq = NULL;
+struct cpu_freq_counter *cpu_freq_before = NULL;
+
+
 
 #define PACKAGE_ENERGY      	0
 #define PACKAGE_THERMAL     	1
@@ -158,13 +189,20 @@ uint32_t *package_temperature_targets = NULL;
 #define PACKAGE_MINIMUM_CNT     7
 #define PACKAGE_MAXIMUM_CNT     8
 #define PACKAGE_TIME_WINDOW_CNT 9
-#define DRAM_ENERGY		10
+#define DRAM_ENERGY				10
 #define PACKAGE_TEMPERATURE		11
 #define PACKAGE_TEMPERATURE_CNT	12
+#define PACKAGE_FREQUENCY		13
 
 /***************************************************************************/
 /******  BEGIN FUNCTIONS  USED INTERNALLY SPECIFIC TO THIS COMPONENT *******/
 /***************************************************************************/
+
+long long rapl_getcurrenttime() {
+    struct timespec result;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &result);
+    return (long long)result.tv_sec* 1000000000LL + (long long)result.tv_nsec;
+}
 
 
 static long long read_msr(int fd, int which) {
@@ -203,15 +241,88 @@ static int open_fd(int offset) {
   return fd;
 }
 
-static long long read_rapl_value(int index) {
+void rapl_update_frequency() {
+	int cpuIx;
+	int fd;
+	long long time_diff;
+	long long aperf;
+	long long mperf;
+	struct cpu_freq_counter *temp;
+	// swap pointer
+	temp = cpu_freq_before;
+	cpu_freq_before = cpu_freq;
+	cpu_freq = temp;
 
-   int fd;
+	for (cpuIx = 0; cpuIx < num_cpus; ++cpuIx) {
+		cpu_freq[cpuIx].time = rapl_getcurrenttime();
+		fd=open_fd(cpuIx);
+		cpu_freq[cpuIx].tsc = read_msr(fd, IA32_TIME_STAMP_COUNTER);
+		cpu_freq[cpuIx].aperf = read_msr(fd, IA32_APERF);
+		cpu_freq[cpuIx].mperf = read_msr(fd, IA32_MPERF);
+	}
+	for (cpuIx = 0; cpuIx < num_cpus; ++cpuIx) {
 
-   fd=open_fd(rapl_native_events[index].fd_offset);
-   return read_msr(fd,rapl_native_events[index].msr);
+		time_diff = cpu_freq[cpuIx].time - cpu_freq_before[cpuIx].time;
+		cpu_freq[cpuIx].avg_freq =
+			(long long) ((double)(cpu_freq[cpuIx].tsc - cpu_freq_before[cpuIx].tsc) / (double)time_diff * 1000000.0);
+		
+/*		                        pMsMeasurementCpu->msr_freq_core_cur[i][j]  =
+                            (pMsMeasurementCpu->internal.msr_timestamp_core_cur[i][j] - pMsMeasurementCpu->internal.msr_timestamp_core_temp[i][j]) /                            (pMsMeasurementCpu->internal.msr_time_diff_double * 1000000);
+*/
+		// overflow check
+		if (cpu_freq[cpuIx].aperf > cpu_freq_before[cpuIx].aperf) {
+			aperf = cpu_freq[cpuIx].aperf - cpu_freq_before[cpuIx].aperf;
+		} else {
+			aperf = UINT64_MAX - (cpu_freq_before[cpuIx].aperf - cpu_freq[cpuIx].aperf);
+		}
+		if (cpu_freq[cpuIx].mperf > cpu_freq_before[cpuIx].mperf) {
+			mperf = cpu_freq[cpuIx].mperf - cpu_freq_before[cpuIx].mperf;
+		} else {
+			mperf = UINT64_MAX - (cpu_freq_before[cpuIx].mperf - cpu_freq[cpuIx].mperf);
+		}
+		
+		cpu_freq[cpuIx].eff_freq = (long long) ( (double)(cpu_freq[cpuIx].avg_freq) * (double)aperf / (double)mperf );
+/*
+	pMsMeasurementCpu->msr_freq_core_eff_cur[i][j]  = pMsMeasurementCpu->msr_freq_core_cur[i][j] * diff_aperf / diff_mperf;
+*/
+	}
 
 }
 
+long long rapl_get_frequency(int index) {
+
+	int cpu = rapl_native_events[index].resources.cpu;
+
+	switch(rapl_native_events[index].msr) {
+		case 0:
+			printf("cpu %d msr %d value %lld\n", cpu, 0, cpu_freq[cpu].avg_freq);
+			return cpu_freq[cpu].avg_freq;
+		break;
+		default:
+			printf("cpu %d msr %d value %lld\n", cpu, 1, cpu_freq[cpu].eff_freq);
+			return cpu_freq[cpu].eff_freq;
+		break;
+	}
+	return 0;
+}
+static long long read_rapl_value(int index) {
+
+	int type;
+	int fd;
+	type = rapl_native_events[index].type;
+	
+	switch(type) {
+		case PACKAGE_FREQUENCY:
+			return rapl_get_frequency(index);
+		break;
+		default:
+
+			fd=open_fd(rapl_native_events[index].fd_offset);
+			return read_msr(fd,rapl_native_events[index].msr);
+		break;
+	}
+	return 0;
+}
 static long long convert_rapl_energy(int index, long long value) {
 
    union {
@@ -277,6 +388,19 @@ static long long convert_rapl_energy(int index, long long value) {
    }
 
    if (rapl_native_events[index].type==PACKAGE_TEMPERATURE_CNT) {
+		return_val.ll = value;
+   }
+
+   if (rapl_native_events[index].type==PACKAGE_FREQUENCY) {
+		/*
+		int fd;
+		fd=open_fd(rapl_native_events[index].fd_offset);
+		return read_msr(fd,rapl_native_events[index].msr);
+
+		long long = read_rapl_value(i);
+		base = 
+		return_val.ll = base * (aperf_mperf);
+		*/
 		return_val.ll = value;
    }
 
@@ -556,6 +680,10 @@ _rapl_init_component( int cidx )
 	   package_temperature_targets[j] = target_raw;
  	 }
 
+	 /* space for counters necessary for core frequency */
+	 cpu_freq = (struct cpu_freq_counter *) papi_calloc(sizeof(struct cpu_freq_counter), num_cpus);
+	 cpu_freq_before = (struct cpu_freq_counter *) papi_calloc(sizeof(struct cpu_freq_counter), num_cpus);
+	 
      /* Allocate space for events */
      /* Include room for both counts and scaled values */
 
@@ -566,14 +694,15 @@ _rapl_init_component( int cidx )
                  (4*num_packages) +
 				 num_packages +						// package temperature
 				 num_cpus							// cpu temperature
-				 ) * 2;
+				 ) * 2 +
+				 num_cpus * 2;							// core frequency
 
      rapl_native_events = (_rapl_native_event_entry_t*)
           papi_calloc(sizeof(_rapl_native_event_entry_t),num_events);
 
 
      i = 0;
-     k = num_events/2;
+     k = (num_events-(num_cpus*2))/2; // all events - events without counters
 
      /* Create events for package power info */
 
@@ -870,6 +999,37 @@ _rapl_init_component( int cidx )
 		 k++;
 	 }
 
+	for (j=0;j<num_cpus;j++) {
+		sprintf(rapl_native_events[k].name,
+		   		"AVG_FREQUENCY:PACKAGE%d:CPU%d", cpu_package[j], cpu_core_id[j]);
+	   	strncpy(rapl_native_events[k].units,"MHz",PAPI_MIN_STR_LEN);
+	   	sprintf(rapl_native_events[k].description,
+		   		"Base frequency for package %d cpu %d", cpu_package[j], cpu_core_id[j]);
+		rapl_native_events[k].fd_offset=j;
+	   	rapl_native_events[k].msr=0;
+	   	rapl_native_events[k].resources.selector = k + 1;
+	   	rapl_native_events[k].resources.package = cpu_package[j];
+	   	rapl_native_events[k].resources.cpu = j;
+	   	rapl_native_events[k].resources.package_cpu = cpu_core_id[j];
+	   	rapl_native_events[k].type=PACKAGE_FREQUENCY;
+	   	rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+		k++;
+
+		sprintf(rapl_native_events[k].name,
+		   		"EFF_FREQUENCY:PACKAGE%d:CPU%d", cpu_package[j], cpu_core_id[j]);
+	   	strncpy(rapl_native_events[k].units,"MHz",PAPI_MIN_STR_LEN);
+	   	sprintf(rapl_native_events[k].description,
+		   		"Effective frequency for package %d cpu %d", cpu_package[j], cpu_core_id[j]);
+		rapl_native_events[k].fd_offset=j;
+	   	rapl_native_events[k].msr=1;
+	   	rapl_native_events[k].resources.selector = k + 1;
+	   	rapl_native_events[k].resources.package = cpu_package[j];
+	   	rapl_native_events[k].resources.cpu = j;
+	   	rapl_native_events[k].resources.package_cpu = cpu_core_id[j];
+	   	rapl_native_events[k].type=PACKAGE_FREQUENCY;
+	   	rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+		k++;
+	}
 
      /* Export the total number of events available */
      _rapl_vector.cmp_info.num_native_events = num_events;
@@ -933,6 +1093,10 @@ _rapl_stop( hwd_context_t *ctx, hwd_control_state_t *ctl )
     int i;
     long long temp;
 
+	if (control->need_frequency == 1) {
+		rapl_update_frequency();
+	}
+
     for ( i = 0; i < RAPL_MAX_COUNTERS; i++ ) {
 		if (control->being_measured[i]) {
 			temp = read_rapl_value(i);
@@ -993,6 +1157,18 @@ _rapl_shutdown_component( void )
        }
        papi_free(fd_array);
     }
+	if (NULL != package_temperature_targets) {
+		papi_free(package_temperature_targets);
+		package_temperature_targets = NULL;
+	}
+	if (NULL != cpu_freq) {
+		papi_free(cpu_freq);
+		cpu_freq = NULL;
+	}
+	if (NULL != cpu_freq_before) {
+		papi_free(cpu_freq_before);
+		cpu_freq_before = NULL;
+	}
 
     return PAPI_OK;
 }
@@ -1030,10 +1206,14 @@ _rapl_update_control_state( hwd_control_state_t *ctl,
        control->being_measured[i]=0;
     }
 
+	control->need_frequency = 0;
     for( i = 0; i < count; i++ ) {
        index=native[i].ni_event&PAPI_NATIVE_AND_MASK;
        native[i].ni_position=rapl_native_events[index].resources.selector - 1;
        control->being_measured[index]=1;
+		if (rapl_native_events[index].type == PACKAGE_FREQUENCY) {
+			control->need_frequency = 1;
+		}
 
        /* Only need to subtract if it's a PACKAGE_ENERGY or ENERGY_CNT type */
 /*
