@@ -1,0 +1,7 @@
+COMPSRCS += components/micknc/micknc.c
+COMPOBJS += micknc.o
+CFLAGS += -I/usr/include/
+LDFLAGS += -L/usr/lib64/ -lmicmgmt
+
+micknc.o: components/micknc/micknc.c $(HEADERS) 
+	$(CC) $(LIBCFLAGS) $(OPTFLAGS) -c components/micknc/micknc.c -o micknc.o 
