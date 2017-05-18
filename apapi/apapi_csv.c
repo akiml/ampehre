@@ -217,8 +217,7 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
                 case 4:
                     // long long max_sample
                     input[tokenBreak] = 0;
-                    (*events_out)[eventIx].max_sample = strtoll(&(input[tokenStart]), &strto_endptr, 10);
-                    
+                    (*events_out)[eventIx].max_sample = strtoll(&(input[tokenStart]), &strto_endptr, 0);
                     if (errno != 0 || strto_endptr == &(input[tokenStart])) {
                         error = 1;
                         printf("Invalid attribute %d max_sample at at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1);

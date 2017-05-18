@@ -7,35 +7,35 @@
 // sample1 at time1: current sample
 // sample0 at time0: last sample
 enum APAPI_op1 {
-    APAPI_OP1_NOP,                        // no operation
-    APAPI_OP1_SAMPLE_DIFF,                // sample1-sample0
-    APAPI_OP1_DIV_DIFF_TIME,              // value / (time1-time0)
-    APAPI_OP1_SAMPLE1_MUL_DIFF_TIME,      // sample1 * (time1-time0)
-    APAPI_OP1_AVG_SAMPLE_MUL_DIFF_TIME    // (sample0+sample1)/2 * (time1-time0)
+	APAPI_OP1_NOP,						// no operation
+	APAPI_OP1_SAMPLE_DIFF,				// sample1-sample0
+	APAPI_OP1_DIV_DIFF_TIME,			// value / (time1-time0)
+	APAPI_OP1_SAMPLE1_MUL_DIFF_TIME,	// sample1 * (time1-time0)
+	APAPI_OP1_AVG_SAMPLE_MUL_DIFF_TIME	// (sample0+sample1)/2 * (time1-time0)
 };
 
 // to be used as bit mask values
 enum APAPI_stats {
-    APAPI_STAT_NO  = 0,
-    APAPI_STAT_MIN = 1,
-    APAPI_STAT_MAX = 2,
-    APAPI_STAT_AVG = 4,
-    APAPI_STAT_ACC = 8,
-    APAPI_STAT_ALL = -1
+	APAPI_STAT_NO  = 0,
+	APAPI_STAT_MIN = 1,
+	APAPI_STAT_MAX = 2,
+	APAPI_STAT_AVG = 4,
+	APAPI_STAT_ACC = 8,
+	APAPI_STAT_ALL = -1
 };
 
 struct apapi_event_ops {
-    char *event_name;
-    enum APAPI_op1 op1;
-    enum APAPI_stats value0;
-    enum APAPI_stats value1;
-    long long max_sample; // max value - for overflow check
-    char *value0_type;
-    char *value0_unit;
-    double value0_prefix;
-    char *value1_type;
-    char *value1_unit;
-    double value1_prefix;
+	char *event_name;
+	enum APAPI_op1 op1;
+	enum APAPI_stats value0;
+	enum APAPI_stats value1;
+	long long max_sample; // max value - for overflow check
+	char *value0_type;
+	char *value0_unit;
+	double value0_prefix;
+	char *value1_type;
+	char *value1_unit;
+	double value1_prefix;
 };
 
 extern int APAPI_DEFAULT_SET_NUM;
@@ -44,49 +44,49 @@ extern struct apapi_event_ops APAPI_DEFAULT_OPS;
 //#include "apapi_defaults.h"
 
 struct apapi_eventset {
-    int EventSet;
-    int num_events;
-    // papi samples
-    long long *current_counters;
-    long long *previous_counters;
-    // maximal values for events - important for overflow check
-    long long *max_counters; // if value > 0 then do overflow_check else just apply new value
-    // samples - overflow cleared
-    long long *current_samples;
-    long long *previous_samples;
-    // sample counter
-    long long count;
-    // time
-    long long current_time;
-    long long previous_time;
-    long long first_time;
-    long long last_time;
-    // min,max,avg,acc values - as arrays of size 4
-    double *values0;
-    double *values1;
-    // operations
-    enum APAPI_op1 *values_op1;
-    // value statistics
-    enum APAPI_stats *values0_stats;
-    enum APAPI_stats *values1_stats;
-    struct apapi_event_ops *event_ops;
+	int EventSet;
+	int num_events;
+	// papi samples
+	long long *current_counters;
+	long long *previous_counters;
+	// maximal values for events - important for overflow check
+	long long *max_counters; // if value > 0 then do overflow_check else just apply new value
+	// samples - overflow cleared
+	long long *current_samples;
+	long long *previous_samples;
+	// sample counter
+	long long count;
+	// time
+	long long current_time;
+	long long previous_time;
+	long long first_time;
+	long long last_time;
+				// min,max,avg,acc values - as arrays of size 4
+	double *values0;
+	double *values1;
+	// operations
+	enum APAPI_op1 *values_op1;
+	// value statistics
+	enum APAPI_stats *values0_stats;
+	enum APAPI_stats *values1_stats;
+	struct apapi_event_ops *event_ops;
 };
 
 enum APAPI_timer_state {
-    APAPI_TIMER_STATE_READY,
-    APAPI_TIMER_STATE_STARTED,
-    APAPI_TIMER_STATE_DONE
+	APAPI_TIMER_STATE_READY,
+	APAPI_TIMER_STATE_STARTED,
+	APAPI_TIMER_STATE_DONE
 };
 
 struct apapi_timer {
-    enum APAPI_timer_state state;
-    pthread_t thread;
-    struct timespec interval;
-    pthread_mutex_t mutex;
-    int interrupt;
-    void (*measure)(void**);
-    void** measure_arg;
-    struct apapi_eventset *set;
+	enum APAPI_timer_state state;
+	pthread_t thread;
+	struct timespec interval;
+	pthread_mutex_t mutex;
+	int interrupt;
+	void (*measure)(void**);
+	void** measure_arg;
+	struct apapi_eventset *set;
 };
 
 
