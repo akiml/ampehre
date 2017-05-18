@@ -369,25 +369,25 @@ struct mic_device_mem		**mic_info_memory		= NULL;
 
 static int
 micknc_read_total_memory() {
-	int status, m = 0;
+	int m = 0;
 	struct mic_memory_util_info *memory_info    = NULL;
 	for (m = 0; m < num_devices; ++m) {
-		status = mic_get_memory_utilization_info(mic_devices[m], &memory_info);
-		status = mic_get_total_memory_size(memory_info, &(mic_info_memory_counters[m].total));
-		status = mic_free_memory_utilization_info(memory_info);
+		mic_get_memory_utilization_info(mic_devices[m], &memory_info);
+		mic_get_total_memory_size(memory_info, &(mic_info_memory_counters[m].total));
+		mic_free_memory_utilization_info(memory_info);
 	}
 	return 0;
 }
 
 static int
 micknc_read_memory() {
-	int status, m = 0;
+	int m = 0;
 	struct mic_memory_util_info *memory_info    = NULL;
 	for (m = 0; m < num_devices; ++m) {
-		status = mic_get_memory_utilization_info(mic_devices[m], &memory_info);
-		status = mic_get_available_memory_size(memory_info, &(mic_info_memory_counters[m].free));
+		mic_get_memory_utilization_info(mic_devices[m], &memory_info);
+		mic_get_available_memory_size(memory_info, &(mic_info_memory_counters[m].free));
 		mic_info_memory_counters[m].used = mic_info_memory_counters[m].total - mic_info_memory_counters[m].free;
-		status = mic_free_memory_utilization_info(memory_info);
+		mic_free_memory_utilization_info(memory_info);
 	}
 	return 0;
 }
@@ -404,16 +404,16 @@ micknc_read_memory_util() {
 
 static int
 micknc_read_core_util() {
-	int status, m = 0;
+	int m = 0;
 	for (m = 0; m < num_devices; ++m) {
-		status = mic_alloc_core_util(&mic_info_core_util[m]);
+		mic_alloc_core_util(&mic_info_core_util[m]);
 	}
 	return 0;
 }
 
 static int
 micknc_update_core_util() {
-	int status, m = 0;
+	int m = 0;
 	struct mic_core_util_counters *temp_counters;
 
 	// swap counters
@@ -423,11 +423,11 @@ micknc_update_core_util() {
 
 	// read values
 	for (m = 0; m < num_devices; ++m) {
-		status = mic_update_core_util(mic_devices[m], mic_info_core_util[m]);
-		status = mic_get_idle_sum(mic_info_core_util[m], &(mic_info_core_util_counters[m].idle_sum));
-		status = mic_get_sys_sum(mic_info_core_util[m], &(mic_info_core_util_counters[m].sys_sum));
-		status = mic_get_nice_sum(mic_info_core_util[m], &(mic_info_core_util_counters[m].nice_sum));
-		status = mic_get_user_sum(mic_info_core_util[m], &(mic_info_core_util_counters[m].user_sum));
+		mic_update_core_util(mic_devices[m], mic_info_core_util[m]);
+		mic_get_idle_sum(mic_info_core_util[m], &(mic_info_core_util_counters[m].idle_sum));
+		mic_get_sys_sum(mic_info_core_util[m], &(mic_info_core_util_counters[m].sys_sum));
+		mic_get_nice_sum(mic_info_core_util[m], &(mic_info_core_util_counters[m].nice_sum));
+		mic_get_user_sum(mic_info_core_util[m], &(mic_info_core_util_counters[m].user_sum));
 
 		mic_info_core_util_values[m].idle_sum = mic_info_core_util_counters[m].idle_sum - mic_info_core_util_counters_prev[m].idle_sum;
 		mic_info_core_util_values[m].sys_sum = mic_info_core_util_counters[m].sys_sum - mic_info_core_util_counters_prev[m].sys_sum;
@@ -439,9 +439,9 @@ micknc_update_core_util() {
 
 static int
 micknc_free_core_util() {
-	int status, m = 0;
+	int m = 0;
 	for (m = 0; m < num_devices; ++m) {
-		status = mic_free_core_util(mic_info_core_util[m]);
+		mic_free_core_util(mic_info_core_util[m]);
 		mic_info_core_util[m] = NULL;
 	}
 	return 0;
@@ -449,69 +449,64 @@ micknc_free_core_util() {
 
 static int
 micknc_read_power() {
-	int status, m = 0;
+	int m = 0;
 	for (m = 0; m < num_devices; ++m) {
-		status = mic_get_power_utilization_info(mic_devices[m], &(mic_info_power[m]));
+		mic_get_power_utilization_info(mic_devices[m], &(mic_info_power[m]));
 	}
 	return 0;
 }
 
 static int
 micknc_read_temp() {
-	int status, m = 0;
+	int m = 0;
 	for (m = 0; m < num_devices; ++m) {
-		status = mic_get_thermal_info(mic_devices[m], &(mic_info_thermal[m]));
+		mic_get_thermal_info(mic_devices[m], &(mic_info_thermal[m]));
 	}
 	return 0;
 }
 
 static int
 micknc_read_cores() {
-	int status, m = 0;
+	int m = 0;
 	for (m = 0; m < num_devices; ++m) {
-		status = mic_get_cores_info(mic_devices[m], &(mic_info_cores[m]));
+		mic_get_cores_info(mic_devices[m], &(mic_info_cores[m]));
 	}
 	return 0;
 }
 
 static int
 micknc_read_memory_freq() {
-	int status, m = 0;
+	int m = 0;
 	for (m = 0; m < num_devices; ++m) {
-		status = mic_get_memory_info(mic_devices[m], &(mic_info_memory[m]));
+		mic_get_memory_info(mic_devices[m], &(mic_info_memory[m]));
 	}
 	return 0;
 }
 
-
-
-
-
 static int
 micknc_free_necessary_counters() {
 	int m = 0;
-	int status;
 	if (mic_info_power[0] != NULL) {
 		for (m = 0; m < num_devices; ++m) {
-			status = mic_free_power_utilization_info(mic_info_power[m]);
+			mic_free_power_utilization_info(mic_info_power[m]);
 			mic_info_power[m] = NULL;
 		}
 	}
 	if (mic_info_thermal[0] != NULL) {
 		for (m = 0; m < num_devices; ++m) {
-			status = mic_free_thermal_info(mic_info_thermal[m]);
+			mic_free_thermal_info(mic_info_thermal[m]);
 			mic_info_thermal[m] = NULL;
 		}
 	}
 	if (mic_info_cores[0] != NULL) {
 		for (m = 0; m < num_devices; ++m) {
-			status = mic_free_cores_info(mic_info_cores[m]);
+			mic_free_cores_info(mic_info_cores[m]);
 			mic_info_cores[m] = NULL;
 		}
 	}
 	if (mic_info_memory[0] != NULL) {
 		for (m = 0; m < num_devices; ++m) {
-			status = mic_free_thermal_info(mic_info_memory[m]);
+			mic_free_memory_info(mic_info_memory[m]);
 			mic_info_memory[m] = NULL;
 		}
 	}
@@ -536,66 +531,67 @@ micknc_read_necessary_counters(int event_types) {
 	if ( (event_types & TYPE_MEM) == TYPE_MEM ) {
 		micknc_read_memory();
 	}
+	return 0;
 }
 
 static int
 micknc_set_counter(int native_id, int device_id, long long *result) {
 
 	uint32_t temp = 0;
-	int status;
+	uint16_t temp16 = 0;
 	uint32_t pcie, c2x3, c2x4;
 
 	switch (native_id) {
 		case EVENT_POWER_PCIE:
-			status = mic_get_pcie_power_readings(mic_info_power[device_id], &temp);
+			mic_get_pcie_power_readings(mic_info_power[device_id], &temp);
 		break;
 		case EVENT_POWER_C2X3:
-			status = mic_get_c2x3_power_readings(mic_info_power[device_id],  &temp);
+			mic_get_c2x3_power_readings(mic_info_power[device_id],  &temp);
 		break;
 		case EVENT_POWER_C2X4:
-			status = mic_get_c2x4_power_readings(mic_info_power[device_id], &temp);
+			mic_get_c2x4_power_readings(mic_info_power[device_id], &temp);
 		break;
 		case EVENT_POWER_VCCP:
-			status = mic_get_vccp_power_readings(mic_info_power[device_id], &temp);
+			mic_get_vccp_power_readings(mic_info_power[device_id], &temp);
 		break;
 		case EVENT_POWER_VDDG:
-			status = mic_get_vddg_power_readings(mic_info_power[device_id], &temp);
+			mic_get_vddg_power_readings(mic_info_power[device_id], &temp);
 		break;
 		case EVENT_POWER_VDDQ:
-			status = mic_get_vddq_power_readings(mic_info_power[device_id], &temp);
+			mic_get_vddq_power_readings(mic_info_power[device_id], &temp);
 		break;
 		case EVENT_POWER_MIC:
-			status = mic_get_pcie_power_readings(mic_info_power[device_id], &pcie);
-			status = mic_get_c2x3_power_readings(mic_info_power[device_id],  &c2x3);
-			status = mic_get_c2x4_power_readings(mic_info_power[device_id], &c2x4);
+			mic_get_pcie_power_readings(mic_info_power[device_id], &pcie);
+			mic_get_c2x3_power_readings(mic_info_power[device_id],  &c2x3);
+			mic_get_c2x4_power_readings(mic_info_power[device_id], &c2x4);
 			temp = pcie + c2x3 + c2x4;
 		break;
 		case EVENT_TEMP_DIE:
-			status = mic_get_die_temp(mic_info_thermal[device_id], &temp);
+			mic_get_die_temp(mic_info_thermal[device_id], &temp);
 		break;
 		case EVENT_TEMP_GDDR:
-			status = mic_get_gddr_temp(mic_info_thermal[device_id], &temp);
+			mic_get_gddr_temp(mic_info_thermal[device_id], &temp16);
 		break;
 		case EVENT_TEMP_FANIN:
-			status = mic_get_fanin_temp(mic_info_thermal[device_id], &temp);
+			mic_get_fanin_temp(mic_info_thermal[device_id], &temp16);
 		break;
 		case EVENT_TEMP_FANOUT:
-			status = mic_get_fanout_temp(mic_info_thermal[device_id], &temp);
+			mic_get_fanout_temp(mic_info_thermal[device_id], &temp16);
 		break;
 		case EVENT_TEMP_VCCP:
-			status = mic_get_vccp_temp(mic_info_thermal[device_id], &temp);
+			mic_get_vccp_temp(mic_info_thermal[device_id], &temp16);
 		break;
 		case EVENT_TEMP_VDDG:
-			status = mic_get_vddg_temp(mic_info_thermal[device_id], &temp);
+			mic_get_vddg_temp(mic_info_thermal[device_id], &temp16);
 		break;
 		case EVENT_TEMP_VDDQ:
-			status = mic_get_vddq_temp(mic_info_thermal[device_id], &temp);
+			mic_get_vddq_temp(mic_info_thermal[device_id], &temp16);
 		break;
 		case EVENT_FREQ_CORE:
-			status = mic_get_cores_frequency(mic_info_cores[device_id], &temp);
+			mic_get_cores_frequency(mic_info_cores[device_id], &temp);
 		break;
 		case EVENT_FREQ_MEM:
-			status = mic_get_memory_frequency(mic_info_memory[device_id], &temp);
+			mic_get_memory_frequency(mic_info_memory[device_id], &temp);
 		break;
 		case EVENT_TIME_ACTIVE:
 			temp = 	(uint64_t) (1000.0 * (double)(mic_info_core_util_values[device_id].sys_sum +
@@ -624,7 +620,7 @@ micknc_set_counter(int native_id, int device_id, long long *result) {
 			return -1;
 		break;
 	}
-	*result = temp;
+	*result = temp + temp16;
 
 	return 0;
 }
@@ -662,7 +658,7 @@ _micknc_init_component( int cidx )
 	/* for actual hardware this might have to be determined dynamically */
 	num_events = NUM_EVENTS * num_devices;
 
-	mic_devices = (struct mic_decice**) papi_calloc(sizeof(struct mic_device*), num_devices);
+	mic_devices = (struct mic_device**) papi_calloc(sizeof(struct mic_device*), num_devices);
 	mic_info_power = (struct mic_power_util_info**) papi_calloc(sizeof(struct mic_power_util_info*), num_devices);
 	mic_info_thermal = (struct mic_thermal_info**) papi_calloc(sizeof(struct mic_thermal_info*), num_devices);
 	mic_info_cores = (struct mic_cores_info**) papi_calloc(sizeof(struct mic_cores_info*), num_devices);
@@ -875,14 +871,13 @@ _micknc_read( hwd_context_t *ctx, hwd_control_state_t *ctl,
 
 	(void) flags;
 
-	micknc_context_t *micknc_ctx = (micknc_context_t *) ctx;
 	micknc_control_state_t *micknc_ctl = ( micknc_control_state_t *) ctl;   
 
 	SUBDBG( "micknc_read... %p %d", ctx, flags );
 
-	int i, status;
+	int i;
 
-	status = micknc_read_necessary_counters(micknc_ctl->event_types);
+	micknc_read_necessary_counters(micknc_ctl->event_types);
 
 	int event_id;
 	int event_device_id;
@@ -892,10 +887,10 @@ _micknc_read( hwd_context_t *ctx, hwd_control_state_t *ctl,
         event_id = micknc_ctl->which_counter[i];
         event_device_id = micknc_native_table[event_id].device_id;
 
-		status = micknc_set_counter(event_id, event_device_id, &(micknc_ctl->counter[i]));
+		micknc_set_counter(event_id, event_device_id, &(micknc_ctl->counter[i]));
 	}
 	
-	status = micknc_free_necessary_counters();
+	micknc_free_necessary_counters();
 
 	/* return pointer to the values we read */
 	*events = micknc_ctl->counter;
@@ -910,12 +905,8 @@ _micknc_write( hwd_context_t *ctx, hwd_control_state_t *ctl,
 			   long long *events )
 {
 
-        micknc_context_t *micknc_ctx = (micknc_context_t *) ctx;
-        micknc_control_state_t *micknc_ctl = ( micknc_control_state_t *) ctl;   
    
-        int i;
-   
-	SUBDBG( "micknc_write... %p %p", ctx, ctl );
+	SUBDBG( "micknc_write... ");
 
 	return PAPI_OK;
 }
@@ -927,13 +918,11 @@ _micknc_write( hwd_context_t *ctx, hwd_control_state_t *ctl,
 static int
 _micknc_reset( hwd_context_t *ctx, hwd_control_state_t *ctl )
 {
-        micknc_context_t *event_ctx = (micknc_context_t *)ctx;
-	(void) ctl;
 
-	SUBDBG( "micknc_reset ctx=%p ctrl=%p...", ctx, ctl );
+	SUBDBG( "micknc_reset...");
 
 	/* Reset the hardware */
-
+	return PAPI_OK;
 }
 
 /** Triggered by PAPI_shutdown() */
@@ -946,12 +935,11 @@ _micknc_shutdown_component(void)
         /* Free anything we allocated */
 
 	int m = 0;
-	int status;
 	for (m = 0; m<num_devices; ++m) {
-		status = mic_close_device(mic_devices[m]);
+		mic_close_device(mic_devices[m]);
 		mic_devices[m] = NULL;
 	}
-	status = micknc_free_core_util();
+	micknc_free_core_util();
 
 	papi_free(mic_devices);
 	papi_free(mic_info_power);
