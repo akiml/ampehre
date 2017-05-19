@@ -131,7 +131,7 @@ typedef struct _rapl_reg_alloc
 } _rapl_reg_alloc_t;
 
 /* actually 32?  But setting this to be safe? */
-#define RAPL_MAX_COUNTERS 64
+#define RAPL_MAX_COUNTERS 128
 
 typedef struct _rapl_control_state
 {
@@ -140,6 +140,7 @@ typedef struct _rapl_control_state
   int need_difference[RAPL_MAX_COUNTERS];
   long long lastupdate;
   int need_frequency;
+  int need_systemstats;
 } _rapl_control_state_t;
 
 
@@ -176,6 +177,32 @@ struct cpu_freq_counter {
 };
 struct cpu_freq_counter *cpu_freq = NULL;
 struct cpu_freq_counter *cpu_freq_before = NULL;
+struct cpu_stat_counter {
+	uint64_t user;
+	uint64_t nice;
+	uint64_t system;
+	uint64_t idle;
+	uint64_t iowait;
+	uint64_t irq;
+	uint64_t softirq;
+	uint64_t steal;
+	uint64_t guest;
+	
+	
+	long long time_work;
+	long long time_idle;
+	long long util;
+	long long memory_total;
+	long long memory_used;
+	long long memory_free;
+	long long swap_total;
+	long long swap_used;
+	long long swap_free;
+};
+struct cpu_stat_counter _cpu_stat_first = {0};
+struct cpu_stat_counter cpu_stat = {0};
+struct cpu_stat_counter *cpu_stat_first = NULL;
+long sc_clk_tck;
 
 
 
@@ -193,6 +220,7 @@ struct cpu_freq_counter *cpu_freq_before = NULL;
 #define PACKAGE_TEMPERATURE		11
 #define PACKAGE_TEMPERATURE_CNT	12
 #define PACKAGE_FREQUENCY		13
+#define SYSTEM_STATS			14
 
 /***************************************************************************/
 /******  BEGIN FUNCTIONS  USED INTERNALLY SPECIFIC TO THIS COMPONENT *******/
@@ -240,6 +268,147 @@ static int open_fd(int offset) {
 
   return fd;
 }
+
+int rapl_readline(FILE *fd, char *buffer, int max, int *read) {
+	int curIx;
+	int numread;
+	for (curIx = 0; curIx<max; ++curIx) {
+		numread = fread(&(buffer[curIx]), 1, 1, fd);
+		// error
+		if (numread <= 0 && ferror(fd) != 0) {
+			*read = curIx;
+			return -1;
+		}
+		// end of file
+		if (numread <= 0 && feof(fd) != 0) {
+			*read = curIx;
+			return 0;
+		}
+		// new line
+		if (buffer[curIx] == '\n') {
+			buffer[curIx] = 0;
+			break;
+		}
+	}
+	// max reached
+	*read = curIx;
+	return 0;
+}
+
+
+void rapl_update_systemstats() {
+
+	int num_read;
+
+	FILE *cpu_stat_fd;
+	cpu_stat_fd = fopen("/proc/stat", "r");
+
+	if (cpu_stat_fd != NULL) {
+		num_read = fscanf(cpu_stat_fd,"cpu %ld %ld %ld %ld %ld %ld %ld %ld %ld", &(cpu_stat.user), &(cpu_stat.nice), &(cpu_stat.system), &(cpu_stat.idle), &(cpu_stat.iowait), &(cpu_stat.irq), &(cpu_stat.softirq), &(cpu_stat.steal), &(cpu_stat.guest));
+
+		fclose(cpu_stat_fd);
+	}
+
+	FILE *mem_stat_fd;
+	mem_stat_fd = fopen("/proc/meminfo", "r");
+		
+	if (mem_stat_fd != NULL) {
+		char buffer[40];
+		memset(buffer, 0, 40);
+		int itemstoread = 4;
+		int ret = 0;
+		while (ret == 0 && itemstoread > 0) { // last read returned error or all necessary items found
+			ret = rapl_readline(mem_stat_fd, buffer, 40, &num_read);
+			
+			if (num_read == 0) {
+				break;
+			}
+
+			// as for now /proc/meminfo only uses kB unit
+			if (strncmp(buffer, "SwapFree:", 9) == 0) {
+				sscanf(buffer, "SwapFree: %lld kB", &(cpu_stat.swap_free));
+				itemstoread--;
+				continue;
+			}
+			if (strncmp(buffer, "SwapTotal:", 10) == 0) {
+				sscanf(buffer, "SwapTotal: %lld kB", &(cpu_stat.swap_total));	
+				itemstoread--;
+				continue;
+			}
+			if (strncmp(buffer, "MemFree:", 8) == 0) {
+				sscanf(buffer, "MemFree: %lld kB", &(cpu_stat.memory_free));
+				itemstoread--;
+				continue;
+			}
+			if (strncmp(buffer, "MemTotal:", 9) == 0) {
+				sscanf(buffer, "MemTotal: %lld kB", &(cpu_stat.memory_total));
+				itemstoread--;
+				continue;
+			}
+		}
+		fclose(mem_stat_fd);
+	}
+	
+	if (cpu_stat_first == NULL) {
+		cpu_stat_first = &_cpu_stat_first;
+		memcpy( &_cpu_stat_first, &cpu_stat, sizeof(struct cpu_stat_counter));
+	}
+
+		cpu_stat.time_work = (long long) ( (double)(
+			(cpu_stat.nice - cpu_stat_first->nice) + 
+			(cpu_stat.system - cpu_stat_first->system) + 
+			(cpu_stat.user - cpu_stat_first->user) +
+			(cpu_stat.irq - cpu_stat_first->irq) +
+			(cpu_stat.softirq - cpu_stat_first->softirq) +
+			(cpu_stat.steal - cpu_stat_first->steal) +
+			(cpu_stat.guest - cpu_stat_first->guest) ) / (double)sc_clk_tck / (double)num_cpus * 1000.0);
+		cpu_stat.time_idle = (long long) ( (double)(
+			(cpu_stat.idle - cpu_stat_first->idle) + 
+			(cpu_stat.iowait - cpu_stat_first->iowait)) / (double)sc_clk_tck / (double)num_cpus ) * 1000.0;
+			//cpu_stat.util = (long long) ((double) (cpu_stat.nice + cpu_stat.system + cpu_stat.user) / (double) (cpu_stat.nice + cpu_stat.system + cpu_stat.user + cpu_stat.idle + cpu_stat.iowait) * 100.0);
+		cpu_stat.util = (long long) ( (double)cpu_stat.time_work / (double)(cpu_stat.time_work + cpu_stat.time_idle) * 100.0);
+
+
+		//printf("read cpu read %d %lld %lld %lld \n", num_read, cpu_stat.time_work, cpu_stat.time_idle, cpu_stat.util);
+		//printf("read cpu val %ld %ld %ld %ld %ld \n", cpu_stat.user, cpu_stat.nice, cpu_stat.system, cpu_stat.idle, cpu_stat.iowait);
+
+		cpu_stat.memory_used = cpu_stat.memory_total - cpu_stat.memory_free;
+		cpu_stat.swap_used = cpu_stat.swap_total - cpu_stat.swap_free;
+}
+
+long long rapl_get_systemstats(int index) {
+
+	switch(rapl_native_events[index].msr) {
+		case 0:
+			return cpu_stat.time_work;
+		break;
+		case 1:
+			return cpu_stat.time_idle;
+		break;
+		case 2:
+			return cpu_stat.util;
+		break;
+		case 3:
+			return cpu_stat.memory_total;
+		break;
+		case 4:
+			return cpu_stat.memory_used;
+		break;
+		case 5:
+			return cpu_stat.memory_free;
+		break;
+		case 6:
+			return cpu_stat.swap_total;
+		break;
+		case 7:
+			return cpu_stat.swap_used;
+		break;
+		case 8:
+			return cpu_stat.swap_free;
+		break;
+	}
+	return 0;
+} 
 
 void rapl_update_frequency() {
 	int cpuIx;
@@ -295,11 +464,9 @@ long long rapl_get_frequency(int index) {
 
 	switch(rapl_native_events[index].msr) {
 		case 0:
-			printf("cpu %d msr %d value %lld\n", cpu, 0, cpu_freq[cpu].avg_freq);
 			return cpu_freq[cpu].avg_freq;
 		break;
 		default:
-			printf("cpu %d msr %d value %lld\n", cpu, 1, cpu_freq[cpu].eff_freq);
 			return cpu_freq[cpu].eff_freq;
 		break;
 	}
@@ -310,10 +477,13 @@ static long long read_rapl_value(int index) {
 	int type;
 	int fd;
 	type = rapl_native_events[index].type;
-	
+
 	switch(type) {
 		case PACKAGE_FREQUENCY:
 			return rapl_get_frequency(index);
+		break;
+		case SYSTEM_STATS:
+			return rapl_get_systemstats(index);
 		break;
 		default:
 
@@ -684,6 +854,9 @@ _rapl_init_component( int cidx )
 	 cpu_freq = (struct cpu_freq_counter *) papi_calloc(sizeof(struct cpu_freq_counter), num_cpus);
 	 cpu_freq_before = (struct cpu_freq_counter *) papi_calloc(sizeof(struct cpu_freq_counter), num_cpus);
 	 
+	 /* open proc file descriptors */
+	 sc_clk_tck = sysconf(_SC_CLK_TCK);
+
      /* Allocate space for events */
      /* Include room for both counts and scaled values */
 
@@ -695,14 +868,15 @@ _rapl_init_component( int cidx )
 				 num_packages +						// package temperature
 				 num_cpus							// cpu temperature
 				 ) * 2 +
-				 num_cpus * 2;							// core frequency
+				 num_cpus * 2 +						// core frequency
+				 9;									// system statistics (cpu utilization + memory usage)
 
      rapl_native_events = (_rapl_native_event_entry_t*)
           papi_calloc(sizeof(_rapl_native_event_entry_t),num_events);
 
 
      i = 0;
-     k = (num_events-(num_cpus*2))/2; // all events - events without counters
+     k = (num_events-(num_cpus*2) -9)/2; // all events - events without CNT events
 
      /* Create events for package power info */
 
@@ -1031,6 +1205,117 @@ _rapl_init_component( int cidx )
 		k++;
 	}
 
+		/* system statistics */
+		sprintf(rapl_native_events[k].name,
+		   		"TIME_WORK");
+	   	strncpy(rapl_native_events[k].units,"s",PAPI_MIN_STR_LEN);
+	   	sprintf(rapl_native_events[k].description,
+		   		"Cpu work time");
+		rapl_native_events[k].fd_offset=j;
+	   	rapl_native_events[k].msr=0;
+	   	rapl_native_events[k].resources.selector = k + 1;
+	   	rapl_native_events[k].type=SYSTEM_STATS;
+	   	rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+		k++;
+
+		sprintf(rapl_native_events[k].name,
+		   		"TIME_IDLE");
+	   	strncpy(rapl_native_events[k].units,"s",PAPI_MIN_STR_LEN);
+	   	sprintf(rapl_native_events[k].description,
+		   		"Cpu idle time");
+		rapl_native_events[k].fd_offset=j;
+	   	rapl_native_events[k].msr=1;
+	   	rapl_native_events[k].resources.selector = k + 1;
+	   	rapl_native_events[k].type=SYSTEM_STATS;
+	   	rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+		k++;
+
+		sprintf(rapl_native_events[k].name,
+		   		"TIME_UTIL");
+	   	strncpy(rapl_native_events[k].units,"%",PAPI_MIN_STR_LEN);
+	   	sprintf(rapl_native_events[k].description,
+		   		"Cpu time utilization ratio");
+		rapl_native_events[k].fd_offset=j;
+	   	rapl_native_events[k].msr=2;
+	   	rapl_native_events[k].resources.selector = k + 1;
+	   	rapl_native_events[k].type=SYSTEM_STATS;
+	   	rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+		k++;
+
+		sprintf(rapl_native_events[k].name,
+		   		"MEM_TOTAL");
+	   	strncpy(rapl_native_events[k].units,"kB",PAPI_MIN_STR_LEN);
+	   	sprintf(rapl_native_events[k].description,
+		   		"Memory total");
+		rapl_native_events[k].fd_offset=j;
+	   	rapl_native_events[k].msr=3;
+	   	rapl_native_events[k].resources.selector = k + 1;
+	   	rapl_native_events[k].type=SYSTEM_STATS;
+	   	rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+		k++;
+
+		sprintf(rapl_native_events[k].name,
+		   		"MEM_USED");
+	   	strncpy(rapl_native_events[k].units,"kB",PAPI_MIN_STR_LEN);
+	   	sprintf(rapl_native_events[k].description,
+		   		"Memory used");
+		rapl_native_events[k].fd_offset=j;
+	   	rapl_native_events[k].msr=4;
+	   	rapl_native_events[k].resources.selector = k + 1;
+	   	rapl_native_events[k].type=SYSTEM_STATS;
+	   	rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+		k++;
+
+		sprintf(rapl_native_events[k].name,
+		   		"MEM_FREE");
+	   	strncpy(rapl_native_events[k].units,"kB",PAPI_MIN_STR_LEN);
+	   	sprintf(rapl_native_events[k].description,
+		   		"Cpu work time");
+		rapl_native_events[k].fd_offset=j;
+	   	rapl_native_events[k].msr=5;
+	   	rapl_native_events[k].resources.selector = k + 1;
+	   	rapl_native_events[k].type=SYSTEM_STATS;
+	   	rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+		k++;
+
+		sprintf(rapl_native_events[k].name,
+		   		"SWAP_TOTAL");
+	   	strncpy(rapl_native_events[k].units,"kB",PAPI_MIN_STR_LEN);
+	   	sprintf(rapl_native_events[k].description,
+		   		"Swap total");
+		rapl_native_events[k].fd_offset=j;
+	   	rapl_native_events[k].msr=6;
+	   	rapl_native_events[k].resources.selector = k + 1;
+	   	rapl_native_events[k].type=SYSTEM_STATS;
+	   	rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+		k++;
+
+		sprintf(rapl_native_events[k].name,
+		   		"SWAP_USED");
+	   	strncpy(rapl_native_events[k].units,"kB",PAPI_MIN_STR_LEN);
+	   	sprintf(rapl_native_events[k].description,
+		   		"Swap used");
+		rapl_native_events[k].fd_offset=j;
+	   	rapl_native_events[k].msr=7;
+	   	rapl_native_events[k].resources.selector = k + 1;
+	   	rapl_native_events[k].type=SYSTEM_STATS;
+	   	rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+		k++;
+
+		sprintf(rapl_native_events[k].name,
+		   		"SWAP_FREE");
+	   	strncpy(rapl_native_events[k].units,"kB",PAPI_MIN_STR_LEN);
+	   	sprintf(rapl_native_events[k].description,
+		   		"Swap free");
+		rapl_native_events[k].fd_offset=j;
+	   	rapl_native_events[k].msr=8;
+	   	rapl_native_events[k].resources.selector = k + 1;
+	   	rapl_native_events[k].type=SYSTEM_STATS;
+	   	rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+		k++;
+
+
+
      /* Export the total number of events available */
      _rapl_vector.cmp_info.num_native_events = num_events;
 
@@ -1079,6 +1364,8 @@ _rapl_start( hwd_context_t *ctx, hwd_control_state_t *ctl)
 
   control->lastupdate = now;
 
+  cpu_stat_first = NULL;
+
   return PAPI_OK;
 }
 
@@ -1096,8 +1383,12 @@ _rapl_stop( hwd_context_t *ctx, hwd_control_state_t *ctl )
 	if (control->need_frequency == 1) {
 		rapl_update_frequency();
 	}
+	if (control->need_systemstats == 1) {
+		rapl_update_systemstats();
+	}
 
     for ( i = 0; i < RAPL_MAX_COUNTERS; i++ ) {
+		
 		if (control->being_measured[i]) {
 			temp = read_rapl_value(i);
 			if (context->start_value[i])
@@ -1207,12 +1498,16 @@ _rapl_update_control_state( hwd_control_state_t *ctl,
     }
 
 	control->need_frequency = 0;
+	control->need_systemstats = 0;
     for( i = 0; i < count; i++ ) {
        index=native[i].ni_event&PAPI_NATIVE_AND_MASK;
        native[i].ni_position=rapl_native_events[index].resources.selector - 1;
        control->being_measured[index]=1;
 		if (rapl_native_events[index].type == PACKAGE_FREQUENCY) {
 			control->need_frequency = 1;
+		}
+		if (rapl_native_events[index].type == SYSTEM_STATS) {
+			control->need_systemstats = 1;
 		}
 
        /* Only need to subtract if it's a PACKAGE_ENERGY or ENERGY_CNT type */
