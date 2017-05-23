@@ -34,7 +34,8 @@ struct apapi_event_ops *event_defaults = NULL;
 char *defaults_file_buffer = NULL;
 
 
-void measure_custom(void** arg){
+void measure_custom(void** arg, int last_measurement){
+/*
 	if (arg == NULL) {
 		return;
 	}
@@ -47,6 +48,8 @@ void measure_custom(void** arg){
 		printf("%lld ", set->current_samples[eventIx]);
 		printf("%f\n", set->values0[eventIx*4 + 3]);
 	}
+*/
+//	printf("last measurement: %d\n", last_measurement);
 }
 
 void quit(unsigned int line, char* msg){
@@ -154,13 +157,15 @@ void papi_read_defaults_file(char *filename, struct apapi_event_ops **events_out
 }
 
 
-/*
-void measure(void** arg){
-	printf("%ld measure\n", gettime());
+
+void measure(void** arg, int last_measurement){
+/*	printf("%ld measure\n", gettime());
 	printf("%020lld %020lld\n", set->previous_counters[0], set->current_counters[0]);
 	printf("%020lld %020lld\n", set->previous_samples[0], set->current_samples[0]);  
-}
 */
+	printf("last measurement: %d\n", last_measurement);
+}
+
 
 
 void papi_init(char *optional_definition_file, char *optional_events_file){

@@ -28,6 +28,7 @@ struct __mgmt_update {
 	void* measurement;
 	struct apapi_eventset *set;
 	struct __mapper *map;
+	struct __mapper *map_last;
 };
 
 struct __mgmt_internal {

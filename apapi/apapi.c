@@ -290,7 +290,8 @@ void fix_overflow(long long *current_counters, long long *previous_counters, lon
 }
 
 // internal
-int APAPI_timer_measure(struct apapi_timer *timer) {
+// last_measurement: true = 1, false = 0
+int APAPI_timer_measure(struct apapi_timer *timer, int last_measurement) {
 	int retv = PAPI_OK;
 	// TODO: is last_measurement bool necessary/useful?
 
@@ -327,7 +328,7 @@ int APAPI_timer_measure(struct apapi_timer *timer) {
 	}
 
 	if (timer->measure != NULL){
-		(*(timer->measure))(timer->measure_arg);
+		(*(timer->measure))(timer->measure_arg, last_measurement);
 	}
 
 	return retv;
@@ -348,7 +349,7 @@ void* APAPI_timer_thread(void *args) {
 		return NULL;
 	}
 
-	APAPI_timer_measure(timer);
+	APAPI_timer_measure(timer, 0);
 
 	//
 	struct timespec next_wakeup;
@@ -364,7 +365,7 @@ void* APAPI_timer_thread(void *args) {
 			break;
 		}
 
-		APAPI_timer_measure(timer);
+		APAPI_timer_measure(timer, retv == 0 ? 1 : 0);
 		
 		// lock timed out - repeat
 		if (retv == ETIMEDOUT)
@@ -380,7 +381,7 @@ void* APAPI_timer_thread(void *args) {
 	return NULL;
 }
 
-int APAPI_create_timer(struct apapi_timer **timer, time_t tv_sec, long tv_nsec, void(measure)(void**), void** measure_arg, struct apapi_eventset *set) {
+int APAPI_create_timer(struct apapi_timer **timer, time_t tv_sec, long tv_nsec, void(measure)(void**, int), void** measure_arg, struct apapi_eventset *set) {
 	int retv;
 	*timer = calloc(1, sizeof(struct apapi_timer));
 	if (*timer == NULL) {
@@ -401,7 +402,7 @@ int APAPI_create_timer(struct apapi_timer **timer, time_t tv_sec, long tv_nsec, 
 	return PAPI_OK;
 }
 
-int APAPI_change_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, void(measure)(void**), void** measure_arg, struct apapi_eventset *set) {
+int APAPI_change_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, void(measure)(void**, int), void** measure_arg, struct apapi_eventset *set) {
 	if (timer->state != APAPI_TIMER_STATE_READY)
 		return -1;
 
@@ -434,7 +435,7 @@ int APAPI_change_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, v
 	return PAPI_OK;
 }
 
-int APAPI_reset_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, void(measure)(void**), void** measure_arg, struct apapi_eventset *set) {
+int APAPI_reset_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, void(measure)(void**, int), void** measure_arg, struct apapi_eventset *set) {
 
 	if (timer->state != APAPI_TIMER_STATE_DONE)
 		return -1;

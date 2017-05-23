@@ -371,6 +371,10 @@ int _apapi_read_defaults_file(char *filename, struct apapi_event_ops **events_ou
 			free(*defaults_file_buffer);
 			*defaults_file_buffer = NULL;
 		}
+		if (NULL == *events_output) {
+			free(*events_output);
+			*events_output = NULL;
+		}
 		return -1;
     }
 }
