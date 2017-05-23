@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <errno.h>
 #include <time.h>
+#include <inttypes.h>
 
 /* Headers required by PAPI */
 #include "papi.h"
@@ -187,7 +188,9 @@ struct cpu_stat_counter {
 	uint64_t softirq;
 	uint64_t steal;
 	uint64_t guest;
-	
+	uint64_t mem_free;
+	uint64_t mem_buffers;
+	uint64_t mem_cached;
 	
 	long long time_work;
 	long long time_idle;
@@ -200,7 +203,10 @@ struct cpu_stat_counter {
 	long long swap_free;
 };
 struct cpu_stat_counter _cpu_stat_first = {0};
-struct cpu_stat_counter cpu_stat = {0};
+struct cpu_stat_counter _cpu_stat_last = {0};
+struct cpu_stat_counter _cpu_stat = {0};
+struct cpu_stat_counter *cpu_stat_last = &_cpu_stat_last;
+struct cpu_stat_counter *cpu_stat = &_cpu_stat;
 struct cpu_stat_counter *cpu_stat_first = NULL;
 long sc_clk_tck;
 
@@ -300,11 +306,17 @@ void rapl_update_systemstats() {
 
 	int num_read;
 
+	// swap stats pointers
+	struct cpu_stat_counter *temp;
+	temp = cpu_stat;
+	cpu_stat = cpu_stat_last;
+	cpu_stat_last = temp;
+
 	FILE *cpu_stat_fd;
 	cpu_stat_fd = fopen("/proc/stat", "r");
 
 	if (cpu_stat_fd != NULL) {
-		num_read = fscanf(cpu_stat_fd,"cpu %ld %ld %ld %ld %ld %ld %ld %ld %ld", &(cpu_stat.user), &(cpu_stat.nice), &(cpu_stat.system), &(cpu_stat.idle), &(cpu_stat.iowait), &(cpu_stat.irq), &(cpu_stat.softirq), &(cpu_stat.steal), &(cpu_stat.guest));
+		num_read = fscanf(cpu_stat_fd,"cpu %lld %lld %lld %lld %lld %lld %lld %lld %lld", &(cpu_stat->user), &(cpu_stat->nice), &(cpu_stat->system), &(cpu_stat->idle), &(cpu_stat->iowait), &(cpu_stat->irq), &(cpu_stat->softirq), &(cpu_stat->steal), &(cpu_stat->guest));
 
 		fclose(cpu_stat_fd);
 	}
@@ -315,7 +327,7 @@ void rapl_update_systemstats() {
 	if (mem_stat_fd != NULL) {
 		char buffer[40];
 		memset(buffer, 0, 40);
-		int itemstoread = 4;
+		int itemstoread = 6;
 		int ret = 0;
 		while (ret == 0 && itemstoread > 0) { // last read returned error or all necessary items found
 			ret = rapl_readline(mem_stat_fd, buffer, 40, &num_read);
@@ -326,22 +338,32 @@ void rapl_update_systemstats() {
 
 			// as for now /proc/meminfo only uses kB unit
 			if (strncmp(buffer, "SwapFree:", 9) == 0) {
-				sscanf(buffer, "SwapFree: %lld kB", &(cpu_stat.swap_free));
+				sscanf(buffer, "SwapFree: %lld kB", &(cpu_stat->swap_free));
 				itemstoread--;
 				continue;
 			}
 			if (strncmp(buffer, "SwapTotal:", 10) == 0) {
-				sscanf(buffer, "SwapTotal: %lld kB", &(cpu_stat.swap_total));	
+				sscanf(buffer, "SwapTotal: %lld kB", &(cpu_stat->swap_total));	
+				itemstoread--;
+				continue;
+			}
+			if (strncmp(buffer, "Cached:", 7) == 0) {
+				sscanf(buffer, "Cached: %lld kB", &(cpu_stat->mem_cached));
+				itemstoread--;
+				continue;
+			}
+			if (strncmp(buffer, "Buffers:", 8) == 0) {
+				sscanf(buffer, "Buffers: %lld kB", &(cpu_stat->mem_buffers));
 				itemstoread--;
 				continue;
 			}
 			if (strncmp(buffer, "MemFree:", 8) == 0) {
-				sscanf(buffer, "MemFree: %lld kB", &(cpu_stat.memory_free));
+				sscanf(buffer, "MemFree: %lld kB", &(cpu_stat->mem_free));
 				itemstoread--;
 				continue;
 			}
 			if (strncmp(buffer, "MemTotal:", 9) == 0) {
-				sscanf(buffer, "MemTotal: %lld kB", &(cpu_stat.memory_total));
+				sscanf(buffer, "MemTotal: %lld kB", &(cpu_stat->memory_total));
 				itemstoread--;
 				continue;
 			}
@@ -351,60 +373,75 @@ void rapl_update_systemstats() {
 	
 	if (cpu_stat_first == NULL) {
 		cpu_stat_first = &_cpu_stat_first;
-		memcpy( &_cpu_stat_first, &cpu_stat, sizeof(struct cpu_stat_counter));
+		memcpy( &_cpu_stat_first, cpu_stat, sizeof(struct cpu_stat_counter));
 	}
 
-		cpu_stat.time_work = (long long) ( (double)(
-			(cpu_stat.nice - cpu_stat_first->nice) + 
-			(cpu_stat.system - cpu_stat_first->system) + 
-			(cpu_stat.user - cpu_stat_first->user) +
-			(cpu_stat.irq - cpu_stat_first->irq) +
-			(cpu_stat.softirq - cpu_stat_first->softirq) +
-			(cpu_stat.steal - cpu_stat_first->steal) +
-			(cpu_stat.guest - cpu_stat_first->guest) ) / (double)sc_clk_tck / (double)num_cpus * 1000.0);
-		cpu_stat.time_idle = (long long) ( (double)(
-			(cpu_stat.idle - cpu_stat_first->idle) + 
-			(cpu_stat.iowait - cpu_stat_first->iowait)) / (double)sc_clk_tck / (double)num_cpus ) * 1000.0;
-			//cpu_stat.util = (long long) ((double) (cpu_stat.nice + cpu_stat.system + cpu_stat.user) / (double) (cpu_stat.nice + cpu_stat.system + cpu_stat.user + cpu_stat.idle + cpu_stat.iowait) * 100.0);
-		cpu_stat.util = (long long) ( (double)cpu_stat.time_work / (double)(cpu_stat.time_work + cpu_stat.time_idle) * 100.0);
+		// compare to first
+		cpu_stat->time_work = (long long) ( (double)(
+			(cpu_stat->nice - cpu_stat_first->nice) + 
+			(cpu_stat->system - cpu_stat_first->system) + 
+			(cpu_stat->user - cpu_stat_first->user) +
+			(cpu_stat->irq - cpu_stat_first->irq) +
+			(cpu_stat->softirq - cpu_stat_first->softirq) +
+			(cpu_stat->steal - cpu_stat_first->steal) +
+			(cpu_stat->guest - cpu_stat_first->guest) ) / (double)sc_clk_tck / (double)num_cpus * 1000.0);
+		cpu_stat->time_idle = (long long) ( (double)(
+			(cpu_stat->idle - cpu_stat_first->idle) + 
+			(cpu_stat->iowait - cpu_stat_first->iowait)) / (double)sc_clk_tck / (double)num_cpus * 1000.0);
+			//cpu_stat->util = (long long) ((double) (cpu_stat->nice + cpu_stat->system + cpu_stat->user) / (double) (cpu_stat->nice + cpu_stat->system + cpu_stat->user + cpu_stat->idle + cpu_stat->iowait) * 100.0);
+
+		// compare to first
+		//cpu_stat->util = (long long) ( (double)cpu_stat->time_work / (double)(cpu_stat->time_work + cpu_stat->time_idle) * 100.0);
+		// compare to last
+		long long time_work = (long long) ( (double)(
+			(cpu_stat->nice - cpu_stat_last->nice) + 
+			(cpu_stat->system - cpu_stat_last->system) + 
+			(cpu_stat->user - cpu_stat_last->user) +
+			(cpu_stat->irq - cpu_stat_last->irq) +
+			(cpu_stat->softirq - cpu_stat_last->softirq) +
+			(cpu_stat->steal - cpu_stat_last->steal) +
+			(cpu_stat->guest - cpu_stat_last->guest) ) / (double)sc_clk_tck / (double)num_cpus * 1000.0);
+		long long time_idle = (long long) ( (double)(
+			(cpu_stat->idle - cpu_stat_last->idle) + 
+			(cpu_stat->iowait - cpu_stat_last->iowait)) / (double)sc_clk_tck / (double)num_cpus * 1000.0);
+
+		cpu_stat->util = (long long) ( (double)time_work / (double)(time_work + time_idle) * 100.0);
 
 
-		//printf("read cpu read %d %lld %lld %lld \n", num_read, cpu_stat.time_work, cpu_stat.time_idle, cpu_stat.util);
-		//printf("read cpu val %ld %ld %ld %ld %ld \n", cpu_stat.user, cpu_stat.nice, cpu_stat.system, cpu_stat.idle, cpu_stat.iowait);
-
-		cpu_stat.memory_used = cpu_stat.memory_total - cpu_stat.memory_free;
-		cpu_stat.swap_used = cpu_stat.swap_total - cpu_stat.swap_free;
+		cpu_stat->memory_free = cpu_stat->mem_free + cpu_stat->mem_buffers + cpu_stat->mem_cached;
+		cpu_stat->memory_used = cpu_stat->memory_total - cpu_stat->memory_free;
+		cpu_stat->swap_used = cpu_stat->swap_total - cpu_stat->swap_free;
 }
 
 long long rapl_get_systemstats(int index) {
 
 	switch(rapl_native_events[index].msr) {
 		case 0:
-			return cpu_stat.time_work;
+			return cpu_stat->time_work;
 		break;
 		case 1:
-			return cpu_stat.time_idle;
+			return cpu_stat->time_idle;
 		break;
 		case 2:
-			return cpu_stat.util;
+			return cpu_stat->util;
 		break;
 		case 3:
-			return cpu_stat.memory_total;
+			return cpu_stat->memory_total;
 		break;
 		case 4:
-			return cpu_stat.memory_used;
+			return cpu_stat->memory_used;
 		break;
 		case 5:
-			return cpu_stat.memory_free;
+			return cpu_stat->memory_free;
 		break;
 		case 6:
-			return cpu_stat.swap_total;
+			return cpu_stat->swap_total;
 		break;
 		case 7:
-			return cpu_stat.swap_used;
+			return cpu_stat->swap_used;
 		break;
 		case 8:
-			return cpu_stat.swap_free;
+			return cpu_stat->swap_free;
 		break;
 	}
 	return 0;
