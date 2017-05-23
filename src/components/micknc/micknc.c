@@ -605,7 +605,7 @@ micknc_set_counter(int native_id, int device_id, long long *result) {
 			temp = 	mic_info_core_util_values[device_id].sys_sum +
 					mic_info_core_util_values[device_id].nice_sum +
 					mic_info_core_util_values[device_id].user_sum;
-			temp = (uint64_t) ( (double)temp / (double)(temp + mic_info_core_util_values[device_id].idle_sum));
+			temp = (uint64_t) ( (double)temp / (double)(temp + mic_info_core_util_values[device_id].idle_sum) * 100.0);
 		break;
 		case EVENT_MEM_TOTAL:
 			temp = mic_info_memory_counters[device_id].total;
@@ -678,6 +678,7 @@ _micknc_init_component( int cidx )
 		status = mic_get_device_at_index(mic_list, m, &sysfs_device);
 		// Open MIC device according to sysfs MIC device number.
 		status = mic_open_device(&(mic_devices[m]), (uint32_t)sysfs_device);
+		errno = 0;
 	}
 
 	status = mic_free_devices(mic_list);
@@ -936,6 +937,9 @@ _micknc_shutdown_component(void)
 
 	int m = 0;
 	for (m = 0; m<num_devices; ++m) {
+		if (mic_devices[m] == NULL) {
+			continue;
+		}
 		mic_close_device(mic_devices[m]);
 		mic_devices[m] = NULL;
 	}
