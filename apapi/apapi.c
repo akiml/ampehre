@@ -3,6 +3,7 @@
 #include <errno.h> //ETIMEDOUT
 #include <string.h> //memset
 #include <float.h> //DBL_MAX
+#include <unistd.h>
 #include "apapi.h"
 #include "papi.h"
 //#define DEBUG
@@ -11,8 +12,26 @@
 #include "apapi_csv.c"
 
 int APAPI_init() {
+	printf("init start errno %d\n", errno);
 	int retval;
-	retval = PAPI_library_init(1);
+	retval = PAPI_library_init(PAPI_VER_CURRENT);
+/*
+	printf("init stop errno %d ret %d\n", errno, retval);
+	switch (retval) {
+		case PAPI_EINVAL:
+			printf("PAPI_EINVAL\n");
+		break;
+		case PAPI_ENOMEM:
+			printf("PAPI_ENOMEM\n");
+		break;
+		case PAPI_ECMP:
+			printf("PAPI_ECMP\n");
+		break;
+		case PAPI_ESYS:
+			printf("PAPI_ESYS\n");
+		break;
+	}
+*/
 	return retval;
 };
 
@@ -204,9 +223,12 @@ void APAPI_timer_measure_stats(struct apapi_eventset *set) {
 
 		value1 = 0.0;
 
+		// first check if op1 is not NOP
 
 		exec_op1(set->values_op1[eventIx], set->previous_samples[eventIx], set->current_samples[eventIx], set->previous_time, set->current_time,
 			&value1);
+
+		set->last_values1[eventIx] = value1;
 		
 //		exec_op2(set->values_op2[eventIx], value1, set->previous_time, set->current_time, &value2);
 		if (set->values0_stats[eventIx] != APAPI_STAT_NO) {
@@ -379,6 +401,39 @@ int APAPI_create_timer(struct apapi_timer **timer, time_t tv_sec, long tv_nsec, 
 	return PAPI_OK;
 }
 
+int APAPI_change_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, void(measure)(void**), void** measure_arg, struct apapi_eventset *set) {
+	if (timer->state != APAPI_TIMER_STATE_READY)
+		return -1;
+
+	timer->interval.tv_sec = tv_sec;
+	timer->interval.tv_nsec = tv_nsec;
+	timer->measure = measure;
+	timer->measure_arg = measure_arg;
+	
+	if (set != NULL) {
+		timer->set = set;
+		memset(set->current_counters, 0, set->num_events);
+		memset(set->previous_counters, 0, set->num_events);
+		memset(set->current_samples, 0, set->num_events);
+		memset(set->previous_samples, 0, set->num_events);
+		set->first_time = 0;
+		set->previous_time = 0;
+		set->count = 0;
+		int eventIx;
+		for (eventIx=0; eventIx < set->num_events; eventIx++) {
+			set->values0[eventIx*4] = DBL_MAX;
+			set->values0[eventIx*4 + 1] = 0;
+			set->values0[eventIx*4 + 2] = 0;
+			set->values0[eventIx*4 + 3] = 0;
+			set->values1[eventIx*4] = DBL_MAX;
+			set->values1[eventIx*4 + 1] = 0;
+			set->values1[eventIx*4 + 2] = 0;
+			set->values1[eventIx*4 + 3] = 0;
+		}
+	}
+	return PAPI_OK;
+}
+
 int APAPI_reset_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, void(measure)(void**), void** measure_arg, struct apapi_eventset *set) {
 
 	if (timer->state != APAPI_TIMER_STATE_DONE)
@@ -464,6 +519,34 @@ int APAPI_stop_timer(struct apapi_timer *timer) {
 	return PAPI_OK;
 }
 
+int APAPI_callstop_timer(struct apapi_timer *timer) {
+	if (timer->state != APAPI_TIMER_STATE_STARTED) {
+		return -1;
+	}
+	int retv = PAPI_OK;
+	retv = pthread_mutex_unlock(&(timer->mutex));
+	if (retv != PAPI_OK) {
+		// TODO:
+	}
+	return PAPI_OK;
+}
+
+int APAPI_join_timer(struct apapi_timer *timer) {
+	int retv;
+	if (timer->state != APAPI_TIMER_STATE_STARTED) {
+		return -1;
+	}
+	retv = pthread_join(timer->thread, NULL);
+	timer->state = APAPI_TIMER_STATE_DONE;
+	if (timer->set != NULL) {
+		retv = PAPI_stop(timer->set->EventSet, NULL);
+		if (retv != PAPI_OK) {
+			// TODO:
+		}
+	}
+	return PAPI_OK;
+}
+
 int APAPI_interrupt_timer(struct apapi_timer *timer) {
 	if (timer->state != APAPI_TIMER_STATE_STARTED) {
 		return -1;
@@ -515,7 +598,7 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
 	if (retv != PAPI_OK) {
 		// TODO:
 	}
-
+	// TODO: check after every calloc if it was successful
 	// (5*num) * sizeof(long long) - space for papi samples, max samples and cleared values
 	newset->current_samples = calloc(newset->num_events, sizeof(long long)*5);
 	newset->previous_samples = &(newset->current_samples[newset->num_events]);
@@ -527,6 +610,7 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
 
 	// (4*3*num) * sizeof(double) - space for stats
 	//printf("calloc %d, %ld\n", newset->num_events, sizeof(double)*4*3);
+	newset->last_values1 = calloc(newset->num_events, sizeof(double));
 	newset->values0 = calloc(newset->num_events, sizeof(double)*4*3);
 	newset->values1 = &(newset->values0[4*newset->num_events]);
 	//printf("values %p %p\n", newset->values0, newset->values1);
@@ -603,6 +687,7 @@ int APAPI_destroy_apapi_eventset(struct apapi_eventset **set) {
 	} else {
 		free(oldset->previous_samples);
 	}
+	free(oldset->last_values1);
 	free(oldset->values0);
 	free(oldset->values_op1);
 	free(oldset->values0_stats);
@@ -678,4 +763,17 @@ void APAPI_print_apapi_eventset(struct apapi_eventset *set) {
 		printf("\n");
 	}
 	printf("------\n\n");
+}
+
+int APAPI_apapi_eventset_find_event(struct apapi_eventset *set, char *name) {
+	if (set == NULL || name == NULL) {
+		return -1;
+	}
+	int eIx;
+	for (eIx = 0; eIx < set->num_events; ++eIx)	{
+		if (strcmp(set->event_ops[eIx].event_name, name) == 0) {
+			return eIx;
+		}
+	}
+	return -1;
 }

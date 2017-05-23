@@ -221,6 +221,7 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
                     if (errno != 0 || strto_endptr == &(input[tokenStart])) {
                         error = 1;
                         printf("Invalid attribute %d max_sample at at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1);
+						errno = 0;
                         break;
                     }
                 break;
@@ -241,6 +242,7 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
                     if (errno != 0 || strto_endptr == &(input[tokenStart])) {
                         error = 1;
                         printf("Invalid attribute %d double value0_prefix at at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1);
+						errno = 0;
                         break;
                     }
                 break;
@@ -261,6 +263,7 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
                     if (errno != 0 || strto_endptr == &(input[tokenStart])) {
                         error = 1;
                         printf("Invalid attribute %d double value1_prefix at at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1);
+						errno = 0;
                         break;
                     }
                     read_events++;
@@ -289,4 +292,111 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
     *num_events_out = read_events;
     printf("events done\n");
     return PAPI_OK;
+}
+
+int _apapi_read_file(char* filename, char **file_buffer, long *filesize) {
+    if (filename == NULL) {
+        return 1;
+    }
+    int retv;
+    FILE *file;
+    // try to open file
+    file = fopen(filename, "r");
+    if (file == NULL && errno != 0) {
+        printf("Unable to open file %s.\n", filename);
+		errno = 0;
+        return 1;
+    }
+
+    // check file size
+    *filesize = 0;
+    retv = fseek(file, 0L, SEEK_END);
+    if (retv == -1 && errno != 0) {
+        printf("Unable to seek file %s.\n",filename);
+        fclose(file);
+		errno = 0;
+        return 1;
+    }
+    *filesize = ftell(file);
+    if (*filesize == -1 && errno != 0) {
+        printf("Unable to tell file %s.\n",filename);
+        fclose(file);
+		errno = 0;
+        return 1;
+    }
+    rewind(file);
+    if (*filesize > 10000000L) {
+        printf("File %s too big.\n",filename);
+        fclose(file);
+        return 1;
+    }
+    *file_buffer = calloc(1, *filesize+1);
+    if (*file_buffer == NULL) {
+        printf("Not enough memory for file %s.\n",filename);
+        fclose(file);
+        return 1;
+    }
+    size_t read;
+    read = fread(*file_buffer, *filesize, 1, file);
+    if (read != 1) {
+        printf("Reading file %s failed.\n.",filename);
+        free(*file_buffer);
+        fclose(file);
+        return 1;
+    }
+
+    return 0;
+}
+
+int _apapi_read_defaults_file(char *filename, struct apapi_event_ops **events_output, char **defaults_file_buffer, int *num_events) {
+
+    int retv;
+    long filesize;
+
+    retv = _apapi_read_file(filename, defaults_file_buffer, &filesize);
+
+    if (retv != 0) {
+        return retv;
+    }
+
+    printf("Read defaults file.\n");
+
+    retv = APAPI_read_event_ops_csv(*defaults_file_buffer, ',', events_output, num_events);
+    if (retv == PAPI_OK) {
+        printf("Read %d defaults.\n", *num_events);
+		return PAPI_OK;
+    } else {
+        printf("Reading defaults failed.\n");
+		if (*defaults_file_buffer != NULL) {
+			free(*defaults_file_buffer);
+			*defaults_file_buffer = NULL;
+		}
+		return -1;
+    }
+}
+
+int APAPI_read_environ_defaults(char **buffer, struct apapi_event_ops **events_out, int *num_events_out){
+
+
+	// search for APAPI_DEFAULTS variable	
+	int envIx;
+	char *defaults_env = NULL;
+	for (envIx = 0; environ[envIx] != NULL; ++envIx) {
+		if (strncmp(environ[envIx], "APAPI_DEFAULTS=", 15) == 0) {
+			defaults_env = environ[envIx];
+			break;
+		}
+	}
+
+	// variable not found
+	if (defaults_env == NULL) {
+		return -1;
+	}
+
+	// get filename
+	char *defaults_filename = &(defaults_env[15]);
+
+	printf("Env defaults file: %s\n", defaults_filename);
+
+	return _apapi_read_defaults_file(defaults_filename, events_out, buffer, num_events_out);
 }

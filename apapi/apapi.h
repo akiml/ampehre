@@ -2,6 +2,9 @@
 #define APAPI_H
 #include <time.h>
 #include <pthread.h>
+#include <unistd.h>
+
+extern char **environ;
 
 // operation to compute derived value
 // sample1 at time1: current sample
@@ -23,6 +26,8 @@ enum APAPI_stats {
 	APAPI_STAT_ACC = 8,
 	APAPI_STAT_ALL = -1
 };
+
+// TODO: add enums for min,max,avg,acc offsets in stat arrays!
 
 struct apapi_event_ops {
 	char *event_name;
@@ -61,6 +66,8 @@ struct apapi_eventset {
 	long long previous_time;
 	long long first_time;
 	long long last_time;
+	// last value1 values
+	double *last_values1;
 				// min,max,avg,acc values - as arrays of size 4
 	double *values0;
 	double *values1;
@@ -99,10 +106,19 @@ int APAPI_create_eventset_cmp_all(int cidx, int *EventSet, int *num_events);
 
 int APAPI_create_timer(struct apapi_timer **timer, time_t tv_sec, long tv_nsec, void(measure)(void**), void** measure_arg, struct apapi_eventset *set);
 
+int APAPI_change_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, void(measure)(void**), void** measure_arg, struct apapi_eventset *set);
+
 int APAPI_reset_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, void(measure)(void**), void** measure_arg, struct apapi_eventset *set);
 
 int APAPI_start_timer(struct apapi_timer *timer);
 
+// always call join_timer afterwards to properly stop the timer
+int APAPI_callstop_timer(struct apapi_timer *timer);
+
+// always call callstop_timer before
+int APAPI_join_timer(struct apapi_timer *timer);
+
+// the same as callstop_timer + join_timer
 int APAPI_stop_timer(struct apapi_timer *timer);
 
 int APAPI_destroy_timer(struct apapi_timer **timer);
@@ -114,5 +130,9 @@ int APAPI_destroy_apapi_eventset(struct apapi_eventset **set);
 void APAPI_print_apapi_eventset(struct apapi_eventset *set);
 
 int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops **events_out, int *num_events_out);
+
+int APAPI_apapi_eventset_find_event(struct apapi_eventset *set, char *name);
+
+int APAPI_read_environ_defaults(char **buffer, struct apapi_event_ops **events_out, int *num_events_out);
 
 #endif
