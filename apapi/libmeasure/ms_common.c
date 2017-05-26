@@ -65,13 +65,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			}
 			if (1 == last_measurement) {
 				// set energy total cpu 0 pkg  [mWs]:
-				map[mapIx].source = &(set->values0[eIx*4 + 3]); // value0 acc
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(cpu->msr_energy_acc[pkgIx][0]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // Ws * 1000 = mWs
 				mapIx++;
 				// set power  avg   cpu 0 pkg  [mW ]:
-				map[mapIx].source = &(set->values1[eIx*4 + 2]); // value1 avg
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_AVG]); // value1 avg
 				map[mapIx].destination =  &(cpu->msr_power_avg[pkgIx][0]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
@@ -91,13 +91,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 					break;
 				}
 				// set energy total cpu 0 pp0  [mWs]:
-				map[mapIx].source = &(set->values0[eIx*4 + 3]); // value0 acc
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(cpu->msr_energy_acc[pkgIx][1]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // Ws * 1000 = mWs
 				mapIx++;
 				// set power  avg   cpu 0 pkg  [mW ]:
-				map[mapIx].source = &(set->values1[eIx*4 + 2]); // value1 avg
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_AVG]); // value1 avg
 				map[mapIx].destination =  &(cpu->msr_power_avg[pkgIx][1]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
@@ -111,13 +111,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			}
 			if (1 == last_measurement) {
 				// set energy total cpu 0 dram [mWs]:
-				map[mapIx].source = &(set->values0[eIx*4 + 3]); // value0 acc
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(cpu->msr_energy_acc[pkgIx][2]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // Ws * 1000 = mWs
 				mapIx++;
 				// set power  avg   cpu 0 pkg  [mW ]:
-				map[mapIx].source = &(set->values1[eIx*4 + 2]); // value1 avg
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_AVG]); // value1 avg
 				map[mapIx].destination =  &(cpu->msr_power_avg[pkgIx][2]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
@@ -137,7 +137,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			}
 			if (1 == last_measurement) {
 				// set temp   max   cpu 0 pkg  [°C ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(cpu->msr_temperature_pkg_max[pkgIx]);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C = °C
@@ -160,7 +160,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 						break;
 					}
 					// set temp   max   cpu 0 c 0  [°C ]:
-					map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+					map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 					map[mapIx].destination =  &(cpu->msr_temperature_core_max[pkgIx][cpuIx]);
 					map[mapIx].type = double2uint32;
 					map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C = °C
@@ -174,7 +174,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 						break;
 					}
 					// set freq   avg   cpu 0 c 0  [MHz]:
-					map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+					map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 					map[mapIx].destination =  &(cpu->msr_freq_core_avg[pkgIx][cpuIx]);
 					map[mapIx].type = double2double;
 					map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1000.0; // KHz * 1000 = MHz
@@ -188,7 +188,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				}
 				if (1 == last_measurement) {
 					// set freq   eff   cpu 0 c 0  [MHz]:
-					map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+					map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 					map[mapIx].destination =  &(cpu->msr_freq_core_eff_avg[pkgIx][cpuIx]);
 					map[mapIx].type = double2double;
 					map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1000.0; // KHz * 1000 = MHz
@@ -217,7 +217,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set time   avg   cpus  work [ s ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(cpu->measure_util_active_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // s = s
@@ -230,7 +230,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set time   avg   cpus  idle [ s ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(cpu->measure_util_idle_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // s = s
@@ -243,7 +243,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set util   avg   cpus       [ % ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(cpu->measure_util_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // % = %
@@ -275,7 +275,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set memory max   cpu used   [kiB]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(cpu->measure_memory_used_max);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB = kiB
@@ -294,7 +294,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set memory max   cpu free   [kiB]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(cpu->measure_memory_free_max);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB = kiB
@@ -320,7 +320,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set swap   max   cpu used   [kiB]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(cpu->measure_swap_used_max);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB = kiB
@@ -339,7 +339,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set swap   max   cpu free   [kiB]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(cpu->measure_swap_free_max);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB = kiB
@@ -350,7 +350,6 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 
 		//int eIx = 
 		//map[0] = {};
-		printf("mapping cpu: %d\n", mapIx);
 	}
 
 	if (strncmp(cmp, "nvml", 4) == 0) {
@@ -372,7 +371,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set energy total gpu        [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value1 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(gpu->nvml_energy_acc);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000 = mWs
@@ -385,7 +384,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set power  avg   gpu        [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(gpu->nvml_power_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000 = mW
@@ -404,7 +403,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set temp   max   gpu        [°C ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(gpu->nvml_temperature_max);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C = °C
@@ -423,7 +422,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set freq   avg   gpu graph  [MHz]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(gpu->nvml_clock_graphics_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz = MHz
@@ -442,7 +441,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set freq   avg   gpu sm     [MHz]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(gpu->nvml_clock_sm_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz = MHz
@@ -461,7 +460,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set freq   avg   gpu mem    [MHz]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(gpu->nvml_clock_mem_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz = MHz
@@ -480,7 +479,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set util   avg   gpu gpu    [ % ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(gpu->nvml_util_gpu_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // % = %
@@ -499,7 +498,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set util   avg   gpu mem    [ % ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(gpu->nvml_util_mem_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // % = %
@@ -518,7 +517,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set memory total gpu        [kiB]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(gpu->nvml_memory_total);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1024.0; // B / 1024 = kiB
@@ -531,7 +530,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set memory max   gpu used   [kiB]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(gpu->nvml_memory_used_max);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1024.0; // B / 1024 = kiB
@@ -550,7 +549,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set memory max   gpu free   [kiB]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(gpu->nvml_memory_free_max);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1024.0; // B / 1024 = kiB
@@ -563,7 +562,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set proc   max   gpu active [   ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(gpu->nvml_active_processes_count_max);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // # = #
@@ -578,7 +577,6 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		}
 
 
-		printf("mapping gpu: %d\n", mapIx);
 	}
 
 	if (strncmp(cmp, "maxeler", 7) == 0) {
@@ -600,13 +598,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set power  avg   vcc1v0_c   [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[VCC10]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total vcc1v0_c   [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value0 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[VCC10]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -619,13 +617,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set power  avg   vcc1v5_c   [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[VCC15]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total vcc1v5_c   [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value0 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[VCC15]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -638,13 +636,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set power  avg   vcc2v5_c   [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[VCC25]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total vcc2v5_c   [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value0 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[VCC25]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -657,13 +655,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set power  avg   imgt_1v0   [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[IMGT10]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total imgt_1v0   [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value0 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[IMGT10]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -676,13 +674,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set power  avg   imgt_1v2   [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[IMGT12]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total imgt_1v2   [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value0 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[IMGT12]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -695,13 +693,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set power  avg   mgt_1v0   [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[MGT10]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total mgt_1v0   [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value0 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[MGT10]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -714,13 +712,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set power  avg   mgt_1v2   [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[MGT12]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total mgt_1v2   [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value0 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[MGT12]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -733,13 +731,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set power  avg   fpga       [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[POWER]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total fpga       [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value0 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[POWER]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -758,7 +756,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set temp   max   fpga  imgt [°C ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(fpga->maxeler_temperature_max[ITEMP]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
@@ -777,7 +775,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set temp   max   fpga  mmgt [°C ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(fpga->maxeler_temperature_max[MTEMP]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
@@ -796,7 +794,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set util   avg   fpga  comp [ % ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_util_comp_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // % = %
@@ -811,7 +809,6 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		}
 
 
-		printf("mapping fpga: %d\n", mapIx);
 	}
 
 	if (strncmp(cmp, "micknc", 6) == 0) {
@@ -833,13 +830,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set power  avg   pcie       [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_power_avg[MIC_PCIE]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total pcie       [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value1 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(mic->mic_energy_acc[MIC_PCIE]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -852,13 +849,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set power  avg   c2x3       [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_power_avg[MIC_C2X3]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total c2x3       [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value1 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(mic->mic_energy_acc[MIC_C2X3]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -871,13 +868,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set power  avg   c2x4       [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_power_avg[MIC_C2X4]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total c2x4       [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value1 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(mic->mic_energy_acc[MIC_C2X4]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -890,13 +887,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set power  avg   vccp       [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_power_avg[MIC_VCCP]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total vccp       [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value1 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(mic->mic_energy_acc[MIC_VCCP]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -909,13 +906,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set power  avg   vddg       [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_power_avg[MIC_VDDG]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total vddg       [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value1 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(mic->mic_energy_acc[MIC_VDDG]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -928,13 +925,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set power  avg   vddq       [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_power_avg[MIC_VDDQ]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total vddq       [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value1 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(mic->mic_energy_acc[MIC_VDDQ]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -947,13 +944,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set power  avg   mic        [mW ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_power_avg[MIC_POWER]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total mic        [mWs]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value1 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(mic->mic_energy_acc[MIC_POWER]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
@@ -972,7 +969,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set temp   max   die        [°C ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_temperature_max[MIC_DIE_TEMP]);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
@@ -992,7 +989,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set temp   max   gddr        [°C ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_temperature_max[MIC_GDDR_TEMP]);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
@@ -1005,7 +1002,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set temp   max   fan in      [°C ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_temperature_max[MIC_FAN_IN_TEMP]);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
@@ -1018,7 +1015,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set temp   max   fan out    [°C ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_temperature_max[MIC_FAN_OUT_TEMP]);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
@@ -1031,7 +1028,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set temp   max   vccp       [°C ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_temperature_max[MIC_VCCP_TEMP]);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
@@ -1044,7 +1041,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set temp   max   vddg       [°C ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_temperature_max[MIC_VDDG_TEMP]);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
@@ -1057,7 +1054,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set temp   max   vddq       [°C ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_temperature_max[MIC_VDDQ_TEMP]);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
@@ -1070,7 +1067,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set freq   avg   mic core   [MHz]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_freq_core_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz  = MHz
@@ -1089,7 +1086,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set freq   avg   mic mem    [MHz]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_freq_mem_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz  = MHz
@@ -1109,7 +1106,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set time   avg   mic active [ s ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 3]); // value0 acc
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(mic->mic_util_active_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // s  = s
@@ -1122,7 +1119,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set time   avg   mic idle   [ s ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 3]); // value0 acc
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(mic->mic_util_idle_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // s  = s
@@ -1135,7 +1132,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set util   avg   mic        [ % ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_util_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // %  = %
@@ -1155,7 +1152,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set memory total mic        [kiB]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_memory_total);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB  = kiB
@@ -1168,7 +1165,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set memory total mic        [kiB]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_memory_used_max);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB  = kiB
@@ -1187,7 +1184,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set memory total mic        [kiB]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_memory_free_max);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB  = kiB
@@ -1215,13 +1212,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
 			if (eIx != -1) {
 				// set power  avg   board      [ W ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(sys->ipmi_power_sysboard_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // W  = W
 				mapIx++;
 				// set energy total board      [Ws ]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value1 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(sys->ipmi_energy_sysboard_acc);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix; // Ws  = Ws
@@ -1234,13 +1231,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set power  avg   system     [ W ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 2]); // value0 avg
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(sys->ipmi_power_server_avg);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // W  = W
 				mapIx++;
 				// set energy total system     [Ws ]:
-				map[mapIx].source = &(set->values1[eIx*4 + 3]); // value1 acc
+				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(sys->ipmi_energy_server_acc);
 				map[mapIx].type = double2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix; // Ws  = Ws
@@ -1260,7 +1257,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		if (eIx != -1) {
 			if (1 == last_measurement) {
 				// set temp   max   system     [°C ]:
-				map[mapIx].source = &(set->values0[eIx*4 + 1]); // value0 max
+				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(sys->ipmi_temperature_sysboard_max);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
@@ -1279,12 +1276,54 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 	return 0;
 }
 
+long long _getcurrenttime() {
+    struct timespec result;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &result);
+    return (long long)result.tv_sec* 1000000000LL + (long long)result.tv_nsec;
+}
+
+
 void measure_update(void** args, int last_measurement) {
 	struct __mgmt_update *update = (struct __mgmt_update *) args;
 	if (0 == last_measurement) {
+//		long long s = _getcurrenttime();
+//		long long s2 = _getcurrenttime();
 		__map(update->map);
+//		long long s3 = _getcurrenttime();
+//		printf("---\n");
+//		printf("%lld\n", s);
+//		printf("%lld\n", s2);
+//		printf("%lld\n", s3);
+//		printf("%d %lld\n%lld\n%lld\n", update->measurement_id, s2-s, s3-s2, s3-s2-(s2-s));
 	} else {
 		__map(update->map_last);
+		MS_MEASUREMENT_CPU *cpu;
+		MS_MEASUREMENT_GPU *gpu;
+		MS_MEASUREMENT_FPGA *fpga;
+		MS_MEASUREMENT_MIC *mic;
+		MS_MEASUREMENT_SYS *sys;
+		switch(update->measurement_id) {
+			case CPU:
+				cpu = (MS_MEASUREMENT_CPU *)update->measurement;
+				cpu->msr_time_runtime = (double)(update->set->current_time - update->set->first_time) / 1000000000.0;
+			break;
+			case GPU:
+				gpu = (MS_MEASUREMENT_GPU *)update->measurement;
+				gpu->nvml_time_runtime = (double)(update->set->current_time - update->set->first_time) / 1000000000.0;
+			break;
+			case FPGA:
+				fpga = (MS_MEASUREMENT_FPGA *)update->measurement;
+				fpga->maxeler_time_runtime = (double)(update->set->current_time - update->set->first_time) / 1000000000.0;
+			break;
+			case MIC:
+				mic = (MS_MEASUREMENT_MIC *)update->measurement;
+				mic->mic_time_runtime = (double)(update->set->current_time - update->set->first_time) / 1000000000.0;
+			break;
+			case SYSTEM:
+				sys = (MS_MEASUREMENT_SYS *)update->measurement;
+				sys->ipmi_time_runtime = (double)(update->set->current_time - update->set->first_time) / 1000000000.0;
+			break;
+		}
 	}
 /*
 	int eIx = -1;
@@ -1353,7 +1392,6 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
 		return NULL;
     }
 
-	printf("line %d errno %d\n", __LINE__, errno);
 	// read defaults file if defined
 	retv = APAPI_read_environ_defaults(&(mgmt->defaults_file), &(mgmt->defaults_events), &(mgmt->defaults_events_num));
 
@@ -1469,7 +1507,6 @@ void ms_fini(MS_SYSTEM *ms_system) {
 MS_LIST *ms_alloc_measurement(MS_SYSTEM *ms_system) {
 	// mgmt.cpp
     MS_LIST *ms_list = NULL;
-	printf("%p\n", ms_system);
     MS_CONFIG *config = ms_system->config;
     
     if(config->cpu_enabled) {
@@ -1601,7 +1638,6 @@ void ms_init_measurement(MS_SYSTEM *ms_system, MS_LIST *ms_list, int flags) {
 	void* measurement = NULL;
 	struct timespec interval;
 	int papi_cmp_id;
-	printf("ms_init_measurement\n");
 	for (msIx = 0; msIx < (log2(ALL+1)); ++msIx) {
 		msId = 1<<msIx;
 	
@@ -1632,7 +1668,6 @@ void ms_init_measurement(MS_SYSTEM *ms_system, MS_LIST *ms_list, int flags) {
 				__create_mapper(msId, measurement, known_components[cmpIx], mgmt->sets[cmpIx], &(mgmt->update_args[cmpIx].map), 0);
 				__create_mapper(msId, measurement, known_components[cmpIx], mgmt->sets[cmpIx], &(mgmt->update_args[cmpIx].map_last), 1);
 
-				printf("set timer for %s\n", known_components[cmpIx]);
 				if (mgmt->timers[cmpIx] == NULL) {				
 					ret = APAPI_create_timer(&(mgmt->timers[cmpIx]), interval.tv_sec, interval.tv_nsec, measure_update, (void**) &(mgmt->update_args[cmpIx]), mgmt->sets[cmpIx]);
 				} else {
