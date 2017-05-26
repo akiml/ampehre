@@ -1,4 +1,4 @@
-int apapi_parse_op1(char* input, enum APAPI_op1 *output) {
+int _apapi_parse_op1(char* input, enum APAPI_op1 *output) {
     if (input == NULL || input[0] == 0) {
         return -1;
     }
@@ -25,7 +25,7 @@ int apapi_parse_op1(char* input, enum APAPI_op1 *output) {
     return -1;
 }
 
-int apapi_parse_stats(char* input, enum APAPI_stats *output, int only_single_attribute) {
+int _apapi_parse_stats(char* input, enum APAPI_stats *output, int only_single_attribute) {
     if (input == NULL || input[0] == 0) {
         return -1;
     }
@@ -76,7 +76,7 @@ int apapi_parse_stats(char* input, enum APAPI_stats *output, int only_single_att
             end = 1;
         }
         input[tokenEnd] = 0;
-        retv = apapi_parse_stats(&(input[tokenStart]), &(new), 1);
+        retv = _apapi_parse_stats(&(input[tokenStart]), &(new), 1);
         if (retv != PAPI_OK) {
             return -1;
         }
@@ -160,12 +160,12 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
             for(charIx = currentPos; input[charIx] != delimiter && charIx<lineBreak; charIx++);
             if (charIx == lineBreak && tokenIx < MAX_APAPI_EVENT_OPS_TOKENS-1) {
                 error = 1;
-                printf("Low number of tokens in line %d\n", lineIx+1);
+                APAPI_PRINTERR("Low number of tokens in line %d\n", lineIx+1)
                 break;
             }
             if (tokenIx > MAX_APAPI_EVENT_OPS_TOKENS-1) {
                 error = 1;
-                printf("High number of tokens in line %d\n", lineIx+1);
+                APAPI_PRINTERR("High number of tokens in line %d\n", lineIx+1)
                 break;
             }
             tokenStart = currentPos;
@@ -173,7 +173,7 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
 
             if (tokenStart == tokenBreak) {
                 error = 1;
-                printf("Attribute %d has zero characters at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1);
+                APAPI_PRINTERR("Attribute %d has zero characters at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1)
                 break;
             }
             // according to tokenIx try to fill struct apapi_event_ops
@@ -187,30 +187,30 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
                 case 1:
                     // enum APAPI_op1 op1
                     input[tokenBreak] = 0;
-                    retv = apapi_parse_op1(&(input[tokenStart]), &((*events_out)[eventIx].op1));
+                    retv = _apapi_parse_op1(&(input[tokenStart]), &((*events_out)[eventIx].op1));
                     if (retv != PAPI_OK) {
                         error = 1;
-                        printf("Unknown attribute %d op1 at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1);
+                        APAPI_PRINTERR("Unknown attribute %d op1 at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1)
                         break;
                     }
                 break;
                 case 2:
                     // APAPI_stats value0
                     input[tokenBreak] = 0;
-                    retv = apapi_parse_stats(&(input[tokenStart]), &((*events_out)[eventIx].value0), 0);
+                    retv = _apapi_parse_stats(&(input[tokenStart]), &((*events_out)[eventIx].value0), 0);
                     if (retv != PAPI_OK) {
                         error = 1;
-                        printf("Unknown attribute %d stats value0 at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1);
+                        APAPI_PRINTERR("Unknown attribute %d stats value0 at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1)
                         break;
                     }
                 break;
                 case 3:
                     // APAPI_stats value1
                     input[tokenBreak] = 0;
-                    retv = apapi_parse_stats(&(input[tokenStart]), &((*events_out)[eventIx].value1), 0);
+                    retv = _apapi_parse_stats(&(input[tokenStart]), &((*events_out)[eventIx].value1), 0);
                     if (retv != PAPI_OK) {
                         error = 1;
-                        printf("Unknown attribute %d stats value1 at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1);
+                        APAPI_PRINTERR("Unknown attribute %d stats value1 at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1)
                         break;
                     }
                 break;
@@ -220,7 +220,7 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
                     (*events_out)[eventIx].max_sample = strtoll(&(input[tokenStart]), &strto_endptr, 0);
                     if (errno != 0 || strto_endptr == &(input[tokenStart])) {
                         error = 1;
-                        printf("Invalid attribute %d max_sample at at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1);
+                        APAPI_PRINTERR("Invalid attribute %d max_sample at at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1)
 						errno = 0;
                         break;
                     }
@@ -241,7 +241,7 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
                     (*events_out)[eventIx].value0_prefix = strtod(&(input[tokenStart]), &strto_endptr);
                     if (errno != 0 || strto_endptr == &(input[tokenStart])) {
                         error = 1;
-                        printf("Invalid attribute %d double value0_prefix at at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1);
+                        APAPI_PRINTERR("Invalid attribute %d double value0_prefix at at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1)
 						errno = 0;
                         break;
                     }
@@ -262,7 +262,7 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
                     (*events_out)[eventIx].value1_prefix = strtod(&(input[tokenStart]), &strto_endptr);
                     if (errno != 0 || strto_endptr == &(input[tokenStart])) {
                         error = 1;
-                        printf("Invalid attribute %d double value1_prefix at at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1);
+                        APAPI_PRINTERR("Invalid attribute %d double value1_prefix at at line %d character %d\n", tokenIx+1, lineIx+1, tokenStart-lineStart+1)
 						errno = 0;
                         break;
                     }
@@ -284,13 +284,12 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
     }
     if (error) {
         // free memory
-        printf("An error occured while reading events\n");
+        APAPI_PRINTERR("An error occured while reading events\n")
         free(*events_out);
         return -1;
     }
 
     *num_events_out = read_events;
-    printf("events done\n");
     return PAPI_OK;
 }
 
@@ -303,7 +302,7 @@ int _apapi_read_file(char* filename, char **file_buffer, long *filesize) {
     // try to open file
     file = fopen(filename, "r");
     if (file == NULL && errno != 0) {
-        printf("Unable to open file %s.\n", filename);
+        APAPI_PRINTERR("Unable to open file %s.\n", filename)
 		errno = 0;
         return 1;
     }
@@ -312,34 +311,34 @@ int _apapi_read_file(char* filename, char **file_buffer, long *filesize) {
     *filesize = 0;
     retv = fseek(file, 0L, SEEK_END);
     if (retv == -1 && errno != 0) {
-        printf("Unable to seek file %s.\n",filename);
+        APAPI_PRINTERR("Unable to seek file %s.\n",filename)
         fclose(file);
 		errno = 0;
         return 1;
     }
     *filesize = ftell(file);
     if (*filesize == -1 && errno != 0) {
-        printf("Unable to tell file %s.\n",filename);
+        APAPI_PRINTERR("Unable to tell file %s.\n",filename)
         fclose(file);
 		errno = 0;
         return 1;
     }
     rewind(file);
     if (*filesize > 10000000L) {
-        printf("File %s too big.\n",filename);
+        APAPI_PRINTERR("File %s too big.\n",filename)
         fclose(file);
         return 1;
     }
     *file_buffer = calloc(1, *filesize+1);
     if (*file_buffer == NULL) {
-        printf("Not enough memory for file %s.\n",filename);
+        APAPI_PRINTERR("Not enough memory for file %s.\n",filename)
         fclose(file);
         return 1;
     }
     size_t read;
     read = fread(*file_buffer, *filesize, 1, file);
     if (read != 1) {
-        printf("Reading file %s failed.\n.",filename);
+        APAPI_PRINTERR("Reading file %s failed.\n.",filename)
         free(*file_buffer);
         fclose(file);
         return 1;
@@ -359,14 +358,14 @@ int _apapi_read_defaults_file(char *filename, struct apapi_event_ops **events_ou
         return retv;
     }
 
-    printf("Read defaults file.\n");
-
     retv = APAPI_read_event_ops_csv(*defaults_file_buffer, ',', events_output, num_events);
     if (retv == PAPI_OK) {
-        printf("Read %d defaults.\n", *num_events);
+		if (_apapi_verbose) {
+	        printf("Read %d defaults.\n", *num_events);
+		}
 		return PAPI_OK;
     } else {
-        printf("Reading defaults failed.\n");
+        APAPI_PRINTERR("Reading defaults failed.\n")
 		if (*defaults_file_buffer != NULL) {
 			free(*defaults_file_buffer);
 			*defaults_file_buffer = NULL;
@@ -400,7 +399,9 @@ int APAPI_read_environ_defaults(char **buffer, struct apapi_event_ops **events_o
 	// get filename
 	char *defaults_filename = &(defaults_env[15]);
 
-	printf("Env defaults file: %s\n", defaults_filename);
+	if (_apapi_verbose == 1) {
+		printf("Env defaults file: %s\n", defaults_filename);
+	}
 
 	return _apapi_read_defaults_file(defaults_filename, events_out, buffer, num_events_out);
 }
