@@ -15,6 +15,4 @@
 # version: 0.8.0 - extend libmeasure and add application for online monitoring
 #
 
-add_subdirectory(hettime)
-add_subdirectory(msmonitor)
-add_subdirectory(msmonitor_cs)
+add_subdirectory(server)

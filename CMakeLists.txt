@@ -1,7 +1,7 @@
 #
 # CMakeLists.txt
 #
-# Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>
+# Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>, Ahmad El-Ali <aelali@mail.upb.de>
 # All rights reserved.
 #
 # This software may be modified and distributed under the terms
@@ -37,8 +37,8 @@ option(CPU_INTEL_SANDY_SUPPORT "build library with cpu intel xeon sandy support"
 
 set(CMAKE_C_FLAGS "-O3 -Wall -std=gnu99")
 set(CMAKE_CXX_FLAGS "-O3 -Wall -std=gnu++98")
-#set(CMAKE_C_FLAGS "-O3 -Wall -DDEBUG")
-#set(CMAKE_CXX_FLAGS "-O3 -Wall -DDEBUG")
+#set(CMAKE_C_FLAGS "-O0 -Wall -DDEBUG")
+#set(CMAKE_CXX_FLAGS "-O0 -Wall -DDEBUG")
 
 if(NOT WIN32)
 	string(ASCII 27 Esc)

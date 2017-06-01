@@ -1,7 +1,7 @@
 #
 # Makefile
 #
-# Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>
+# Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>, Ahmad El-Ali <aelali@mail.upb.de>
 # All rights reserved.
 #
 # This software may be modified and distributed under the terms
@@ -23,11 +23,12 @@ BASE_DIR=/usr/ampehre/
 GCC=/usr/bin/gcc-4.6
 GXX=/usr/bin/g++-4.6
 
-.PHONY: all install debug clean driver driver_install gaussblur gaussblur_install correlation correlation_install mic_start docs
+.PHONY: all install debug clean driver driver_install gaussblur gaussblur_install correlation correlation_install mic_start docs client client_clean
 
 all:
 	mkdir -p build
 	cd build && cmake -DSIGNALS=ON  -DDEBUG_SYMS=OFF -DCMAKE_INSTALL_PREFIX=$(BASE_DIR) -DCMAKE_C_COMPILER=$(GCC) -DCMAKE_CXX_COMPILER=$(GXX) .. && make
+	cd utilities/msmonitor_cs/client && qmake-qt4 PREFIX=$(BASE_DIR) msmonitor.pro && make
 
 debug:
 	mkdir -p build
@@ -39,6 +40,7 @@ install: all
 	sudo chmod 775 $(BASE_DIR) $(BASE_DIR)/bin $(BASE_DIR)/lib $(BASE_DIR)/include $(BASE_DIR)/share $(BASE_DIR)/share/data
 	sudo rm -f $(BASE_DIR)/bin/gpu_management
 	cd build && make install
+	cd utilities/msmonitor_cs/client && make install
 	sudo chown root:root $(BASE_DIR)/bin/gpu_management
 	sudo chmod 4755 $(BASE_DIR)/bin/gpu_management
 	sudo ldconfig
@@ -49,6 +51,7 @@ clean:
 	cd misc/tools/gaussblur && make cleanall
 	cd misc/tools/correlation && make cleanall
 	cd docs/het_node_doc && make clean
+	cd utilities/msmonitor_cs/client && rm -rf build Makefile
 
 docs:
 	cd docs/het_node_doc && make
@@ -73,3 +76,9 @@ correlation_install:
 
 mic_start:
 	sudo service mpss restart
+
+client:
+	cd utilities/msmonitor_cs/client && qmake-qt4 PREFIX=/usr/local/bin msmonitor.pro && make
+
+clean_client:
+	cd utilities/msmonitor_cs/client && rm -rf build Makefile

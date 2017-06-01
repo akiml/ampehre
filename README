@@ -3,6 +3,7 @@ Accurately Measuring Power and Energy for Heterogeneous Resource Environments
 
 author: Achim Lösch (achim.loesch@upb.de)
 author: Christoph Knorr (cknorr@mail.upb.de)
+author: Ahmad El-Ali (aelali@mail.upb.de)
 
 All files of the ampehre project are distributed under the terms of the
 2-clause BSD license (see LICENSE file for further information).
@@ -68,3 +69,4 @@ History:
 0.7.2 - add real, user and sys time to hettime plus bugfixing result query functions
 0.7.3 - add heatmaps to msmonitor and the enum ipmi_timeout_setting in libmeasure
 0.7.4 - add query for currently active processes to libmeasure and system overview gui to msmonitor
+0.8.0 - add server client monitoring
