@@ -119,6 +119,7 @@ add_subdirectory(cjson)
 add_subdirectory(libmeasure)
 add_subdirectory(utilities)
 add_subdirectory(misc)
+add_subdirectory(apapi)
 
 install(FILES include/unixsockethandler.h DESTINATION include)
 install(FILES include/ushmsmonitor.h DESTINATION include)

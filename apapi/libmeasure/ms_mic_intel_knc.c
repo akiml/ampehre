@@ -1,1 +1,0 @@
-../../libmeasure/mic_intel_knc/ms_mic_intel_knc.c

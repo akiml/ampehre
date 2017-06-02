@@ -1,3 +1,20 @@
+/*                                                                                                                                              
+ * apapi_defaults.c
+ * 
+ * Copyright (C) 2017, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>, Alex Wiens <awiens@mail.uni-paderborn.de>  * All rights reserved.
+ * 
+ * This software may be modified and distributed under the terms
+ * of the BSD license. See the LICENSE file for details.
+ * 
+ * encoding: UTF-8
+ * tab size: 4
+ * 
+ * author: Alex Wiens (awiens@mail.uni-paderborn.de)
+ * created: 6/01/17
+ * version: 0.8.0 - initial implementation
+ */
+
+
 struct apapi_event_ops APAPI_DEFAULT_EVENT_OPS[] = {
 {"rapl:::PACKAGE_ENERGY:PACKAGE0",
 APAPI_OP1_DIV_DIFF_TIME, APAPI_STAT_ACC, APAPI_STAT_MIN | APAPI_STAT_MAX | APAPI_STAT_AVG, 0xffffffffL, "energy", "Ws", 1E9, "power", "W", 1E9},

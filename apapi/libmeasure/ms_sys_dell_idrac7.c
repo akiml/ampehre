@@ -1,1 +1,0 @@
-../../libmeasure/sys_dell_idrac7/ms_sys_dell_idrac7.c

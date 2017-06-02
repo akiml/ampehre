@@ -1,9 +1,25 @@
+/*                                                                                                                                              * ms_common_apapi.c
+ * 
+ * Copyright (C) 2017, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>, Alex Wiens <awiens@mail.uni-paderborn.de>  * All rights reserved.
+ * 
+ * This software may be modified and distributed under the terms
+ * of the BSD license. See the LICENSE file for details.
+ * 
+ * encoding: UTF-8
+ * tab size: 4
+ * 
+ * author: Alex Wiens (awiens@mail.uni-paderborn.de)
+ * created: 6/01/17
+ * version: 0.8.0 - initial implementation
+ */
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include "ms_common.h"
+#include "ms_common_apapi.h"
 //#include "ms_measurement.h"
 #include "papi.h"
 
