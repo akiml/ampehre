@@ -47,6 +47,21 @@ void QMSMUtilPlot::initPlot()
     mpFpga0     = new QwtPlotCurve("Compute FPGA");
     mpMic0      = new QwtPlotCurve("MIC");
 
+    mBoxes.push_back(new QCheckBox("CPU"));
+    mBoxes.push_back(new QCheckBox("GPU Core"));
+    mBoxes.push_back(new QCheckBox("GPU Memory"));
+    mBoxes.push_back(new QCheckBox("Compute FPGA"));
+    mBoxes.push_back(new QCheckBox("MIC"));
+    QVBoxLayout* layout = new QVBoxLayout;
+
+    for(unsigned int i = 0; i < mBoxes.size(); i++)
+    {
+        mBoxes[i]->setChecked(true);
+        layout->addWidget(mBoxes[i]);
+    }
+
+    mGroupbox->setLayout(layout);
+
     mpPlot->setTitle("Utilization");
     setWindowTitle("Utilization");
     mpPlot->setAxisTitle( QwtPlot::xBottom, "Server uptime [s]" );
@@ -76,6 +91,58 @@ void QMSMUtilPlot::redraw()
     mpGpu1->setSamples(mTimevalues.data(), mGpu1values.data(), size);
     mpFpga0->setSamples(mTimevalues.data(), mFpga0values.data(), size);
     mpMic0->setSamples(mTimevalues.data(), mMic0values.data(), size);
+    redrawApplications();
+
+    for(unsigned int i = 0; i < mBoxes.size(); i++)
+    {
+        if(mBoxes[i]->isChecked())
+        {
+            if(i == 0)
+            {
+                mpCpu0->setVisible(true);
+            }
+            else if(i == 1)
+            {
+                mpGpu0->setVisible(true);
+            }
+            else if(i == 2)
+            {
+                mpGpu1->setVisible(true);
+            }
+            else if(i == 3)
+            {
+                mpFpga0->setVisible(true);
+            }
+            else if(i == 4)
+            {
+                mpMic0->setVisible(true);
+            }
+        }
+        else
+        {
+            if(i == 0)
+            {
+                mpCpu0->setVisible(false);
+            }
+            else if(i == 1)
+            {
+                mpGpu0->setVisible(false);
+            }
+            else if(i == 2)
+            {
+                mpGpu1->setVisible(false);
+            }
+            else if(i == 3)
+            {
+                mpFpga0->setVisible(false);
+            }
+            else if(i == 4)
+            {
+                mpMic0->setVisible(false);
+            }
+        }
+    }
+
 
     mpPlot->replot();
 }

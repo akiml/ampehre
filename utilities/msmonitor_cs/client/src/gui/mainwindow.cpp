@@ -449,26 +449,31 @@ void MainWindow::updateSystemOverview()
 void MainWindow::updatePower()
 {
     mpPowerplot->updateValues(mClient.mValues);
+    mpPowerplot->updateApplications(mClient.mSigPid);
 }
 
 void MainWindow::updateClock()
 {
     mpClockplot->updateValues(mClient.mValues);
+    mpClockplot->updateApplications(mClient.mSigPid);
 }
 
 void MainWindow::updateTemp()
 {
     mpTempplot->updateValues(mClient.mValues);
+    mpTempplot->updateApplications(mClient.mSigPid);
 }
 
 void MainWindow::updateMemory()
 {
     mpMemoryplot->updateValues(mClient.mValues);
+    mpMemoryplot->updateApplications(mClient.mSigPid);
 }
 
 void MainWindow::updateUtil()
 {
     mpUtilplot->updateValues(mClient.mValues);
+    mpUtilplot->updateApplications(mClient.mSigPid);
 }
 
 void MainWindow::updateHeatmapUtil()

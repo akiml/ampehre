@@ -46,6 +46,20 @@ void QMSMMemoryPlot::initPlot()
     mpGpu0      = new QwtPlotCurve("GPU");
     mpMic0      = new QwtPlotCurve("MIC");
 
+    mBoxes.push_back(new QCheckBox("CPU Ram"));
+    mBoxes.push_back(new QCheckBox("CPU Swap"));
+    mBoxes.push_back(new QCheckBox("GPU"));
+    mBoxes.push_back(new QCheckBox("MIC"));
+    QVBoxLayout* layout = new QVBoxLayout;
+
+    for(unsigned int i = 0; i < mBoxes.size(); i++)
+    {
+        mBoxes[i]->setChecked(true);
+        layout->addWidget(mBoxes[i]);
+    }
+
+    mGroupbox->setLayout(layout);
+
     mpPlot->setTitle("Memory");
     setWindowTitle("Memory");
     mpPlot->setAxisTitle( QwtPlot::xBottom, "Server uptime [s]" );
@@ -73,6 +87,49 @@ void QMSMMemoryPlot::redraw()
     mpCpu1->setSamples(mTimevalues.data(), mCpu1values.data(), size);
     mpGpu0->setSamples(mTimevalues.data(), mGpu0values.data(), size);
     mpMic0->setSamples(mTimevalues.data(), mMic0values.data(), size);
+    redrawApplications();
+
+    for(unsigned int i = 0; i < mBoxes.size(); i++)
+    {
+        if(mBoxes[i]->isChecked())
+        {
+            if(i == 0)
+            {
+                mpCpu0->setVisible(true);
+            }
+            else if(i == 1)
+            {
+                mpCpu1->setVisible(true);
+            }
+            else if(i == 2)
+            {
+                mpGpu0->setVisible(true);
+            }
+            else if(i == 3)
+            {
+                mpMic0->setVisible(true);
+            }
+        }
+        else
+        {
+            if(i == 0)
+            {
+                mpCpu0->setVisible(false);
+            }
+            else if(i == 1)
+            {
+                mpCpu1->setVisible(false);
+            }
+            else if(i == 2)
+            {
+                mpGpu0->setVisible(false);
+            }
+            else if(i == 3)
+            {
+                mpMic0->setVisible(false);
+            }
+        }
+    }
 
     mpPlot->replot();
 }

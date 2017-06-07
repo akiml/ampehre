@@ -19,6 +19,9 @@
  */
 
 #include "gui/QMSMpowerplot.h"
+#include <QCheckBox>
+#include <QVBoxLayout>
+
 
 QMSMPowerPlot::QMSMPowerPlot(int linewidth, int maxData, int width, int height, QWidget *parent):
     QMSMplot(POWER, linewidth, maxData, width, height, parent)
@@ -28,12 +31,12 @@ QMSMPowerPlot::QMSMPowerPlot(int linewidth, int maxData, int width, int height, 
 
 QMSMPowerPlot::~QMSMPowerPlot()
 {
-    std::cout << "delete powerPlot" << std::endl;
     delete mpCpu0;
     delete mpCpu1;
     delete mpFpga0;
     delete mpMic0;
     delete mpSystem;
+    std::cout << "delete powerPlot" << std::endl;
 }
 
 QWidget* QMSMPowerPlot::getPlot()
@@ -49,6 +52,22 @@ void QMSMPowerPlot::initPlot()
     mpFpga0     = new QwtPlotCurve("FPGA");
     mpMic0      = new QwtPlotCurve("MIC");
     mpSystem    = new QwtPlotCurve("System");
+
+    mBoxes.push_back(new QCheckBox("CPU0"));
+    mBoxes.push_back(new QCheckBox("CPU1"));
+    mBoxes.push_back(new QCheckBox("GPU"));
+    mBoxes.push_back(new QCheckBox("FPGA"));
+    mBoxes.push_back(new QCheckBox("MIC"));
+    mBoxes.push_back(new QCheckBox("System"));
+    QVBoxLayout* layout = new QVBoxLayout;
+
+    for(unsigned int i = 0; i < mBoxes.size(); i++)
+    {
+        mBoxes[i]->setChecked(true);
+        layout->addWidget(mBoxes[i]);
+    }
+
+    mGroupbox->setLayout(layout);
 
     mpPlot->setTitle("Power");
     setWindowTitle("Power");
@@ -81,6 +100,65 @@ void QMSMPowerPlot::redraw()
     mpFpga0->setSamples(mTimevalues.data(), mFpga0values.data(), size);
     mpMic0->setSamples(mTimevalues.data(), mMic0values.data(), size);
     mpSystem->setSamples(mTimevalues.data(), mSystemvalues.data(), size);
+    redrawApplications();
+
+    for(unsigned int i = 0; i < mBoxes.size(); i++)
+    {
+        if(mBoxes[i]->isChecked())
+        {
+            if(i == 0)
+            {
+                mpCpu0->setVisible(true);
+            }
+            else if(i == 1)
+            {
+                mpCpu1->setVisible(true);
+            }
+            else if(i == 2)
+            {
+                mpGpu0->setVisible(true);
+            }
+            else if(i == 3)
+            {
+                mpFpga0->setVisible(true);
+            }
+            else if(i == 4)
+            {
+                mpMic0->setVisible(true);
+            }
+            else if(i == 5)
+            {
+                mpSystem->setVisible(true);
+            }
+        }
+        else
+        {
+            if(i == 0)
+            {
+                mpCpu0->setVisible(false);
+            }
+            else if(i == 1)
+            {
+                mpCpu1->setVisible(false);
+            }
+            else if(i == 2)
+            {
+                mpGpu0->setVisible(false);
+            }
+            else if(i == 3)
+            {
+                mpFpga0->setVisible(false);
+            }
+            else if(i == 4)
+            {
+                mpMic0->setVisible(false);
+            }
+            else if(i == 5)
+            {
+                mpSystem->setVisible(false);
+            }
+        }
+    }
 
     mpPlot->replot();
 }

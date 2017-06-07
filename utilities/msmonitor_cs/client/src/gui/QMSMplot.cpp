@@ -22,6 +22,10 @@
 #include "gui/QMSMplot.h"
 #include "ui_qmsmplot.h"
 
+//seg fault
+//socket closes after some time -> CComC.cpp while anstatt if
+//draw start stop better
+
 QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, QWidget* parent):
     mType(type),
     QWidget(parent),
@@ -38,23 +42,31 @@ QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, 
     mpPaintFpga1(new QPen(Qt::green, mLineWidth)),
     mpPaintMic0(new QPen(Qt::darkMagenta, mLineWidth)),
     mpPaintMic1(new QPen(Qt::magenta, mLineWidth)),
-    mpPaintSystem( new QPen(QColor(255,165,0), mLineWidth))
+    mpPaintSystem( new QPen(QColor(255,165,0), mLineWidth)),
+    mVerticalLineStart(QwtSymbol::VLine, QBrush(Qt::green), QPen(Qt::green), QSize(1, 300)), //change color
+    mVerticalLineEnd(QwtSymbol::VLine, QBrush(Qt::red), QPen(Qt::red), QSize(1, 300))
 {
     ui->setupUi(this);
+    mGroupbox = ui->groupBox;
     setLineWidth(mLineWidth);
     mpPlot = ui->qwtPlot;
     mpLegend->setFrameStyle(QFrame::Box | QFrame::Sunken);
 
+    mCurrentAppSize = 0;
+    enableApplications = true;
     resize(width,height);
 
     connect(ui->spinBox, SIGNAL(valueChanged(int)), this, SLOT(resetLineWidth(int)));
     connect(ui->pushButtonScreenshot, SIGNAL(clicked()), this, SLOT(screenshot()));
     connect(ui->pushButtonCSV, SIGNAL(clicked()), this, SLOT(exportToCSV()));
+    connect(ui->checkBox, SIGNAL(clicked(bool)), this, SLOT(applicationsEnabled(bool)));
 }
 
 QMSMplot::~QMSMplot()
 {
     delete ui;
+
+    mMarker.clear();
 
     delete mpLegend;
     delete mpPaintCpu0;
@@ -70,6 +82,11 @@ QMSMplot::~QMSMplot()
     delete mpMagnifier;
     delete mpPanner;
     delete mpGrid;
+}
+
+void QMSMplot::applicationsEnabled(bool val)
+{
+    enableApplications = val;
 }
 
 double QMSMplot::getCurrentCpu0()
@@ -253,23 +270,32 @@ void QMSMplot::updateApplications(const std::vector<Application> &apps)
 
 void QMSMplot::redrawApplications()
 {
-//    mMarker.clear();
-//    for(unsigned int i = 0; i < mSymbols.size(); i++)
-//    {
-//        delete mSymbols[i];
-//    }
-//    mSymbols.clear();
 
-//    int width = 2;
+    for(unsigned int i = 0; i < mMarker.size(); i++)
+    {
+        mMarker[i]->setVisible(enableApplications);
+    }
 
-//    for(unsigned int i = 0; i < mApplications.size(); i++)
-//    {
-//        QwtPlotMarker marker;
-//        marker.setLabel(QwtText(QString::number(mApplications[i].mPid)));
-//        mSymbols.push_back(new QwtSymbol(QwtSymbol::VLine, QBrush(QColor("#000000")), QPen( Qt::black, 1 ), QSize( width,0 )));
-//        marker.setSymbol(&mSymbols.back());
-//        mMarker.push_back(marker);
-//        mMarker.back().attach(mpPlot);
-//        mMarker.back().show();
-//    }
+    if(mCurrentAppSize < mApplications.size())
+    {
+        for(unsigned int i = mCurrentAppSize; i < mApplications.size(); i++)
+        {
+            QwtPlotMarker *marker = new QwtPlotMarker();
+
+            if(mApplications[i].start)
+                marker->setSymbol(&mVerticalLineStart);
+            else
+                marker->setSymbol(&mVerticalLineEnd);
+
+            marker->setLabel(QwtText(QString::number(mApplications[i].mPid)));
+            marker->setLabelAlignment(Qt::AlignTop);
+            marker->setXValue(mApplications[i].mTime);
+            marker->setVisible(enableApplications);
+            mMarker.push_back(marker);
+            mMarker.back()->attach(mpPlot);
+            qDebug() << "added application symbol";
+        }
+        mCurrentAppSize = mApplications.size();
+    }
 }
+

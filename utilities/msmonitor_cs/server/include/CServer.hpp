@@ -21,7 +21,7 @@
 #ifndef CSERVER_HPP
 #define CSERVER_HPP
 
-#include "CComS.hpp"
+#include "CComServer.h"
 #include "CMeasure.hpp"
 #include "CProtocolS.hpp"
 #include "utils.h"
@@ -29,6 +29,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <ctime>
+#include <pthread.h>
 
 
 class CServer{
@@ -40,9 +41,12 @@ public:
 	void acceptLoop();
 	void getCurrentTime(double& time);
 	std::vector<Application> mApplications;
+	std::string mVERSION;
+	CComServer mCom;
+	CProtocolS mProtocol;
+	void answer(int taskCode, int registry, uint64_t datacode);
 	
 private:
-	void answer(int taskCode, int registry, uint64_t datacode);
 	void registerClient(uint64_t datacode);
 	void dataRequest(int registry);
 	void terminate(int registry);
@@ -51,22 +55,35 @@ private:
 	void createDataAnswer(std::string &msg, uint64_t dataCode);
 	int createDataAnswer(void** answer, uint64_t dataCode);
 	void controlClients();
-	
-	
-	std::string mVERSION;
+	static void* clientTask(void* d);
+
+
 	CMeasure mMeasure;
-	CComS mCom;
-	CProtocolS mProtocol;
+
 	std::list<clReg> mRegClients;
 	std::list<clReg>::iterator mIterator;
 	int mPort;
 	int mMaxClients;
-	int mSocket;
 	double mCurrentTime;
 	std::vector<uint64_t> mFreq;
 	std::vector<clock_t> mTimesForClients;
 	
 	
+};
+
+struct ClientData
+{
+	CServer* srv;
+	void* buffer;
+	int recv_length;
+	int task_code;
+	int registry;
+	uint64_t data;
+	bool termflag;
+	int socket;
+	std::vector<ClientData>* dataVec;
+	std::vector<pthread_t>* threads;
+	int pos;
 };
 
 #endif

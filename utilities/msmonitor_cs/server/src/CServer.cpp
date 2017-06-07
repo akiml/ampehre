@@ -21,13 +21,12 @@
 #include "CServer.hpp"
 
 CServer::CServer(int port, int maxClients):
-     mVERSION("0.1"),
-     mMeasure(CMeasure()),
-     mCom(CComS()),
+	 mVERSION("0.1"),
+     mCom(CComServer()),
      mProtocol(CProtocolS(mVERSION)),
+     mMeasure(CMeasure()),
      mPort(port),
      mMaxClients(maxClients),
-     mSocket(0),
      mCurrentTime(0)
 {
 	for(unsigned int k = 0; k < 5; k++)
@@ -36,7 +35,7 @@ CServer::CServer(int port, int maxClients):
 	}
 	getFrequencies();
 	
-	for(unsigned int i = 0; i < maxClients; i++)
+	for(int i = 0; i < maxClients; i++)
 	{
 		mTimesForClients.push_back(-1);
 	}
@@ -48,10 +47,12 @@ CServer::~CServer()
 	mMeasure.stop();
 }
 
-void CServer::init(){
+void CServer::init()
+{
 	mMeasure.start();
-	if(mCom.initSocket(mPort) < 0)
-		exit(-1);
+	mCom.msm_socket();
+	mCom.msm_bind(mPort);
+	mCom.msm_listen(5);
 }
 
 void CServer::getCurrentTime(double& time) 
@@ -77,37 +78,90 @@ void CServer::controlClients()
 	}
 }
 
+void* CServer::clientTask(void* d) 
+{
+		ClientData* dd = (ClientData*) d;
+		dd->termflag = false;
+		
+		while(!dd->termflag)
+		{						//mutex -> pthread_mutex_t (datatype) pthread_create, pthread_exit, pthread_stop, pthread_join
+			dd->srv->mCom.msm_recv(&dd->buffer, dd->recv_length);
+			
+			std::cout<<"************************" << std::endl;
+			std::cout<<"received: "<<std::endl;
+			std::string str((char*)dd->buffer, dd->recv_length);
+			std::cout << str;
+				
+			
+			std::cout<<"************************" << std::endl;
+			
+			if(dd->srv->mProtocol.parseMsg((char*)dd->buffer, dd->recv_length, dd->task_code, dd->registry, dd->data) < 0){
+				std::cout << "[!]error parsing message" << std::endl;
+			}
+			else{
+				dd->srv->answer(dd->task_code, dd->registry, dd->data);
+			}	
+			free(dd->buffer);
+			if(dd->task_code == TERM_COM)
+			{
+				dd->termflag = true;
+			}
+		}
+		dd->srv->mCom.msm_shutdown(dd->socket);
+		dd->dataVec->erase(dd->dataVec->begin()+dd->pos);
+		dd->threads->erase(dd->threads->begin()+dd->pos);
+}
 
 
 void CServer::acceptLoop() {
-	int recv_length;
-	char buffer[4096] = {0};
-	int task_code = 0;
-	int registry = 0;
-	uint64_t data = 0;
-
-
-	while(1){
+	
+	std::vector<ClientData> dataVec;
+	std::vector<pthread_t> threads;
+	int count = 0;
+	
+	while(1)
+	{
 		controlClients();
-		mCom.acceptSocket(mSocket);
-		recv_length = recv(mSocket, buffer, 4096, 0);
 		
-		std::cout<<"************************" << std::endl;
-		std::cout<<"received: "<<std::endl;
-		std::string str(buffer, recv_length);
-		std::cout << str;
+		count = threads.size();
+		if(count < mMaxClients)
+		{
+			std::cout << "before creation" << std::endl;
+			pthread_t t;
+			threads.push_back(t);
+			ClientData c;
+			c.srv = this;
+			c.recv_length = 0;
+			c.registry = 0;
+			c.task_code = 0;
+			c.data = 0;
+			c.termflag = false;
+			c.dataVec = &dataVec;
+			c.threads = &threads;
+			c.pos = count;
+			dataVec.push_back(c);
 			
-		
-		std::cout<<"************************" << std::endl;
-		
-		if(mProtocol.parseMsg(buffer, recv_length, task_code, registry, data) < 0){
-			std::cout << "[!]error parsing message" << std::endl;
-		}
-		else{
-			answer(task_code, registry, data);
-		}	
+			int s = mCom.msm_accept();
+			dataVec[count].socket = s;
+			
+			std::cout << "after accept" << std::endl;
 
-		close(mSocket);
+			
+			int ret = pthread_create(&threads[count], NULL, clientTask, (void*)&dataVec[count]);
+			if(ret)
+			{
+				std::cout << "error creating p_thread, return code: " << ret << std::endl;
+			}
+			std::cout << "thread created!" << std::endl;
+
+			ret = pthread_detach(threads[count]);	//resources are automatically released after finish
+			if(ret)
+			{
+				std::cout << "error detaching p_thread, return code: " << ret << std::endl;
+			}
+			std::cout << "thread detached" << std::endl;
+
+		}
 	}
 }
 
@@ -171,14 +225,14 @@ void CServer::registerClient(uint64_t datacode){
 	std::string answer;
 	mTimesForClients[reg] = std::clock();
 	mProtocol.answerRegisterMsg(answer, reg);
-	mCom.sendMsg(answer, mSocket);
+	mCom.msm_send(answer.c_str());
 }
 
 void CServer::confirmFreq(int registry){
 	if(ut::find(mRegClients, registry, mIterator) == 0){
 		std::string m;
 		mProtocol.freqMsg(m, mFreq);
-		mCom.sendMsg(m,  mSocket);
+		mCom.msm_send(m.c_str());
 
 	}else{
 		std::cout<<"client not registered yet!" << std::endl;
@@ -189,7 +243,7 @@ void CServer::dataRequest(int registry){
 	if(ut::find(mRegClients, registry, mIterator) == 0){
 		void* m;
 		int s = createDataAnswer(&m, mIterator->dataCode);
-		mCom.sendMsg(m, s, mSocket);
+		mCom.msm_send(m, s);
 		mTimesForClients[registry] = std::clock();
 		free(m);
 
@@ -204,7 +258,7 @@ void CServer::terminate(int registry){
 		std::string msg;
 		mTimesForClients[registry] = -1;
 		mProtocol.termComMsg(msg, registry);
-		mCom.sendMsg(msg, mSocket);
+		mCom.msm_send(msg.c_str());
 	}
 }
 
@@ -256,13 +310,14 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 		}
 		std::stringstream ss;
 		ss << mApplications[i].mPid;
-		std::string pid_str = ss.str();
-		tmp += pid_str; 
+		std::string str = ss.str();
+		tmp += str; 
 		tmp += " ";
-		ss.clear();
-		ss << (unsigned long)mApplications[i].mTime;
-		std::string time_str = ss.str();
-		tmp += time_str;
+		
+		std::stringstream st;
+		st << (unsigned long)mApplications[i].mTime;
+		str = st.str();
+		tmp += str;
 		tmp += "\r\n";
 		size_str += tmp.size();
 		values_app.push_back(tmp);

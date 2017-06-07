@@ -48,6 +48,22 @@ void QMSMClockPlot::initPlot()
     mpMic0      = new QwtPlotCurve("MIC Core");
     mpMic1      = new QwtPlotCurve("MIC Mem");
 
+    mBoxes.push_back(new QCheckBox("CPU0"));
+    mBoxes.push_back(new QCheckBox("CPU1"));
+    mBoxes.push_back(new QCheckBox("GPU Core"));
+    mBoxes.push_back(new QCheckBox("GPU Mem"));
+    mBoxes.push_back(new QCheckBox("MIC Core"));
+    mBoxes.push_back(new QCheckBox("MIC Mem"));
+    QVBoxLayout* layout = new QVBoxLayout;
+
+    for(unsigned int i = 0; i < mBoxes.size(); i++)
+    {
+        mBoxes[i]->setChecked(true);
+        layout->addWidget(mBoxes[i]);
+    }
+
+    mGroupbox->setLayout(layout);
+
     mpPlot->setTitle("Clock");
     setWindowTitle("Clock");
     mpPlot->setAxisTitle( QwtPlot::xBottom, "Server uptime [s]" );
@@ -79,6 +95,65 @@ void QMSMClockPlot::redraw()
     mpGpu1->setSamples(mTimevalues.data(), mGpu1values.data(), size);
     mpMic0->setSamples(mTimevalues.data(), mMic0values.data(), size);
     mpMic1->setSamples(mTimevalues.data(), mMic1values.data(), size);
+    redrawApplications();
+
+    for(unsigned int i = 0; i < mBoxes.size(); i++)
+    {
+        if(mBoxes[i]->isChecked())
+        {
+            if(i == 0)
+            {
+                mpCpu0->setVisible(true);
+            }
+            else if(i == 1)
+            {
+                mpCpu1->setVisible(true);
+            }
+            else if(i == 2)
+            {
+                mpGpu0->setVisible(true);
+            }
+            else if(i == 3)
+            {
+                mpGpu1->setVisible(true);
+            }
+            else if(i == 4)
+            {
+                mpMic0->setVisible(true);
+            }
+            else if(i == 5)
+            {
+                mpMic1->setVisible(true);
+            }
+        }
+        else
+        {
+            if(i == 0)
+            {
+                mpCpu0->setVisible(false);
+            }
+            else if(i == 1)
+            {
+                mpCpu1->setVisible(false);
+            }
+            else if(i == 2)
+            {
+                mpGpu0->setVisible(false);
+            }
+            else if(i == 3)
+            {
+                mpGpu1->setVisible(false);
+            }
+            else if(i == 4)
+            {
+                mpMic0->setVisible(false);
+            }
+            else if(i == 5)
+            {
+                mpMic1->setVisible(false);
+            }
+        }
+    }
 
     mpPlot->replot();
 }

@@ -29,7 +29,6 @@ INCLUDEPATH	+= $$PWD/include/ \
 
 SOURCES	+= src/main.cpp \
 		src/CClient.cpp \
-		src/CComC.cpp \
 		src/CProtocolC.cpp \
 		src/CConfig.cpp \
 		src/gui/mainwindow.cpp \
@@ -44,6 +43,8 @@ SOURCES	+= src/main.cpp \
 		src/gui/QMSMsystemoverview.cpp \
 		../common/CProtocol.cpp \
 		../common/utils.cpp \
+                ../common/CComAbstract.cpp \
+                ../common/CComClient.cpp \
                 src/gui/QMSMlinearcolormaprgb.cpp \
                 src/gui/QMSMabout.cpp
 
@@ -51,7 +52,6 @@ HEADERS	+= include/gui/mainwindow.h \
 		include/gui/QMSMpowerplot.h \
 		include/gui/QMSMplot.h \
 		include/CClient.hpp \
-		include/CComC.hpp \
 		include/CProtocolC.hpp \
 		include/CConfig.h \
 		include/gui/QMSMtemperatureplot.h \
@@ -63,6 +63,8 @@ HEADERS	+= include/gui/mainwindow.h \
 		include/gui/QMSMsystemoverview.h \
 		../common/CProtocol.hpp \
 		../common/utils.h \
+                ../common/CComClient.h \
+                ../common/CComAbstract.h \
                 include/gui/QMSMlinearcolormaprgb.h \
                 include/gui/QMSMabout.h
 

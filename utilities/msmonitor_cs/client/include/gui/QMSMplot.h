@@ -32,6 +32,7 @@
 #include <qwt_plot_renderer.h>
 #include <qwt_plot_magnifier.h>
 #include <qwt_plot_panner.h>
+#include <qwt_symbol.h>
 #include <vector>
 #include <QVBoxLayout>
 #include <QPixmap>
@@ -40,6 +41,8 @@
 #include <qwt_plot_marker.h>
 #include <iostream>
 #include "utils.h"
+#include <QCheckBox>
+#include <QGroupBox>
 
 
 namespace Ui {
@@ -53,6 +56,20 @@ enum PLOTTYPE
     MEMORY,
     TEMP,
     UTIL
+};
+
+enum CHECKBOX
+{
+    CPU0,
+    CPU1,
+    GPU0,
+    GPU1,
+    FPGA0,
+    FPGA1,
+    MIC0,
+    MIC1,
+    SYSTEM,
+    CHECKBOX_SIZE
 };
 
 class QMSMplot : public QWidget
@@ -86,9 +103,10 @@ public:
     std::vector<double> mMic1values;
     std::vector<double> mSystemvalues;
 
-    std::vector<QwtPlotMarker> mMarker;
-    std::vector<QwtSymbol*> mSymbols;
+    unsigned int mCurrentAppSize;
+    bool enableApplications;
     std::vector<Application> mApplications;
+    std::vector<QwtPlotMarker*> mMarker;
     int mType;
 
     virtual void setLineWidth(int val);
@@ -109,6 +127,7 @@ public slots:
     virtual void exportToCSV();
     virtual void updateApplications(const std::vector<Application>& apps);
     virtual void redrawApplications();
+    virtual void applicationsEnabled(bool val);
 
 signals:
     void signal_export(QMSMplot*);
@@ -144,9 +163,15 @@ protected:
     QPen* mpPaintMic1;
     QPen* mpPaintSystem;
 
+    QwtSymbol mVerticalLineStart;
+    QwtSymbol mVerticalLineEnd;
+
     QwtPlotMagnifier* mpMagnifier;
     QwtPlotPanner* mpPanner;
     QwtPlotGrid* mpGrid;
+
+    std::vector<QCheckBox*> mBoxes;
+    QGroupBox* mGroupbox;
 
 
 };

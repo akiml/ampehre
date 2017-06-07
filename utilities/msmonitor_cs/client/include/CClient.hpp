@@ -23,8 +23,8 @@
 #define CCLIENT_HPP
 
 #include <vector>
-#include "CComC.hpp"
 #include "CProtocolC.hpp"
+#include "CComClient.h"
 
 class CClient{
 public:
@@ -41,12 +41,11 @@ public:
     std::vector<Application> mSigPid;
 	
 private:
-    int initSocket();
+    void initSocket();
     void extractAppSignals();
 	std::string mVERSION;
-	CComC mCom;
+    CComClient mCom;
 	CProtocolC mProtocol;
-	int mSocket;
 	int mReg;
 	int mPort;
 	int mAmtValues;
