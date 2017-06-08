@@ -15,7 +15,7 @@ TESTS = HelloWorld
 nvml_tests: $(TESTS) 
 
 HelloWorld: HelloWorld.o $(UTILOBJS)
-	$(CC) $(INCLUDE) -o HelloWorld HelloWorld.o $(UTILOBJS) $(PAPILIB) $(CUDALIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o HelloWorld HelloWorld.o $(UTILOBJS) $(PAPILIB) $(CUDALIBS) $(LDFLAGS)
 
 clean:
 	rm -f $(TESTS) *.o
