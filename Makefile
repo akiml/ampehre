@@ -43,6 +43,7 @@ install: all
 	cd utilities/msmonitor_cs/client && make install
 	sudo chown root:root $(BASE_DIR)/bin/gpu_management
 	sudo chmod 4755 $(BASE_DIR)/bin/gpu_management
+	cd papi/src && make install
 	sudo ldconfig
 
 clean:
@@ -52,6 +53,7 @@ clean:
 	cd misc/tools/correlation && make cleanall
 	cd docs/het_node_doc && make clean
 	cd utilities/msmonitor_cs/client && rm -rf build Makefile
+	cd papi/src && make clean
 
 docs:
 	cd docs/het_node_doc && make

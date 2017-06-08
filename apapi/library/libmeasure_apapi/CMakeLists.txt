@@ -17,8 +17,10 @@
 
 get_target_property(APAPI_SOURCE_PATH apapi APAPI_SOURCE_PATH)
 include_directories(${APAPI_SOURCE_PATH})
+get_target_property(PAPI_SOURCE_PATH apapi PAPI_SOURCE_PATH)
+include_directories(${PAPI_SOURCE_PATH})
 
-set(SRC_COMMON_LIBRARY
+set(SRC_LIBMEASURE_APAPI_LIBRARY
 	ms_common_apapi.c
 	list.cpp
 	ms_cpu_intel_xeon_sandy.c
@@ -29,7 +31,7 @@ set(SRC_COMMON_LIBRARY
 )
 
 # Full library
-add_library(ms_common_apapi SHARED ${SRC_COMMON_LIBRARY})
+add_library(ms_common_apapi SHARED ${SRC_LIBMEASURE_APAPI_LIBRARY})
 target_link_libraries(ms_common_apapi ${CMAKE_THREAD_LIBS_INIT} apapi)
 
 install(TARGETS ms_common_apapi LIBRARY DESTINATION lib)

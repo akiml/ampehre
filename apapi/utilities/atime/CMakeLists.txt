@@ -17,7 +17,6 @@
 
 get_target_property(APAPI_SOURCE_PATH apapi APAPI_SOURCE_PATH)
 get_target_property(PAPI_SOURCE_PATH apapi PAPI_SOURCE_PATH)
-get_target_property(PAPI_LIBRARY_PATH apapi PAPI_LIBRARY_PATH)
 include_directories(${PAPI_SOURCE_PATH})
 include_directories(${APAPI_SOURCE_PATH})
 
@@ -25,9 +24,8 @@ add_executable(atime
 	atime.c
 )
 
-find_library(PAPI_LIBRARY libpapi.so PATHS ${PAPI_LIBRARY_PATH})
-
-target_link_libraries(atime apapi ${PAPI_LIBRARY} -lrt -pthread -ldl )
+set(CMAKE_VERBOSE_MAKEFILE ON)
+target_link_libraries(atime apapi -lrt -pthread -ldl )
 add_dependencies(atime apapi)
 
 install(TARGETS atime RUNTIME DESTINATION bin)
