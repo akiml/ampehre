@@ -6,3 +6,14 @@ config.status
 f77papi.h
 f90papi.h
 fpapi.h
+papi_events_table.h
+papi_fwrappers_.c
+papi_fwrappers__.c
+upper_PAPI_FWRAPPERS.c
+components/nvml/Makefile.nvml
+genpapifdef
+*.o
+*.a
+*.so
+*.so.*.*.*.*
+*.pc
