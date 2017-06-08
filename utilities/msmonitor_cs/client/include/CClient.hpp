@@ -24,7 +24,7 @@
 
 #include <vector>
 #include "CProtocolC.hpp"
-#include "CComClient.h"
+#include "CComTCPClient.hpp"
 
 class CClient{
 public:
@@ -44,12 +44,13 @@ private:
     void initSocket();
     void extractAppSignals();
 	std::string mVERSION;
-    CComClient mCom;
 	CProtocolC mProtocol;
 	int mReg;
 	int mPort;
 	int mAmtValues;
 	std::string mIPaddr;
+    CComTCPClient* mCom;
+    CComTCPData* mClientData;
 	
 };
 

@@ -43,10 +43,12 @@ SOURCES	+= src/main.cpp \
 		src/gui/QMSMsystemoverview.cpp \
 		../common/CProtocol.cpp \
 		../common/utils.cpp \
-                ../common/CComAbstract.cpp \
-                ../common/CComClient.cpp \
+                ../common/CComTCPAbstract.cpp \
+                ../common/CComTCPClient.cpp \
+                ../common/CComTCPData.cpp \
                 src/gui/QMSMlinearcolormaprgb.cpp \
-                src/gui/QMSMabout.cpp
+                src/gui/QMSMabout.cpp \
+
 
 HEADERS	+= include/gui/mainwindow.h \
 		include/gui/QMSMpowerplot.h \
@@ -63,10 +65,12 @@ HEADERS	+= include/gui/mainwindow.h \
 		include/gui/QMSMsystemoverview.h \
 		../common/CProtocol.hpp \
 		../common/utils.h \
-                ../common/CComClient.h \
-                ../common/CComAbstract.h \
+                ../common/CComTCPAbstract.hpp \
+                ../common/CComTCPClient.hpp \
+                ../common/CComTCPData.hpp \
                 include/gui/QMSMlinearcolormaprgb.h \
-                include/gui/QMSMabout.h
+                include/gui/QMSMabout.h \
+
 
 LIBS	+= -L/usr/local/qwt-6.1.3/lib -lqwt
 

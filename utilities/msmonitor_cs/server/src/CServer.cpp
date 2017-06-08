@@ -22,7 +22,7 @@
 
 CServer::CServer(int port, int maxClients):
 	 mVERSION("0.1"),
-     mCom(CComServer()),
+     mCom( new CComTCPServer(port)),
      mProtocol(CProtocolS(mVERSION)),
      mMeasure(CMeasure()),
      mPort(port),
@@ -50,9 +50,10 @@ CServer::~CServer()
 void CServer::init()
 {
 	mMeasure.start();
-	mCom.msm_socket();
-	mCom.msm_bind(mPort);
-	mCom.msm_listen(5);
+	mCom->msmSocket();
+	mCom->msmSetSockOpt();
+	mCom->msmBind();
+	mCom->msmListen();
 }
 
 void CServer::getCurrentTime(double& time) 
@@ -80,43 +81,35 @@ void CServer::controlClients()
 
 void* CServer::clientTask(void* d) 
 {
-		ClientData* dd = (ClientData*) d;
-		dd->termflag = false;
+	CComTCPData* dd = (CComTCPData*) d;
+	
+	while(!dd->mTermflag)
+	{						//mutex -> pthread_mutex_t (datatype) pthread_create, pthread_exit, pthread_stop, pthread_join
+		dd->mpSrv->mCom.msmRecv(dd);
 		
-		while(!dd->termflag)
-		{						//mutex -> pthread_mutex_t (datatype) pthread_create, pthread_exit, pthread_stop, pthread_join
-			dd->srv->mCom.msm_recv(&dd->buffer, dd->recv_length);
-			
-			std::cout<<"************************" << std::endl;
-			std::cout<<"received: "<<std::endl;
-			std::string str((char*)dd->buffer, dd->recv_length);
-			std::cout << str;
-				
-			
-			std::cout<<"************************" << std::endl;
-			
-			if(dd->srv->mProtocol.parseMsg((char*)dd->buffer, dd->recv_length, dd->task_code, dd->registry, dd->data) < 0){
-				std::cout << "[!]error parsing message" << std::endl;
-			}
-			else{
-				dd->srv->answer(dd->task_code, dd->registry, dd->data);
-			}	
-			free(dd->buffer);
-			if(dd->task_code == TERM_COM)
-			{
-				dd->termflag = true;
-			}
+		ssize_t recv_length;
+		char* buffer = dd->getMsg(recv_length);
+		if(dd->mpSrv->mProtocol.parseMsg(buffer, recv_length, dd->mTaskCode, dd->mRegistry, dd->mData) < 0){
+			std::cout << "[!]error parsing message" << std::endl;
 		}
-		dd->srv->mCom.msm_shutdown(dd->socket);
-		dd->dataVec->erase(dd->dataVec->begin()+dd->pos);
-		dd->threads->erase(dd->threads->begin()+dd->pos);
+		else{
+			dd->mpSrv->answer(dd->mTaskCode, dd->mRegistry, dd->mData);
+		}	
+		if(dd->mTaskCode == TERM_COM)
+		{
+			dd->mTermflag = true;
+		}
+	}
+	dd->mpSrv->mCom.msmShutdown(&dd);
+	dd->mpData->erase(dd->mpData->begin()+dd->mPos);
+	dd->mpThreads->erase(dd->mpThreads->begin()+dd->mPos);
 }
 
 
 void CServer::acceptLoop() {
 	
-	std::vector<ClientData> dataVec;
 	std::vector<pthread_t> threads;
+	std::vector<CComTCPData*> dataVec;
 	int count = 0;
 	
 	while(1)
@@ -126,28 +119,18 @@ void CServer::acceptLoop() {
 		count = threads.size();
 		if(count < mMaxClients)
 		{
-			std::cout << "before creation" << std::endl;
 			pthread_t t;
+			CComTCPData* pData;
 			threads.push_back(t);
-			ClientData c;
-			c.srv = this;
-			c.recv_length = 0;
-			c.registry = 0;
-			c.task_code = 0;
-			c.data = 0;
-			c.termflag = false;
-			c.dataVec = &dataVec;
-			c.threads = &threads;
-			c.pos = count;
-			dataVec.push_back(c);
+			dataVec.push_back(pData);
 			
-			int s = mCom.msm_accept();
-			dataVec[count].socket = s;
+			mCom->msmAccept(&pData);
+			pData->mpSrv = (void *) this;
+			pData->mpData = &dataVec;
+			pData->mpThreads = &threads;
+			pData->mPos = count;		
 			
-			std::cout << "after accept" << std::endl;
-
-			
-			int ret = pthread_create(&threads[count], NULL, clientTask, (void*)&dataVec[count]);
+			int ret = pthread_create(&threads[count], NULL, clientTask, (void*)dataVec[count]);
 			if(ret)
 			{
 				std::cout << "error creating p_thread, return code: " << ret << std::endl;

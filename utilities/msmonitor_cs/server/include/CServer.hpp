@@ -21,7 +21,7 @@
 #ifndef CSERVER_HPP
 #define CSERVER_HPP
 
-#include "CComServer.h"
+#include "CComTCPServer.hpp"
 #include "CMeasure.hpp"
 #include "CProtocolS.hpp"
 #include "utils.h"
@@ -42,7 +42,7 @@ public:
 	void getCurrentTime(double& time);
 	std::vector<Application> mApplications;
 	std::string mVERSION;
-	CComServer mCom;
+	CComTCPServer* mCom;
 	CProtocolS mProtocol;
 	void answer(int taskCode, int registry, uint64_t datacode);
 	
@@ -69,21 +69,6 @@ private:
 	std::vector<clock_t> mTimesForClients;
 	
 	
-};
-
-struct ClientData
-{
-	CServer* srv;
-	void* buffer;
-	int recv_length;
-	int task_code;
-	int registry;
-	uint64_t data;
-	bool termflag;
-	int socket;
-	std::vector<ClientData>* dataVec;
-	std::vector<pthread_t>* threads;
-	int pos;
 };
 
 #endif

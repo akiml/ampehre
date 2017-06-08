@@ -9,8 +9,16 @@ CComTCPData::CComTCPData() :
 	mClientAddrLen(0),
 	mMsg(NULL),
 	mMsgLength(0),
-	mMsgSize(4096)
-	{
+    mMsgSize(4096),
+    mTaskCode(0),
+    mRegistry(0),
+    mData(0),
+    mTermflag(false),
+    mpSrv(NULL),
+    mpThreads(NULL),
+    mpData(NULL),
+    mPos(0)
+{
 	
 	memset(&mClientAddr, 0, sizeof(struct sockaddr_in));
 	mClientAddrLen	= sizeof(struct sockaddr_in);
@@ -39,8 +47,12 @@ void CComTCPData::setMsg(char *pMsg) {
 		
 		mMsgSize	= mMsgLength;
 	}
+
+    memcpy(mMsg, pMsg, mMsgLength);
 }
 
 char* CComTCPData::getMsg(ssize_t *pMsgLength) {
+    *pMsgLength = mMsgLength;
 	return mMsg;
 }
+

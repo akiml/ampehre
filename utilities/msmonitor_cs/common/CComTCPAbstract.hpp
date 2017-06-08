@@ -24,16 +24,10 @@ class CComTCPAbstract {
 		~CComTCPAbstract();
 		
 		void msmSocket();
-		void msmShutdown(CComTCPData *pComData = NULL);
+        void msmShutdown(CComTCPData **pComData) = 0;
 		
-		void msmSetSockOpt();
-		void msmBind();
-		void msmListen();
-		void msmAccept();
-		void msmConnect();
-		
-		void msmSend();
-		void msmRecv();
+        void msmSend(CComTCPData *pComData);
+        void msmRecv(CComTCPData *pComData);
 };
 
 #endif /* __CCOMTCPABSTRACT_HPP__ */

@@ -2,6 +2,7 @@
 #define __CCOMTCPDATA_HPP__
 
 #include <sys/types.h>
+#include <vector>
 
 class CComTCPData {
 	private:
@@ -13,6 +14,15 @@ class CComTCPData {
 		int mSocketFildes;
 		socklen_t mClientAddrLen;
 		struct sockaddr_in mClientAddr;
+        int mTaskCode;
+        int mRegistry;
+        uint64_t mData;
+        bool mTermflag;
+        void* mpSrv; //CServer
+        std::vector<pthread_t>* mpThreads;
+        std::vector<CComTCPData>* mpData;
+        int mPos;
+
 		
 	public:
 		CComTCPData();
