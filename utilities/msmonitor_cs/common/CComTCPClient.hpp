@@ -2,11 +2,12 @@
 #define __CCOMTCPCLIENT_H__
 
 #include "CComTCPAbstract.hpp"
+#include <string.h>
 
 class CComTCPClient : public CComTCPAbstract
 {
 public:
-    CComTCPClient(int port, char *pIPAddress);
+    CComTCPClient(int port, const char *pIPAddress);
     ~CComTCPClient();
 
     void msmConnect(CComTCPData **pComData);

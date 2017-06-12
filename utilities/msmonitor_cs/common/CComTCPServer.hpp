@@ -2,6 +2,7 @@
 #define __CCOMTCPSERVER_H__
 
 #include "CComTCPAbstract.hpp"
+#include <string.h>
 
 class CComTCPServer : public CComTCPAbstract
 {

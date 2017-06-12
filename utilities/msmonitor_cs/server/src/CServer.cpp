@@ -73,7 +73,7 @@ void CServer::controlClients()
 			if(dur > 1)
 			{
 				std::cout << "exceeded maximal interval!" << std::endl;
-				terminate(i);
+				terminate(mDataVec[i]);
 			}
 		}
 	}
@@ -81,68 +81,94 @@ void CServer::controlClients()
 
 void* CServer::clientTask(void* d) 
 {
-	CComTCPData* dd = (CComTCPData*) d;
+	CComTCPData* pData = (CComTCPData*) d;
+	CServer* pSrv = (CServer*) pData->mpSrv;
 	
-	while(!dd->mTermflag)
-	{						//mutex -> pthread_mutex_t (datatype) pthread_create, pthread_exit, pthread_stop, pthread_join
-		dd->mpSrv->mCom.msmRecv(dd);
+	while(!pData->mTermflag)
+	{
+		pSrv->mCom->msmRecv(pData);
 		
 		ssize_t recv_length;
-		char* buffer = dd->getMsg(recv_length);
-		if(dd->mpSrv->mProtocol.parseMsg(buffer, recv_length, dd->mTaskCode, dd->mRegistry, dd->mData) < 0){
+		char* buffer = pData->getMsg(&recv_length);
+		if(pSrv->mProtocol.parseMsg(buffer, recv_length, pData->mTaskCode, pData->mRegistry, pData->mData) < 0){
 			std::cout << "[!]error parsing message" << std::endl;
 		}
 		else{
-			dd->mpSrv->answer(dd->mTaskCode, dd->mRegistry, dd->mData);
+			pSrv->answer(pData);
 		}	
-		if(dd->mTaskCode == TERM_COM)
+		if(pData->mTaskCode == TERM_COM)
 		{
-			dd->mTermflag = true;
+			pData->mTermflag = true;
 		}
 	}
-	dd->mpSrv->mCom.msmShutdown(&dd);
-	dd->mpData->erase(dd->mpData->begin()+dd->mPos);
-	dd->mpThreads->erase(dd->mpThreads->begin()+dd->mPos);
+	pSrv->mCom->msmShutdown(&pData);
+	pData->mpData->erase(pData->mpData->begin()+pData->mPos);
+	pData->mpThreads->erase(pData->mpThreads->begin()+pData->mPos);
 }
 
 
 void CServer::acceptLoop() {
-	
-	std::vector<pthread_t> threads;
-	std::vector<CComTCPData*> dataVec;
 	int count = 0;
 	
 	while(1)
 	{
 		controlClients();
 		
-		count = threads.size();
+		count = mThreads.size();
 		if(count < mMaxClients)
 		{
 			pthread_t t;
 			CComTCPData* pData;
-			threads.push_back(t);
-			dataVec.push_back(pData);
 			
+			std::cout << "waiting for incoming clients..." << std::endl;
 			mCom->msmAccept(&pData);
 			pData->mpSrv = (void *) this;
-			pData->mpData = &dataVec;
-			pData->mpThreads = &threads;
-			pData->mPos = count;		
+			pData->mpData = &mDataVec;
+			pData->mpThreads = &mThreads;
+			pData->mPos = count;	
 			
-			int ret = pthread_create(&threads[count], NULL, clientTask, (void*)dataVec[count]);
-			if(ret)
-			{
-				std::cout << "error creating p_thread, return code: " << ret << std::endl;
-			}
-			std::cout << "thread created!" << std::endl;
+			mThreads.push_back(t);
+			mDataVec.push_back(pData);
+			
+// 			CComTCPData* dd = (CComTCPData*) d;
+// 			CServer* srv = (CServer*) dd->mpSrv;
+			
+// 			while(!pData->mTermflag)
+// 			{
+// 				mCom->msmRecv(pData);
+// 				
+// 				ssize_t recv_length;
+// 				char* buffer = pData->getMsg(&recv_length);
+// 				if(mProtocol.parseMsg(buffer, recv_length, pData->mTaskCode, pData->mRegistry, pData->mData) < 0){
+// 					std::cout << "[!]error parsing message" << std::endl;
+// 				}
+// 				else{
+// 					answer(pData);
+// 				}	
+// 				if(pData->mTaskCode == TERM_COM)
+// 				{
+// 					pData->mTermflag = true;
+// 				}
+// 			}
+// 			mCom->msmShutdown(&pData);
+// 			pData->mpData->erase(pData->mpData->begin()+pData->mPos);
+// 			pData->mpThreads->erase(pData->mpThreads->begin()+pData->mPos);
 
-			ret = pthread_detach(threads[count]);	//resources are automatically released after finish
-			if(ret)
-			{
-				std::cout << "error detaching p_thread, return code: " << ret << std::endl;
-			}
-			std::cout << "thread detached" << std::endl;
+			clientTask((void*)pData);
+			
+// 			int ret = pthread_create(&mThreads[count], NULL, clientTask, (void*)mDataVec[count]);
+// 			if(ret)
+// 			{
+// 				std::cout << "error creating p_thread, return code: " << ret << std::endl;
+// 			}
+// 			std::cout << "thread created!" << std::endl;
+// 
+// 			ret = pthread_detach(mThreads[count]);	//resources are automatically released after finish
+// 			if(ret)
+// 			{
+// 				std::cout << "error detaching p_thread, return code: " << ret << std::endl;
+// 			}
+// 			std::cout << "thread detached" << std::endl;
 
 		}
 	}
@@ -176,14 +202,14 @@ void CServer::getFrequencies()
 			
 }
 
-void CServer::answer(int taskCode, int registry, uint64_t datacode){
-	switch(taskCode){
+void CServer::answer(CComTCPData* pData) {
+		switch(pData->mTaskCode){
 		case DATA_REQ:{
-			dataRequest(registry);
+			dataRequest(pData);
 			break;
 		}
 		case CLIENT_REG:{
-			registerClient(datacode);
+			registerClient(pData);
 			break;
 		}
 		case DATA_RES:{
@@ -191,43 +217,83 @@ void CServer::answer(int taskCode, int registry, uint64_t datacode){
 			break;
 		}
 		case TERM_COM:{
-			terminate(registry);
+			terminate(pData);
 			break;
 		}
 		case SET_FREQ:{
-			confirmFreq(registry);
+			confirmFreq(pData);
 			break;
 		}
 	}
 }
 
-void CServer::registerClient(uint64_t datacode){	
+
+// void CServer::registerClient(uint64_t datacode){	
+// 	int reg = ut::getReg(mRegClients, mMaxClients);		//find available registry
+// 	clReg a = {reg, datacode};
+// 	mRegClients.push_back(a);							//add to register
+// 	std::string answer;
+// 	mTimesForClients[reg] = std::clock();
+// 	mProtocol.answerRegisterMsg(answer, reg);
+// 	mCom.msm_send(answer.c_str());
+// 	mCom->msmSend(m);
+// }
+
+void CServer::registerClient(CComTCPData* pData){	
 	int reg = ut::getReg(mRegClients, mMaxClients);		//find available registry
-	clReg a = {reg, datacode};
+	clReg a = {reg, pData->mData};
 	mRegClients.push_back(a);							//add to register
 	std::string answer;
 	mTimesForClients[reg] = std::clock();
 	mProtocol.answerRegisterMsg(answer, reg);
-	mCom.msm_send(answer.c_str());
+	
+	pData->setMsg(answer.c_str());
+	mCom->msmSend(pData);
 }
 
-void CServer::confirmFreq(int registry){
-	if(ut::find(mRegClients, registry, mIterator) == 0){
+// void CServer::confirmFreq(int registry){
+// 	if(ut::find(mRegClients, registry, mIterator) == 0){
+// 		std::string m;
+// 		mProtocol.freqMsg(m, mFreq);
+// 		mCom.msm_send(m.c_str());
+// 
+// 	}else{
+// 		std::cout<<"client not registered yet!" << std::endl;
+// 	}
+// }
+
+void CServer::confirmFreq(CComTCPData* pData){
+	if(ut::find(mRegClients, pData->mRegistry, mIterator) == 0){
 		std::string m;
 		mProtocol.freqMsg(m, mFreq);
-		mCom.msm_send(m.c_str());
-
+		pData->setMsg(m.c_str());
+		mCom->msmSend(pData);
 	}else{
 		std::cout<<"client not registered yet!" << std::endl;
 	}
 }
 
-void CServer::dataRequest(int registry){
-	if(ut::find(mRegClients, registry, mIterator) == 0){
+//void CServer::dataRequest(int registry){
+// 	if(ut::find(mRegClients, registry, mIterator) == 0){
+// 		void* m;
+// 		int s = createDataAnswer(&m, mIterator->dataCode);
+// 		mCom.msm_send(m, s);
+// 		mTimesForClients[registry] = std::clock();
+// 		free(m);
+// 
+// 	}else{
+// 		std::cout<<"client not registered yet!" << std::endl;
+// 	}
+// }
+
+void CServer::dataRequest(CComTCPData* pData){
+	if(ut::find(mRegClients, pData->mRegistry, mIterator) == 0){
 		void* m;
 		int s = createDataAnswer(&m, mIterator->dataCode);
-		mCom.msm_send(m, s);
-		mTimesForClients[registry] = std::clock();
+		std::string str ((char*) m , s);
+		pData->setMsg(str.c_str());
+		mCom->msmSend(pData);
+		mTimesForClients[pData->mRegistry] = std::clock();
 		free(m);
 
 	}else{
@@ -235,15 +301,27 @@ void CServer::dataRequest(int registry){
 	}
 }
 
-void CServer::terminate(int registry){
-	if(ut::find(mRegClients, registry, mIterator) == 0){
+// void CServer::terminate(int registry){
+// 	if(ut::find(mRegClients, registry, mIterator) == 0){
+// 		mRegClients.erase(mIterator);
+// 		std::string msg;
+// 		mTimesForClients[registry] = -1;
+// 		mProtocol.termComMsg(msg, registry);
+// 		mCom.msm_send(msg.c_str());
+// 	}
+// }
+
+void CServer::terminate(CComTCPData* pData){
+	if(ut::find(mRegClients, pData->mRegistry, mIterator) == 0){
 		mRegClients.erase(mIterator);
 		std::string msg;
-		mTimesForClients[registry] = -1;
-		mProtocol.termComMsg(msg, registry);
-		mCom.msm_send(msg.c_str());
+		mTimesForClients[pData->mRegistry] = -1;
+		mProtocol.termComMsg(msg, pData->mRegistry);
+		pData->setMsg(msg.c_str());
+		mCom->msmSend(pData);
 	}
 }
+
 
 void CServer::createDataAnswer(std::string& msg, uint64_t dataCode) {
 	mProtocol.addCmdVersion(msg, DATA_RES, mVERSION);

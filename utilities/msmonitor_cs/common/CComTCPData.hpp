@@ -2,6 +2,10 @@
 #define __CCOMTCPDATA_HPP__
 
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <stdint.h>
 #include <vector>
 
 class CComTCPData {
@@ -20,7 +24,7 @@ class CComTCPData {
         bool mTermflag;
         void* mpSrv; //CServer
         std::vector<pthread_t>* mpThreads;
-        std::vector<CComTCPData>* mpData;
+        std::vector<CComTCPData*>* mpData;
         int mPos;
 
 		
@@ -28,7 +32,7 @@ class CComTCPData {
 		CComTCPData();
 		~CComTCPData();
 		
-		void setMsg(char *pMsg);
+		void setMsg(const char *pMsg);
 		char *getMsg(ssize_t *pMsgLength);
 };
 

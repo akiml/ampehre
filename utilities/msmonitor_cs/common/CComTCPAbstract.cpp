@@ -1,11 +1,9 @@
 #include "CComTCPAbstract.hpp"
 
-#include <cstdlib>
 #include <cstring>
-
 #include <sys/socket.h>
 
-CComTCPAbstract::CComTCPAbstract(int Port, char *pIPAddress) :
+CComTCPAbstract::CComTCPAbstract(int Port, const char *pIPAddress) :
 	mSockFildes(-1),
 	mMaxClients(5)
 	{
@@ -45,45 +43,49 @@ void CComTCPAbstract::msmSend(CComTCPData *pComData) {
 	if (-1 == ret_value) {
 		std::cout << "ERROR: " << strerror(errno) << std::endl;
 		exit(EXIT_FAILURE);
-	} else if (pComData->mMsgLength != ret_value) {
+	} /*else if (pComData->mMsgLength != ret_value) {
 		std::cout << "ERROR: " << "Could not send all data." << std::endl;
 		exit(EXIT_FAILURE);
-	}
+	}*/
+    std::cout << "msg with length " << msg_length <<" sent:" << std::endl;
+    std::cout<< std::string(msg, msg_length) << std::endl;
 }
 
 void CComTCPAbstract::msmRecv(CComTCPData *pComData){
-    std::cout << "inside receive" << std::endl;
     ssize_t size = 4096, tmp = 0, length = 0;
-    void* reply = (void*)pComData->getMsg(&size);
+	ssize_t ignore;
+    void* reply = (void*)pComData->getMsg(&ignore);
     void* tmp_rep;
     bool finished = false;
 
     while(!finished)
     {
         tmp = recv(pComData->mSocketFildes , reply , size, 0);
-        if(tmp > 0)
-        {
+
+        if(tmp > 0){
             length += tmp;
-            if(tmp == size)
-            {
+            if(tmp == size){
                 tmp_rep = realloc(reply, length+size);
-                if (NULL == tmp_rep)
-                {
+                if (NULL == tmp_rep){
                     std::cout << "[FATAL] out of memory!" << std::endl;
-                    free(*reply);
+                    free(reply);
                     exit(-1);
                 }
                 pComData->setMsg((char*) tmp_rep);
                 reply = tmp_rep;
             }
-            else
-            {
+            else {
                 finished = true;
             }
         }
+        else{
+			finished = true;
+		}
         errno = 0;
     }
-    std::cout << "received msg with length: " << length << std::endl;
+    tmp_rep = (void*) pComData->getMsg(&size);
+    std::cout << "received msg with length " << length << ":"<< std::endl;
+    std::cout << std::string((char*)tmp_rep, size) << std::endl;
 }
 
 //void CComTCPAbstract::msmRecv(void **reply, int &length, int socket)

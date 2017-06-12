@@ -1,8 +1,8 @@
 #include "CComTCPServer.hpp"
 
+
 CComTCPServer::CComTCPServer(int port):
-    CComTCPAbstract(port),
-    mNewSockfd(-1)
+    CComTCPAbstract(port)
 {
 }
 
@@ -15,7 +15,7 @@ void CComTCPServer::msmAccept(CComTCPData** pComData) {
 	
 	(*pComData)->mSocketFildes = accept(mSockFildes, (struct sockaddr *)&((*pComData)->mClientAddr), &((*pComData)->mClientAddrLen));
 	
-	if (-1 = (*pComData)->mSocketFildes) {
+	if (-1 == (*pComData)->mSocketFildes) {
 		std::cout << "ERROR: " << strerror(errno) << std::endl;
 		exit(EXIT_FAILURE);
 	}

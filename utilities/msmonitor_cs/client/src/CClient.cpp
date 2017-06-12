@@ -19,6 +19,7 @@
  */
 
 #include "CClient.hpp"
+#include <unistd.h>
 
 CClient::CClient():
     mVERSION("0.1"),
@@ -53,9 +54,10 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
     std::vector<std::string> ig;
 	
     mClientData->setMsg(msg.c_str());
+    usleep(1000000);
     mCom->msmSend(mClientData);
     mCom->msmRecv(mClientData);
-    rep = mClientData->getMsg(rep_len);
+    rep = mClientData->getMsg(&rep_len);
 
     std::cout << std::string(rep, rep_len) << std::endl;
 
@@ -84,7 +86,7 @@ int CClient::requestData()
     mClientData->setMsg(msg.c_str());
     mCom->msmSend(mClientData);
     mCom->msmRecv(mClientData);
-    rep = mClientData->getMsg(rep_len);
+    rep = mClientData->getMsg(&rep_len);
 
     if(rep == NULL)
     {
@@ -108,7 +110,7 @@ int CClient::terminate()
     mClientData->setMsg(msg.c_str());
     mCom->msmSend(mClientData);
     mCom->msmRecv(mClientData);
-    rep = mClientData->getMsg(rep_len);
+    rep = mClientData->getMsg(&rep_len);
 
     mCom->msmShutdown(&mClientData);
 
@@ -185,7 +187,7 @@ void CClient::getFreq(std::vector<uint64_t>& vals)
     mClientData->setMsg(msg.c_str());
     mCom->msmSend(mClientData);
     mCom->msmRecv(mClientData);
-    rep = mClientData->getMsg(rep_len);
+    rep = mClientData->getMsg(&rep_len);
 
     if(rep == NULL)
     {

@@ -28,6 +28,7 @@ set(MSMONITOR_SERVER_SOURCES
 	src/CProtocolS.cpp
 	../common/CComTCPAbstract.cpp
 	../common/CComTCPServer.cpp
+	../common/CComTCPData.cpp
 	../common/CProtocol.cpp
 	../common/utils.cpp
 	main.cpp

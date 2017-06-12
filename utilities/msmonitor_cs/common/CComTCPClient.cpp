@@ -1,6 +1,6 @@
 #include "CComTCPClient.hpp"
 
-CComTCPClient::CComTCPClient(int port, char *pIPAddress):
+CComTCPClient::CComTCPClient(int port, const char *pIPAddress):
     CComTCPAbstract(port, pIPAddress)
 {
 

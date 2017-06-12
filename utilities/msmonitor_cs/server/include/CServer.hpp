@@ -45,18 +45,23 @@ public:
 	CComTCPServer* mCom;
 	CProtocolS mProtocol;
 	void answer(int taskCode, int registry, uint64_t datacode);
+	void answer(CComTCPData* pData);
 	
 private:
-	void registerClient(uint64_t datacode);
-	void dataRequest(int registry);
-	void terminate(int registry);
-	void confirmFreq(int registry);
+// 	void registerClient(uint64_t datacode);
+// 	void dataRequest(int registry);
+// 	void terminate(int registry);
+// 	void confirmFreq(int registry);
 	void getFrequencies();
 	void createDataAnswer(std::string &msg, uint64_t dataCode);
 	int createDataAnswer(void** answer, uint64_t dataCode);
 	void controlClients();
+	
 	static void* clientTask(void* d);
-
+	void dataRequest(CComTCPData* pData);
+	void terminate(CComTCPData* pData);
+	void confirmFreq(CComTCPData* pData);
+	void registerClient(CComTCPData* pData);
 
 	CMeasure mMeasure;
 
@@ -67,6 +72,9 @@ private:
 	double mCurrentTime;
 	std::vector<uint64_t> mFreq;
 	std::vector<clock_t> mTimesForClients;
+	
+	std::vector<pthread_t> mThreads;
+	std::vector<CComTCPData*> mDataVec;
 	
 	
 };

@@ -5,11 +5,11 @@
 #include <cstdlib>
 
 CComTCPData::CComTCPData() :
-	mSocketFildes(-1),
-	mClientAddrLen(0),
 	mMsg(NULL),
 	mMsgLength(0),
     mMsgSize(4096),
+	mSocketFildes(-1),
+	mClientAddrLen(0),
     mTaskCode(0),
     mRegistry(0),
     mData(0),
@@ -34,7 +34,7 @@ CComTCPData::~CComTCPData() {
 	free(mMsg);
 }
 
-void CComTCPData::setMsg(char *pMsg) {
+void CComTCPData::setMsg(const char *pMsg) {
 	mMsgLength = strlen(pMsg)+1;
 	
 	if (mMsgLength > mMsgSize) {

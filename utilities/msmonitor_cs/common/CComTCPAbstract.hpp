@@ -2,6 +2,7 @@
 #define __CCOMTCPABSTRACT_HPP__
 
 #include <stdio.h>
+#include <cstdlib>
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -20,11 +21,11 @@ class CComTCPAbstract {
 		struct sockaddr_in mServerAddr;
 
 	public:
-		CComTCPAbstract(int Port, char *pIPAddress = NULL);
+        CComTCPAbstract(int Port, const char *pIPAddress = NULL);
 		~CComTCPAbstract();
 		
 		void msmSocket();
-        void msmShutdown(CComTCPData **pComData) = 0;
+        virtual void msmShutdown(CComTCPData **pComData) = 0;
 		
         void msmSend(CComTCPData *pComData);
         void msmRecv(CComTCPData *pComData);
