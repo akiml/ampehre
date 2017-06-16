@@ -76,6 +76,53 @@ double ampehre_get_energy_total(void) {
 	return e_total;
 }
 
+double ampehre_get_energy_cpu(void) {
+	double e_total	= 0.0;
+	
+	// CPU 0
+	e_total	+= cpu_energy_total_pkg(ml, 0) + cpu_energy_total_dram(ml, 0);
+	// CPU 1
+	e_total	+= cpu_energy_total_pkg(ml, 1) + cpu_energy_total_dram(ml, 1);
+	
+	return e_total;
+}
+
+double ampehre_get_energy_gpu(void) {
+	double e_total	= 0.0;
+	
+	// GPU
+	e_total	+= gpu_energy_total(ml);
+	
+	return e_total;
+}
+
+double ampehre_get_energy_fpga(void) {
+	double e_total	= 0.0;
+	
+	// FPGA
+	e_total	+= fpga_energy_total_power_usage(ml);
+	
+	return e_total;
+}
+
+double ampehre_get_energy_mic(void) {
+	double e_total	= 0.0;
+	
+	// MIC
+	e_total	+= mic_energy_total_power_usage(ml);
+	
+	return e_total;
+}
+
+double ampehre_get_energy_sys(void) {
+	double e_total	= 0.0;
+	
+	// SYSTEM
+	e_total	+= system_energy_total(ml);
+	
+	return e_total;
+}
+
 #if 0
 double ampehre_get_v2freq_total(void) {
 	double v2freq	= 0.0;

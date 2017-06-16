@@ -25,6 +25,11 @@ class AmpehreWrapper:
 		self.libAmpehre = cdll.LoadLibrary("/usr/ampehre/lib/libpythonmeasure.so")
 		
 		self.libAmpehre.ampehre_get_energy_total.restype	= c_double
+		self.libAmpehre.ampehre_get_energy_cpu.restype		= c_double
+		self.libAmpehre.ampehre_get_energy_gpu.restype		= c_double
+		self.libAmpehre.ampehre_get_energy_fpga.restype		= c_double
+		self.libAmpehre.ampehre_get_energy_mic.restype		= c_double
+		self.libAmpehre.ampehre_get_energy_sys.restype		= c_double
 		#self.libAmpehre.ampehre_get_v2freq_total.restype	= c_double
 		#self.libAmpehre.ampehre_get_pstate_total.restype	= c_uint64
 		
@@ -40,8 +45,27 @@ class AmpehreWrapper:
 	def fini(self):
 		self.libAmpehre.ampehre_fini()
 	
-	def getEnergyTotal(self):
-		return float(self.libAmpehre.ampehre_get_energy_total())
+	def getEnergyTotal(self, resources_enabled):
+		#return float(self.libAmpehre.ampehre_get_energy_total())
+		
+		e_total = 0.0
+		
+		for resource in resources_enabled:
+			if resource == "IntelXeon":
+				e_total	+= float(self.libAmpehre.ampehre_get_energy_cpu())
+			elif resource == "NvidiaTesla":
+				e_total	+= float(self.libAmpehre.ampehre_get_energy_gpu())
+			elif resource == "MaxelerVectis":
+				e_total	+= float(self.libAmpehre.ampehre_get_energy_fpga())
+			elif resource == "IntelXeonPhi":
+				e_total	+= float(self.libAmpehre.ampehre_get_energy_mic())
+			elif resource == "DelliDrac7":
+				e_total	+= float(self.libAmpehre.ampehre_get_energy_sys())
+			else:
+				print("ERROR: Device " + resource + " not supported by Ampehre!")
+				exit()
+		
+		return e_total
 	
 	#def getV2FreqTotal(self):
 		#return float(self.libAmpehre.ampehre_get_v2freq_total())
@@ -59,7 +83,7 @@ def main():
 	
 	ampehre.stop()
 	
-	print("Consumed total energy: " + str(ampehre.getEnergyTotal()))
+	print("Consumed total energy CPU: " + str(ampehre.getEnergyTotal(["IntelXeon"])))
 	
 	ampehre.fini()
 
