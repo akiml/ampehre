@@ -35,4 +35,3 @@ add_library(ms_common_apapi SHARED ${SRC_LIBMEASURE_APAPI_LIBRARY})
 target_link_libraries(ms_common_apapi ${CMAKE_THREAD_LIBS_INIT} apapi)
 
 install(TARGETS ms_common_apapi LIBRARY DESTINATION lib)
-install(FILES apapi.h LIBRARY DESTINATION include)

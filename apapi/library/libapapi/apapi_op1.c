@@ -14,8 +14,24 @@
  * version: 0.8.0 - initial implementation
  */
 
-
-void exec_op1(enum APAPI_op1 op1, long long sample0, long long sample1, long long time0, long long time1, double *value1) {
+/** Internal
+ *	@class _apapi_exec_op1
+ *	@brief process operation on current values to compute derived value
+ *
+ *	@param enum APAPI_op1 op1
+ *		operation to execute
+ *	@param long long sample0
+ *		previous value
+ *	@param long long sample1
+ *		current value
+ *	@param long long time0
+ *		previous timestamp in ns
+ *	@param long long time1
+ *		current timestamp in ns
+ *	@param double *value1
+ *		Output parameter, result of the operation
+ */
+void _apapi_exec_op1(enum APAPI_op1 op1, long long sample0, long long sample1, long long time0, long long time1, double *value1) {
 
 	switch(op1) {
 		case APAPI_OP1_SAMPLE_DIFF:

@@ -181,6 +181,12 @@ struct apapi_timer {
  */
 int APAPI_init();
 
+/** @class APAPI_destroy
+ *  @brief Deinitializes PAPI
+ *
+ */
+void APAPI_destroy();
+
 /** @class APAPI_create_eventset_list
  *  @brief Creates PAPI eventset and adds given events
  *
@@ -347,6 +353,7 @@ int APAPI_destroy_timer(struct apapi_timer **timer);
  *  	Component id to use for PAPI eventset
  *  @param char **names
  *  	Names of events to add to the PAPI eventset. If NULL all component events are used.
+ *      If the list is empty (pointer points to NULL) a default list is used (if existent for the given component).
  *  @param struct apapi_event_ops *event_defaults
  *  	Used to set event parameters. If NULL or event is not listed internal definitions or fallback parameters are used.
  *
@@ -421,7 +428,7 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
 int APAPI_apapi_eventset_find_event(struct apapi_eventset *set, char *name);
 
 /** @class APAPI_read_environ_defaults
- *  @brief Checks if the APAPI_DEFAULTS environment variable is set.
+ *  @brief Checks if the APAPI_EVENTOPS environment variable is set.
  *		If the variable is set it's value is interpreted as file name.
  *		The file is read and interpreted as CSV with ',' delimiter for event parameter defaults.
  *		See APAPI_read_event_ops_csv
@@ -441,6 +448,22 @@ int APAPI_apapi_eventset_find_event(struct apapi_eventset *set, char *name);
  *			If reading of the file failed then returns -1.
  *	@see APAPI_read_event_ops_csv
  */
-int APAPI_read_environ_defaults(char **buffer, struct apapi_event_ops **events_out, int *num_events_out);
+int APAPI_read_env_eventops(char **buffer, struct apapi_event_ops **events_out, int *num_events_out);
 
-#endif
+/** @class APAPI_read_env_eventlist
+ *	@brief reads filename from APAPI_EVENTLIST environment variable and reads the file as eventlist
+ *
+ *	@param char **cmp_list
+ *		List of component names to be considered
+ *	@param char **buffer
+ *		Output parameter for read text file
+ *	@param char ***sorted_list
+ *		Output parameter
+ *	@param char ***used_cmp
+ *		Output parameter for list of actually used components in the sorted list
+ *		This will be a subset of cmp_list
+ *
+ */
+int APAPI_read_env_eventlist(char **cmp_list, char **buffer, char ****sorted_list, char ***used_cmp);
+
+#endif //APAPI_H

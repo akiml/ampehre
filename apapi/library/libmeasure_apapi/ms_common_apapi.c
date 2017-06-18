@@ -1,6 +1,7 @@
 /*                                                                                                                                              * ms_common_apapi.c
  * 
- * Copyright (C) 2017, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>, Alex Wiens <awiens@mail.uni-paderborn.de>  * All rights reserved.
+ * Copyright (C) 2017, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>, Alex Wiens <awiens@mail.uni-paderborn.de>
+ * All rights reserved.
  * 
  * This software may be modified and distributed under the terms
  * of the BSD license. See the LICENSE file for details.
@@ -1409,7 +1410,7 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
     }
 
 	// read defaults file if defined
-	retv = APAPI_read_environ_defaults(&(mgmt->defaults_file), &(mgmt->defaults_events), &(mgmt->defaults_events_num));
+	retv = APAPI_read_env_eventops(&(mgmt->defaults_file), &(mgmt->defaults_events), &(mgmt->defaults_events_num));
 
 	// check known components and prepare available components array
     int32_t known_cmp_count = 0;

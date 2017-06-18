@@ -38,6 +38,7 @@ add_dependencies(papi makepapi)
 
 ## APAPI
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
 # Full library
 add_library(apapi SHARED
 	apapi.c
@@ -45,6 +46,10 @@ add_library(apapi SHARED
 
 # add dependency to apapi: custom PAPI target
 add_dependencies(apapi papi)
+#add_definitions(-DDATADIR=${CMAKE_INSTALL_PREFIX}/share)
+set_target_properties(apapi PROPERTIES COMPILE_DEFINITIONS DATADIR=\"${CMAKE_INSTALL_PREFIX}/share\")
+get_target_property(FOO apapi COMPILE_DEFINITIONS)
+message(bla ${FOO})
 
 set_target_properties(apapi PROPERTIES PAPI_SOURCE_PATH ${PAPI_SOURCE_PATH})
 set_target_properties(apapi PROPERTIES PAPI_LIBRARY_PATH ${PAPI_LIBRARY_PATH})
@@ -53,4 +58,7 @@ include_directories(${PAPI_SOURCE_PATH})
 target_link_libraries(apapi ${CMAKE_THREAD_LIBS_INIT} papi )
 
 install(TARGETS apapi LIBRARY DESTINATION lib)
+install(FILES apapi.h DESTINATION include)
+install(FILES default_eventops.csv DESTINATION share/apapi)
+install(FILES default_eventlist.txt DESTINATION share/apapi)
 
