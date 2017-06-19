@@ -102,8 +102,6 @@ void* CServer::clientTask(void* d)
 		}
 	}
 	pSrv->mCom->msmShutdown(&pData);
-	pData->mpData->erase(pData->mpData->begin()+pData->mPos);
-	pData->mpThreads->erase(pData->mpThreads->begin()+pData->mPos);
 }
 
 
@@ -115,61 +113,34 @@ void CServer::acceptLoop() {
 		controlClients();
 		
 		count = mThreads.size();
-		if(count < mMaxClients)
-		{
+		if(count < mMaxClients){
 			pthread_t t;
 			CComTCPData* pData;
 			
 			std::cout << "waiting for incoming clients..." << std::endl;
+			
 			mCom->msmAccept(&pData);
 			pData->mpSrv = (void *) this;
-			pData->mpData = &mDataVec;
-			pData->mpThreads = &mThreads;
-			pData->mPos = count;	
 			
 			mThreads.push_back(t);
 			mDataVec.push_back(pData);
 			
-// 			CComTCPData* dd = (CComTCPData*) d;
-// 			CServer* srv = (CServer*) dd->mpSrv;
-			
-// 			while(!pData->mTermflag)
-// 			{
-// 				mCom->msmRecv(pData);
-// 				
-// 				ssize_t recv_length;
-// 				char* buffer = pData->getMsg(&recv_length);
-// 				if(mProtocol.parseMsg(buffer, recv_length, pData->mTaskCode, pData->mRegistry, pData->mData) < 0){
-// 					std::cout << "[!]error parsing message" << std::endl;
-// 				}
-// 				else{
-// 					answer(pData);
-// 				}	
-// 				if(pData->mTaskCode == TERM_COM)
-// 				{
-// 					pData->mTermflag = true;
-// 				}
-// 			}
-// 			mCom->msmShutdown(&pData);
-// 			pData->mpData->erase(pData->mpData->begin()+pData->mPos);
-// 			pData->mpThreads->erase(pData->mpThreads->begin()+pData->mPos);
-
-			clientTask((void*)pData);
-			
-// 			int ret = pthread_create(&mThreads[count], NULL, clientTask, (void*)mDataVec[count]);
-// 			if(ret)
-// 			{
-// 				std::cout << "error creating p_thread, return code: " << ret << std::endl;
-// 			}
-// 			std::cout << "thread created!" << std::endl;
-// 
-// 			ret = pthread_detach(mThreads[count]);	//resources are automatically released after finish
-// 			if(ret)
-// 			{
-// 				std::cout << "error detaching p_thread, return code: " << ret << std::endl;
-// 			}
-// 			std::cout << "thread detached" << std::endl;
-
+			int ret = pthread_create(&mThreads[count], NULL, clientTask, (void*)mDataVec[count]);
+			if(ret)
+			{
+				std::cout << "error creating p_thread, return code: " << ret << std::endl;
+			}
+			std::cout << "thread created!" << std::endl;
+		}
+		else{
+			for(unsigned int i = 0; i < mThreads.size(); i++){
+				int ret = pthread_join(mThreads[i], NULL);
+				if( ret != 0){
+					std::cout << "error joining thread! Error number: " << ret << std::endl;
+				}
+			}
+			mThreads.clear();
+			mDataVec.clear();
 		}
 	}
 }

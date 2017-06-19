@@ -14,10 +14,7 @@ CComTCPData::CComTCPData() :
     mRegistry(0),
     mData(0),
     mTermflag(false),
-    mpSrv(NULL),
-    mpThreads(NULL),
-    mpData(NULL),
-    mPos(0)
+    mpSrv(NULL)
 {
 	
 	memset(&mClientAddr, 0, sizeof(struct sockaddr_in));

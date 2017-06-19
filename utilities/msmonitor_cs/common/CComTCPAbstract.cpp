@@ -53,8 +53,7 @@ void CComTCPAbstract::msmSend(CComTCPData *pComData) {
 
 void CComTCPAbstract::msmRecv(CComTCPData *pComData){
     ssize_t size = 4096, tmp = 0, length = 0;
-	ssize_t ignore;
-    void* reply = (void*)pComData->getMsg(&ignore);
+    void* reply = malloc(size);
     void* tmp_rep;
     bool finished = false;
 
@@ -71,21 +70,26 @@ void CComTCPAbstract::msmRecv(CComTCPData *pComData){
                     free(reply);
                     exit(-1);
                 }
-                pComData->setMsg((char*) tmp_rep);
+                //pComData->setMsg((char*) tmp_rep);
                 reply = tmp_rep;
             }
             else {
                 finished = true;
+                std::string str ((char*) reply, length);
+                pComData->setMsg(str.c_str());
             }
         }
         else{
 			finished = true;
+            std::string str ((char*) reply, length);
+            pComData->setMsg(str.c_str());
 		}
         errno = 0;
     }
     tmp_rep = (void*) pComData->getMsg(&size);
     std::cout << "received msg with length " << length << ":"<< std::endl;
     std::cout << std::string((char*)tmp_rep, size) << std::endl;
+    free(reply);
 }
 
 //void CComTCPAbstract::msmRecv(void **reply, int &length, int socket)

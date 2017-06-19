@@ -23,9 +23,6 @@ class CComTCPData {
         uint64_t mData;
         bool mTermflag;
         void* mpSrv; //CServer
-        std::vector<pthread_t>* mpThreads;
-        std::vector<CComTCPData*>* mpData;
-        int mPos;
 
 		
 	public:

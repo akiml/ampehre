@@ -54,7 +54,7 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
     std::vector<std::string> ig;
 	
     mClientData->setMsg(msg.c_str());
-    usleep(1000000);
+    //usleep(1000000);
     mCom->msmSend(mClientData);
     mCom->msmRecv(mClientData);
     rep = mClientData->getMsg(&rep_len);
