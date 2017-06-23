@@ -21,6 +21,8 @@
 #include "ms_measurement.h"
 #include "apapi.h"
 
+char *known_cmplist = "rapl nvml micknc maxeler ipmi";
+
 char *known_components[] = { 
     "rapl",
     "nvml",
@@ -50,15 +52,21 @@ struct __mgmt_update {
 
 struct __mgmt_internal {
 	int num_cmp;
+	char *env_cmplist;
 	// one item per known component
 	int *available_components; // 0 -> not available, 1 -> available
 	struct apapi_eventset **sets;
 	struct apapi_timer **timers;
 	struct __mgmt_update *update_args;
-	// default event descriptions
-	char *defaults_file;
-	struct apapi_event_ops *defaults_events;
-	int defaults_events_num;
+	// user event descriptions
+	char *user_eventops_file;
+	struct apapi_event_ops *user_eventops;
+	int user_eventops_num;
+	// user eventlist
+	char *user_eventlist_file;
+	char ***user_eventlist_sorted;
+	char **user_eventlist_cmp;
+
 };
 
 enum __mapper_type {

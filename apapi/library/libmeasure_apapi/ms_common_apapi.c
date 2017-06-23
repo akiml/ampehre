@@ -17,6 +17,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 #include <time.h>
 #include <math.h>
@@ -1319,6 +1320,9 @@ void measure_update(void** args, int last_measurement) {
 		MS_MEASUREMENT_FPGA *fpga;
 		MS_MEASUREMENT_MIC *mic;
 		MS_MEASUREMENT_SYS *sys;
+				printf("update %p\n", update);
+				printf("foo %p\n", update->measurement);
+				printf("set %p\n", update->set);
 		switch(update->measurement_id) {
 			case CPU:
 				cpu = (MS_MEASUREMENT_CPU *)update->measurement;
@@ -1338,6 +1342,7 @@ void measure_update(void** args, int last_measurement) {
 			break;
 			case SYSTEM:
 				sys = (MS_MEASUREMENT_SYS *)update->measurement;
+		
 				sys->ipmi_time_runtime = (double)(update->set->current_time - update->set->first_time) / 1000000000.0;
 			break;
 		}
@@ -1409,8 +1414,24 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
 		return NULL;
     }
 
-	// read defaults file if defined
-	retv = APAPI_read_env_eventops(&(mgmt->defaults_file), &(mgmt->defaults_events), &(mgmt->defaults_events_num));
+
+    // search for APAPI_CMPLIST variable
+    int envIx;
+    char *env_variable = NULL;
+    for (envIx = 0; environ[envIx] != NULL; ++envIx) {
+        if (strncmp(environ[envIx], "APAPI_CMPLIST=", 14) == 0) {
+            env_variable = environ[envIx];
+            break;
+        }
+    }
+
+    // APAPI_CMPLIST variable found
+    if (env_variable != NULL) {
+		mgmt->env_cmplist = &(env_variable[14]);
+    } else {
+		mgmt->env_cmplist = known_cmplist;
+	}
+
 
 	// check known components and prepare available components array
     int32_t known_cmp_count = 0;
@@ -1418,6 +1439,7 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
     for(knownCmpIx = 0; known_components[knownCmpIx] != NULL; knownCmpIx++);
     known_cmp_count = knownCmpIx;
     mgmt->available_components = (int *) calloc(sizeof(int), known_cmp_count+1); // +1 for NULL pointer at the end
+	char **avail_cmp = (char**) calloc(sizeof(char*), known_cmp_count+1);
 
 	mgmt->num_cmp = known_cmp_count;
 
@@ -1426,17 +1448,31 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
     const PAPI_component_info_t *component_infos[num_components];
     int i;
     int available_cmp_count = 0;
+	int inEnvCmpList = 0;
     for(i=0; i<num_components; i++) {
         component_infos[i] = PAPI_get_component_info(i);
+		inEnvCmpList = 1;
+		if (NULL != mgmt->env_cmplist && NULL == strstr(mgmt->env_cmplist, component_infos[i]->short_name)) {
+			inEnvCmpList = 0;
+		}
         if (component_infos[i]->disabled != 0) {
             printf("PAPI component %s disabled. Reason: %s\n", component_infos[i]->short_name, component_infos[i]->disabled_reason);
+			if (NULL != mgmt->env_cmplist && inEnvCmpList == 1) {
+				printf("PAPI component %s is not available but should have been.\n", component_infos[i]->short_name);
+				exit(1);
+			}
             continue;
         }
+
+		if (NULL != mgmt->env_cmplist && inEnvCmpList == 0) {
+			continue;
+		}
         //printf("%d: %s %s %d\n", i, component_infos[i]->short_name, component_infos[i]->name, component_infos[i]->num_native_events);
         // add component to list of known and available components
         for(knownCmpIx = 0; known_components[knownCmpIx] != NULL; knownCmpIx++) {
             if (strcmp(known_components[knownCmpIx], component_infos[i]->short_name) == 0) {
 				mgmt->available_components[knownCmpIx] = 1;
+				avail_cmp[available_cmp_count] = known_components[knownCmpIx];
                 available_cmp_count++;
 
 				int msId = component_mapping[knownCmpIx];
@@ -1462,6 +1498,15 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
             }
         }
     }
+
+
+	// read user eventops
+	retv = APAPI_read_env_eventops(&(mgmt->user_eventops_file), &(mgmt->user_eventops), &(mgmt->user_eventops_num));
+
+	// read user eventlist
+	retv = APAPI_read_env_eventlist(avail_cmp, &(mgmt->user_eventlist_file), &(mgmt->user_eventlist_sorted), &(mgmt->user_eventlist_cmp));
+
+	free(avail_cmp);
 
 	// prepare other arrays
 	mgmt->sets = (struct apapi_eventset **) calloc(known_cmp_count, sizeof(struct apapi_eventset *));
@@ -1507,11 +1552,11 @@ void ms_fini(MS_SYSTEM *ms_system) {
 		if (mgmt->update_args != NULL) {
 			free(mgmt->update_args);
 		}
-		if (mgmt->defaults_file != NULL) {
-			free(mgmt->defaults_file);
+		if (mgmt->user_eventops_file != NULL) {
+			free(mgmt->user_eventops_file);
 		}
-		if (mgmt->defaults_events != NULL) {
-			free(mgmt->defaults_events);
+		if (mgmt->user_eventops != NULL) {
+			free(mgmt->user_eventops);
 		}
 		free(ms_system->mgmt);
 	}
@@ -1674,7 +1719,15 @@ void ms_init_measurement(MS_SYSTEM *ms_system, MS_LIST *ms_list, int flags) {
 
 				// init component measurement
 				if (mgmt->sets[cmpIx] == NULL) {
-					ret = APAPI_init_apapi_eventset_cmp(&(mgmt->sets[cmpIx]), papi_cmp_id, NULL, mgmt->defaults_events);
+					char **names = NULL;
+					if (NULL != mgmt->user_eventlist_sorted) {
+						int eventlist_cmp = 0;
+						for (eventlist_cmp = 0; mgmt->user_eventlist_cmp[eventlist_cmp] != NULL && strcmp(known_components[cmpIx], mgmt->user_eventlist_cmp[eventlist_cmp]) != 0; ++eventlist_cmp);
+						if (mgmt->user_eventlist_cmp[eventlist_cmp] != NULL) {
+							names = mgmt->user_eventlist_sorted[eventlist_cmp];
+						}
+					}
+					ret = APAPI_init_apapi_eventset_cmp(&(mgmt->sets[cmpIx]), papi_cmp_id, names, mgmt->user_eventops);
 				}
 
 				mgmt->update_args[cmpIx].cmp_index = cmpIx;
@@ -1694,6 +1747,7 @@ void ms_init_measurement(MS_SYSTEM *ms_system, MS_LIST *ms_list, int flags) {
 						ret = APAPI_reset_timer(mgmt->timers[cmpIx], interval.tv_sec, interval.tv_nsec, measure_update, (void**) &(mgmt->update_args[cmpIx]), mgmt->sets[cmpIx]);
 					}
 				}
+				ret = APAPI_initstart_timer(mgmt->timers[cmpIx]);
 			}
 		}
 	}

@@ -119,9 +119,15 @@ int APAPI_init() {
 		if (pathsize <= 50) {
 			// constructing pathname successfull
 			retval = _apapi_read_eventops_file(filename_buffer, &_apapi_default_eventops, &_apapi_default_eventops_file_buffer, &_apapi_default_eventops_num_events);
-			APAPI_PRINTERR("default event operations not found")
-			if (PAPI_OK != retval && 0 == _apapi_softfail) {
-				return -1;
+			if (PAPI_OK != retval) {
+				APAPI_PRINTERR("default event operations not found\n")
+				if (0 == _apapi_softfail) {
+					return -1;
+				}
+			} else {
+				if (1 == _apapi_verbose) {
+					APAPI_PRINT("Read default event operations from %s\n", filename_buffer)
+				}
 			}
 		}
 
@@ -129,9 +135,15 @@ int APAPI_init() {
 		pathsize = snprintf(filename_buffer, 50, "%s/apapi/default_eventlist.txt", DATADIR);
 		if (pathsize <= 50) {
 			retval = _apapi_read_eventlist_file(filename_buffer, _apapi_default_components, &_apapi_default_eventlist_file_buffer, &_apapi_default_eventlist_sorted, &_apapi_default_eventlist_cmp);
-			APAPI_PRINTERR("default event list not found")
-			if (PAPI_OK != retval && 0 == _apapi_softfail) {
-				return -1;
+			if (PAPI_OK != retval) {
+				APAPI_PRINTERR("default event list not found\n")
+				if (0 == _apapi_softfail) {
+					return -1;
+				}
+			} else {
+				if (1 == _apapi_verbose) {
+					APAPI_PRINT("Read default event list from %s\n", filename_buffer)
+				}
 			}
 		}
 		_apapi_initialized = 1;
@@ -187,6 +199,16 @@ int APAPI_create_eventset_list(char **events, int cidx, int *EventSet, int *num_
 		return retv;
 	}
 
+	// assign PAPI EventSet to component
+	retv = PAPI_assign_eventset_component(*EventSet, cidx);
+	if (PAPI_OK != retv) {
+		APAPI_PRINTERR("Failed to assign event set to component %d\n", cidx)
+		if (0 == _apapi_softfail) {
+			PAPI_destroy_eventset(EventSet);
+			return -1;
+		}
+	}
+
 	// add events to PAPI EventSet
 	int eventIx;
 	*num_events = 0;
@@ -200,16 +222,6 @@ int APAPI_create_eventset_list(char **events, int cidx, int *EventSet, int *num_
 				PAPI_destroy_eventset(EventSet);
 				return -1;
 			}
-		}
-	}
-
-	// assign PAPI EventSet to component
-	retv = PAPI_assign_eventset_component(*EventSet, cidx);
-	if (PAPI_OK != retv) {
-		APAPI_PRINTERR("Failed to assign event set to component %d", cidx)
-		if (0 == _apapi_softfail) {
-			PAPI_destroy_eventset(EventSet);
-			return -1;
 		}
 	}
 
@@ -231,6 +243,16 @@ int APAPI_create_eventset_cmp_all(int cidx, int *EventSet, int *num_events) {
 		return retv;
 	}
 
+	// assign PAPI EventSet to component
+	retv = PAPI_assign_eventset_component(*EventSet, cidx);
+	if (PAPI_OK != retv) {
+		APAPI_PRINTERR("Failed to assign event set to component %d\n", cidx)
+		if (0 == _apapi_softfail) {
+			PAPI_destroy_eventset(EventSet);
+			return -1;
+		}
+	}
+
 	// iterate over component's events and add event to event set
 	int EventCode = 0 | PAPI_NATIVE_MASK;
 	*num_events = 0;
@@ -247,7 +269,7 @@ int APAPI_create_eventset_cmp_all(int cidx, int *EventSet, int *num_events) {
 		#endif
 		// error on adding
 		if (retv != PAPI_OK) {
-			APAPI_PRINTERR("Failed to add event %d to event set for component %d", EventCode, cidx)
+			APAPI_PRINTERR("Failed to add event %d to event set for component %d\n", EventCode, cidx)
 			if (0 == _apapi_softfail) {
 				PAPI_destroy_eventset(EventSet);
 				return -1;
@@ -270,16 +292,6 @@ int APAPI_create_eventset_cmp_all(int cidx, int *EventSet, int *num_events) {
 		return retv;
 	}
 	*/
-
-	// assign PAPI EventSet to component
-	retv = PAPI_assign_eventset_component(*EventSet, cidx);
-	if (PAPI_OK != retv) {
-		APAPI_PRINTERR("Failed to assign event set to component %d", cidx)
-		if (0 == _apapi_softfail) {
-			PAPI_destroy_eventset(EventSet);
-			return -1;
-		}
-	}
 
 	return PAPI_OK;
 }
@@ -548,6 +560,14 @@ int _apapi_timer_measure(struct apapi_timer *timer, int last_measurement) {
 void* _apapi_timer_thread(void *args) {
 	int retv;
 	struct apapi_timer *timer = (struct apapi_timer *) args;
+	pthread_t tid;
+	char *cmp_name;
+
+	if (1 == _apapi_verbose) {
+		tid = pthread_self();
+		cmp_name = (timer->set != NULL? timer->set->cmp_name: "unknown");
+		APAPI_PRINT("Thread %d created for component %s\n", tid, cmp_name)
+	}
 
 	// wait until first measurement
 	retv = pthread_mutex_lock(&(timer->mutex));
@@ -561,12 +581,24 @@ void* _apapi_timer_thread(void *args) {
 		return NULL;
 	}
 
+/*
+	retv = PAPI_start(timer->set->EventSet);
+	if (PAPI_OK != retv) {
+		return -1;
+	}
+*/
+
 	// first measurement
 	_apapi_timer_measure(timer, 0);
 
 	// get current time
 	struct timespec next_wakeup;
 	clock_gettime(CLOCK_REALTIME, &next_wakeup);
+
+	if (1 == _apapi_verbose) {
+		APAPI_PRINT("Thread %d component %s interval %ld.%ld start %ld.%ld\n", tid, cmp_name, timer->interval.tv_sec, timer->interval.tv_nsec,
+		next_wakeup.tv_sec, next_wakeup.tv_nsec)
+	}
 
 	// sleep/ measurement loop
 	while (1) {
@@ -709,19 +741,27 @@ int APAPI_reset_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, vo
 	return PAPI_OK;
 }
 
-int APAPI_start_timer(struct apapi_timer *timer) {
-
+int APAPI_initstart_timer(struct apapi_timer *timer) {
 	if (APAPI_TIMER_STATE_READY != timer->state) {
 		return -1;
 	}
-
 	int retv = PAPI_OK;
+
 	if (NULL != timer->set) {
 		retv = PAPI_start(timer->set->EventSet);
 		if (PAPI_OK != retv) {
 			return -1;
 		}
 	}
+	return PAPI_OK;
+}
+
+int APAPI_start_timer(struct apapi_timer *timer) {
+
+	if (APAPI_TIMER_STATE_READY != timer->state) {
+		return -1;
+	}
+
 	pthread_mutex_unlock(&(timer->mutex));
 	timer->state = APAPI_TIMER_STATE_STARTED;
 	return PAPI_OK;
@@ -809,6 +849,11 @@ int APAPI_destroy_timer(struct apapi_timer **timer){
 int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **names, struct apapi_event_ops *event_ops) {
 
 	int retv;
+
+	const PAPI_component_info_t *cmpinfo;
+	cmpinfo = PAPI_get_component_info(cidx);
+
+
 	struct apapi_eventset *newset;
 	*set = calloc(1, sizeof(struct apapi_eventset));
 	if (NULL == *set) {
@@ -816,20 +861,37 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
 	}
 	newset = *set;
 	newset->EventSet = PAPI_NULL;
+	newset->cmp_name = cmpinfo->short_name;
+
+	if (NULL == names) {
+		// search for default eventlist
+		int knownCmpIx = -1;
+		if (NULL != _apapi_default_eventlist_sorted) {
+			for(knownCmpIx = 0; _apapi_default_components[knownCmpIx] != NULL; ++knownCmpIx ) {
+				if (strcmp(_apapi_default_components[knownCmpIx], cmpinfo->short_name) == 0) {
+					break;
+				}
+			}
+			if (_apapi_default_components[knownCmpIx] != NULL) {
+				if (NULL != _apapi_default_eventlist_sorted[knownCmpIx]) {
+					names = _apapi_default_eventlist_sorted[knownCmpIx];
+				}
+			}
+		}
+	}
 	if (NULL == names) {
 		retv = APAPI_create_eventset_cmp_all(cidx, &(newset->EventSet), &(newset->num_events));
 	} else {
 		retv = APAPI_create_eventset_list(names, cidx, &(newset->EventSet), &(newset->num_events));
 	}
 
+	if (1 == _apapi_verbose) {		
+		APAPI_PRINT("eventset for component %s (%d)\n", cmpinfo->short_name, cidx)
+	}
+
 	if (PAPI_OK != retv) {
 		free(*set);
 		*set = NULL;
-		return -1;
-	}
-
-	retv = PAPI_assign_eventset_component(newset->EventSet, cidx);
-	if (PAPI_OK != retv) {
 		return -1;
 	}
 

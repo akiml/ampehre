@@ -27,14 +27,13 @@
 //#define DEBUG
 
 void help(char* appname){
-	printf("%s [-e EVENTFILE] [-d EVENTDEFFILE] FILENAME [ARGUMENTS]\n", appname);
+	printf("%s FILENAME [ARGUMENTS]\n", appname);
 	printf("Executes and measures the binary FILENAME using the PAPI library.\n");
-	printf("  -e EVENTFILE\t\tLists events to be used\n");
-	printf("  -d EVENTDEFFILE\t\tEvent definition file\n");
+	printf("Environment variables:\n");
+	printf("\tAPAPI_EVENTLIST\t\tPath to file with lists of events to be used\n");
+	printf("\tAPAPI_EVENTOPS\t\tPath to file with event operation definitions\n");
+	printf("\tAPAPI_CMPLIST\t\tList of component (short) names to be used\n");
 }
-
-char* optional_definition_file = NULL;
-char* optional_events_file = NULL;
 
 int main(int argc, char *argv[]) {
 
@@ -46,12 +45,6 @@ int main(int argc, char *argv[]) {
 
 	while((c = getopt (argc, argv, "+e:d:h?")) != -1) {
 		switch(c) {
-			case 'e':
-				optional_events_file = optarg;
-			break;
-			case 'd':
-				optional_definition_file = optarg;
-			break;
 			case 'h':
 			case '?':
 				help(argv[0]);
@@ -68,9 +61,6 @@ int main(int argc, char *argv[]) {
 		help(argv[0]);
 		exit(EXIT_FAILURE);
 	}
-
-	printf("Event list file: %s\n", optional_events_file);
-	printf("Event definition file: %s\n", optional_definition_file);
 
 	// prepare program arguments
 	program_argc = argc-optind;
@@ -119,7 +109,7 @@ int main(int argc, char *argv[]) {
 		retv = nanosleep(&tosleep, &tosleep);
 	} while(retv != 0);
 
-	papi_init(optional_definition_file, optional_events_file);
+	papi_init();
 
 	papi_start();
 

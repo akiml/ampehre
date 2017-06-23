@@ -100,6 +100,8 @@ extern struct apapi_event_ops APAPI_DEFAULT_OPS;
 struct apapi_eventset {
 	// PAPI eventset id
 	int EventSet;
+	// PAPI component info
+	char *cmp_name;
 	// number of events
 	int num_events;
 	// latest counter values from PAPI
@@ -286,8 +288,20 @@ int APAPI_change_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, v
  */
 int APAPI_reset_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, void(measure)(void**, int), void** measure_arg, struct apapi_eventset *set);
 
+/** @class APAPI_initstart_timer(struct apapi_timer *timer);
+ *	@brief Prepares the start of the timer, calls PAPI_start
+ *		Needs to be called before APAPI_start_timer
+ *	
+ *	@param struct apapi_timer *timer
+ *		Timer to be prepared for start
+ *
+ *	@retval PAPI_OK or on error something else
+ */
+int APAPI_initstart_timer(struct apapi_timer *timer);
+
 /** @class APAPI_start_timer
- *  @brief Starts the timer
+ *  @brief Starts the timer, starts the timer
+ *		Always call PAPI_initstart_timer before
  *
  *  @param struct apapi_timer *timer
  *  	Timer to be started

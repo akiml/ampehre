@@ -31,6 +31,9 @@ char *known_components[] = {
 	NULL
 };
 
+char *known_cmplist = "rapl nvml maxeler micknc ipmi";
+char *env_cmplist = NULL;
+
 // available components
 char **user_components;
 char **available_components;
@@ -41,13 +44,14 @@ struct apapi_eventset **sets = NULL;
 struct apapi_timer **timers = NULL;
 
 // event list
-char **all_events = NULL;
-char ***sorted_events = NULL;
-char *eventlist_file_buffer = NULL;
+char **user_eventlist_all = NULL;
+char ***user_eventlist_sorted = NULL;
+char *user_eventlist_file = NULL;
 
 // event defaults
-struct apapi_event_ops *event_defaults = NULL;
-char *defaults_file_buffer = NULL;
+struct apapi_event_ops *user_eventops = NULL;
+char *user_eventops_file = NULL;
+int user_eventops_num = 0;
 
 
 void measure_custom(void** arg, int last_measurement){
@@ -79,7 +83,7 @@ long gettime() {
 	return result.tv_sec* 1000000000 + result.tv_nsec;
 }
 
-
+/*
 int read_file(char* filename, char **file_buffer, long *filesize) {
 	if (filename == NULL) {
 		return 1;
@@ -171,8 +175,7 @@ void papi_read_defaults_file(char *filename, struct apapi_event_ops **events_out
 	}
 
 }
-
-
+*/
 
 void measure(void** arg, int last_measurement){
 /*	printf("%ld measure\n", gettime());
@@ -184,19 +187,33 @@ void measure(void** arg, int last_measurement){
 
 
 
-void papi_init(char *optional_definition_file, char *optional_events_file){
+void papi_init(){
 
 	int retv;
 
-	if (optional_definition_file != NULL) {
-		papi_read_defaults_file(optional_definition_file, &(event_defaults));
-	}
+	APAPI_read_env_eventops(&user_eventops_file, &user_eventops, &user_eventops_num);
 
-
-	retv = PAPI_library_init(PAPI_VER_CURRENT);
+	retv = APAPI_init();
 	if (retv != PAPI_VER_CURRENT) {
 		quit(__LINE__, "Failed to initialize PAPI library");
 	}
+
+    // search for APAPI_CMPLIST variable
+    int envIx;
+    char *env_variable = NULL;
+    for (envIx = 0; environ[envIx] != NULL; ++envIx) {
+        if (strncmp(environ[envIx], "APAPI_CMPLIST=", 14) == 0) { 
+            env_variable = environ[envIx];
+            break;
+        }
+    }    
+
+    // APAPI_CMPLIST variable found
+    if (env_variable != NULL) {
+        env_cmplist = &(env_variable[14]);
+    } else {
+        env_cmplist = known_cmplist;
+    } 
 
 	int32_t known_cmp_count = 0;
 	int knownCmpIx = 0;
@@ -210,13 +227,31 @@ void papi_init(char *optional_definition_file, char *optional_events_file){
 	int num_components = PAPI_num_components();
 	const PAPI_component_info_t *component_infos[num_components];
 	int i;
+	int inEnvCmpList = 0;
 	int available_cmp_count = 0;
 	for(i=0; i<num_components; i++) {
 		component_infos[i] = PAPI_get_component_info(i);
+
+        inEnvCmpList = 1;
+        if (NULL != env_cmplist && NULL == strstr(env_cmplist, component_infos[i]->short_name)) {
+            inEnvCmpList = 0;
+        }
+
+
 		if (component_infos[i]->disabled != 0) {
 			printf("PAPI component %s disabled. Reason: %s\n", component_infos[i]->short_name, component_infos[i]->disabled_reason);
+			if (NULL != env_cmplist && inEnvCmpList == 1) {
+				printf("PAPI component %s should have been available\n", component_infos[i]->short_name);
+				printf("%s\n", env_cmplist);
+				exit(1);
+			}
 			continue;
 		}
+
+		if (inEnvCmpList == 0) {
+			continue;
+		}
+
 		//printf("%d: %s %s %d\n", i, component_infos[i]->short_name, component_infos[i]->name, component_infos[i]->num_native_events);
 		// add component to list of known and available components
 		for(knownCmpIx = 0; known_components[knownCmpIx] != NULL; knownCmpIx++) {
@@ -235,18 +270,16 @@ void papi_init(char *optional_definition_file, char *optional_events_file){
 	
 
 	// check user selected events from eventlist
-	if (optional_events_file != NULL) {
-		papi_read_events_file(optional_events_file, available_components, &user_components, &sorted_events);
-	}
+	APAPI_read_env_eventlist(available_components, &user_eventlist_file, &user_eventlist_sorted, &user_eventlist_all);
 
-	if (sorted_events != NULL) {
+	if (user_eventlist_sorted != NULL) {
 		uint32_t user_cmp_count = 0;
 		uint32_t userCmpIx = 0;
 		for(userCmpIx = 0; user_components[userCmpIx] != NULL; userCmpIx++);
 		user_cmp_count = userCmpIx;
 		
 		components = user_components;
-		component_events = sorted_events;
+		component_events = user_eventlist_sorted;
 		set_count = user_cmp_count;
 	}
 
@@ -264,7 +297,11 @@ void papi_init(char *optional_definition_file, char *optional_events_file){
 		}
 
 		printf("Use PAPI component %s\n", components[setIx]);
-		retv = APAPI_init_apapi_eventset_cmp(&(sets[setIx]), cidx, cmp_events, event_defaults);
+		retv = APAPI_init_apapi_eventset_cmp(&(sets[setIx]), cidx, cmp_events, user_eventops);
+		if (PAPI_OK != retv) {
+			printf("Failed to create eventset for component %s\n", components[setIx]);
+			exit(1);
+		}
 		#ifdef DEBUG
 		printf("atime %d %d\n", __LINE__, retv);
 		#endif
@@ -285,6 +322,9 @@ void papi_start(){
 	printf("papi_start\n");
 	int retv;
 	int setIx = 0;
+	for(setIx = 0; setIx < set_count; setIx++){
+		retv = APAPI_initstart_timer(timers[setIx]);
+	}
 	for(setIx = 0; setIx < set_count; setIx++){
 		retv = APAPI_start_timer(timers[setIx]);
 		#ifdef DEBUG

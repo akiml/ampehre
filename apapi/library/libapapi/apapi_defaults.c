@@ -591,9 +591,7 @@ int32_t _apapi_count_cmp_events(char **cmp_list, char **events, int32_t *event_c
 	// get cmp name lengths
 	int8_t cmp_len[cmp_count];
 	memset(cmp_len, 0, sizeof(int8_t)*cmp_count);
-	APAPI_PRINT("cmp count %d\n", cmp_count)
 	for(current_cmp = 0; current_cmp < cmp_count; current_cmp++) {
-		APAPI_PRINT("strlen %s %d\n", cmp_list[current_cmp], current_cmp)
 		cmp_len[current_cmp] = strlen(cmp_list[current_cmp]);
 	}
 
