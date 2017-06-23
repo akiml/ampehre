@@ -268,6 +268,8 @@ _ipmi_start( hwd_context_t *ctx, hwd_control_state_t *ctl )
 	/* start the counting ?*/
 
 	dellResetEnergyCounter();
+/*
+	// ?
 	int i;
 	for(i=0; i<5; i++){
 		getTemperature(18);
@@ -275,7 +277,7 @@ _ipmi_start( hwd_context_t *ctx, hwd_control_state_t *ctl )
 		getTemperature(153);
 		getTemperature(154);
 	}
-
+*/
 
 	return PAPI_OK;
 }

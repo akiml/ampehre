@@ -275,33 +275,6 @@ static int open_fd(int offset) {
   return fd;
 }
 
-int rapl_readline(FILE *fd, char *buffer, int max, int *read) {
-	int curIx;
-	int numread;
-	for (curIx = 0; curIx<max; ++curIx) {
-		numread = fread(&(buffer[curIx]), 1, 1, fd);
-		// error
-		if (numread <= 0 && ferror(fd) != 0) {
-			*read = curIx;
-			return -1;
-		}
-		// end of file
-		if (numread <= 0 && feof(fd) != 0) {
-			*read = curIx;
-			return 0;
-		}
-		// new line
-		if (buffer[curIx] == '\n') {
-			buffer[curIx] = 0;
-			break;
-		}
-	}
-	// max reached
-	*read = curIx;
-	return 0;
-}
-
-
 void rapl_update_systemstats() {
 
 	int num_read;
@@ -316,7 +289,63 @@ void rapl_update_systemstats() {
 	cpu_stat_fd = fopen("/proc/stat", "r");
 
 	if (cpu_stat_fd != NULL) {
-		num_read = fscanf(cpu_stat_fd,"cpu %lld %lld %lld %lld %lld %lld %lld %lld %lld", &(cpu_stat->user), &(cpu_stat->nice), &(cpu_stat->system), &(cpu_stat->idle), &(cpu_stat->iowait), &(cpu_stat->irq), &(cpu_stat->softirq), &(cpu_stat->steal), &(cpu_stat->guest));
+		char buffer[100];
+		memset(buffer, 0, 100);
+		int ret = 0;
+		int tokenIx = 0;
+		size_t buffersize = 100;
+		char *linebuffer = buffer;
+		num_read = getline(&linebuffer, &buffersize, cpu_stat_fd);
+		char *endptr = NULL;
+		char *nextSpace = linebuffer;
+		uint64_t result = 0;
+		if (num_read == -1) {
+			printf("getline failed %d\n", errno);
+			errno = 0;
+		} else
+		if (num_read > 0) {
+			while ( tokenIx < 9 && *nextSpace != 0 && (nextSpace = strstr(nextSpace, " ")) != NULL  ) {
+				result = strtol(nextSpace+1, &endptr, 0);
+				if (endptr == NULL) {
+					break;
+				}
+				switch (tokenIx) {
+					case 0:
+						cpu_stat->user = result;
+					break;
+					case 1:
+						cpu_stat->nice = result;
+					break;
+					case 2:
+						cpu_stat->system = result;
+					break;
+					case 3:
+						cpu_stat->idle = result;
+					break;
+					case 4:
+						cpu_stat->iowait = result;
+					break;
+					case 5:
+						cpu_stat->irq = result;
+					break;
+					case 6:
+						cpu_stat->softirq = result;
+					break;
+					case 7:
+						cpu_stat->steal = result;
+					break;
+					case 8:
+						cpu_stat->guest = result;
+					break;
+					default:
+					break;
+				}
+				tokenIx++;
+			}
+		}
+		if (linebuffer != buffer) {
+			free(linebuffer);
+		}
 
 		fclose(cpu_stat_fd);
 	}
@@ -327,10 +356,12 @@ void rapl_update_systemstats() {
 	if (mem_stat_fd != NULL) {
 		char buffer[40];
 		memset(buffer, 0, 40);
+		char *linebuffer = buffer;
+		size_t buffersize = 40;
 		int itemstoread = 6;
 		int ret = 0;
 		while (ret == 0 && itemstoread > 0) { // last read returned error or all necessary items found
-			ret = rapl_readline(mem_stat_fd, buffer, 40, &num_read);
+			num_read = getline(&linebuffer, &buffersize, mem_stat_fd);
 			
 			if (num_read == 0) {
 				break;
@@ -367,6 +398,9 @@ void rapl_update_systemstats() {
 				itemstoread--;
 				continue;
 			}
+		}
+		if (buffer != linebuffer) {
+			free(linebuffer);
 		}
 		fclose(mem_stat_fd);
 	}

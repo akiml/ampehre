@@ -15,5 +15,6 @@ genpapifdef
 *.o
 *.a
 *.so
+*.so.*
 *.so.*.*.*.*
 *.pc
