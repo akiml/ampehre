@@ -73,7 +73,7 @@ void CServer::controlClients()
 			if(dur > 1)
 			{
 				std::cout << "exceeded maximal interval!" << std::endl;
-				terminate(mDataVec[i]);
+				terminate(mDataVec[i]);										//double check this
 			}
 		}
 	}
@@ -90,6 +90,9 @@ void* CServer::clientTask(void* d)
 		
 		ssize_t recv_length;
 		char* buffer = pData->getMsg(&recv_length);
+		if(recv_length <= 0){
+			break;
+		}
 		if(pSrv->mProtocol.parseMsg(buffer, recv_length, pData->mTaskCode, pData->mRegistry, pData->mData) < 0){
 			std::cout << "[!]error parsing message" << std::endl;
 		}
@@ -102,6 +105,8 @@ void* CServer::clientTask(void* d)
 		}
 	}
 	pSrv->mCom->msmShutdown(&pData);
+	
+	pthread_exit(NULL);
 }
 
 
@@ -137,6 +142,9 @@ void CServer::acceptLoop() {
 				int ret = pthread_join(mThreads[i], NULL);
 				if( ret != 0){
 					std::cout << "error joining thread! Error number: " << ret << std::endl;
+				}
+				else{
+					std::cout << "client thread terminated!" << std::endl;
 				}
 			}
 			mThreads.clear();
@@ -262,7 +270,13 @@ void CServer::dataRequest(CComTCPData* pData){
 		void* m;
 		int s = createDataAnswer(&m, mIterator->dataCode);
 		std::string str ((char*) m , s);
-		pData->setMsg(str.c_str());
+		pData->setMsg(m, s);	//getmsg zu wenig inhalt nach setmsg
+// 		std::cout << "?!?!??!?!" << std::endl << str << std::endl<< std::endl;
+// 		char* tstmsg;
+// 		ssize_t tstsize;
+// 		tstmsg =  pData->getMsg(&tstsize);
+// 		std::string tststring (tstmsg, tstsize);
+// 		std::cout << "!!!!!!!!!!" << std::endl << tststring << std::endl;
 		mCom->msmSend(pData);
 		mTimesForClients[pData->mRegistry] = std::clock();
 		free(m);
@@ -322,7 +336,7 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 	mProtocol.extractData(d, dataCode);		//extract wanted data from 64Bit dataCode
 	mMeasure.getValues(values, d);			//read needed values into double vector
 	mMeasure.getProcesses(values_pid);
-
+	
 	std::size_t size_str = 0;
 	for(unsigned int i = 0; i < values_pid.size(); i++)
 	{

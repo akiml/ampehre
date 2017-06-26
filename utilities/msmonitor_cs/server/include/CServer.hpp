@@ -72,7 +72,8 @@ private:
 	double mCurrentTime;
 	std::vector<uint64_t> mFreq;
 	std::vector<clock_t> mTimesForClients;
-	
+
+public:
 	std::vector<pthread_t> mThreads;
 	std::vector<CComTCPData*> mDataVec;
 	

@@ -13,29 +13,36 @@ CComTCPServer::~CComTCPServer(){
 void CComTCPServer::msmAccept(CComTCPData** pComData) {
 	*pComData = new CComTCPData();
 	
+	//EINTR, ECONNABORTED, EPERM
 	(*pComData)->mSocketFildes = accept(mSockFildes, (struct sockaddr *)&((*pComData)->mClientAddr), &((*pComData)->mClientAddrLen));
 	
 	if (-1 == (*pComData)->mSocketFildes) {
 		std::cout << "ERROR: " << strerror(errno) << std::endl;
-		exit(EXIT_FAILURE);
+		if(errno != ECONNABORTED){
+			exit(EXIT_FAILURE);
+		}
 	}
 }
 
 void CComTCPServer::msmBind() {
 	int ret_value = bind(mSockFildes, (struct sockaddr *)&mServerAddr, sizeof(struct sockaddr_in));
-	
+	//EADDRINUSE
 	if (-1 == ret_value) {
 		std::cout << "ERROR: " << strerror(errno) << std::endl;
-		exit(EXIT_FAILURE);
+		if(errno != EADDRINUSE){
+			exit(EXIT_FAILURE);
+		}
 	}
 }
 
 void CComTCPServer::msmListen() {
 	int ret_value = listen(mSockFildes, mMaxClients);
-	
+	//EADDRINUSE
 	if (-1 == ret_value) {
 		std::cout << "ERROR: " << strerror(errno) << std::endl;
-		exit(EXIT_FAILURE);
+		if(errno != EADDRINUSE){
+			exit(EXIT_FAILURE);
+		}
 	}
 }
 

@@ -40,9 +40,12 @@ void CComTCPAbstract::msmSend(CComTCPData *pComData) {
 	
 	ret_value	= send(pComData->mSocketFildes , msg , msg_length , 0);
 	
+    //ECONNRESET -> connection reset by peer, EINTR -> signal occured before any data transmitted
 	if (-1 == ret_value) {
 		std::cout << "ERROR: " << strerror(errno) << std::endl;
-		exit(EXIT_FAILURE);
+		if(errno != ECONNRESET){
+			exit(EXIT_FAILURE);
+		}
 	} /*else if (pComData->mMsgLength != ret_value) {
 		std::cout << "ERROR: " << "Could not send all data." << std::endl;
 		exit(EXIT_FAILURE);
@@ -60,7 +63,7 @@ void CComTCPAbstract::msmRecv(CComTCPData *pComData){
     while(!finished)
     {
         tmp = recv(pComData->mSocketFildes , reply , size, 0);
-
+        //ECONNREFUSED, EINTR, ENOTCONN
         if(tmp > 0){
             length += tmp;
             if(tmp == size){
@@ -75,14 +78,18 @@ void CComTCPAbstract::msmRecv(CComTCPData *pComData){
             }
             else {
                 finished = true;
-                std::string str ((char*) reply, length);
-                pComData->setMsg(str.c_str());
+                pComData->setMsg(reply, length);
             }
         }
-        else{
+        else if (tmp == 0){
 			finished = true;
-            std::string str ((char*) reply, length);
-            pComData->setMsg(str.c_str());
+            pComData->setMsg(reply, length);
+			free(reply);
+			return;
+		}
+		else{
+			free(reply);
+			return;
 		}
         errno = 0;
     }
@@ -91,46 +98,3 @@ void CComTCPAbstract::msmRecv(CComTCPData *pComData){
     std::cout << std::string((char*)tmp_rep, size) << std::endl;
     free(reply);
 }
-
-//void CComTCPAbstract::msmRecv(void **reply, int &length, int socket)
-//{
-//    std::cout << "inside receive" << std::endl;
-//    int size = 4096, tmp = 0;
-//    length = 0;
-//    *reply = malloc(size);
-//    void* tmp_rep;
-//    bool finished = false;
-//    if (NULL == *reply)
-//    {
-//        std::cout << "[FATAL] out of memory!" << std::endl;
-//        exit(-1);
-//    }
-
-//    while(!finished)
-//    {
-//        tmp = recv(socket , *reply , size, 0);
-//        if(tmp > 0)
-//        {
-//            length += tmp;
-//            if(tmp == size)
-//            {
-//                std::cout << "before realloc" << std::endl;
-//                tmp_rep = realloc(*reply, length+size);
-//                std::cout << "after realloc" << std::endl;
-//                if (NULL == tmp_rep)
-//                {
-//                    std::cout << "[FATAL] out of memory!" << std::endl;
-//                    free(*reply);
-//                    exit(-1);
-//                }
-//                *reply = tmp_rep;
-//            }
-//            else
-//            {
-//                finished = true;
-//            }
-//        }
-//        errno = 0;
-//    }
-//    std::cout << "received msg with length: " << length << std::endl;
-//}

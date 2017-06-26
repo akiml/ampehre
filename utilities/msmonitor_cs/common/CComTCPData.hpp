@@ -29,7 +29,8 @@ class CComTCPData {
 		CComTCPData();
 		~CComTCPData();
 		
-		void setMsg(const char *pMsg);
+        void setMsg(const char *pMsg);
+        void setMsg(const void *pMsg, ssize_t size);
 		char *getMsg(ssize_t *pMsgLength);
 };
 
