@@ -1,4 +1,4 @@
 [submodule "apapi/papi"]
 	path = papi
-	url = irb-git@git.cs.upb.de:awiens/papi.git
+	url = https://git.cs.upb.de/awiens/papi.git
 	branch = apapi
