@@ -308,11 +308,12 @@ _ipmi_read( hwd_context_t *ctx, hwd_control_state_t *ctl,
 			  long long **events, int flags )
 {
 
-   (void) flags;
+	(void) ctx;
+	(void) flags;
 
-   ipmi_control_state_t *ipmi_ctl = ( ipmi_control_state_t *) ctl;   
+	ipmi_control_state_t *ipmi_ctl = ( ipmi_control_state_t *) ctl;
 
-   SUBDBG( "ipmi_read...%d", flags );
+	SUBDBG( "ipmi_read...%d", flags );
 
 	int i;
 	int event_id;
@@ -335,9 +336,9 @@ _ipmi_read( hwd_context_t *ctx, hwd_control_state_t *ctl,
 		}
 	}
 
-   /* return pointer to the values we read */
-   *events = ipmi_ctl->counter;
-   return PAPI_OK;
+	/* return pointer to the values we read */
+	*events = ipmi_ctl->counter;
+	return PAPI_OK;
 }
 
 /** Triggered by PAPI_write(), but only if the counters are running */
@@ -347,6 +348,9 @@ _ipmi_write( hwd_context_t *ctx, hwd_control_state_t *ctl,
 			   long long *events )
 {
 
+	(void) ctx;
+	(void) ctl;
+	(void) events;
 	SUBDBG( "ipmi_write...");
 
 	return PAPI_OK;
@@ -359,6 +363,9 @@ _ipmi_write( hwd_context_t *ctx, hwd_control_state_t *ctl,
 static int
 _ipmi_reset( hwd_context_t *ctx, hwd_control_state_t *ctl )
 {
+
+	(void) ctx;
+	(void) ctl;
 	SUBDBG( "ipmi_reset...");
 
 	return PAPI_OK;

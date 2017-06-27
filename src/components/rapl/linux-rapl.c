@@ -202,9 +202,9 @@ struct cpu_stat_counter {
 	long long swap_used;
 	long long swap_free;
 };
-struct cpu_stat_counter _cpu_stat_first = {0};
-struct cpu_stat_counter _cpu_stat_last = {0};
-struct cpu_stat_counter _cpu_stat = {0};
+struct cpu_stat_counter _cpu_stat_first = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+struct cpu_stat_counter _cpu_stat_last = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+struct cpu_stat_counter _cpu_stat = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 struct cpu_stat_counter *cpu_stat_last = &_cpu_stat_last;
 struct cpu_stat_counter *cpu_stat = &_cpu_stat;
 struct cpu_stat_counter *cpu_stat_first = NULL;
@@ -291,7 +291,6 @@ void rapl_update_systemstats() {
 	if (cpu_stat_fd != NULL) {
 		char buffer[100];
 		memset(buffer, 0, 100);
-		int ret = 0;
 		int tokenIx = 0;
 		size_t buffersize = 100;
 		char *linebuffer = buffer;
@@ -379,17 +378,17 @@ void rapl_update_systemstats() {
 				continue;
 			}
 			if (strncmp(buffer, "Cached:", 7) == 0) {
-				sscanf(buffer, "Cached: %lld kB", &(cpu_stat->mem_cached));
+				sscanf(buffer, "Cached: %" PRIu64 " kB", &(cpu_stat->mem_cached));
 				itemstoread--;
 				continue;
 			}
 			if (strncmp(buffer, "Buffers:", 8) == 0) {
-				sscanf(buffer, "Buffers: %lld kB", &(cpu_stat->mem_buffers));
+				sscanf(buffer, "Buffers: %" PRIu64 " kB", &(cpu_stat->mem_buffers));
 				itemstoread--;
 				continue;
 			}
 			if (strncmp(buffer, "MemFree:", 8) == 0) {
-				sscanf(buffer, "MemFree: %lld kB", &(cpu_stat->mem_free));
+				sscanf(buffer, "MemFree: %" PRIu64 " kB", &(cpu_stat->mem_free));
 				itemstoread--;
 				continue;
 			}

@@ -749,6 +749,7 @@ _maxeler_read( hwd_context_t *ctx, hwd_control_state_t *ctl,
 			  long long **events, int flags )
 {
 
+	(void) ctx;
 	(void) flags;
 
 	maxeler_control_state_t *maxeler_ctl = ( maxeler_control_state_t *) ctl;
@@ -827,21 +828,10 @@ _maxeler_write( hwd_context_t *ctx, hwd_control_state_t *ctl,
 			   long long *events )
 {
 
-/*
-        example_context_t *example_ctx = (example_context_t *) ctx;
-        example_control_state_t *example_ctl = ( example_control_state_t *) ctl;   
-   
-        int i;
-   
-	SUBDBG( "example_write... %p %p", ctx, ctl );
+	(void) ctx;
+	(void) ctl;
+	(void) events;
 
-        // Write counters into expected slot
-        for(i=0;i<example_ctl->num_events;i++) {
-	   example_hardware_write( example_ctl->which_counter[i],
-				   example_ctx,
-				   events[i] );
-	}
-*/ 
 	return PAPI_OK;
 }
 
@@ -852,15 +842,10 @@ _maxeler_write( hwd_context_t *ctx, hwd_control_state_t *ctl,
 static int
 _maxeler_reset( hwd_context_t *ctx, hwd_control_state_t *ctl )
 {
-/* 
-       example_context_t *event_ctx = (example_context_t *)ctx;
+
+	(void) ctx;
 	(void) ctl;
 
-	SUBDBG( "example_reset ctx=%p ctrl=%p...", ctx, ctl );
-
-	// Reset the hardware
-	example_hardware_reset( event_ctx );
-*/
 	return PAPI_OK;
 }
 

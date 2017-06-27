@@ -88,7 +88,7 @@ struct event_def event_definitions[] = {
 	{"MEM_TOTAL:DEVICE%d", 		"%d", EVENT_MEM_TOTAL, TYPE_MEM},
 	{"MEM_USED:DEVICE%d", 		"%d", EVENT_MEM_USED, TYPE_MEM},
 	{"MEM_FREE:DEVICE%d", 		"%d", EVENT_MEM_FREE, TYPE_MEM},
-	NULL
+	{NULL,						NULL, 0, 0}
 };
 
 /*
@@ -870,6 +870,7 @@ _micknc_read( hwd_context_t *ctx, hwd_control_state_t *ctl,
 			  long long **events, int flags )
 {
 
+	(void) ctx;
 	(void) flags;
 
 	micknc_control_state_t *micknc_ctl = ( micknc_control_state_t *) ctl;   
@@ -906,7 +907,9 @@ _micknc_write( hwd_context_t *ctx, hwd_control_state_t *ctl,
 			   long long *events )
 {
 
-   
+	(void) ctx;
+	(void) ctl;
+	(void) events;
 	SUBDBG( "micknc_write... ");
 
 	return PAPI_OK;
@@ -920,6 +923,8 @@ static int
 _micknc_reset( hwd_context_t *ctx, hwd_control_state_t *ctl )
 {
 
+	(void) ctx;
+	(void) ctl;
 	SUBDBG( "micknc_reset...");
 
 	/* Reset the hardware */

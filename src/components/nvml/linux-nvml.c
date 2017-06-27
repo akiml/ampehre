@@ -481,7 +481,8 @@ detectDevices( )
 		char names[device_count][64];
 		char nvml_busIds[device_count][16];
 
-		float ecc_version = 0.0, power_version = 0.0;
+		float ecc_version = 0.0;
+		//float power_version = 0.0;
 
 		int i = 0,
 			j = 0;
@@ -560,7 +561,7 @@ detectDevices( )
 						} 
 
 						ecc_version = strtof(inforomECC, NULL );
-						power_version = strtof( inforomPower, NULL);
+						//power_version = strtof( inforomPower, NULL);
 
 						isTesla = ( NULL == strstr(name, "Tesla") ) ? 0:1;
 
