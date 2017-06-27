@@ -254,7 +254,7 @@ void papi_init(char *option_intervalstr){
 	}
 	if (cmp_count == 0) {
 		printf("No component active.\n");
-		exit();
+		exit(1);
 	}
 }
 
