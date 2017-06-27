@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 	int retv = 0;
 	retv = APAPI_read_env_eventops(&test_event_file_buffer, &test_event_defaults, &num_events);
 
-    if (test_optional_events_file == NULL || retv != 0)
+    if (retv != 0)
         return EXIT_FAILURE;
     else
         return EXIT_SUCCESS;

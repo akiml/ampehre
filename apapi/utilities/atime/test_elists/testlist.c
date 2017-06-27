@@ -7,58 +7,16 @@
 #include <errno.h>
 #include "papi.h"
 #include "apapi.h"
-#include "atime_eventlist.h"
-#include "atime_papi.h"
 //#define DEBUG
 
-char* optional_events_file = NULL;
+char ***user_eventlist_sorted = NULL;
+char *user_eventlist_file = NULL;
+char **user_eventlist_components = NULL;
+
 
 int main(int argc, char *argv[]) {
 
-    int c = 0;
-
-    int print = 0;
-
-    while((c = getopt (argc, argv, "+e:vh?")) != -1) {
-        switch(c) {
-            case 'e':
-                optional_events_file = optarg;
-            break;
-            case 'v':
-                print = 1;
-            break;
-            default:
-                exit(EXIT_FAILURE);
-        };
-    };
-
-    char *buffer;
-    char **events;
-    long filesize;
-
-    int retv = 0;
-    retv = read_file(optional_events_file, &buffer, &filesize);
-    if (retv != 0) {
-        return 1;
-    }
-
-    uint32_t event_count = 0;
-    retv = read_event_list(buffer, &events, &event_count);
-
-    if (retv != 0) {
-        return 1;
-    }
-
-
-    int eventIx = 0;
-    if (print) {
-        printf("%d events\n", event_count);
-        for (eventIx = 0; events[eventIx] != NULL; eventIx++) {
-            printf("%s\n", events[eventIx]);
-        }
-    }
-    
-    char ***sorted_events;
+    int print = 1;
 
     char *(components)[3] = {
         "rapl",
@@ -66,29 +24,26 @@ int main(int argc, char *argv[]) {
         NULL
     };
 
-    char **used_components;
+	int retv;
 
-    retv = sort_events(components, events, &used_components, &sorted_events);
-    if (retv != 0) {
-        return -1;
-    }
+	retv = APAPI_read_env_eventlist(components, &user_eventlist_file, &user_eventlist_sorted, &user_eventlist_components);
 
-    int cmpIx = 0;
     if (print) {
         printf("sorted events\n");
+		int cmpIx, eventIx;
         for(cmpIx = 0; components[cmpIx] != NULL; cmpIx++) {
             printf("component %s\n", components[cmpIx]);
-            for(eventIx = 0; sorted_events[cmpIx][eventIx] != NULL; eventIx++) {
-                printf("  %s\n", sorted_events[cmpIx][eventIx]);
+            for(eventIx = 0; user_eventlist_sorted[cmpIx][eventIx] != NULL; eventIx++) {
+                printf("  %s\n", user_eventlist_sorted[cmpIx][eventIx]);
             }
         }
     }
 
-    free(buffer);
-    free(events);
-    free_sorted_events(&used_components, &sorted_events);
 
-
-    return EXIT_SUCCESS;
+	if (retv != 0) {
+		return EXIT_FAILURE;
+	} else {
+	    return EXIT_SUCCESS;
+	}
 }
 

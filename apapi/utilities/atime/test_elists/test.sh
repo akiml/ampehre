@@ -2,7 +2,6 @@
 
 export LD_LIBRARY_PATH=.
 
-echo list
-./testlist -e list -v
-echo
+APAPI_EVENTLIST=list ./testlist
+echo $? list
 
