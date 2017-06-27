@@ -438,7 +438,11 @@ void rapl_update_systemstats() {
 			(cpu_stat->idle - cpu_stat_last->idle) + 
 			(cpu_stat->iowait - cpu_stat_last->iowait)) / (double)sc_clk_tck / (double)num_cpus * 1000.0);
 
-		cpu_stat->util = (long long) ( (double)time_work / (double)(time_work + time_idle) * 100.0);
+		if (time_work + time_idle == 0) {
+			cpu_stat->util = 0;
+		} else {
+			cpu_stat->util = (long long) ( (double)time_work / (double)(time_work + time_idle) * 100.0);
+		}
 
 
 		cpu_stat->memory_free = cpu_stat->mem_free + cpu_stat->mem_buffers + cpu_stat->mem_cached;
