@@ -527,7 +527,7 @@ int _apapi_read_eventops_file(char *filename, struct apapi_event_ops **events_ou
 			free(*defaults_file_buffer);
 			*defaults_file_buffer = NULL;
 		}
-		if (NULL == *events_output) {
+		if (NULL != *events_output) {
 			free(*events_output);
 			*events_output = NULL;
 		}
@@ -864,7 +864,7 @@ int _apapi_read_eventlist_file(char *filename, char **cmp_list, char **buffer, c
 
 int APAPI_read_env_eventlist(char **cmp_list, char **buffer, char ****sorted_list, char ***used_cmp) {
 
-	// search for APAPI_EVENTLIST variable	
+	// search for APAPI_EVENTLIST variable
 	int envIx;
 	char *eventlist_env = NULL;
 	for (envIx = 0; environ[envIx] != NULL; ++envIx) {
@@ -889,4 +889,89 @@ int APAPI_read_env_eventlist(char **cmp_list, char **buffer, char ****sorted_lis
 	return _apapi_read_eventlist_file(eventlist_filename, cmp_list, buffer, sorted_list, used_cmp);
 }
 
+int _apapi_read_cmplist(char *cmplist_str, char **buffer, char ***cmplist) {
 
+	int cmp_count_max = 1; // n+1 possible entries delimited by n delimitors
+	char *strpos = cmplist_str;
+	for ( ; *strpos != 0; ++strpos) {
+		if (*strpos == ':') {
+			cmp_count_max += 1;
+		}
+	}
+
+
+	*buffer = strdup(cmplist_str);
+	if (*buffer == NULL) {
+		return -1;
+	}
+	*cmplist = calloc(cmp_count_max+1, sizeof(char*)); // +1 for NULL pointer at the end
+	if (*cmplist == NULL) {
+		free(*buffer);
+		*buffer = NULL;
+		return -1;
+	}
+
+	char **cmplist_arr = *cmplist;
+	strpos = *buffer;
+	int cmplist_pos = 0;
+	// search for next cmp name
+	while ( strpos != NULL ) {
+		while (*strpos == ':') {
+			*strpos = 0;
+			strpos++;
+		}
+		if (*strpos == 0) {
+			break;
+		}
+		// found next cmp name
+		cmplist_arr[cmplist_pos] = strpos;
+		cmplist_pos++;
+
+		strpos = strstr(strpos, ":");
+	}
+
+	return PAPI_OK;
+}
+
+int APAPI_read_env_cmplist(char **buffer, char ***cmplist) {
+
+	// search for APAPI_CMPLIST variable
+	int envIx;
+	char *cmplist_env = NULL;
+	for (envIx = 0; environ[envIx] != NULL; ++envIx) {
+		if (strncmp(environ[envIx], "APAPI_CMPLIST=", 14) == 0) {
+			cmplist_env = environ[envIx];
+			break;
+		}
+	}
+
+	// variable not found
+	if (cmplist_env == NULL) {
+		return -1;
+	}
+
+	// get cmplist string
+	char *cmplist_str = &(cmplist_env[14]);
+
+	if (_apapi_verbose == 1) {
+		APAPI_PRINT("Env cmplist file: %s\n", cmplist_str)
+	}
+
+	return _apapi_read_cmplist(cmplist_str, buffer, cmplist);
+}
+
+int APAPI_cmp_cmplist_index(const char *cmp, char **cmplist) {
+
+	if (NULL == cmp || NULL == cmplist) {
+		return -1;
+	}
+
+	int cmpIx = 0;
+	for(cmpIx = 0; cmplist[cmpIx] != NULL; ++cmpIx) {
+		if (strcmp(cmp, cmplist[cmpIx]) == 0) {
+			return cmpIx;
+		}
+	}
+
+	return -1;
+}

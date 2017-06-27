@@ -53,7 +53,7 @@ clean:
 	cd misc/tools/correlation && make cleanall
 	cd docs/het_node_doc && make clean
 	cd utilities/msmonitor_cs/client && rm -rf build Makefile
-	cd papi/src && make clean
+	cd papi/src && make clean && rm Makefile
 
 docs:
 	cd docs/het_node_doc && make

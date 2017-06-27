@@ -21,7 +21,8 @@
 #include "ms_measurement.h"
 #include "apapi.h"
 
-char *known_cmplist = "rapl nvml micknc maxeler ipmi";
+// note:
+// ms_cpu_intel_xeon_sandy.h: use CPUS and CORES definitions
 
 char *known_components[] = { 
     "rapl",
@@ -32,6 +33,10 @@ char *known_components[] = {
     NULL
 };
 
+/**
+ *	Maps known PAPI components to libmeasure resources
+ *	Related to known_components
+ */
 int component_mapping[] = {
 	CPU,
 	GPU,
@@ -40,19 +45,32 @@ int component_mapping[] = {
 	MIC
 };
 
+/**
+ *	Defines information passed to update method after
+ *  each timer interval/ sampling
+ */
 struct __mgmt_update {
+	// index of the PAPI component
 	int cmp_index;
+	// pointer to mgmt
 	struct __mgmt_internal *mgmt;
+	// hettime resource type id
 	int measurement_id;
+	// pointer to resource-dependent measurement struct
 	void* measurement;
+	// pointer to apapi_eventset for PAPI component
 	struct apapi_eventset *set;
+	// pointer to map with value mappings for intermediate values
 	struct __mapper *map;
+	// pointer to map with value mappings for final values
 	struct __mapper *map_last;
 };
 
+/**
+ *	struct for internal data structure of libmeasure interface
+ */
 struct __mgmt_internal {
 	int num_cmp;
-	char *env_cmplist;
 	// one item per known component
 	int *available_components; // 0 -> not available, 1 -> available
 	struct apapi_eventset **sets;
@@ -66,9 +84,15 @@ struct __mgmt_internal {
 	char *user_eventlist_file;
 	char ***user_eventlist_sorted;
 	char **user_eventlist_cmp;
-
+	// user component list
+	char *user_cmplist_buffer;
+	char **user_cmplist;
 };
 
+/**
+ *	defines source and destination types for
+ *	value copying
+ */
 enum __mapper_type {
 	longlong2longlong,
 	longlong2double,
@@ -79,10 +103,24 @@ enum __mapper_type {
 	double2uint64
 };
 
+/**
+ *	defines parameters for one value mapping
+ *	After each timer interval (for each component)
+ *		the intermediate results are copied to the
+ *		hettime structs.
+ *	After the last interval additionally the final
+ *		results are copied to the hettime structs.
+ */
 struct __mapper {
+	// pointer to source value
 	void *source;
+	// pointer to destination value
 	void *destination;
+	// defines the types of source and destination for
+	// correct conversion
 	enum __mapper_type type;
+	// defines factor to use to convert between APAPI
+	// counter values and hettime values
 	double factor;
 };
 

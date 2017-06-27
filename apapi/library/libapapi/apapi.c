@@ -42,7 +42,7 @@ int _apapi_softfail = 0;
 // default op to use if no event definition found
 struct apapi_event_ops _apapi_default_op = {"default", APAPI_OP1_NOP, APAPI_STAT_ALL, APAPI_STAT_NO, 0, "unknown", "unknown", 1, NULL, NULL, 1};
 // default PAPI components
-char *_apapi_default_components[] = {
+char *APAPI_default_components[] = {
 	"rapl",
 	"nvml",
 	"maxeler",
@@ -134,7 +134,7 @@ int APAPI_init() {
 		// load default event list
 		pathsize = snprintf(filename_buffer, 50, "%s/apapi/default_eventlist.txt", DATADIR);
 		if (pathsize <= 50) {
-			retval = _apapi_read_eventlist_file(filename_buffer, _apapi_default_components, &_apapi_default_eventlist_file_buffer, &_apapi_default_eventlist_sorted, &_apapi_default_eventlist_cmp);
+			retval = _apapi_read_eventlist_file(filename_buffer, APAPI_default_components, &_apapi_default_eventlist_file_buffer, &_apapi_default_eventlist_sorted, &_apapi_default_eventlist_cmp);
 			if (PAPI_OK != retval) {
 				APAPI_PRINTERR("default event list not found\n")
 				if (0 == _apapi_softfail) {
@@ -269,7 +269,7 @@ int APAPI_create_eventset_cmp_all(int cidx, int *EventSet, int *num_events) {
 		#endif
 		// error on adding
 		if (retv != PAPI_OK) {
-			APAPI_PRINTERR("Failed to add event %d to event set for component %d\n", EventCode, cidx)
+			APAPI_PRINTERR("Failed to add event %d to event set for component %d, errorcode %d\n", EventCode, cidx, retv)
 			if (0 == _apapi_softfail) {
 				PAPI_destroy_eventset(EventSet);
 				return -1;
@@ -560,13 +560,13 @@ int _apapi_timer_measure(struct apapi_timer *timer, int last_measurement) {
 void* _apapi_timer_thread(void *args) {
 	int retv;
 	struct apapi_timer *timer = (struct apapi_timer *) args;
-	pthread_t tid;
-	char *cmp_name;
+	pthread_t tid = 0;
+	const char *cmp_name = NULL;
 
 	if (1 == _apapi_verbose) {
 		tid = pthread_self();
 		cmp_name = (timer->set != NULL? timer->set->cmp_name: "unknown");
-		APAPI_PRINT("Thread %d created for component %s\n", tid, cmp_name)
+		APAPI_PRINT("Thread %lu created for component %s\n", (unsigned long) tid, cmp_name)
 	}
 
 	// wait until first measurement
@@ -596,7 +596,7 @@ void* _apapi_timer_thread(void *args) {
 	clock_gettime(CLOCK_REALTIME, &next_wakeup);
 
 	if (1 == _apapi_verbose) {
-		APAPI_PRINT("Thread %d component %s interval %ld.%ld start %ld.%ld\n", tid, cmp_name, timer->interval.tv_sec, timer->interval.tv_nsec,
+		APAPI_PRINT("Thread %lu component %s interval %ld.%ld start %ld.%ld\n", (unsigned long) tid, cmp_name, timer->interval.tv_sec, timer->interval.tv_nsec,
 		next_wakeup.tv_sec, next_wakeup.tv_nsec)
 	}
 
@@ -867,12 +867,12 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
 		// search for default eventlist
 		int knownCmpIx = -1;
 		if (NULL != _apapi_default_eventlist_sorted) {
-			for(knownCmpIx = 0; _apapi_default_components[knownCmpIx] != NULL; ++knownCmpIx ) {
-				if (strcmp(_apapi_default_components[knownCmpIx], cmpinfo->short_name) == 0) {
+			for(knownCmpIx = 0; APAPI_default_components[knownCmpIx] != NULL; ++knownCmpIx ) {
+				if (strcmp(APAPI_default_components[knownCmpIx], cmpinfo->short_name) == 0) {
 					break;
 				}
 			}
-			if (_apapi_default_components[knownCmpIx] != NULL) {
+			if (APAPI_default_components[knownCmpIx] != NULL) {
 				if (NULL != _apapi_default_eventlist_sorted[knownCmpIx]) {
 					names = _apapi_default_eventlist_sorted[knownCmpIx];
 				}

@@ -27,8 +27,12 @@
 //#define DEBUG
 
 void help(char* appname){
-	printf("%s FILENAME [ARGUMENTS]\n", appname);
+	printf("%s [OPTIONS] FILENAME [ARGUMENTS]\n", appname);
 	printf("Executes and measures the binary FILENAME using the PAPI library.\n");
+	printf("Options:\n");
+	printf(" -t interval list\t\tList with timer intervals in ns for each component\n");
+	printf("                 \t\te.g. -t \"rapl:200000000:nvml:350000000\"\n");
+	printf("                 \t\tDefault time interval is 100ms\n");
 	printf("Environment variables:\n");
 	printf("\tAPAPI_EVENTLIST\t\tPath to file with lists of events to be used\n");
 	printf("\tAPAPI_EVENTOPS\t\tPath to file with event operation definitions\n");
@@ -40,11 +44,15 @@ int main(int argc, char *argv[]) {
 	int retv;
 	int program_argc = 0;
 	char **program_argv;
+	char *option_intervalstr = NULL;
 
 	int c = 0;
 
-	while((c = getopt (argc, argv, "+e:d:h?")) != -1) {
+	while((c = getopt (argc, argv, "+t:h?")) != -1) {
 		switch(c) {
+			case 't':
+				option_intervalstr = optarg;
+			break;
 			case 'h':
 			case '?':
 				help(argv[0]);
@@ -109,7 +117,7 @@ int main(int argc, char *argv[]) {
 		retv = nanosleep(&tosleep, &tosleep);
 	} while(retv != 0);
 
-	papi_init();
+	papi_init(option_intervalstr);
 
 	papi_start();
 
@@ -118,7 +126,6 @@ int main(int argc, char *argv[]) {
 	int child_status;
 	do {
 		retv = waitpid(child_pid, &child_status, 0);
-		//printf("waitpid cpid %d retv %d status %d %d %d\n", child_pid, retv, WIFEXITED(child_status), WIFSIGNALED(child_status), WTERMSIG(child_status));
 	} while(!WIFEXITED(child_status) && !WIFSIGNALED(child_status));
 
 	papi_stop();

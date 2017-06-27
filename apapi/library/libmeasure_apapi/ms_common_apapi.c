@@ -24,6 +24,8 @@
 #include "ms_common_apapi.h"
 //#include "ms_measurement.h"
 #include "papi.h"
+#define APAPI_PRINTERR(...) fprintf(stderr, "MS_COMMON_APAPI %s:%d ", __FILE__, __LINE__);fprintf(stderr, __VA_ARGS__);
+#define APAPI_PRINT(...) fprintf(stdout, "MS_COMMON_APAPI: ");fprintf(stdout, __VA_ARGS__);
 
 void __map(struct __mapper *map) {
 	if (map == NULL) {
@@ -74,159 +76,143 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 		int pkgIx;
 		int cpuIx;
 		int eIx;
-		for (pkgIx = 0; ; ++pkgIx) {
+		for (pkgIx = 0; pkgIx < CPUS; ++pkgIx) {
 
 			snprintf(eName, eNameMax, "rapl:::PACKAGE_ENERGY:PACKAGE%d", pkgIx);
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
-			if (eIx == -1) {
-				break;
-			}
-			if (1 == last_measurement) {
-				// set energy total cpu 0 pkg  [mWs]:
-				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
-				map[mapIx].destination =  &(cpu->msr_energy_acc[pkgIx][0]);
-				map[mapIx].type = double2double;
-				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // Ws * 1000 = mWs
-				mapIx++;
-				// set power  avg   cpu 0 pkg  [mW ]:
-				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_AVG]); // value1 avg
-				map[mapIx].destination =  &(cpu->msr_power_avg[pkgIx][0]);
+			if (eIx != -1) {
+				if (1 == last_measurement) {
+					// set energy total cpu 0 pkg  [mWs]:
+					map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
+					map[mapIx].destination =  &(cpu->msr_energy_acc[pkgIx][0]);
+					map[mapIx].type = double2double;
+					map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // Ws * 1000 = mWs
+					mapIx++;
+					// set power  avg   cpu 0 pkg  [mW ]:
+					map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_AVG]); // value1 avg
+					map[mapIx].destination =  &(cpu->msr_power_avg[pkgIx][0]);
+					map[mapIx].type = double2double;
+					map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
+					mapIx++;
+				}
+				// set current power
+				map[mapIx].source = &(set->last_values1[eIx]); // last value
+				map[mapIx].destination =  &(cpu->msr_power_cur[pkgIx][0]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
 				mapIx++;
 			}
-			// set current power
-			map[mapIx].source = &(set->last_values1[eIx]); // last value
-			map[mapIx].destination =  &(cpu->msr_power_cur[pkgIx][0]);
-			map[mapIx].type = double2double;
-			map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
-			mapIx++;
 		
 			if (last_measurement == 1) {
 				snprintf(eName, eNameMax, "rapl:::PP0_ENERGY:PACKAGE%d", pkgIx);
 				eIx = APAPI_apapi_eventset_find_event(set, eName);
-				if (eIx == -1) {
-					break;
+				if (eIx != -1) {
+					// set energy total cpu 0 pp0  [mWs]:
+					map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
+					map[mapIx].destination =  &(cpu->msr_energy_acc[pkgIx][1]);
+					map[mapIx].type = double2double;
+					map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // Ws * 1000 = mWs
+					mapIx++;
+					// set power  avg   cpu 0 pkg  [mW ]:
+					map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_AVG]); // value1 avg
+					map[mapIx].destination =  &(cpu->msr_power_avg[pkgIx][1]);
+					map[mapIx].type = double2double;
+					map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
+					mapIx++;
 				}
-				// set energy total cpu 0 pp0  [mWs]:
-				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
-				map[mapIx].destination =  &(cpu->msr_energy_acc[pkgIx][1]);
-				map[mapIx].type = double2double;
-				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // Ws * 1000 = mWs
-				mapIx++;
-				// set power  avg   cpu 0 pkg  [mW ]:
-				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_AVG]); // value1 avg
-				map[mapIx].destination =  &(cpu->msr_power_avg[pkgIx][1]);
-				map[mapIx].type = double2double;
-				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
-				mapIx++;
 			}
 
 			snprintf(eName, eNameMax, "rapl:::DRAM_ENERGY:PACKAGE%d", pkgIx);
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
-			if (eIx == -1) {
-				break;
-			}
-			if (1 == last_measurement) {
-				// set energy total cpu 0 dram [mWs]:
-				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
-				map[mapIx].destination =  &(cpu->msr_energy_acc[pkgIx][2]);
-				map[mapIx].type = double2double;
-				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // Ws * 1000 = mWs
-				mapIx++;
-				// set power  avg   cpu 0 pkg  [mW ]:
-				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_AVG]); // value1 avg
-				map[mapIx].destination =  &(cpu->msr_power_avg[pkgIx][2]);
+			if (eIx != -1) {
+				if (1 == last_measurement) {
+					// set energy total cpu 0 dram [mWs]:
+					map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
+					map[mapIx].destination =  &(cpu->msr_energy_acc[pkgIx][2]);
+					map[mapIx].type = double2double;
+					map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // Ws * 1000 = mWs
+					mapIx++;
+					// set power  avg   cpu 0 pkg  [mW ]:
+					map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_AVG]); // value1 avg
+					map[mapIx].destination =  &(cpu->msr_power_avg[pkgIx][2]);
+					map[mapIx].type = double2double;
+					map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
+					mapIx++;
+				}
+				// set current power
+				map[mapIx].source = &(set->last_values1[eIx]); // last value
+				map[mapIx].destination =  &(cpu->msr_power_cur[pkgIx][2]);
 				map[mapIx].type = double2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
 				mapIx++;
 			}
-			// set current power
-			map[mapIx].source = &(set->last_values1[eIx]); // last value
-			map[mapIx].destination =  &(cpu->msr_power_cur[pkgIx][2]);
-			map[mapIx].type = double2double;
-			map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
-			mapIx++;
 
 			snprintf(eName, eNameMax, "rapl:::THERM_STATUS:PACKAGE%d", pkgIx);
 			eIx = APAPI_apapi_eventset_find_event(set, eName);
-			if (eIx == -1) {
-				break;
-			}
-			if (1 == last_measurement) {
-				// set temp   max   cpu 0 pkg  [°C ]:
-				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
-				map[mapIx].destination =  &(cpu->msr_temperature_pkg_max[pkgIx]);
-				map[mapIx].type = double2uint32;
+			if (eIx != -1) {
+				if (1 == last_measurement) {
+					// set temp   max   cpu 0 pkg  [°C ]:
+					map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
+					map[mapIx].destination =  &(cpu->msr_temperature_pkg_max[pkgIx]);
+					map[mapIx].type = double2uint32;
+					map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C = °C
+					mapIx++;
+				}
+				// set current temperature
+				map[mapIx].source = &(set->current_samples[eIx]); // last value0
+				map[mapIx].destination =  &(cpu->msr_temperature_pkg_cur[pkgIx]);
+				map[mapIx].type = longlong2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C = °C
 				mapIx++;
 			}
-			// set current temperature
-			map[mapIx].source = &(set->current_samples[eIx]); // last value0
-			map[mapIx].destination =  &(cpu->msr_temperature_pkg_cur[pkgIx]);
-			map[mapIx].type = longlong2uint32;
-			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C = °C
-			mapIx++;
 
 			// for available cpus
-			for (cpuIx = 0; ; ++cpuIx) {
+			for (cpuIx = 0; cpuIx < CORES ; ++cpuIx) {
 
 				if (1 == last_measurement) {
 					snprintf(eName, eNameMax, "rapl:::THERM_STATUS:PACKAGE%d:CPU%d", pkgIx, cpuIx);
 					eIx = APAPI_apapi_eventset_find_event(set, eName);
-					if (eIx == -1) {
-						break;
+					if (eIx != -1) {
+						// set temp   max   cpu 0 c 0  [°C ]:
+						map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
+						map[mapIx].destination =  &(cpu->msr_temperature_core_max[pkgIx][cpuIx]);
+						map[mapIx].type = double2uint32;
+						map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C = °C
+						mapIx++;
 					}
-					// set temp   max   cpu 0 c 0  [°C ]:
-					map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
-					map[mapIx].destination =  &(cpu->msr_temperature_core_max[pkgIx][cpuIx]);
-					map[mapIx].type = double2uint32;
-					map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C = °C
-					mapIx++;
 				}
 
 				if (1 == last_measurement) {
 					snprintf(eName, eNameMax, "rapl:::AVG_FREQUENCY:PACKAGE%d:CPU%d", pkgIx, cpuIx);
 					eIx = APAPI_apapi_eventset_find_event(set, eName);
-					if (eIx == -1) {
-						break;
+					if (eIx != -1) {
+						// set freq   avg   cpu 0 c 0  [MHz]:
+						map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
+						map[mapIx].destination =  &(cpu->msr_freq_core_avg[pkgIx][cpuIx]);
+						map[mapIx].type = double2double;
+						map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1000.0; // KHz * 1000 = MHz
+						mapIx++;
 					}
-					// set freq   avg   cpu 0 c 0  [MHz]:
-					map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
-					map[mapIx].destination =  &(cpu->msr_freq_core_avg[pkgIx][cpuIx]);
-					map[mapIx].type = double2double;
-					map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1000.0; // KHz * 1000 = MHz
-					mapIx++;
 				}
 
 				snprintf(eName, eNameMax, "rapl:::EFF_FREQUENCY:PACKAGE%d:CPU%d", pkgIx, cpuIx);
 				eIx = APAPI_apapi_eventset_find_event(set, eName);
-				if (eIx == -1) {
-					break;
-				}
-				if (1 == last_measurement) {
-					// set freq   eff   cpu 0 c 0  [MHz]:
-					map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
-					map[mapIx].destination =  &(cpu->msr_freq_core_eff_avg[pkgIx][cpuIx]);
-					map[mapIx].type = double2double;
+				if (eIx != -1) {
+					if (1 == last_measurement) {
+						// set freq   eff   cpu 0 c 0  [MHz]:
+						map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
+						map[mapIx].destination =  &(cpu->msr_freq_core_eff_avg[pkgIx][cpuIx]);
+						map[mapIx].type = double2double;
+						map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1000.0; // KHz * 1000 = MHz
+						mapIx++;
+					}
+					// set current frequency
+					map[mapIx].source = &(set->current_samples[eIx]); // last value0
+					map[mapIx].destination =  &(cpu->msr_freq_core_eff_cur[pkgIx][cpuIx]);
+					map[mapIx].type = longlong2double;
 					map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1000.0; // KHz * 1000 = MHz
 					mapIx++;
 				}
-				// set current frequency
-				map[mapIx].source = &(set->current_samples[eIx]); // last value0
-				map[mapIx].destination =  &(cpu->msr_freq_core_eff_cur[pkgIx][cpuIx]);
-				map[mapIx].type = longlong2double;
-				map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1000.0; // KHz * 1000 = MHz
-				mapIx++;
-
-				// more than 4 cpus are not supported
-				if (cpuIx == 3) {
-					break;
-				}
-			}
-			// more than 2 packages are not supported
-			if (pkgIx == 1) {
-				break;
 			}
 		}
 
@@ -364,10 +350,6 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				mapIx++;
 			}
 		}
-
-
-		//int eIx = 
-		//map[0] = {};
 	}
 
 	if (strncmp(cmp, "nvml", 4) == 0) {
@@ -593,8 +575,6 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // # = #
 			mapIx++;
 		}
-
-
 	}
 
 	if (strncmp(cmp, "maxeler", 7) == 0) {
@@ -1304,15 +1284,7 @@ long long _getcurrenttime() {
 void measure_update(void** args, int last_measurement) {
 	struct __mgmt_update *update = (struct __mgmt_update *) args;
 	if (0 == last_measurement) {
-//		long long s = _getcurrenttime();
-//		long long s2 = _getcurrenttime();
 		__map(update->map);
-//		long long s3 = _getcurrenttime();
-//		printf("---\n");
-//		printf("%lld\n", s);
-//		printf("%lld\n", s2);
-//		printf("%lld\n", s3);
-//		printf("%d %lld\n%lld\n%lld\n", update->measurement_id, s2-s, s3-s2, s3-s2-(s2-s));
 	} else {
 		__map(update->map_last);
 		MS_MEASUREMENT_CPU *cpu;
@@ -1320,9 +1292,6 @@ void measure_update(void** args, int last_measurement) {
 		MS_MEASUREMENT_FPGA *fpga;
 		MS_MEASUREMENT_MIC *mic;
 		MS_MEASUREMENT_SYS *sys;
-				printf("update %p\n", update);
-				printf("foo %p\n", update->measurement);
-				printf("set %p\n", update->set);
 		switch(update->measurement_id) {
 			case CPU:
 				cpu = (MS_MEASUREMENT_CPU *)update->measurement;
@@ -1347,35 +1316,6 @@ void measure_update(void** args, int last_measurement) {
 			break;
 		}
 	}
-/*
-	int eIx = -1;
-	eIx = APAPI_apapi_eventset_find_event(update->set, "rapl:::PACKAGE_ENERGY:PACKAGE0");
-	if (eIx != -1) {
-
-		MS_MEASUREMENT_CPU *cpu = (MS_MEASUREMENT_CPU *)update->measurement;
-		
-		printf("0en %lf\n", update->set->last_values1[eIx]);
-		printf("0en cpu %lf\n", cpu->msr_power_cur[0][0]);
-	}
-*/
-//	struct apapi_eventset *set = update->set;
-/*	
-//	MS_MEASUREMENT_CPU *cpu;
-	switch (update->measurement_id) {
-		case CPU:
-			//cpu = (MS_MEASUREMENT_CPU *)update->measurement;
-			
-		break;
-		case GPU:
-		break;
-		case FPGA:
-		break;
-		case SYSTEM:
-		break;
-		case MIC:
-		break;
-	}
-*/
 }
 
 MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_freq_min, uint64_t cpu_freq_max,
@@ -1404,40 +1344,30 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
     int retv;
 
 	// prepare papi
-	//retv = PAPI_library_init(PAPI_VER_CURRENT);
 	retv = APAPI_init();
     if (retv != PAPI_VER_CURRENT) {
-		printf("papi init: %d\n", retv);
+		APAPI_PRINTERR("papi init: %d\n", retv)
 		free(ms->config);
 		free(mgmt);
 		free(ms);
 		return NULL;
     }
 
+    // read APAPI_CMPLIST environment variable
+	retv = APAPI_read_env_cmplist(&(mgmt->user_cmplist_buffer), &(mgmt->user_cmplist));
 
-    // search for APAPI_CMPLIST variable
-    int envIx;
-    char *env_variable = NULL;
-    for (envIx = 0; environ[envIx] != NULL; ++envIx) {
-        if (strncmp(environ[envIx], "APAPI_CMPLIST=", 14) == 0) {
-            env_variable = environ[envIx];
-            break;
-        }
-    }
-
-    // APAPI_CMPLIST variable found
-    if (env_variable != NULL) {
-		mgmt->env_cmplist = &(env_variable[14]);
+	
+	char **component_list;
+    if (mgmt->user_cmplist != NULL) {
+		component_list = mgmt->user_cmplist;
     } else {
-		mgmt->env_cmplist = known_cmplist;
+		component_list = known_components;
 	}
 
 
 	// check known components and prepare available components array
     int32_t known_cmp_count = 0;
-    int32_t knownCmpIx = 0;
-    for(knownCmpIx = 0; known_components[knownCmpIx] != NULL; knownCmpIx++);
-    known_cmp_count = knownCmpIx;
+    for(known_cmp_count = 0; known_components[known_cmp_count] != NULL; known_cmp_count++);
     mgmt->available_components = (int *) calloc(sizeof(int), known_cmp_count+1); // +1 for NULL pointer at the end
 	char **avail_cmp = (char**) calloc(sizeof(char*), known_cmp_count+1);
 
@@ -1448,54 +1378,57 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
     const PAPI_component_info_t *component_infos[num_components];
     int i;
     int available_cmp_count = 0;
-	int inEnvCmpList = 0;
+	int in_cmplist = 0;
+	int cmplistIx = 0;
+	int known_cmplistIx = 0;
     for(i=0; i<num_components; i++) {
         component_infos[i] = PAPI_get_component_info(i);
-		inEnvCmpList = 1;
-		if (NULL != mgmt->env_cmplist && NULL == strstr(mgmt->env_cmplist, component_infos[i]->short_name)) {
-			inEnvCmpList = 0;
+		in_cmplist = 1;
+		cmplistIx = APAPI_cmp_cmplist_index(component_infos[i]->short_name, component_list);
+		if (cmplistIx < 0) {
+			in_cmplist = 0;
 		}
         if (component_infos[i]->disabled != 0) {
-            printf("PAPI component %s disabled. Reason: %s\n", component_infos[i]->short_name, component_infos[i]->disabled_reason);
-			if (NULL != mgmt->env_cmplist && inEnvCmpList == 1) {
-				printf("PAPI component %s is not available but should have been.\n", component_infos[i]->short_name);
+            APAPI_PRINT("PAPI component %s disabled. Reason: %s\n", component_infos[i]->short_name, component_infos[i]->disabled_reason)
+			if (in_cmplist == 1) {
+				APAPI_PRINTERR("PAPI component %s is not available but should have been.\n", component_infos[i]->short_name)
 				exit(1);
 			}
             continue;
         }
 
-		if (NULL != mgmt->env_cmplist && inEnvCmpList == 0) {
+		if (in_cmplist == 0) {
 			continue;
 		}
-        //printf("%d: %s %s %d\n", i, component_infos[i]->short_name, component_infos[i]->name, component_infos[i]->num_native_events);
+		known_cmplistIx = APAPI_cmp_cmplist_index(component_infos[i]->short_name, known_components);
         // add component to list of known and available components
-        for(knownCmpIx = 0; known_components[knownCmpIx] != NULL; knownCmpIx++) {
-            if (strcmp(known_components[knownCmpIx], component_infos[i]->short_name) == 0) {
-				mgmt->available_components[knownCmpIx] = 1;
-				avail_cmp[available_cmp_count] = known_components[knownCmpIx];
-                available_cmp_count++;
+		if (known_cmplistIx < 0) {
+			printf("Component %s is not known to libmeasure\n", component_infos[i]->short_name);
+			exit(1);
+		} else {
 
-				int msId = component_mapping[knownCmpIx];
-				switch(msId) {
-					case CPU:
-						ms->config->cpu_enabled = 1;
-					break;
-					case GPU:
-						ms->config->gpu_enabled = 1;
-					break;
-					case FPGA:
-						ms->config->fpga_enabled = 1;
-					break;
-					case SYSTEM:
-						ms->config->sys_enabled = 1;
-					break;
-					case MIC:
-						ms->config->mic_enabled = 1;
-					break;
-				}
+			mgmt->available_components[known_cmplistIx] = 1;
+			avail_cmp[available_cmp_count] = known_components[known_cmplistIx];
+            available_cmp_count++;
 
-                break;
-            }
+			int msId = component_mapping[known_cmplistIx];
+			switch(msId) {
+				case CPU:
+					ms->config->cpu_enabled = 1;
+				break;
+				case GPU:
+					ms->config->gpu_enabled = 1;
+				break;
+				case FPGA:
+					ms->config->fpga_enabled = 1;
+				break;
+				case SYSTEM:
+					ms->config->sys_enabled = 1;
+				break;
+				case MIC:
+					ms->config->mic_enabled = 1;
+				break;
+			}
         }
     }
 
@@ -1751,6 +1684,7 @@ void ms_init_measurement(MS_SYSTEM *ms_system, MS_LIST *ms_list, int flags) {
 			}
 		}
 	}
+	(void) ret;
 }
 
 void ms_fini_measurement(MS_SYSTEM *ms_system) {
@@ -1766,6 +1700,7 @@ void ms_start_measurement(MS_SYSTEM *ms_system) {
 	        ret = APAPI_start_timer(mgmt->timers[cmpIx]);
 		}
 	}
+	(void) ret;
 }
 void ms_stop_measurement(MS_SYSTEM *ms_system) {
 	struct __mgmt_internal *mgmt = (struct __mgmt_internal*) ms_system->mgmt;
@@ -1776,6 +1711,7 @@ void ms_stop_measurement(MS_SYSTEM *ms_system) {
 			ret = APAPI_callstop_timer(mgmt->timers[cmpIx]);
 		}
 	}
+	(void) ret;
 }
 void ms_join_measurement(MS_SYSTEM *ms_system) {
 	struct __mgmt_internal *mgmt = (struct __mgmt_internal*) ms_system->mgmt;
@@ -1786,6 +1722,7 @@ void ms_join_measurement(MS_SYSTEM *ms_system) {
 			ret = APAPI_join_timer(mgmt->timers[cmpIx]);
 		}
 	}
+	(void) ret;
 }
 
 void ms_reg_sighandler_start(MS_SYSTEM *ms_system, void(*signal_handler)(int)) {

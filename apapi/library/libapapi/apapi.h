@@ -24,6 +24,8 @@
 
 extern char **environ;
 
+extern char *APAPI_default_components[];
+
 // operation to compute derived value
 // sample1 at time1: current sample
 // sample0 at time0: last sample
@@ -101,7 +103,7 @@ struct apapi_eventset {
 	// PAPI eventset id
 	int EventSet;
 	// PAPI component info
-	char *cmp_name;
+	const char *cmp_name;
 	// number of events
 	int num_events;
 	// latest counter values from PAPI
@@ -476,8 +478,30 @@ int APAPI_read_env_eventops(char **buffer, struct apapi_event_ops **events_out, 
  *	@param char ***used_cmp
  *		Output parameter for list of actually used components in the sorted list
  *		This will be a subset of cmp_list
- *
  */
 int APAPI_read_env_eventlist(char **cmp_list, char **buffer, char ****sorted_list, char ***used_cmp);
+
+/** @class APAPI_read_env_cmplist
+ *	@brief reads component list from APAPI_CMPLIST and creates an array with the component names
+ *
+ *	@param char **buffer
+ *		output parameter for copy of list
+ *	@param char ***cmplist
+ *		output parameter for component name array
+ *		if not NULL it can be freed using free
+ */
+int APAPI_read_env_cmplist(char **buffer, char ***cmplist);
+
+/** @class APAPI_cmp_cmplist_index
+ *	@brief finds component in a component name array
+ *
+ *	@param char *cmp
+ *		component name to find
+ *	@param char **cmplist
+ *		component name array to search in
+ *
+ *	@retval -1 if not found, else index of component name in component name array
+ */
+int APAPI_cmp_cmplist_index(const char *cmp, char **cmplist);
 
 #endif //APAPI_H
