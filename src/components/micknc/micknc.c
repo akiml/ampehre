@@ -1,15 +1,12 @@
 /**
  * @file    micknc.c
- * @author  Joachim Protze
- *          joachim.protze@zih.tu-dresden.de
- * @author  Vince Weaver
- *          vweaver1@eecs.utk.edu
+ * @author  Alex Wiens
  *
  * @ingroup papi_components
  *
  * @brief
- *	This is an micknc component, it demos the component interface
- *  and implements three micknc counters.
+ *  This component uses the libmicmgmt to query statistics about
+ *  Intel MIC devices.
  */
 
 #include <stdio.h>

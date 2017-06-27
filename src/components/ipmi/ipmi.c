@@ -1,15 +1,12 @@
 /**
  * @file    ipmi.c
- * @author  Joachim Protze
- *          joachim.protze@zih.tu-dresden.de
- * @author  Vince Weaver
- *          vweaver1@eecs.utk.edu
+ * @author  Alex Wiens
  *
  * @ingroup papi_components
  *
  * @brief
- *	This is an ipmi component, it demos the component interface
- *  and implements three ipmi counters.
+ *  This component uses the Ampehre libipmimeasure library to
+ *  query system statistics.
  */
 
 #include <stdio.h>

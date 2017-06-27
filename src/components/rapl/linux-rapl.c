@@ -1,6 +1,7 @@
 /**
  * @file    linux-rapl.c
  * @author  Vince Weaver
+ * @author  Alex Wiens
  *
  * @ingroup papi_components
  *

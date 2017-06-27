@@ -1,15 +1,12 @@
 /**
- * @file    example.c
- * @author  Joachim Protze
- *          joachim.protze@zih.tu-dresden.de
- * @author  Vince Weaver
- *          vweaver1@eecs.utk.edu
+ * @file    maxeler.c
+ * @author  Alex Wiens
  *
  * @ingroup papi_components
  *
  * @brief
- *	This is an example component, it demos the component interface
- *  and implements three example counters.
+ *  This component uses the libmaxeleros to query statistics from
+ *  Maxeler accelerator devices.
  */
 
 #include <stdio.h>

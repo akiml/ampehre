@@ -8,6 +8,7 @@
  *          kkasicha@utk.edu 
  * @author  James Ralph
  *          ralph@eecs.utk.edu
+ * @author  Alex Wiens
  * @ingroup papi_components
  *
  * @brief
