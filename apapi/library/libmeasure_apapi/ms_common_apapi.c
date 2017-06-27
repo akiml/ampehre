@@ -1375,7 +1375,7 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
 
     // check if cmplist components are not compiled into PAPI
     int i, papicmpIx, knowncmpIx;
-    for(i=0; i<known_cmp_count; ++i) {
+    for(i=0; component_list[i] != NULL; ++i) {
 		papicmpIx = PAPI_get_component_index(component_list[i]);
 		knowncmpIx = APAPI_cmp_cmplist_index(component_list[i], known_components);
         if (knowncmpIx == -1) {

@@ -254,7 +254,7 @@ void papi_init(char *option_intervalstr){
 	}
 	if (cmp_count == 0) {
 		printf("No component active.\n");
-		exit(1);
+		exit();
 	}
 }
 
@@ -293,7 +293,7 @@ void papi_stop(){
 
 	for(setIx = 0; setIx < cmp_count; setIx++){
 		APAPI_print_apapi_eventset(sets[setIx]);
-		
+
 		retv = APAPI_destroy_apapi_eventset(&(sets[setIx]));
 		#ifdef DEBUG
 		printf("atime %d set:%d retv:%d\n", __LINE__, setIx, retv);
