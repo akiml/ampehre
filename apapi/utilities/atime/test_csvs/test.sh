@@ -2,48 +2,77 @@
 
 export LD_LIBRARY_PATH=.
 
-echo tokenmismatch1.csv
-./testcsv -e tokenmismatch1.csv
+APAPI_EVENTOPS=tokenmismatch1.csv ./testcsv
+echo $? tokenmismatch1.csv
+
 echo
-echo tokenmismatch2.csv
-./testcsv -e tokenmismatch2.csv
+
+APAPI_EVENTOPS=tokenmismatch2.csv ./testcsv
+echo $? tokenmismatch2.csv
+
 echo
-echo type1.csv
-./testcsv -e type1.csv
+
+APAPI_EVENTOPS=type1.csv ./testcsv
+echo $? type1.csv
+
 echo
-echo type2.csv
-./testcsv -e type2.csv
+
+APAPI_EVENTOPS=type2.csv ./testcsv
+echo $? type2.csv
+
 echo
-echo type3.csv
-./testcsv -e type3.csv
+
+APAPI_EVENTOPS=type3.csv ./testcsv
+echo $? type3.csv
+
 echo
-echo type4.csv
-./testcsv -e type4.csv
+
+APAPI_EVENTOPS=type4.csv ./testcsv
+echo $? type4.csv
+
 echo
-echo type5.csv
-./testcsv -e type5.csv
+
+APAPI_EVENTOPS=type5.csv ./testcsv
+echo $? type5.csv
+
 echo
-echo type6.csv
-./testcsv -e type6.csv
+
+APAPI_EVENTOPS=type6.csv ./testcsv
+echo $? type6.csv
+
 echo
-echo type7.csv
-./testcsv -e type7.csv
+
+APAPI_EVENTOPS=type7.csv ./testcsv
+echo $? type7.csv
+
 echo
-echo type8.csv
-./testcsv -e type8.csv
+
+APAPI_EVENTOPS=type8.csv ./testcsv
+echo $? type8.csv
+
 echo
-echo type9.csv
-./testcsv -e type9.csv
+
+APAPI_EVENTOPS=type9.csv ./testcsv
+echo $? type9.csv
+
 echo
-echo type10.csv
-./testcsv -e type10.csv
+
+APAPI_EVENTOPS=type10.csv ./testcsv
+echo $? type10.csv
+
 echo
-echo type11.csv
-./testcsv -e type11.csv
+
+APAPI_EVENTOPS=type11.csv ./testcsv
+echo $? type11.csv
+
 echo
-echo type12.csv
-./testcsv -e type12.csv
+
+APAPI_EVENTOPS=type12.csv ./testcsv
+echo $? type12.csv
+
 echo
-echo mul1.csv
-./testcsv -e mul1.csv
+
+APAPI_EVENTOPS=mul1.csv ./testcsv
+echo $? mul1.csv
+
 echo
