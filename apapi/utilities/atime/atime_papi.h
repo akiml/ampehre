@@ -162,10 +162,18 @@ void papi_init(char *option_intervalstr){
 	for(untested_cmp_count = 0; cmplist[untested_cmp_count] != NULL; ++untested_cmp_count);
 	components = calloc(untested_cmp_count+1, sizeof(char*)); // +1 for NULL pointer at the end
 
+	// check if cmplist components are not compiled into PAPI
+	int i;
+	for(i=0; i<untested_cmp_count; ++i) {
+		if (PAPI_get_component_index(cmplist[i]) == PAPI_ENOCMP) {
+			printf("Component %s is not available in PAPI. Check your PAPI lib.\n", cmplist[i]);
+			exit(1);
+		}
+	}
+
 	// check available papi components
 	int num_components = PAPI_num_components();
 	const PAPI_component_info_t *component_infos[num_components];
-	int i;
 	int in_cmplist = 0;
 	cmp_count = 0;
 	int cmplist_cmpIx = 0;
@@ -244,7 +252,10 @@ void papi_init(char *option_intervalstr){
 		#endif
 		printf("atime cmp %s event_num %d interval %ld.%ld\n", sets[setIx]->cmp_name, sets[setIx]->num_events, sec, nsec);
 	}
-
+	if (cmp_count == 0) {
+		printf("No component active.\n");
+		exit(1);
+	}
 }
 
 void papi_start(){

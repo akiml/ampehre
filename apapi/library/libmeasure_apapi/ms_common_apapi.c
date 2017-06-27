@@ -354,7 +354,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 
 	if (strncmp(cmp, "nvml", 4) == 0) {
 		if (msId != GPU) {
-			return -1;	
+			return -1;
 		}
 		if (NULL == *result_map) {
 			*result_map = (struct __mapper *) calloc(100, sizeof(struct __mapper));
@@ -378,7 +378,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				mapIx++;
 			}
 		}
-	
+
 		snprintf(eName, eNameMax, "nvml:::Tesla_K20c:power");
 		eIx = APAPI_apapi_eventset_find_event(set, eName);
 		if (eIx != -1) {
@@ -1356,7 +1356,7 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
     // read APAPI_CMPLIST environment variable
 	retv = APAPI_read_env_cmplist(&(mgmt->user_cmplist_buffer), &(mgmt->user_cmplist));
 
-	
+
 	char **component_list;
     if (mgmt->user_cmplist != NULL) {
 		component_list = mgmt->user_cmplist;
@@ -1373,10 +1373,25 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
 
 	mgmt->num_cmp = known_cmp_count;
 
+    // check if cmplist components are not compiled into PAPI
+    int i, papicmpIx, knowncmpIx;
+    for(i=0; i<known_cmp_count; ++i) {
+		papicmpIx = PAPI_get_component_index(component_list[i]);
+		knowncmpIx = APAPI_cmp_cmplist_index(component_list[i], known_components);
+        if (knowncmpIx == -1) {
+			printf("Component %s is not known to libmeasure.\n", component_list[i]);
+			exit(1);
+		}
+		if (papicmpIx < 0) {
+            printf("Component %s is not available in PAPI. Check your PAPI lib.\n", component_list[i]);
+            exit(1);
+        }
+    }
+
+
 	// check available papi components
     int num_components = PAPI_num_components();
     const PAPI_component_info_t *component_infos[num_components];
-    int i;
     int available_cmp_count = 0;
 	int in_cmplist = 0;
 	int cmplistIx = 0;

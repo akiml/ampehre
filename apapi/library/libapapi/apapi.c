@@ -148,7 +148,7 @@ int APAPI_init() {
 		}
 		_apapi_initialized = 1;
 	}
-	
+
 	retval = PAPI_library_init(PAPI_VER_CURRENT);
 	return retval;
 };
@@ -173,7 +173,7 @@ void APAPI_destroy() {
 		}
 		_apapi_initialized = 0;
 	}
-	
+
 	PAPI_shutdown();
 }
 
@@ -414,7 +414,7 @@ void _apapi_stats(enum APAPI_stats stats_op, long double value, long long avg_va
  *		apapi event set with events to process
  */
 void _apapi_timer_measure_stats(struct apapi_eventset *set) {
-	
+
 	int eventIx;
 	double value1 = 0.0;
 	for (eventIx = 0; eventIx < set->num_events; eventIx++) {
@@ -516,7 +516,7 @@ int _apapi_timer_measure(struct apapi_timer *timer, int last_measurement) {
 			const PAPI_component_info_t *cmpinfo;
 			int cmpix = PAPI_get_eventset_component(timer->set->EventSet);
 			cmpinfo = PAPI_get_component_info(cmpix);
-			
+
 			APAPI_PRINTERR("failed on PAPI_read for component %s\n", cmpinfo->short_name)
 			if (0 == _apapi_softfail) {
 				exit(1);
@@ -538,7 +538,7 @@ int _apapi_timer_measure(struct apapi_timer *timer, int last_measurement) {
 		timer->set->count++;
 
 		// compute statistics
-		_apapi_timer_measure_stats(timer->set);	
+		_apapi_timer_measure_stats(timer->set);
 	}
 
 	// custom callback
@@ -552,7 +552,7 @@ int _apapi_timer_measure(struct apapi_timer *timer, int last_measurement) {
 /** Internal
  *	@class _apapi_timer_thread
  *	@brief method for timer thread, sleeping for configured interval and executing measurement/ statistics/ custom callback
- *	
+ *
  *	@param void *args
  *		thread parameter
  *		pointer to struct apapi_timer
@@ -616,7 +616,7 @@ void* _apapi_timer_thread(void *args) {
 		// measurement
 		// if retv == 0, the mutex was acquired and this is the final measurement
 		_apapi_timer_measure(timer, retv == 0 ? 1 : 0);
-		
+
 		// lock timed out - repeat
 		if (ETIMEDOUT == retv)
 			continue;
@@ -667,7 +667,7 @@ int APAPI_change_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, v
 	timer->measure = measure;
 	timer->measure_arg = measure_arg;
 	timer->set = set;
-	
+
 	if (NULL != set) {
 		memset(set->current_counters, 0, set->num_events);
 		memset(set->previous_counters, 0, set->num_events);
@@ -727,7 +727,7 @@ int APAPI_reset_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, vo
 			set->values1[eventIx * APAPI_FIELDS + APAPI_ACC] = 0;
 		}
 	}
-	
+
 	timer->interrupt = 0;
 
 	pthread_mutex_lock(&(timer->mutex));
@@ -885,7 +885,7 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
 		retv = APAPI_create_eventset_list(names, cidx, &(newset->EventSet), &(newset->num_events));
 	}
 
-	if (1 == _apapi_verbose) {		
+	if (1 == _apapi_verbose) {
 		APAPI_PRINT("eventset for component %s (%d)\n", cmpinfo->short_name, cidx)
 	}
 
