@@ -1,0 +1,39 @@
+# Process this file with autoconf to produce a configure script.
+# autoreconf -i
+# File: components/maxeler/configure.in
+
+AC_INIT
+
+AC_ARG_WITH(maxeler_incdir,
+            [  --with-maxeler-incdir=<path>   Specify prefix to maxeler headers ],
+            [maxeler_incdir=$withval])
+AC_ARG_WITH(maxeler_libdir,
+            [  --with-maxeler-libdir=<path>   Specify prefix to maxeler libraries ],
+            [maxeler_libdir=$withval])
+AC_ARG_WITH(cjson_incdir,
+            [  --with-cjson-incdir=<path>   Specify prefix to cjson headers ],
+            [cjson_incdir=$withval])
+AC_ARG_WITH(cjson_libdir,
+            [  --with-cjson-libdir=<path>   Specify prefix to cjson libraries ],
+            [cjson_libdir=$withval])
+
+
+CFLAGS="$CFLAGS -I"$maxeler_incdir" -I"$cjson_incdir""
+#CFLAGS="$CFLAGS -I$cjson_incdir"
+AC_CHECK_HEADER( [maxdsd.h], [], [AC_MSG_ERROR([MAXELER component: maxdsd.h not found: use configure flags to set the path ])], )
+AC_CHECK_HEADER( [cJSON.h], [], [AC_MSG_ERROR([MAXELER component: cJSON.h not found: use configure flags to set the path ])], )
+LDFLAGS="$LDFLAGS -L$maxeler_libdir -L$cjson_libdir -Wl,-rpath,$maxeler_libdir,-rpath,$cjson_libdir" 
+#LDFLAGS="$LDFLAGS -L$cjson_libdir -Wl,-rpath,$cjson_libdir" 
+AC_CHECK_LIB( [maxeleros], [max_daemon_connect], [], [AC_MSG_ERROR([MAXELER component: libmaxeleros.so not found: use configure flags to set the path])] )
+AC_CHECK_LIB( [cjson], [cJSON_Parse], [], [AC_MSG_ERROR([MAXELER component: libcjson.so not found: use configure flags to set the path])], [-lm] )
+MAXELER_INCDIR=$maxeler_incdir
+MAXELER_LIBDIR=$maxeler_libdir
+CJSON_INCDIR=$cjson_incdir
+CJSON_LIBDIR=$cjson_libdir
+
+AC_CONFIG_FILES([Makefile.maxeler])
+AC_SUBST(MAXELER_INCDIR)
+AC_SUBST(MAXELER_LIBDIR)
+AC_SUBST(CJSON_INCDIR)
+AC_SUBST(CJSON_LIBDIR)
+AC_OUTPUT
