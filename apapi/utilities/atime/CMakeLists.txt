@@ -24,7 +24,6 @@ add_executable(atime
 	atime.c
 )
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
 target_link_libraries(atime apapi -lrt -pthread -ldl )
 add_dependencies(atime apapi)
 
