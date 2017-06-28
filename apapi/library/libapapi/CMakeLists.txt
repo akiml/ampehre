@@ -20,9 +20,18 @@
 set(PAPI_SOURCE_PATH ${CMAKE_SOURCE_DIR}/papi/src)
 set(PAPI_LIBRARY_PATH ${CMAKE_SOURCE_DIR}/papi/src)
 
+add_library(pfm SHARED IMPORTED)
+
+set_target_properties(
+	pfm
+	PROPERTIES LINKER_LANGUAGE C
+	IMPORTED_LOCATION ${PAPI_LIBRARY_PATH}/libpfm4/lib/libpfm.so
+	IMPORTED_SONAME libpfm.so
+)
+
 add_custom_target(makepapi
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	COMMAND cd papi && ./cmake_build.sh "${CMAKE_INSTALL_PREFIX}"
+	COMMAND cd papi && ./cmake_build.sh "${CMAKE_INSTALL_PREFIX}" "${CMAKE_SOURCE_DIR}"
 	COMMENT "Build PAPI library"
 )
 
@@ -36,6 +45,7 @@ set_target_properties(
 )
 add_dependencies(papi makepapi)
 
+
 ## APAPI
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -45,17 +55,14 @@ add_library(apapi SHARED
 )
 
 # add dependency to apapi: custom PAPI target
-add_dependencies(apapi papi)
-#add_definitions(-DDATADIR=${CMAKE_INSTALL_PREFIX}/share)
+add_dependencies(apapi papi pfm)
 set_target_properties(apapi PROPERTIES COMPILE_DEFINITIONS DATADIR=\"${CMAKE_INSTALL_PREFIX}/share\")
-get_target_property(FOO apapi COMPILE_DEFINITIONS)
-message(bla ${FOO})
 
 set_target_properties(apapi PROPERTIES PAPI_SOURCE_PATH ${PAPI_SOURCE_PATH})
 set_target_properties(apapi PROPERTIES PAPI_LIBRARY_PATH ${PAPI_LIBRARY_PATH})
 set_target_properties(apapi PROPERTIES APAPI_SOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${PAPI_SOURCE_PATH})
-target_link_libraries(apapi ${CMAKE_THREAD_LIBS_INIT} papi )
+target_link_libraries(apapi ${CMAKE_THREAD_LIBS_INIT} papi pfm ipmimeasure cjson)
 
 install(TARGETS apapi LIBRARY DESTINATION lib)
 install(FILES apapi.h DESTINATION include)

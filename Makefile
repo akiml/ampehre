@@ -35,15 +35,19 @@ debug:
 	cd build && cmake -DSIGNALS=ON  -DDEBUG_SYMS=ON  -DCMAKE_INSTALL_PREFIX=$(BASE_DIR) -DCMAKE_C_COMPILER=$(GCC) -DCMAKE_CXX_COMPILER=$(GXX) .. && make
 
 install: all
-	sudo mkdir -p $(BASE_DIR) $(BASE_DIR)/bin $(BASE_DIR)/lib $(BASE_DIR)/include $(BASE_DIR)/share $(BASE_DIR)/share/data
-	sudo chown root:user $(BASE_DIR) $(BASE_DIR)/bin $(BASE_DIR)/lib $(BASE_DIR)/include $(BASE_DIR)/share $(BASE_DIR)/share/data
-	sudo chmod 775 $(BASE_DIR) $(BASE_DIR)/bin $(BASE_DIR)/lib $(BASE_DIR)/include $(BASE_DIR)/share $(BASE_DIR)/share/data
+	sudo mkdir -p $(BASE_DIR) $(BASE_DIR)/bin $(BASE_DIR)/lib $(BASE_DIR)/include $(BASE_DIR)/share $(BASE_DIR)/share/data $(BASE_DIR)/man $(BASE_DIR)/share/papi $(BASE_DIR)/share/apapi
+	sudo chown -R $(shell id -u -n):user $(BASE_DIR)
+	sudo chmod 775 -R $(BASE_DIR) $(BASE_DIR)
 	sudo rm -f $(BASE_DIR)/bin/gpu_management
 	cd build && make install
 	cd utilities/msmonitor_cs/client && make install
+	cd papi/src && make install
+	sudo find $(BASE_DIR) -type d -exec chmod 775 {} \;
+	sudo find $(BASE_DIR) -type f -exec chmod 664 {} \;
+	sudo find $(BASE_DIR)/bin -type f -exec chmod 775 {} \;
+	sudo find $(BASE_DIR)/lib -type f -exec chmod 775 {} \;
 	sudo chown root:root $(BASE_DIR)/bin/gpu_management
 	sudo chmod 4755 $(BASE_DIR)/bin/gpu_management
-	cd papi/src && make install
 	sudo ldconfig
 
 clean:
