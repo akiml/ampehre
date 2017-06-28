@@ -22,9 +22,11 @@
 #include <signal.h>
 #include <time.h>
 #include "apapi.h"
-#include "atime_eventlist.h"
 #include "atime_papi.h"
 //#define DEBUG
+#define ATIME_PRINTERR(...) fprintf(stderr, "ATIME %s:%d ", __FILE__, __LINE__);fprintf(stderr, __VA_ARGS__);
+#define ATIME_PRINT(...) fprintf(stdout, "ATIME: ");fprintf(stdout, __VA_ARGS__);
+
 
 void help(char* appname){
 	printf("%s [OPTIONS] FILENAME [ARGUMENTS]\n", appname);
@@ -77,7 +79,7 @@ int main(int argc, char *argv[]) {
 	for (i=0; i<program_argc; i++) {
 		program_argv[i] = argv[optind + i];
 			if (i==0) {
-				printf("Program: ");
+				printf("ATIME: Program: ");
 			}
 			printf("%s ", program_argv[i]);
 			if (i+1==program_argc) {
@@ -130,7 +132,7 @@ int main(int argc, char *argv[]) {
 
 	papi_stop();
 
-	printf("done\n");
+	ATIME_PRINT("done\n")
  
 	free(program_argv);
 

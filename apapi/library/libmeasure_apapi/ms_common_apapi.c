@@ -1379,11 +1379,11 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
 		papicmpIx = PAPI_get_component_index(component_list[i]);
 		knowncmpIx = APAPI_cmp_cmplist_index(component_list[i], known_components);
         if (knowncmpIx == -1) {
-			printf("Component %s is not known to libmeasure.\n", component_list[i]);
+			APAPI_PRINTERR("Component %s is not known to libmeasure.\n", component_list[i])
 			exit(1);
 		}
 		if (papicmpIx < 0) {
-            printf("Component %s is not available in PAPI. Check your PAPI lib.\n", component_list[i]);
+			APAPI_PRINTERR("Component %s is not available in PAPI. Check your PAPI lib.\n", component_list[i])
             exit(1);
         }
     }
@@ -1418,7 +1418,7 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
 		known_cmplistIx = APAPI_cmp_cmplist_index(component_infos[i]->short_name, known_components);
         // add component to list of known and available components
 		if (known_cmplistIx < 0) {
-			printf("Component %s is not known to libmeasure\n", component_infos[i]->short_name);
+			APAPI_PRINTERR("Component %s is not known to libmeasure\n", component_infos[i]->short_name)
 			exit(1);
 		} else {
 
@@ -1447,6 +1447,10 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
         }
     }
 
+	if (available_cmp_count == 0) {
+		APAPI_PRINTERR("No active components.\n")
+		exit(1);
+	}
 
 	// read user eventops
 	retv = APAPI_read_env_eventops(&(mgmt->user_eventops_file), &(mgmt->user_eventops), &(mgmt->user_eventops_num));
@@ -1650,7 +1654,7 @@ void ms_init_measurement(MS_SYSTEM *ms_system, MS_LIST *ms_list, int flags) {
 	int papi_cmp_id;
 	for (msIx = 0; msIx < (log2(ALL+1)); ++msIx) {
 		msId = 1<<msIx;
-	
+
 		if ( (msId & flags) != msId) {
 			continue;
 		}
@@ -1676,6 +1680,10 @@ void ms_init_measurement(MS_SYSTEM *ms_system, MS_LIST *ms_list, int flags) {
 						}
 					}
 					ret = APAPI_init_apapi_eventset_cmp(&(mgmt->sets[cmpIx]), papi_cmp_id, names, mgmt->user_eventops);
+					if (ret != 0) {
+						APAPI_PRINTERR("Failed to create eventset for component %s\n", known_components[cmpIx])
+						exit(1);
+					}
 				}
 
 				mgmt->update_args[cmpIx].cmp_index = cmpIx;
@@ -1686,7 +1694,7 @@ void ms_init_measurement(MS_SYSTEM *ms_system, MS_LIST *ms_list, int flags) {
 				__create_mapper(msId, measurement, known_components[cmpIx], mgmt->sets[cmpIx], &(mgmt->update_args[cmpIx].map), 0);
 				__create_mapper(msId, measurement, known_components[cmpIx], mgmt->sets[cmpIx], &(mgmt->update_args[cmpIx].map_last), 1);
 
-				if (mgmt->timers[cmpIx] == NULL) {				
+				if (mgmt->timers[cmpIx] == NULL) {
 					ret = APAPI_create_timer(&(mgmt->timers[cmpIx]), interval.tv_sec, interval.tv_nsec, measure_update, (void**) &(mgmt->update_args[cmpIx]), mgmt->sets[cmpIx]);
 				} else {
 					if (mgmt->timers[cmpIx]->state == APAPI_TIMER_STATE_READY) {

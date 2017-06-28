@@ -16,24 +16,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <errno.h>
 #include "papi.h"
 #include "apapi.h"
 
-// known components
-/*
-char *known_components[] = {
-	"rapl",
-	"nvml",
-	"maxeler",
-	"micknc",
-	"ipmi",
-	NULL
-};
-*/
-
-//char *known_cmplist = "rapl nvml maxeler micknc ipmi";
+#define ATIME_PRINTERR(...) fprintf(stderr, "ATIME %s:%d ", __FILE__, __LINE__);fprintf(stderr, __VA_ARGS__);
+#define ATIME_PRINT(...) fprintf(stdout, "ATIME: ");fprintf(stdout, __VA_ARGS__);
 
 // available components
 char **components;
@@ -66,17 +56,12 @@ void measure_custom(void** arg, int last_measurement){
 	set = (struct apapi_eventset *) *arg;
 	int eventIx;
 	for (eventIx = 0; eventIx < set->num_events; eventIx++) {
-		printf("%lld ", set->current_time);
-		printf("%s ", set->event_ops[eventIx].event_name);
-		printf("%lld ", set->current_samples[eventIx]);
-		printf("%f\n", set->values0[eventIx*4 + 3]);
+		ATIME_PRINT("%lld ", set->current_time)
+		ATIME_PRINT("%s ", set->event_ops[eventIx].event_name)
+		ATIME_PRINT("%lld ", set->current_samples[eventIx])
+		ATIME_PRINT("%f\n", set->values0[eventIx*4 + 3])
 	}
 
-}
-
-void quit(unsigned int line, char* msg){
-	printf("%d %s\n", line, msg);
-	exit(EXIT_FAILURE);
 }
 
 long gettime() {
@@ -109,25 +94,24 @@ void get_interval_option(const char *cmp, char *option_intervalstr, time_t *sec,
 	cmp_pos += cmp_len; // whole component name was found, this should be ok
 	if (*cmp_pos != ':' || *cmp_pos == 0) {
 		// delimiter not found
-		printf("delimiter not found\n");
+		ATIME_PRINTERR("-t interval delimiter not found\n")
 		return;
 	}
 	cmp_pos += 1;
 	if (*cmp_pos == 0) {
-		printf("missing number");
+		ATIME_PRINTERR("-t interval missing number\n")
 		return;
 	}
 	char *endptr = NULL;
 	long long int number;
-	printf("%s %d\n", cmp_pos, errno);
 	number = strtoll(cmp_pos, &endptr, 10);
 	if (NULL == endptr || (':' != *endptr && 0 != *endptr)) {
 		// invalid number
-		printf("invalid number %lld\n", number);
+		ATIME_PRINTERR("-t interval invalid number %lld\n", number)
 		return;
 	}
 	if (number < 10000000) {
-		printf("invalid number %lld\n", number);
+		ATIME_PRINTERR("-t interval invalid number %lld\n", number)
 		return;
 	}
 	if (number < 1000000000L) {
@@ -146,7 +130,8 @@ void papi_init(char *option_intervalstr){
 
 	retv = APAPI_init();
 	if (retv != PAPI_VER_CURRENT) {
-		quit(__LINE__, "Failed to initialize PAPI library");
+		ATIME_PRINTERR("Failed to initialize PAPI library\n")
+		exit(1);
 	}
 
 	retv = APAPI_read_env_cmplist(&user_cmplist_buffer, &user_cmplist);
@@ -166,7 +151,7 @@ void papi_init(char *option_intervalstr){
 	int i;
 	for(i=0; i<untested_cmp_count; ++i) {
 		if (PAPI_get_component_index(cmplist[i]) == PAPI_ENOCMP) {
-			printf("Component %s is not available in PAPI. Check your PAPI lib.\n", cmplist[i]);
+			ATIME_PRINTERR("Component %s is not available in PAPI. Check your PAPI lib.\n", cmplist[i])
 			exit(1);
 		}
 	}
@@ -187,9 +172,9 @@ void papi_init(char *option_intervalstr){
 		}
 
 		if (component_infos[i]->disabled != 0) {
-			printf("PAPI component %s disabled. Reason: %s\n", component_infos[i]->short_name, component_infos[i]->disabled_reason);
+			ATIME_PRINTERR("PAPI component %s disabled. Reason: %s\n", component_infos[i]->short_name, component_infos[i]->disabled_reason)
 			if (in_cmplist == 1) {
-				printf("PAPI component %s should have been available\n", component_infos[i]->short_name);
+				ATIME_PRINTERR("PAPI component %s should have been available\n", component_infos[i]->short_name)
 				exit(1);
 			}
 			continue;
@@ -199,7 +184,6 @@ void papi_init(char *option_intervalstr){
 			continue;
 		}
 
-		//printf("%d: %s %s %d\n", i, component_infos[i]->short_name, component_infos[i]->name, component_infos[i]->num_native_events);
 		// add component to list of usable components
 		components[cmp_count] = cmplist[cmplist_cmpIx];
 		cmp_count++;
@@ -213,7 +197,7 @@ void papi_init(char *option_intervalstr){
 	// one set per component
 	sets = calloc(sizeof(struct apapi_eventset *), cmp_count);
 	timers = calloc(sizeof(struct apapi_timer *), cmp_count);
-	uint32_t setIx = 0;
+	int setIx = 0;
 	int cidx;
 	char ** cmp_events = NULL;
 	int eventlist_cmpIx = 0;
@@ -230,14 +214,14 @@ void papi_init(char *option_intervalstr){
 			}
 		}
 
-		printf("Use PAPI component %s\n", components[setIx]);
+		ATIME_PRINT("Use PAPI component %s\n", components[setIx])
 		retv = APAPI_init_apapi_eventset_cmp(&(sets[setIx]), cidx, cmp_events, user_eventops);
 		if (PAPI_OK != retv) {
-			printf("Failed to create eventset for component %s\n", components[setIx]);
+			ATIME_PRINTERR("Failed to create eventset for component %s\n", components[setIx])
 			exit(1);
 		}
 		#ifdef DEBUG
-		printf("atime %d %d\n", __LINE__, retv);
+		ATIME_PRINT("%d %d\n", __LINE__, retv)
 		#endif
 
 		get_interval_option(components[setIx], option_intervalstr, &sec, &nsec);
@@ -248,18 +232,18 @@ void papi_init(char *option_intervalstr){
 		retv = APAPI_create_timer(&(timers[setIx]), sec, nsec, NULL, NULL, sets[setIx]);
 		#endif
 		#ifdef DEBUG
-		printf("atime %d %d\n", __LINE__, retv);
+		ATIME_PRINT("%d %d\n", __LINE__, retv)
 		#endif
-		printf("atime cmp %s event_num %d interval %ld.%ld\n", sets[setIx]->cmp_name, sets[setIx]->num_events, sec, nsec);
+		ATIME_PRINT("cmp %s event_num %d interval %ld.%ld\n", sets[setIx]->cmp_name, sets[setIx]->num_events, sec, nsec)
 	}
 	if (cmp_count == 0) {
-		printf("No component active.\n");
+		ATIME_PRINTERR("No component active.\n")
 		exit(1);
 	}
 }
 
 void papi_start(){
-	printf("papi_start\n");
+	ATIME_PRINT("papi_start\n")
 	int retv;
 	int setIx = 0;
 	for(setIx = 0; setIx < cmp_count; setIx++){
@@ -268,7 +252,7 @@ void papi_start(){
 	for(setIx = 0; setIx < cmp_count; setIx++){
 		retv = APAPI_start_timer(timers[setIx]);
 		#ifdef DEBUG
-		printf("atime %d set:%d retv:%d\n", __LINE__, setIx, retv);
+		ATIME_PRINT("%d set:%d retv:%d\n", __LINE__, setIx, retv)
 		#endif
 	}
 	(void) retv;
@@ -280,14 +264,14 @@ void papi_stop(){
 	for(setIx = 0; setIx < cmp_count; setIx++){
 		retv = APAPI_stop_timer(timers[setIx]);
 		#ifdef DEBUG
-		printf("atime %d set:%d retv:%d\n", __LINE__, setIx, retv);
+		ATIME_PRINT("%d set:%d retv:%d\n", __LINE__, setIx, retv)
 		#endif
 	}
 
 	for(setIx = 0; setIx < cmp_count; setIx++){
 		retv = APAPI_destroy_timer(&(timers[setIx]));
 		#ifdef DEBUG
-		printf("atime %d set:%d retv:%d\n", __LINE__, setIx, retv);
+		ATIME_PRINT("%d set:%d retv:%d\n", __LINE__, setIx, retv)
 		#endif
 	}
 
@@ -296,12 +280,12 @@ void papi_stop(){
 
 		retv = APAPI_destroy_apapi_eventset(&(sets[setIx]));
 		#ifdef DEBUG
-		printf("atime %d set:%d retv:%d\n", __LINE__, setIx, retv);
+		ATIME_PRINT("%d set:%d retv:%d\n", __LINE__, setIx, retv)
 		#endif
 	}
  
 	PAPI_shutdown();
-	printf("papi stop\n");
+	ATIME_PRINT("papi stop\n")
 	(void) retv;
 }
 
