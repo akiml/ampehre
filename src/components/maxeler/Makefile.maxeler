@@ -1,4 +1,0 @@
-MAXELER_INCDIR = /upb/departments/agce/modules/software/maxeler/compiler/Maxcompiler-2013.3_vectis/lib/maxeleros-sim/include
-MAXELER_LIBDIR = /opt/maxeler/maxeleros/lib
-CJSON_INCDIR = /usr/ampehre/include/
-CJSON_LIBDIR = /usr/ampehre/lib/
