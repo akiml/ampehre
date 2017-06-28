@@ -1,0 +1,24 @@
+# Process this file with autoconf to produce a configure script.
+# autoreconf -i
+# File: components/ipmi/configure.in
+
+AC_INIT
+
+AC_ARG_WITH(ipmimeasure_libdir,
+            [  --with-ipmimeasure-libdir=<path>   Specify prefix to ipmimeasure library ],
+            [ipmimeasure_libdir=$withval])
+AC_ARG_WITH(ipmimeasure_incdir,
+            [  --with-ipmimeasure-incdir=<path>   Specify prefix to ipmimeasure header ],
+            [ipmimeasure_incdir=$withval])
+
+CFLAGS="$CFLAGS -I$ipmimeasure_incdir"
+AC_CHECK_HEADER( [ms_ipmiwrapper.h], [], [AC_MSG_ERROR([NVML component: ms_ipmiwrapper.h.h not found: use configure flags to set the path ])], )
+LDFLAGS="$LDFLAGS -L$ipmimeasure_libdir -Wl,-rpath,$ipmimeasure_libdir" 
+AC_CHECK_LIB( [ipmimeasure], [init_ipmi_wrapper], [], [AC_MSG_ERROR([IPMI component: libipmimeasure.so not found: use configure flags to set the path])] )
+IPMIMEASURE_LIBDIR=$ipmimeasure_libdir
+IPMIMEASURE_INCDIR=$ipmimeasure_incdir
+
+AC_CONFIG_FILES([Makefile.ipmi])
+AC_SUBST(IPMIMEASURE_LIBDIR)
+AC_SUBST(IPMIMEASURE_INCDIR)
+AC_OUTPUT

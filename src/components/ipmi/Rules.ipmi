@@ -1,7 +1,9 @@
+include components/ipmi/Makefile.ipmi
+
 COMPSRCS += components/ipmi/ipmi.c
 COMPOBJS += ipmi.o
-LDFLAGS += -L/usr/amphere/lib/ -lipmimeasure
-CFLAGS += -I/usr/ampehre/include/
+LDFLAGS += -L$(IPMIMEASURE_LIBDIR) -lipmimeasure
+CFLAGS += -I$(IPMIMEASURE_INCDIR) 
 
 ipmi.o: components/ipmi/ipmi.c $(HEADERS) 
 	$(CC) $(LIBCFLAGS) $(OPTFLAGS) -c components/ipmi/ipmi.c -o ipmi.o $(LDFLAGS)
