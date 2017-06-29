@@ -111,7 +111,7 @@ void get_interval_option(const char *cmp, char *option_intervalstr, time_t *sec,
 		return;
 	}
 	if (number < 10000000) {
-		ATIME_PRINTERR("-t interval invalid number %lld\n", number)
+		ATIME_PRINTERR("-t interval invalid number %lld smaller than 10ms\n", number)
 		return;
 	}
 	if (number < 1000000000L) {
@@ -234,7 +234,7 @@ void papi_init(char *option_intervalstr){
 		#ifdef DEBUG
 		ATIME_PRINT("%d %d\n", __LINE__, retv)
 		#endif
-		ATIME_PRINT("cmp %s event_num %d interval %ld.%ld\n", sets[setIx]->cmp_name, sets[setIx]->num_events, sec, nsec)
+		ATIME_PRINT("cmp %s event_num %d interval %ld.%09ld\n", sets[setIx]->cmp_name, sets[setIx]->num_events, sec, nsec)
 	}
 	if (cmp_count == 0) {
 		ATIME_PRINTERR("No component active.\n")
