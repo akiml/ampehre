@@ -7,8 +7,8 @@
 class CComTCPServer : public CComTCPAbstract
 {
 public:
-    CComTCPServer(int port);
-    ~CComTCPServer();
+	CComTCPServer(int port);
+	~CComTCPServer();
 	
 	void msmSetSockOpt();
 	void msmBind();

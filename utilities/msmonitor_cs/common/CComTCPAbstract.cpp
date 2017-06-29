@@ -6,8 +6,7 @@
 CComTCPAbstract::CComTCPAbstract(int Port, const char *pIPAddress) :
 	mSockFildes(-1),
 	mMaxClients(5)
-	{
-	
+{
 	memset(&mServerAddr, 0, sizeof(struct sockaddr_in));
 	mServerAddr.sin_family		= AF_INET;
 	mServerAddr.sin_port			= htons(Port);
@@ -32,7 +31,7 @@ void CComTCPAbstract::msmSocket() {
 }
 
 
-void CComTCPAbstract::msmSend(CComTCPData *pComData) {
+int CComTCPAbstract::msmSend(CComTCPData *pComData) {
 	ssize_t ret_value	= -1;
 	ssize_t msg_length	= 0;
 	
@@ -43,58 +42,58 @@ void CComTCPAbstract::msmSend(CComTCPData *pComData) {
     //ECONNRESET -> connection reset by peer, EINTR -> signal occured before any data transmitted
 	if (-1 == ret_value) {
 		std::cout << "ERROR: " << strerror(errno) << std::endl;
-		if(errno != ECONNRESET){
-			exit(EXIT_FAILURE);
-		}
+        return -1;
 	} /*else if (pComData->mMsgLength != ret_value) {
 		std::cout << "ERROR: " << "Could not send all data." << std::endl;
 		exit(EXIT_FAILURE);
 	}*/
-    std::cout << "msg with length " << msg_length <<" sent:" << std::endl;
-    std::cout<< std::string(msg, msg_length) << std::endl;
+	std::cout << "msg with length " << msg_length <<" sent:" << std::endl;
+	std::cout<< std::string(msg, msg_length) << std::endl;
+    return 0;
 }
 
-void CComTCPAbstract::msmRecv(CComTCPData *pComData){
-    ssize_t size = 4096, tmp = 0, length = 0;
-    void* reply = malloc(size);
-    void* tmp_rep;
-    bool finished = false;
+int CComTCPAbstract::msmRecv(CComTCPData *pComData){
+	ssize_t size = 4096, tmp = 0, length = 0;
+	void* reply = malloc(size);
+	void* tmp_rep;
+	bool finished = false;
 
-    while(!finished)
-    {
-        tmp = recv(pComData->mSocketFildes , reply , size, 0);
-        //ECONNREFUSED, EINTR, ENOTCONN
-        if(tmp > 0){
-            length += tmp;
-            if(tmp == size){
-                tmp_rep = realloc(reply, length+size);
-                if (NULL == tmp_rep){
-                    std::cout << "[FATAL] out of memory!" << std::endl;
-                    free(reply);
-                    exit(-1);
-                }
-                //pComData->setMsg((char*) tmp_rep);
-                reply = tmp_rep;
-            }
-            else {
-                finished = true;
-                pComData->setMsg(reply, length);
-            }
-        }
-        else if (tmp == 0){
+	while(!finished)
+	{
+		tmp = recv(pComData->mSocketFildes , reply , size, 0);
+		//ECONNREFUSED, EINTR, ENOTCONN
+		if(tmp > 0){
+			length += tmp;
+			if(tmp == size){
+				tmp_rep = realloc(reply, length+size);
+				if (NULL == tmp_rep){
+					std::cout << "[FATAL] out of memory!" << std::endl;
+					free(reply);
+					exit(-1);
+				}
+				//pComData->setMsg((char*) tmp_rep);
+				reply = tmp_rep;
+			}
+			else {
+				finished = true;
+				pComData->setMsg(reply, length);
+			}
+		}
+		else if (tmp == 0){
 			finished = true;
             pComData->setMsg(reply, length);
 			free(reply);
-			return;
+            return 0;
 		}
 		else{
 			free(reply);
-			return;
+            return -1;
 		}
         errno = 0;
-    }
-    tmp_rep = (void*) pComData->getMsg(&size);
-    std::cout << "received msg with length " << length << ":"<< std::endl;
-    std::cout << std::string((char*)tmp_rep, size) << std::endl;
-    free(reply);
+	}
+	tmp_rep = (void*) pComData->getMsg(&size);
+	std::cout << "received msg with length " << length << ":"<< std::endl;
+	std::cout << std::string((char*)tmp_rep, size) << std::endl;
+	free(reply);
+    return 0;
 }

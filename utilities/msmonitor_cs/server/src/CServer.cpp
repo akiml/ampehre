@@ -73,7 +73,9 @@ void CServer::controlClients()
 			if(dur > 1)
 			{
 				std::cout << "exceeded maximal interval!" << std::endl;
-				terminate(mDataVec[i]);										//double check this
+				mDataVec.erase(mDataVec.begin() + i);
+				mThreads.erase(mThreads.begin() + i);
+				eraseClient(mDataVec[i]);
 			}
 		}
 	}
@@ -81,6 +83,7 @@ void CServer::controlClients()
 
 void* CServer::clientTask(void* d) 
 {
+	int s = pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 	CComTCPData* pData = (CComTCPData*) d;
 	CServer* pSrv = (CServer*) pData->mpSrv;
 	
@@ -304,6 +307,13 @@ void CServer::terminate(CComTCPData* pData){
 		mProtocol.termComMsg(msg, pData->mRegistry);
 		pData->setMsg(msg.c_str());
 		mCom->msmSend(pData);
+	}
+}
+
+void CServer::eraseClient(CComTCPData* pData){
+		if(ut::find(mRegClients, pData->mRegistry, mIterator) == 0){
+		mRegClients.erase(mIterator);
+		mTimesForClients[pData->mRegistry] = -1;
 	}
 }
 

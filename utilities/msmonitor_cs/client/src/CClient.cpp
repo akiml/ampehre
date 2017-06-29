@@ -82,10 +82,19 @@ int CClient::requestData()
     ssize_t rep_len = 0;
     int reg = -1, tsk;
     std::string msg = mProtocol.requestMsg(mReg);
+    int ret = 0;
 
     mClientData->setMsg(msg.c_str());
-    mCom->msmSend(mClientData);
-    mCom->msmRecv(mClientData);
+    ret = mCom->msmSend(mClientData);
+    if(ret == -1)
+    {
+        return ret;
+    }
+    ret = mCom->msmRecv(mClientData);
+    if(ret == -1)
+    {
+        return ret;
+    }
     rep = mClientData->getMsg(&rep_len);
 
     if(rep == NULL)

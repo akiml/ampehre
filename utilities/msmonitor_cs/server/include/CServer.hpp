@@ -60,6 +60,7 @@ private:
 	static void* clientTask(void* d);
 	void dataRequest(CComTCPData* pData);
 	void terminate(CComTCPData* pData);
+	void eraseClient(CComTCPData* pData);
 	void confirmFreq(CComTCPData* pData);
 	void registerClient(CComTCPData* pData);
 

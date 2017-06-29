@@ -27,8 +27,8 @@ class CComTCPAbstract {
 		void msmSocket();
         virtual void msmShutdown(CComTCPData **pComData) = 0;
 		
-        void msmSend(CComTCPData *pComData);
-        void msmRecv(CComTCPData *pComData);
+        int msmSend(CComTCPData *pComData);
+        int msmRecv(CComTCPData *pComData);
 };
 
 #endif /* __CCOMTCPABSTRACT_HPP__ */

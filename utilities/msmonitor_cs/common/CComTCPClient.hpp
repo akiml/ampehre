@@ -7,11 +7,11 @@
 class CComTCPClient : public CComTCPAbstract
 {
 public:
-    CComTCPClient(int port, const char *pIPAddress);
-    ~CComTCPClient();
+	CComTCPClient(int port, const char *pIPAddress);
+	~CComTCPClient();
 
-    void msmConnect(CComTCPData **pComData);
-    void msmShutdown(CComTCPData **pComData);
+	void msmConnect(CComTCPData **pComData);
+	void msmShutdown(CComTCPData **pComData);
 
 
 //    void msm_connect(const int port, const std::string& addr);
