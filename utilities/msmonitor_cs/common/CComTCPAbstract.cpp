@@ -57,11 +57,15 @@ int CComTCPAbstract::msmRecv(CComTCPData *pComData){
 	void* reply = malloc(size);
 	void* tmp_rep;
 	bool finished = false;
+    errno = 0;
 
 	while(!finished)
 	{
 		tmp = recv(pComData->mSocketFildes , reply , size, 0);
 		//ECONNREFUSED, EINTR, ENOTCONN
+        if(errno != 0){
+            return -1;
+        }
 		if(tmp > 0){
 			length += tmp;
 			if(tmp == size){

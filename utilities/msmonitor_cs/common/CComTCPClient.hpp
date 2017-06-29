@@ -10,7 +10,7 @@ public:
 	CComTCPClient(int port, const char *pIPAddress);
 	~CComTCPClient();
 
-	void msmConnect(CComTCPData **pComData);
+    int msmConnect(CComTCPData **pComData);
 	void msmShutdown(CComTCPData **pComData);
 
 

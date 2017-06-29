@@ -42,7 +42,10 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
 
     mCom = new CComTCPClient(port, ipaddr.c_str());
 
-	initSocket();
+    int n = initSocket();
+    if (n == -1){
+        return -1;
+    }
 	
     char* rep = NULL;
     ssize_t rep_len = 0;
@@ -85,21 +88,25 @@ int CClient::requestData()
     int ret = 0;
 
     mClientData->setMsg(msg.c_str());
+    std::cout << "before send" << std::endl;
     ret = mCom->msmSend(mClientData);
     if(ret == -1)
     {
-        return ret;
+        std::cout << "send error" << std::endl;
+        return -1;
     }
+    std::cout << "before recv" << std::endl;
     ret = mCom->msmRecv(mClientData);
     if(ret == -1)
     {
-        return ret;
+        std::cout << "recv error" << std::endl;
+        return -1;
     }
     rep = mClientData->getMsg(&rep_len);
 
-    if(rep == NULL)
+    if(rep == NULL || rep_len == 0)
     {
-        std::cout << "rep is NULL..., length is" << rep_len << std::endl;
+        std::cout << "reply is NULL or length is " << rep_len << std::endl;
         return -1;
     }
     mProtocol.parseMsg(rep, rep_len, reg, tsk, mValues, mValues_pid);
@@ -206,8 +213,8 @@ void CClient::getFreq(std::vector<uint64_t>& vals)
     mProtocol.getData(rep, rep_len, vals);
 }
 
-void CClient::initSocket()
+int CClient::initSocket()
 {
     mCom->msmSocket();
-    mCom->msmConnect(&mClientData);
+    return mCom->msmConnect(&mClientData);
 }

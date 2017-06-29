@@ -41,7 +41,7 @@ public:
     std::vector<Application> mSigPid;
 	
 private:
-    void initSocket();
+    int initSocket();
     void extractAppSignals();
 	std::string mVERSION;
 	CProtocolC mProtocol;

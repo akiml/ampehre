@@ -10,24 +10,25 @@ CComTCPClient::~CComTCPClient(){
 
 }
 
-void CComTCPClient::msmConnect(CComTCPData **pComData){
+int CComTCPClient::msmConnect(CComTCPData **pComData){
 	*pComData					= new CComTCPData();
 	(*pComData)->mSocketFildes	= mSockFildes;
     errno = ECONNREFUSED;
 
-    while(errno == ECONNREFUSED || errno == ETIMEDOUT){
-        errno = 0;
-        int ret_value = connect(mSockFildes, (struct sockaddr*)&(mServerAddr), sizeof(struct sockaddr_in));
+    int ret_value = connect(mSockFildes, (struct sockaddr*)&(mServerAddr), sizeof(struct sockaddr_in));
 
-        //ECONNREFUSED -> not listening, EINTR -> interrupt, EISCONN -> already connected, ENETUNREACH -> no network connection
-        //ETIMEOUT -> server too busy?
-        if (-1 == ret_value) {
-            if(errno != ECONNREFUSED && errno != ETIMEDOUT){
-                std::cout << "ERROR: " << strerror(errno) << std::endl;
-                exit(EXIT_FAILURE);
-            }
+    //ECONNREFUSED -> not listening, EINTR -> interrupt, EISCONN -> already connected, ENETUNREACH -> no network connection
+    //ETIMEOUT -> server too busy?
+    if (-1 == ret_value) {
+        if(errno != ECONNREFUSED && errno != ETIMEDOUT){
+            std::cout << "ERROR: " << strerror(errno) << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        else{
+            return -1;
         }
     }
+    return 0;
 }
 
 void CComTCPClient::msmShutdown(CComTCPData **pComData){
