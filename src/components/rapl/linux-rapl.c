@@ -303,10 +303,11 @@ void rapl_update_systemstats() {
 			printf("getline failed %d\n", errno);
 			errno = 0;
 		} else
-		if (num_read > 0) {
+		if (num_read > 4) {
+			nextSpace += 4; // skip "cpu "
 			while ( tokenIx < 9 && *nextSpace != 0 && (nextSpace = strstr(nextSpace, " ")) != NULL  ) {
 				result = strtol(nextSpace+1, &endptr, 0);
-				if (endptr == NULL) {
+				if (*endptr == '0' || *endptr != ' ') {
 					break;
 				}
 				switch (tokenIx) {
@@ -341,6 +342,7 @@ void rapl_update_systemstats() {
 					break;
 				}
 				tokenIx++;
+				nextSpace += 1;
 			}
 		}
 		if (linebuffer != buffer) {
@@ -427,7 +429,7 @@ void rapl_update_systemstats() {
 		// compare to first
 		//cpu_stat->util = (long long) ( (double)cpu_stat->time_work / (double)(cpu_stat->time_work + cpu_stat->time_idle) * 100.0);
 		// compare to last
-		long long time_work = (long long) ( (double)(
+		double time_work = ( (double)(
 			(cpu_stat->nice - cpu_stat_last->nice) + 
 			(cpu_stat->system - cpu_stat_last->system) + 
 			(cpu_stat->user - cpu_stat_last->user) +
@@ -435,9 +437,10 @@ void rapl_update_systemstats() {
 			(cpu_stat->softirq - cpu_stat_last->softirq) +
 			(cpu_stat->steal - cpu_stat_last->steal) +
 			(cpu_stat->guest - cpu_stat_last->guest) ) / (double)sc_clk_tck / (double)num_cpus * 1000.0);
-		long long time_idle = (long long) ( (double)(
+		double time_idle = ( (double)(
 			(cpu_stat->idle - cpu_stat_last->idle) + 
 			(cpu_stat->iowait - cpu_stat_last->iowait)) / (double)sc_clk_tck / (double)num_cpus * 1000.0);
+
 
 		if (time_work + time_idle == 0) {
 			cpu_stat->util = 0;
