@@ -57,7 +57,6 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
     std::vector<std::string> ig;
 	
     mClientData->setMsg(msg.c_str());
-    //usleep(1000000);
     mCom->msmSend(mClientData);
     mCom->msmRecv(mClientData);
     rep = mClientData->getMsg(&rep_len);
@@ -132,6 +131,8 @@ int CClient::terminate()
 
     return 0;
 }
+
+
 
 void CClient::extractAppSignals()
 {
@@ -212,6 +213,7 @@ void CClient::getFreq(std::vector<uint64_t>& vals)
 
     mProtocol.getData(rep, rep_len, vals);
 }
+
 
 int CClient::initSocket()
 {

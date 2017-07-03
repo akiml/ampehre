@@ -46,6 +46,10 @@ QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, 
     mVerticalLineStart(QwtSymbol::VLine, QBrush(Qt::green), QPen(Qt::green), QSize(1, 300)), //change color
     mVerticalLineEnd(QwtSymbol::VLine, QBrush(Qt::red), QPen(Qt::red), QSize(1, 300))
 {
+    mMedianInterval = 2;
+    mMeanInterval = 2;
+    mValue = ABSOLUTE;
+
     ui->setupUi(this);
     mGroupbox = ui->groupBox;
     setLineWidth(mLineWidth);
@@ -60,6 +64,11 @@ QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, 
     connect(ui->pushButtonScreenshot, SIGNAL(clicked()), this, SLOT(screenshot()));
     connect(ui->pushButtonCSV, SIGNAL(clicked()), this, SLOT(exportToCSV()));
     connect(ui->checkBox, SIGNAL(clicked(bool)), this, SLOT(applicationsEnabled(bool)));
+    connect(ui->radioButton_absolute, SIGNAL(clicked()), this, SLOT(radioButtonChecked_Abs()));
+    connect(ui->radioButton_mean, SIGNAL(clicked()), this, SLOT(radioButtonChecked_Mean()));
+    connect(ui->radioButton_median, SIGNAL(clicked()), this, SLOT(radioButtonChecked_Median()));
+
+    radioButtonChecked_Abs();
 }
 
 QMSMplot::~QMSMplot()
@@ -82,6 +91,40 @@ QMSMplot::~QMSMplot()
     delete mpMagnifier;
     delete mpPanner;
     delete mpGrid;
+}
+
+void QMSMplot::radioButtonChecked_Abs()
+{
+    ui->radioButton_absolute->setChecked(true);
+    ui->radioButton_mean->setChecked(false);
+    ui->radioButton_median->setChecked(false);
+    mValue = ABSOLUTE;
+}
+
+void QMSMplot::radioButtonChecked_Mean()
+{
+    ui->radioButton_mean->setChecked(true);
+    ui->radioButton_absolute->setChecked(false);
+    ui->radioButton_median->setChecked(false);
+    mValue = MEAN;
+}
+
+void QMSMplot::radioButtonChecked_Median()
+{
+    ui->radioButton_median->setChecked(true);
+    ui->radioButton_absolute->setChecked(false);
+    ui->radioButton_mean->setChecked(false);
+    mValue = MEDIAN;
+}
+
+void QMSMplot::spinBoxIntervalMean(int val)
+{
+    mMeanInterval = val;
+}
+
+void QMSMplot::spinBoxIntervalMedian(int val)
+{
+    mMedianInterval = val;
 }
 
 void QMSMplot::applicationsEnabled(bool val)
@@ -183,6 +226,63 @@ void QMSMplot::exportToCSV()
 QWidget* QMSMplot::getPlot()
 {
     return this->mpPlot;
+}
+
+void QMSMplot::computeMean(std::vector<double>& src, std::vector<double> &dst)
+{
+    if(src.size() > mMeanInterval)
+    {
+        double tmp = 0;
+
+        //add up all values and devide by interval
+        for(unsigned int i = 0; i < mMeanInterval; i++)
+        {
+            tmp += src[src.size()-(i+1)];
+        }
+
+        tmp = tmp/mMeanInterval;
+
+        dst.push_back(tmp);
+    }
+}
+
+void QMSMplot::computeMedian(std::vector<double> &src, std::vector<double> &dst)
+{
+    if(src.size() > mMedianInterval)
+    {
+        std::vector<double> tmp;
+
+        //save last n data
+        for(unsigned int i = 0; i < mMedianInterval; i++)
+        {
+            tmp.push_back(src[src.size()-(i+1)]);
+        }
+
+        //delete the n/2 smallest ones
+        for(unsigned int i = 0; i < mMedianInterval/2; i++)
+        {
+            int pos = 0;
+            for(unsigned int n = 0; n < tmp.size(); n++)
+            {
+                if(tmp[pos] > tmp[n])
+                {
+                    pos = n;
+                }
+            }
+            tmp.erase(tmp.begin() + pos);
+        }
+
+        //find smallest one -> middle value
+        int pos = 0;
+        for(unsigned int n = 0; n < tmp.size(); n++)
+        {
+            if(tmp[pos] > tmp[n])
+            {
+                pos = n;
+            }
+        }
+        dst.push_back(tmp[pos]);
+    }
 }
 
 void QMSMplot::screenshot()

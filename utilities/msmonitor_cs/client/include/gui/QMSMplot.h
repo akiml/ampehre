@@ -58,6 +58,14 @@ enum PLOTTYPE
     UTIL
 };
 
+enum FILTER
+{
+    ABSOLUTE,
+    MEAN,
+    MEDIAN,
+    FILTER_SIZE
+};
+
 enum CHECKBOX
 {
     CPU0,
@@ -103,6 +111,28 @@ public:
     std::vector<double> mMic1values;
     std::vector<double> mSystemvalues;
 
+    std::vector<double> mTimevaluesMean;
+    std::vector<double> mCpu0valuesMean;
+    std::vector<double> mCpu1valuesMean;
+    std::vector<double> mGpu0valuesMean;
+    std::vector<double> mGpu1valuesMean;
+    std::vector<double> mFpga0valuesMean;
+    std::vector<double> mFpga1valuesMean;
+    std::vector<double> mMic0valuesMean;
+    std::vector<double> mMic1valuesMean;
+    std::vector<double> mSystemvaluesMean;
+
+    std::vector<double> mTimevaluesMedian;
+    std::vector<double> mCpu0valuesMedian;
+    std::vector<double> mCpu1valuesMedian;
+    std::vector<double> mGpu0valuesMedian;
+    std::vector<double> mGpu1valuesMedian;
+    std::vector<double> mFpga0valuesMedian;
+    std::vector<double> mFpga1valuesMedian;
+    std::vector<double> mMic0valuesMedian;
+    std::vector<double> mMic1valuesMedian;
+    std::vector<double> mSystemvaluesMedian;
+
     unsigned int mCurrentAppSize;
     bool enableApplications;
     std::vector<Application> mApplications;
@@ -128,16 +158,23 @@ public slots:
     virtual void updateApplications(const std::vector<Application>& apps);
     virtual void redrawApplications();
     virtual void applicationsEnabled(bool val);
+    virtual void radioButtonChecked_Mean();
+    virtual void radioButtonChecked_Median();
+    virtual void radioButtonChecked_Abs();
+    virtual void spinBoxIntervalMean(int val);
+    virtual void spinBoxIntervalMedian(int val);
 
 signals:
     void signal_export(QMSMplot*);
-
-
+    void signal_value(int val);
 
 protected:
     Ui::QMSMplot* ui;
     int mLineWidth;
     unsigned int maxData;
+    int mMeanInterval;
+    int mMedianInterval;
+    int mValue;
 
     QwtPlot* mpPlot;
     QWidget* parent;
@@ -172,6 +209,9 @@ protected:
 
     std::vector<QCheckBox*> mBoxes;
     QGroupBox* mGroupbox;
+
+    void computeMedian(std::vector<double>& src, std::vector<double>& dst);
+    void computeMean(std::vector<double> &src, std::vector<double>& dst);
 
 
 };

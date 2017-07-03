@@ -100,6 +100,11 @@ private:
     int mPlotInterval;
     int mGuiInterval;
     int mSafetyTimeServer;
+    int mValuePower;
+    int mValueUtil;
+    int mValueTemp;
+    int mValueMemory;
+    int mValueClock;
     void connectActions();
     void addPlot(QMSMplot* plot, QMdiSubWindow* subw);
     void addHeatmap(QMdiSubWindow* heat, QVBoxLayout* layout);
@@ -111,6 +116,12 @@ public slots:
     void stop();
     void reset();
     void requestData();
+
+    void valuePower(int v);
+    void valueUtil(int v);
+    void valueTemp(int v);
+    void valueMemory(int v);
+    void valueClock(int v);
 
     void setGuiInterval(int val);
     void setInterval(int val);

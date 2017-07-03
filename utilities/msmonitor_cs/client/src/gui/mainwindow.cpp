@@ -61,7 +61,12 @@ MainWindow::MainWindow(QWidget *parent) :
     mpGuiTimer(new QTimer()),
     mPlotInterval(mpConfig->plot),
     mGuiInterval(mpConfig->gui),
-    mSafetyTimeServer(500)
+    mSafetyTimeServer(500),
+    mValuePower(0),
+    mValueUtil(0),
+    mValueTemp(0),
+    mValueMemory(0),
+    mValueClock(0)
 {
     ui->setupUi(this);
     connectActions();
@@ -233,9 +238,6 @@ void MainWindow::connectActions()
     connect((QMSMplot*)mpUtilplot, SIGNAL(signal_export(QMSMplot*)), mpConfig, SLOT(exportPlotToCSV(QMSMplot*)));
     connect((QMSMplot*)mpMemoryplot, SIGNAL(signal_export(QMSMplot*)), mpConfig, SLOT(exportPlotToCSV(QMSMplot*)));
 
-
-
-
     connect(mpSettings, SIGNAL(signal_guiRate(int)), this, SLOT(setGuiInterval(int)));
     connect(mpSettings, SIGNAL(signal_dataPlot(int)), this, SLOT(setInterval(int)));
 
@@ -305,6 +307,31 @@ void MainWindow::requestData()
     controlTimer(exchangeTimer.elapsed());
 }
 
+void MainWindow::valuePower(int v)
+{
+    mValuePower = v;
+}
+
+void MainWindow::valueClock(int v)
+{
+    mValueClock = v;
+}
+
+void MainWindow::valueMemory(int v)
+{
+    mValueMemory = v;
+}
+
+void MainWindow::valueTemp(int v)
+{
+    mValueTemp = v;
+}
+
+void MainWindow::valueUtil(int v)
+{
+    mValueUtil = v;
+}
+
 void MainWindow::controlTimer(const int time)
 {
     if(time >= mpTimer->interval()-mSafetyTimeServer)
@@ -347,7 +374,6 @@ void MainWindow::setInterval(int val)
         mpTimer->setInterval(mPlotInterval);
     }
 }
-
 
 void MainWindow::showPower()
 {
@@ -460,12 +486,14 @@ void MainWindow::updateClock()
 
 void MainWindow::updateTemp()
 {
+
     mpTempplot->updateValues(mClient.mValues);
     mpTempplot->updateApplications(mClient.mSigPid);
 }
 
 void MainWindow::updateMemory()
 {
+
     mpMemoryplot->updateValues(mClient.mValues);
     mpMemoryplot->updateApplications(mClient.mSigPid);
 }

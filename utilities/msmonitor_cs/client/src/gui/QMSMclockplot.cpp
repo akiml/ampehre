@@ -87,14 +87,39 @@ void QMSMClockPlot::initPlot()
 
 void QMSMClockPlot::redraw()
 {
-    int size = mTimevalues.size();
+    if(mValue == ABSOLUTE)
+    {
+        int size = mTimevalues.size();
 
-    mpCpu0->setSamples(mTimevalues.data(), mCpu0values.data(), size);
-    mpCpu1->setSamples(mTimevalues.data(), mCpu1values.data(), size);
-    mpGpu0->setSamples(mTimevalues.data(), mGpu0values.data(), size);
-    mpGpu1->setSamples(mTimevalues.data(), mGpu1values.data(), size);
-    mpMic0->setSamples(mTimevalues.data(), mMic0values.data(), size);
-    mpMic1->setSamples(mTimevalues.data(), mMic1values.data(), size);
+        mpCpu0->setSamples(mTimevalues.data(), mCpu0values.data(), size);
+        mpCpu1->setSamples(mTimevalues.data(), mCpu1values.data(), size);
+        mpGpu0->setSamples(mTimevalues.data(), mGpu0values.data(), size);
+        mpGpu1->setSamples(mTimevalues.data(), mGpu1values.data(), size);
+        mpMic0->setSamples(mTimevalues.data(), mMic0values.data(), size);
+        mpMic1->setSamples(mTimevalues.data(), mMic1values.data(), size);
+    }
+    else if(mValue == MEAN)
+    {
+        int size = mTimevaluesMean.size();
+
+        mpCpu0->setSamples(mTimevaluesMean.data(), mCpu0valuesMean.data(), size);
+        mpCpu1->setSamples(mTimevaluesMean.data(), mCpu1valuesMean.data(), size);
+        mpGpu0->setSamples(mTimevaluesMean.data(), mGpu0valuesMean.data(), size);
+        mpGpu1->setSamples(mTimevaluesMean.data(), mGpu1valuesMean.data(), size);
+        mpMic0->setSamples(mTimevaluesMean.data(), mMic0valuesMean.data(), size);
+        mpMic1->setSamples(mTimevaluesMean.data(), mMic1valuesMean.data(), size);
+    }
+    else if(mValue == MEDIAN)
+    {
+        int size = mTimevaluesMedian.size();
+
+        mpCpu0->setSamples(mTimevaluesMedian.data(), mCpu0valuesMedian.data(), size);
+        mpCpu1->setSamples(mTimevaluesMedian.data(), mCpu1valuesMedian.data(), size);
+        mpGpu0->setSamples(mTimevaluesMedian.data(), mGpu0valuesMedian.data(), size);
+        mpGpu1->setSamples(mTimevaluesMedian.data(), mGpu1valuesMedian.data(), size);
+        mpMic0->setSamples(mTimevaluesMedian.data(), mMic0valuesMedian.data(), size);
+        mpMic1->setSamples(mTimevaluesMedian.data(), mMic1valuesMedian.data(), size);
+    }
     redrawApplications();
 
     for(unsigned int i = 0; i < mBoxes.size(); i++)
@@ -177,6 +202,22 @@ void QMSMClockPlot::updateValues(std::vector<double> &values)
     mGpu1values.push_back(values[YClockGpuMem]);
     mMic0values.push_back(values[YClockMicCore]);
     mMic1values.push_back(values[YClockMicMem]);
+
+    computeMean(mTimevalues, mTimevaluesMean);
+    computeMean(mCpu0values, mCpu0valuesMean);
+    computeMean(mCpu1values, mCpu1valuesMean);
+    computeMean(mGpu0values, mGpu0valuesMean);
+    computeMean(mGpu1values, mGpu1valuesMean);
+    computeMean(mMic0values, mMic0valuesMean);
+    computeMean(mMic1values, mMic1valuesMean);
+
+    computeMedian(mTimevalues, mTimevaluesMedian);
+    computeMedian(mCpu0values, mCpu0valuesMedian);
+    computeMedian(mCpu1values, mCpu1valuesMedian);
+    computeMedian(mGpu0values, mGpu0valuesMedian);
+    computeMedian(mGpu1values, mGpu1valuesMedian);
+    computeMedian(mMic0values, mMic0valuesMedian);
+    computeMedian(mMic1values, mMic1valuesMedian);
 
     scaleAxis(mTimevalues[mTimevalues.size()-1]);
 }

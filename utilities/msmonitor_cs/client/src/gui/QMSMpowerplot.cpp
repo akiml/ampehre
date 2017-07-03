@@ -92,14 +92,39 @@ void QMSMPowerPlot::initPlot()
 
 void QMSMPowerPlot::redraw()
 {
-    int size = mTimevalues.size();
+    if(mValue == ABSOLUTE)
+    {
+        int size = mTimevalues.size();
 
-    mpCpu0->setSamples(mTimevalues.data(), mCpu0values.data(), size);
-    mpCpu1->setSamples(mTimevalues.data(), mCpu1values.data(), size);
-    mpGpu0->setSamples(mTimevalues.data(), mGpu0values.data(), size);
-    mpFpga0->setSamples(mTimevalues.data(), mFpga0values.data(), size);
-    mpMic0->setSamples(mTimevalues.data(), mMic0values.data(), size);
-    mpSystem->setSamples(mTimevalues.data(), mSystemvalues.data(), size);
+        mpCpu0->setSamples(mTimevalues.data(), mCpu0values.data(), size);
+        mpCpu1->setSamples(mTimevalues.data(), mCpu1values.data(), size);
+        mpGpu0->setSamples(mTimevalues.data(), mGpu0values.data(), size);
+        mpFpga0->setSamples(mTimevalues.data(), mFpga0values.data(), size);
+        mpMic0->setSamples(mTimevalues.data(), mMic0values.data(), size);
+        mpSystem->setSamples(mTimevalues.data(), mSystemvalues.data(), size);
+    }
+    else if(mValue == MEAN)
+    {
+        int size = mTimevaluesMean.size();
+
+        mpCpu0->setSamples(mTimevaluesMean.data(), mCpu0valuesMean.data(), size);
+        mpCpu1->setSamples(mTimevaluesMean.data(), mCpu1valuesMean.data(), size);
+        mpGpu0->setSamples(mTimevaluesMean.data(), mGpu0valuesMean.data(), size);
+        mpFpga0->setSamples(mTimevaluesMean.data(), mFpga0valuesMean.data(), size);
+        mpMic0->setSamples(mTimevaluesMean.data(), mMic0valuesMean.data(), size);
+        mpSystem->setSamples(mTimevaluesMean.data(), mSystemvaluesMean.data(), size);
+    }
+    else if(mValue == MEDIAN)
+    {
+        int size = mTimevaluesMedian.size();
+
+        mpCpu0->setSamples(mTimevaluesMedian.data(), mCpu0valuesMedian.data(), size);
+        mpCpu1->setSamples(mTimevaluesMedian.data(), mCpu1valuesMedian.data(), size);
+        mpGpu0->setSamples(mTimevaluesMedian.data(), mGpu0valuesMedian.data(), size);
+        mpFpga0->setSamples(mTimevaluesMedian.data(), mFpga0valuesMedian.data(), size);
+        mpMic0->setSamples(mTimevaluesMedian.data(), mMic0valuesMedian.data(), size);
+        mpSystem->setSamples(mTimevaluesMedian.data(), mSystemvaluesMedian.data(), size);
+    }
     redrawApplications();
 
     for(unsigned int i = 0; i < mBoxes.size(); i++)
@@ -184,6 +209,22 @@ void QMSMPowerPlot::updateValues(std::vector<double> &values)
     mFpga0values.push_back(values[YPowerFpga]);
     mMic0values.push_back(values[YPowerMic]);
     mSystemvalues.push_back(values[YPowerSystem]);
+
+    computeMean(mTimevalues, mTimevaluesMean);
+    computeMean(mCpu0values, mCpu0valuesMean);
+    computeMean(mCpu1values, mCpu1valuesMean);
+    computeMean(mGpu0values, mGpu0valuesMean);
+    computeMean(mFpga0values, mFpga0valuesMean);
+    computeMean(mMic0values, mMic0valuesMean);
+    computeMean(mSystemvalues, mSystemvaluesMean);
+
+    computeMedian(mTimevalues, mTimevaluesMedian);
+    computeMedian(mCpu0values, mCpu0valuesMedian);
+    computeMedian(mCpu1values, mCpu1valuesMedian);
+    computeMedian(mGpu0values, mGpu0valuesMedian);
+    computeMedian(mFpga0values, mFpga0valuesMedian);
+    computeMedian(mMic0values, mMic0valuesMedian);
+    computeMedian(mSystemvalues, mSystemvaluesMedian);
 
     scaleAxis(mTimevalues[mTimevalues.size()-1]);
 
