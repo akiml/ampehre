@@ -73,9 +73,9 @@ void CServer::controlClients()
 			if(dur > 1)
 			{
 				std::cout << "exceeded maximal interval!" << std::endl;
+				eraseClient(mDataVec[i]);
 				mDataVec.erase(mDataVec.begin() + i);
 				mThreads.erase(mThreads.begin() + i);
-				eraseClient(mDataVec[i]);
 			}
 		}
 	}
