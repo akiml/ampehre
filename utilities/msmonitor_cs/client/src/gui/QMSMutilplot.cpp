@@ -96,23 +96,23 @@ void QMSMUtilPlot::redraw()
     }
     else if(mValue == MEAN)
     {
-        int size = mTimevaluesMean.size();
+        int size = mCpu0valuesMean.size();
 
-        mpCpu0->setSamples(mTimevaluesMean.data(), mCpu0valuesMean.data(), size);
-        mpGpu0->setSamples(mTimevaluesMean.data(), mGpu0valuesMean.data(), size);
-        mpGpu1->setSamples(mTimevaluesMean.data(), mGpu1valuesMean.data(), size);
-        mpFpga0->setSamples(mTimevaluesMean.data(), mFpga0valuesMean.data(), size);
-        mpMic0->setSamples(mTimevaluesMean.data(), mMic0valuesMean.data(), size);
+        mpCpu0->setSamples(mTimevalues.data(), mCpu0valuesMean.data(), size);
+        mpGpu0->setSamples(mTimevalues.data(), mGpu0valuesMean.data(), size);
+        mpGpu1->setSamples(mTimevalues.data(), mGpu1valuesMean.data(), size);
+        mpFpga0->setSamples(mTimevalues.data(), mFpga0valuesMean.data(), size);
+        mpMic0->setSamples(mTimevalues.data(), mMic0valuesMean.data(), size);
     }
     else if(mValue == MEDIAN)
     {
-        int size = mTimevaluesMedian.size();
+        int size = mCpu0valuesMedian.size();
 
-        mpCpu0->setSamples(mTimevaluesMedian.data(), mCpu0valuesMedian.data(), size);
-        mpGpu0->setSamples(mTimevaluesMedian.data(), mGpu0valuesMedian.data(), size);
-        mpGpu1->setSamples(mTimevaluesMedian.data(), mGpu1valuesMedian.data(), size);
-        mpFpga0->setSamples(mTimevaluesMedian.data(), mFpga0valuesMedian.data(), size);
-        mpMic0->setSamples(mTimevaluesMedian.data(), mMic0valuesMedian.data(), size);
+        mpCpu0->setSamples(mTimevalues.data(), mCpu0valuesMedian.data(), size);
+        mpGpu0->setSamples(mTimevalues.data(), mGpu0valuesMedian.data(), size);
+        mpGpu1->setSamples(mTimevalues.data(), mGpu1valuesMedian.data(), size);
+        mpFpga0->setSamples(mTimevalues.data(), mFpga0valuesMedian.data(), size);
+        mpMic0->setSamples(mTimevalues.data(), mMic0valuesMedian.data(), size);
     }
 
     redrawApplications();
@@ -189,14 +189,12 @@ void QMSMUtilPlot::updateValues(std::vector<double> &values)
     mFpga0values.push_back(values[YUtilFpga]);
     mMic0values.push_back(values[YUtilMic]);
 
-    computeMean(mTimevalues, mTimevaluesMean);
     computeMean(mCpu0values, mCpu0valuesMean);
     computeMean(mGpu0values, mGpu0valuesMean);
     computeMean(mGpu1values, mGpu1valuesMean);
     computeMean(mFpga0values, mFpga0valuesMean);
     computeMean(mMic0values, mMic0valuesMean);
 
-    computeMedian(mTimevalues, mTimevaluesMedian);
     computeMedian(mCpu0values, mCpu0valuesMedian);
     computeMedian(mGpu0values, mGpu0valuesMedian);
     computeMedian(mGpu1values, mGpu1valuesMedian);

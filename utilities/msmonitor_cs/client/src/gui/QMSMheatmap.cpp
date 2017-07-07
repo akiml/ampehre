@@ -140,6 +140,12 @@ void QMSMHeatmap::redraw()
     }
 }
 
+void QMSMHeatmap::clearData()
+{
+    mY.clear();
+    mTime.clear();
+}
+
 void QMSMHeatmap::setColorMap()
 {
     QwtScaleWidget *axis = axisWidget( QwtPlot::yRight );

@@ -24,6 +24,7 @@ void CComTCPServer::msmAccept(CComTCPData** pComData) {
 	}
 }
 
+
 void CComTCPServer::msmBind() {
 	int ret_value = bind(mSockFildes, (struct sockaddr *)&mServerAddr, sizeof(struct sockaddr_in));
 	//EADDRINUSE

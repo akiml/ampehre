@@ -30,6 +30,10 @@ void CComTCPAbstract::msmSocket() {
 	}
 }
 
+void CComTCPAbstract::setPort(int port) {
+	mServerAddr.sin_port = htons(port);
+}
+
 
 int CComTCPAbstract::msmSend(CComTCPData *pComData) {
 	ssize_t ret_value	= -1;

@@ -24,7 +24,8 @@
 
 #include <cstdlib>
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(int port, QWidget *parent) :
+    mPort(port),
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     mpConfig(new CConfig(QString(getenv("HOME")) + "/default.conf")),
@@ -136,7 +137,14 @@ void MainWindow::setInitSettings()
     mpSettings->emit_guiRate(mpConfig->gui);
     mpSettings->setSaveData(mpConfig->maxDataRecord);
     mpSettings->set_ip(mpConfig->serverIP);
-    mpSettings->set_port(mpConfig->serverPort);
+    if(mPort == -1)
+    {
+        mpSettings->set_port(mpConfig->serverPort);
+    }
+    else
+    {
+        mpSettings->set_port(mPort);
+    }
 
     mpPowerplot->setLineWidth(mpConfig->lineWidth);
     mpTempplot->setLineWidth(mpConfig->lineWidth);
@@ -274,6 +282,17 @@ void MainWindow::start()
     mClient.getFreq(frequencies);
     mpSettings->setFreqLabels(frequencies);
 
+    mpPowerplot->clearAllData();
+    mpClockplot->clearAllData();
+    mpMemoryplot->clearAllData();
+    mpTempplot->clearAllData();
+    mpUtilplot->clearAllData();
+    mpHeatmapCpu->clearData();
+    mpHeatmapFpga->clearData();
+    mpHeatmapGpuCore->clearData();
+    mpHeatmapGpuMemory->clearData();
+    mpHeatmapMic->clearData();
+
     mpTimer->setInterval(mPlotInterval);
     mpGuiTimer->setInterval(mGuiInterval);
     mpTimer->start();
@@ -362,6 +381,16 @@ void MainWindow::setGuiInterval(int val)
     {
         this->mGuiInterval = val;
         mpGuiTimer->setInterval(mGuiInterval);
+        if((float)(mGuiInterval/1000) != 0)
+        {
+            float multiplier = (1/((float)mGuiInterval/1000));
+
+            mpPowerplot->setRefreshRate(multiplier);
+            mpTempplot->setRefreshRate(multiplier);
+            mpUtilplot->setRefreshRate(multiplier);
+            mpClockplot->setRefreshRate(multiplier);
+            mpMemoryplot->setRefreshRate(multiplier);
+        }
     }
 }
 

@@ -72,6 +72,9 @@ int CClient::registerToServer(std::vector< int >& values, int port, std::string 
 
     if(reg >= 0){
 		this->mReg = reg;
+        mValues.clear();
+        mValues_pid.clear();
+        mSigPid.clear();
 		return 0;
 	}
 	else 

@@ -47,6 +47,12 @@ CServer::~CServer()
 	mMeasure.stop();
 }
 
+void CServer::setPort(int port)
+{
+	mPort = port;
+	mCom->setPort(port);
+}
+
 void CServer::init()
 {
 	mMeasure.start();

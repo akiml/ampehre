@@ -25,6 +25,7 @@ class CComTCPAbstract {
 		~CComTCPAbstract();
 		
 		void msmSocket();
+		void setPort(int port);
         virtual void msmShutdown(CComTCPData **pComData) = 0;
 		
         int msmSend(CComTCPData *pComData);

@@ -89,6 +89,8 @@ public:
     virtual QWidget* getPlot() = 0;
     virtual QWidget* getParent();
 
+    virtual void setRefreshRate(float val);
+
     virtual double getCurrentTime();
     virtual double getCurrentCpu0();
     virtual double getCurrentCpu1();
@@ -99,6 +101,7 @@ public:
     virtual double getCurrentMic0();
     virtual double getCurrentMic1();
     virtual double getCurrentSystem();
+    virtual void clearAllData();
 
     std::vector<double> mTimevalues;
     std::vector<double> mCpu0values;
@@ -111,7 +114,6 @@ public:
     std::vector<double> mMic1values;
     std::vector<double> mSystemvalues;
 
-    std::vector<double> mTimevaluesMean;
     std::vector<double> mCpu0valuesMean;
     std::vector<double> mCpu1valuesMean;
     std::vector<double> mGpu0valuesMean;
@@ -122,7 +124,6 @@ public:
     std::vector<double> mMic1valuesMean;
     std::vector<double> mSystemvaluesMean;
 
-    std::vector<double> mTimevaluesMedian;
     std::vector<double> mCpu0valuesMedian;
     std::vector<double> mCpu1valuesMedian;
     std::vector<double> mGpu0valuesMedian;
@@ -175,6 +176,7 @@ protected:
     int mMeanInterval;
     int mMedianInterval;
     int mValue;
+    float mRefreshRateMult;
 
     QwtPlot* mpPlot;
     QWidget* parent;

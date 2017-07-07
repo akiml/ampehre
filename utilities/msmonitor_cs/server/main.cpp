@@ -30,18 +30,59 @@ CServer srv = CServer(2901, 5);
 
 int main(int argc, char **argv) {
 
-	if(argc == 2){
-	    std::string s = argv[1];
-	    if(s != "-d" && s != "--debug")
-	    {
-	        std::cout<<"-d (--debug)\t\tdebug information"<< std::endl;
-	        return 1;
-	    }
-	}else if (argc == 1){
-	    std::cout.setstate(std::ios_base::failbit);
+    int port = -1;
+    if(argc > 1)
+    {
+        std::string s = argv[1];
+        if(s != "-d" && s != "-p")
+        {
+            std::cout<<"-d \t\tdebug information"<< std::endl;
+            std::cout<<"-p [port]\tspecify server port"<< std::endl;
+            return 1;
+        }
+        else if( s == "-d")
+        {
+            if(argc > 3)
+            {
+                s = argv[2];
+                if(s == "-p")
+                {
+                    s = argv[3];
+                    port = atoi(s.c_str());
+                }
+            }
+        }
+        else if( s == "-p")
+        {
+            if(argc > 3)
+            {
+                s = argv[2];
+                port = atoi(s.c_str());
+
+                s = argv[3];
+                if( s != "-d")
+                {
+                   std::cout.setstate(std::ios_base::failbit);
+                }
+            }
+            else if(argc == 3)
+            {
+                s = argv[2];
+                port = atoi(s.c_str());
+                std::cout.setstate(std::ios_base::failbit);
+            }
+        }
+    }else if (argc == 1)
+    {
+        std::cout.setstate(std::ios_base::failbit);
+    }
+    else
+        return 1;
+	
+	if(port != -1)
+	{
+		srv.setPort(port);
 	}
-	else
-	    return 1;
 
 
 	std::cout << "initiating server..." << std::endl; 

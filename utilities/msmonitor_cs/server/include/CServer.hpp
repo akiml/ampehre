@@ -38,6 +38,7 @@ public:
 	CServer(int port, int maxClients);
 	~CServer();
 	void init();
+	void setPort(int port);
 	void acceptLoop();
 	void getCurrentTime(double& time);
 	std::vector<Application> mApplications;

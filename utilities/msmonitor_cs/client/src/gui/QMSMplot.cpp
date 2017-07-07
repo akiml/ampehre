@@ -27,8 +27,8 @@
 //draw start stop better
 
 QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, QWidget* parent):
-    mType(type),
     QWidget(parent),
+    mType(type),
     ui(new Ui::QMSMplot),
     mLineWidth(linewidth),
     maxData(maxData),
@@ -49,6 +49,9 @@ QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, 
     mMedianInterval = 2;
     mMeanInterval = 2;
     mValue = ABSOLUTE;
+    mRefreshRateMult = 1.0;
+    mCurrentAppSize = 0;
+    enableApplications = true;
 
     ui->setupUi(this);
     mGroupbox = ui->groupBox;
@@ -56,8 +59,6 @@ QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, 
     mpPlot = ui->qwtPlot;
     mpLegend->setFrameStyle(QFrame::Box | QFrame::Sunken);
 
-    mCurrentAppSize = 0;
-    enableApplications = true;
     resize(width,height);
 
     connect(ui->spinBox, SIGNAL(valueChanged(int)), this, SLOT(resetLineWidth(int)));
@@ -67,6 +68,8 @@ QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, 
     connect(ui->radioButton_absolute, SIGNAL(clicked()), this, SLOT(radioButtonChecked_Abs()));
     connect(ui->radioButton_mean, SIGNAL(clicked()), this, SLOT(radioButtonChecked_Mean()));
     connect(ui->radioButton_median, SIGNAL(clicked()), this, SLOT(radioButtonChecked_Median()));
+    connect(ui->spinBox_mean, SIGNAL(valueChanged(int)), this, SLOT(spinBoxIntervalMean(int)));
+    connect(ui->spinBox_median, SIGNAL(valueChanged(int)), this, SLOT(spinBoxIntervalMedian(int)));
 
     radioButtonChecked_Abs();
 }
@@ -212,6 +215,40 @@ double QMSMplot::getCurrentSystem()
         return 0;
 }
 
+void QMSMplot::clearAllData()
+{
+    mTimevalues.clear();
+    mCpu0values.clear();
+    mCpu1values.clear();
+    mGpu0values.clear();
+    mGpu1values.clear();
+    mFpga0values.clear();
+    mFpga1values.clear();
+    mMic0values.clear();
+    mMic1values.clear();
+    mSystemvalues.clear();
+
+    mCpu0valuesMean.clear();
+    mCpu1valuesMean.clear();
+    mGpu0valuesMean.clear();
+    mGpu1valuesMean.clear();
+    mFpga0valuesMean.clear();
+    mFpga1valuesMean.clear();
+    mMic0valuesMean.clear();
+    mMic1valuesMean.clear();
+    mSystemvaluesMean.clear();
+
+    mCpu0valuesMedian.clear();
+    mCpu1valuesMedian.clear();
+    mGpu0valuesMedian.clear();
+    mGpu1valuesMedian.clear();
+    mFpga0valuesMedian.clear();
+    mFpga1valuesMedian.clear();
+    mMic0valuesMedian.clear();
+    mMic1valuesMedian.clear();
+    mSystemvaluesMedian.clear();
+}
+
 
 void QMSMplot::setLineWidth(int val)
 {
@@ -230,17 +267,18 @@ QWidget* QMSMplot::getPlot()
 
 void QMSMplot::computeMean(std::vector<double>& src, std::vector<double> &dst)
 {
-    if(src.size() > mMeanInterval)
+    int numValues = mMeanInterval*mRefreshRateMult;
+    if(src.size() > numValues)
     {
         double tmp = 0;
 
         //add up all values and devide by interval
-        for(unsigned int i = 0; i < mMeanInterval; i++)
+        for(unsigned int i = 0; i < numValues; i++)
         {
             tmp += src[src.size()-(i+1)];
         }
 
-        tmp = tmp/mMeanInterval;
+        tmp = tmp/numValues;
 
         dst.push_back(tmp);
     }
@@ -248,18 +286,19 @@ void QMSMplot::computeMean(std::vector<double>& src, std::vector<double> &dst)
 
 void QMSMplot::computeMedian(std::vector<double> &src, std::vector<double> &dst)
 {
-    if(src.size() > mMedianInterval)
+    int numValues = mMedianInterval*mRefreshRateMult;
+    if(src.size() > numValues)
     {
         std::vector<double> tmp;
 
         //save last n data
-        for(unsigned int i = 0; i < mMedianInterval; i++)
+        for(unsigned int i = 0; i < numValues; i++)
         {
             tmp.push_back(src[src.size()-(i+1)]);
         }
 
         //delete the n/2 smallest ones
-        for(unsigned int i = 0; i < mMedianInterval/2; i++)
+        for(unsigned int i = 0; i < numValues/2; i++)
         {
             int pos = 0;
             for(unsigned int n = 0; n < tmp.size(); n++)
@@ -301,6 +340,11 @@ void QMSMplot::screenshot()
 QWidget* QMSMplot::getParent()
 {
     return this->parent;
+}
+
+void QMSMplot::setRefreshRate(float val)
+{
+    this->mRefreshRateMult = val;
 }
 
 void QMSMplot::makeGrid()
