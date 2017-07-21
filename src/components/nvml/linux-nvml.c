@@ -25,6 +25,8 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
 /* Headers required by PAPI */
 #include "papi.h"
 #include "papi_internal.h"
@@ -70,6 +72,7 @@ nvmlReturn_t DECLDIR nvmlDeviceGetPciInfo                  (nvmlDevice_t, nvmlPc
 nvmlReturn_t DECLDIR nvmlDeviceGetName                     (nvmlDevice_t, char *, unsigned int);
 nvmlReturn_t DECLDIR nvmlDeviceGetInforomVersion           (nvmlDevice_t, nvmlInforomObject_t, char *, unsigned int);
 nvmlReturn_t DECLDIR nvmlDeviceGetEccMode                  (nvmlDevice_t, nvmlEnableState_t *, nvmlEnableState_t *);
+nvmlReturn_t DECLDIR nvmlDeviceSetPersistenceMode          (nvmlDevice_t, nvmlEnableState_t);
 nvmlReturn_t DECLDIR nvmlInit                              (void);
 nvmlReturn_t DECLDIR nvmlDeviceGetCount                    (unsigned int *);
 nvmlReturn_t DECLDIR nvmlShutdown                          (void);
@@ -90,6 +93,7 @@ nvmlReturn_t       (*nvmlDeviceGetPciInfoPtr)              (nvmlDevice_t, nvmlPc
 nvmlReturn_t       (*nvmlDeviceGetNamePtr)                 (nvmlDevice_t, char *, unsigned int);
 nvmlReturn_t       (*nvmlDeviceGetInforomVersionPtr)       (nvmlDevice_t, nvmlInforomObject_t, char *, unsigned int);
 nvmlReturn_t       (*nvmlDeviceGetEccModePtr)              (nvmlDevice_t, nvmlEnableState_t *, nvmlEnableState_t *);
+nvmlReturn_t       (*nvmlDeviceSetPersistenceModePtr)      (nvmlDevice_t, nvmlEnableState_t);
 nvmlReturn_t       (*nvmlInitPtr)                          (void);
 nvmlReturn_t       (*nvmlDeviceGetCountPtr)                (unsigned int *);
 nvmlReturn_t       (*nvmlShutdownPtr)                      (void);
@@ -99,6 +103,9 @@ nvmlReturn_t       (*nvmlDeviceGetComputeRunningProcessesPtr) (nvmlDevice_t, uns
 static void* dl3 = NULL;
 
 static int linkNvmlLibraries ();
+
+int set_persistence_mode = 1;
+char const* args_set_pm[] = {"gpu_management", "-p 1", NULL};
 
 
 /* Declare our vector in advance */
@@ -982,6 +989,22 @@ _papi_nvml_init_component( int cidx )
 		_nvml_vector.cmp_info.num_cntrs = num_events;
 		_nvml_vector.cmp_info.num_mpx_cntrs = num_events;
 
+		// set persistence mode for all devices
+	    // search for PAPI_NVML_NOPERS variable
+	    int envIx;
+	    char *nvml_nopers_env = NULL;
+	   	for (envIx = 0; environ[envIx] != NULL; ++envIx) {
+    	    if (strncmp(environ[envIx], "PAPI_NVML_NOPERS=", 14) == 0) {
+	            nvml_nopers_env = environ[envIx];
+	            break;
+	        }   
+	    }   
+
+    	// variable not found
+	    if (nvml_nopers_env != NULL) {
+			set_persistence_mode = 0;
+		}
+
 		return PAPI_OK;
 }
 
@@ -1097,6 +1120,12 @@ linkNvmlLibraries ()
 		strncpy(_nvml_vector.cmp_info.disabled_reason, "NVML function nvmlDeviceGetEccMode not found.",PAPI_MAX_STR_LEN);
 		return ( PAPI_ENOSUPP );
 	}
+	nvmlDeviceSetPersistenceModePtr = dlsym(dl3, "nvmlDeviceSetPersistenceMode");
+	if (dlerror() != NULL)
+	{
+		strncpy(_nvml_vector.cmp_info.disabled_reason, "NVML function nvmlDeviceSetPersistenceMode not found.",PAPI_MAX_STR_LEN);
+		return ( PAPI_ENOSUPP );
+	}
 	nvmlInitPtr = dlsym(dl3, "nvmlInit");
 	if (dlerror() != NULL)
 	{
@@ -1182,6 +1211,27 @@ _papi_nvml_start( hwd_context_t *ctx, hwd_control_state_t *ctl )
 
 		/* reset */
 		/* start the counting */
+
+		// set persistence mode for all devices
+		if (set_persistence_mode == 1) {
+			printf("Activate persistence mode for GPU device \n");
+			pid_t new_pid = 0;
+			int status_child = 1;
+			new_pid = fork();
+			if (new_pid == 0) {
+				// I am the child process.
+				execvp(args_set_pm[0], args_set_pm);
+			} else if (new_pid > 0) {
+				// I am the parent process.
+				wait(&status_child);
+			} else {
+				printf("Failed to activate persistence mode\n");
+				exit(EXIT_FAILURE);
+			}
+				
+			printf("Wait for 15 seconds...\n");
+			sleep(15);
+		}
 
 		return PAPI_OK;
 }

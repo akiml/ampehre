@@ -1,21 +1,22 @@
 #!/bin/bash
 
-MAXELER_INCDIR="/upb/departments/agce/modules/software/maxeler/compiler/Maxcompiler-2013.3_vectis/lib/maxeleros-sim/include"
-MAXELER_LIBDIR="/opt/maxeler/maxeleros/lib"
-
 # get directory of this script
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # check number of parameters
-if [[ $# -ne 2 ]]; then
+if [[ $# -ne 6 ]]; then
 	echo "PAPI: $DIR/`basename $0` misses the prefix parameter or base dir parameter"
-	echo "$DIR/`basename $0` [PREFIX] [BASEDIR]"
+	echo "$DIR/`basename $0` [PREFIX] [BASEDIR] [NVML_LIBDIR] [NVML_HEADERDIR] [MAXELER_LIBDIR] [MAXELER_HEADERDIR]"
 	exit 1
 fi
 
 # get install directory
 PREFIX="$1"
 BASEDIR="$2"
+NVML_LIBDIR="$3"
+NVML_INCDIR="$4"
+MAXELER_LIBDIR="$5"
+MAXELER_INCDIR="$6"
 
 cd "$DIR"
 cd src
@@ -24,7 +25,7 @@ cd src
 if [ ! -f Makefile ]; then
 	echo "PAPI: configure nvml"
 	cd components/nvml
-	./configure --with-nvml-dir=/
+	./configure --with-nvml-libdir="$NVML_LIBDIR" --with-nvml-incdir="$NVML_INCDIR"
 	RET="$?"
 	if [ $RET -ne 0 ]; then
 		echo "PAPI: configure nvml failed"
