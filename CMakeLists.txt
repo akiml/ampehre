@@ -76,6 +76,22 @@ set(MS_LIBRARY_MODULE_PATH
 	libmeasure/sys_dell_idrac7
 )
 
+# find external libraries
+# nvml
+find_library(NVML_LIBRARY libnvidia-ml.so PATHS
+	/usr/lib64
+)
+find_path(NVML_HEADER nvml.h PATHS
+	/usr/include
+)
+# maxeler
+find_library(MAX_LIBRARY libmaxeleros.so PATHS
+	/opt/maxeler/maxeleros/lib
+)
+find_path(MAX_HEADER maxdsd.h PATHS
+	/upb/departments/agce/modules/software/maxeler/compiler/Maxcompiler-2013.3_vectis/lib/maxeleros-sim/include
+)
+
 option(DEBUG_SYMS "Compile library and applications with debug symbols." OFF)
 if (DEBUG_SYMS)
 	message(STATUS "${Yellow}INFO: Compile with debug symbols ENABLED.${ColourReset}")
@@ -98,14 +114,28 @@ endif(MIC_INTEL_KNC_SUPPORT)
 
 if(GPU_NVIDIA_TESLA_SUPPORT)
 	message(STATUS "${BoldYellow}INFO: Compile with gpu  nvidia  tesla        ENABLED.${ColourReset}")
+	if(NOT NVML_LIBRARY)
+		message(FATAL_ERROR "${BoldRed}NVML library not found${ColourReset}")
+	endif()
+	if(NOT NVML_HEADER)
+		message(FATAL_ERROR "${BoldRed}NVML header not found${ColourReset}")
+	endif()
 else(GPU_NVIDIA_TESLA_SUPPORT)
 	message(STATUS "${BoldYellow}INFO: Compile with gpu  nvidia  tesla        DISABLED.${ColourReset}")
 endif(GPU_NVIDIA_TESLA_SUPPORT)
+
 if(FPGA_MAXELER_MAX3A_SUPPORT)
 	message(STATUS "${BoldYellow}INFO: Compile with fpga maxeler max3a        ENABLED.${ColourReset}")
+	if(NOT MAX_LIBRARY)
+		message(FATAL_ERROR "${BoldRed}Maxeler library not found${ColourReset}")
+	endif()
+	if(NOT MAX_HEADER)
+		message(FATAL_ERROR "${BoldRed}Maxeler header not found${ColourReset}")
+	endif()
 else(FPGA_MAXELER_MAX3A_SUPPORT)
 	message(STATUS "${BoldYellow}INFO: Compile with fpga maxeler max3a        DISABLED.${ColourReset}")
 endif(FPGA_MAXELER_MAX3A_SUPPORT)
+
 if(CPU_INTEL_SANDY_SUPPORT)
 	message(STATUS "${BoldYellow}INFO: Compile with cpu  intel   xeon   sandy ENABLED.${ColourReset}")
 else(CPU_INTEL_SANDY_SUPPORT)

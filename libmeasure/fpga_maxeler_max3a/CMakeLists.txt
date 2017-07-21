@@ -19,8 +19,7 @@
 #          0.7.0 - modularized measurement struct
 #
 
-find_library(MAX_LIBRARY libmaxeleros.so PATHS /opt/maxeler/maxeleros/lib)
-include_directories(/upb/departments/agce/modules/software/maxeler/compiler/Maxcompiler-2013.3_vectis/lib/maxeleros-sim/include)
+include_directories(${MAX_HEADER})
 
 set(SRC_FPGA_LIBRARY
 	ms_plugin_interface.cpp

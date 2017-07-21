@@ -29,9 +29,13 @@ set_target_properties(
 	IMPORTED_SONAME libpfm.so
 )
 
+get_filename_component(NVML_LIB_LOC ${NVML_LIBRARY} DIRECTORY)
+
+get_filename_component(MAX_LIB_LOC ${MAX_LIBRARY} DIRECTORY)
+
 add_custom_target(makepapi
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	COMMAND cd papi && ./cmake_build.sh "${CMAKE_INSTALL_PREFIX}" "${CMAKE_SOURCE_DIR}"
+	COMMAND cd papi && ./cmake_build.sh "${CMAKE_INSTALL_PREFIX}" "${CMAKE_SOURCE_DIR}" "${NVML_LIB_LOC}" "${NVML_HEADER}" "${MAX_LIB_LOC}" "${MAX_HEADER}"
 	COMMENT "Build PAPI library"
 )
 

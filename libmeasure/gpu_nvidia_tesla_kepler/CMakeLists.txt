@@ -19,8 +19,6 @@
 #          0.7.0 - modularized measurement struct
 #
 
-find_library(NVML_LIBRARY libnvidia-ml.so PATHS /usr/lib64)
-
 set(SRC_GPU_LIBRARY
 	ms_plugin_interface.cpp
 )
