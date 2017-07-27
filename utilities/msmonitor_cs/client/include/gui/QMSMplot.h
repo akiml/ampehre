@@ -32,6 +32,7 @@
 #include <qwt_plot_renderer.h>
 #include <qwt_plot_magnifier.h>
 #include <qwt_plot_panner.h>
+#include <qwt_plot_marker.h>
 #include <qwt_symbol.h>
 #include <vector>
 #include <QVBoxLayout>
@@ -43,6 +44,8 @@
 #include "utils.h"
 #include <QCheckBox>
 #include <QGroupBox>
+#include <QLayout>
+#include <QLabel>
 
 
 namespace Ui {
@@ -80,6 +83,12 @@ enum CHECKBOX
     CHECKBOX_SIZE
 };
 
+struct MSMminmax
+{
+    double min;
+    double max;
+};
+
 class QMSMplot : public QWidget
 {
     Q_OBJECT
@@ -102,6 +111,7 @@ public:
     virtual double getCurrentMic1();
     virtual double getCurrentSystem();
     virtual void clearAllData();
+    virtual void redrawMinMax();
 
     std::vector<double> mTimevalues;
     std::vector<double> mCpu0values;
@@ -138,6 +148,8 @@ public:
     bool enableApplications;
     std::vector<Application> mApplications;
     std::vector<QwtPlotMarker*> mMarker;
+    std::vector<QwtPlotMarker*> mMarkerMin;
+    std::vector<QwtPlotMarker*> mMarkerMax;
     int mType;
 
     virtual void setLineWidth(int val);
@@ -204,16 +216,27 @@ protected:
 
     QwtSymbol mVerticalLineStart;
     QwtSymbol mVerticalLineEnd;
+    QwtSymbol mHorizontalMax;
+    QwtSymbol mHorizontalMin;
 
     QwtPlotMagnifier* mpMagnifier;
     QwtPlotPanner* mpPanner;
     QwtPlotGrid* mpGrid;
 
     std::vector<QCheckBox*> mBoxes;
+    std::vector<QLabel*> mLabelsMin;
+    std::vector<QLabel*> mLabelsMax;
     QGroupBox* mGroupbox;
+    QVBoxLayout* mLeftVert;
+    QVBoxLayout* mRightLeftVert;
+    QVBoxLayout* mRightRightVert;
+    std::vector <MSMminmax> mExVal;
+
+
 
     void computeMedian(std::vector<double>& src, std::vector<double>& dst);
     void computeMean(std::vector<double> &src, std::vector<double>& dst);
+
 
 
 };

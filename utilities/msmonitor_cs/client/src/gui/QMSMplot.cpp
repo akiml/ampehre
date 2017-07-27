@@ -44,7 +44,9 @@ QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, 
     mpPaintMic1(new QPen(Qt::magenta, mLineWidth)),
     mpPaintSystem( new QPen(QColor(255,165,0), mLineWidth)),
     mVerticalLineStart(QwtSymbol::VLine, QBrush(Qt::green), QPen(Qt::green), QSize(1, 300)), //change color
-    mVerticalLineEnd(QwtSymbol::VLine, QBrush(Qt::red), QPen(Qt::red), QSize(1, 300))
+    mVerticalLineEnd(QwtSymbol::VLine, QBrush(Qt::red), QPen(Qt::red), QSize(1, 300)),
+    mHorizontalMax(QwtSymbol::HLine, QBrush(Qt::blue), QPen(Qt::blue), QSize(1, 300)),
+    mHorizontalMin(QwtSymbol::HLine, QBrush(Qt::yellow), QPen(Qt::yellow), QSize(1, 300))
 {
     mMedianInterval = 2;
     mMeanInterval = 2;
@@ -53,8 +55,19 @@ QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, 
     mCurrentAppSize = 0;
     enableApplications = true;
 
+    for(unsigned int i = 0; i < CHECKBOX_SIZE; i++)
+    {
+        MSMminmax v;
+        v.min = 1000000;
+        v.max = -1000000;
+        mExVal.push_back(v);
+    }
+
     ui->setupUi(this);
     mGroupbox = ui->groupBox;
+    mLeftVert = ui->verticalLayout_left;
+    mRightLeftVert = ui->verticalLayout_rightLeft;
+    mRightRightVert = ui->verticalLayout_rightRight;
     setLineWidth(mLineWidth);
     mpPlot = ui->qwtPlot;
     mpLegend->setFrameStyle(QFrame::Box | QFrame::Sunken);
@@ -79,6 +92,13 @@ QMSMplot::~QMSMplot()
     delete ui;
 
     mMarker.clear();
+
+    for(unsigned int i = 0; i < mBoxes.size(); i++)
+    {
+        delete mBoxes[i];
+//        delete mBoxesMin[i];
+//        delete mBoxesMax[i];
+    }
 
     delete mpLegend;
     delete mpPaintCpu0;
@@ -267,7 +287,7 @@ QWidget* QMSMplot::getPlot()
 
 void QMSMplot::computeMean(std::vector<double>& src, std::vector<double> &dst)
 {
-    int numValues = mMeanInterval*mRefreshRateMult;
+    unsigned int numValues = mMeanInterval*mRefreshRateMult;
     if(src.size() > numValues)
     {
         double tmp = 0;
@@ -286,7 +306,7 @@ void QMSMplot::computeMean(std::vector<double>& src, std::vector<double> &dst)
 
 void QMSMplot::computeMedian(std::vector<double> &src, std::vector<double> &dst)
 {
-    int numValues = mMedianInterval*mRefreshRateMult;
+    unsigned int numValues = mMedianInterval*mRefreshRateMult;
     if(src.size() > numValues)
     {
         std::vector<double> tmp;
@@ -443,3 +463,23 @@ void QMSMplot::redrawApplications()
     }
 }
 
+
+void QMSMplot::redrawMinMax()
+{
+
+    for(unsigned int i = 0; i < mLabelsMin.size(); i++)
+    {
+
+        if(mExVal[i].min != 1000000)
+        {
+           QString str = "Min: " + QString::number(mExVal[i].min);
+           mLabelsMin[i]->setText(str);
+        }
+        if(mExVal[i].max != -1000000)
+        {
+           QString str = "Max: " +QString::number(mExVal[i].max);
+           mLabelsMax[i]->setText(str);
+        }
+
+    }
+}

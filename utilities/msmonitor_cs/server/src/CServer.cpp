@@ -89,6 +89,8 @@ void CServer::controlClients()
 
 void* CServer::clientTask(void* d) 
 {
+//	signal(SIGUSR1, SIG_IGN);
+//	signal(SIGUSR2, SIG_IGN);		//lieber forken??
 	int s = pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 	CComTCPData* pData = (CComTCPData*) d;
 	CServer* pSrv = (CServer*) pData->mpSrv;

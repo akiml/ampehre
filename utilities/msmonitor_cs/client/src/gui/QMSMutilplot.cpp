@@ -52,15 +52,18 @@ void QMSMUtilPlot::initPlot()
     mBoxes.push_back(new QCheckBox("GPU Memory"));
     mBoxes.push_back(new QCheckBox("Compute FPGA"));
     mBoxes.push_back(new QCheckBox("MIC"));
-    QVBoxLayout* layout = new QVBoxLayout;
 
     for(unsigned int i = 0; i < mBoxes.size(); i++)
     {
+        mLabelsMin.push_back(new QLabel("Min: "));
+        mLabelsMax.push_back(new QLabel("Max: "));
         mBoxes[i]->setChecked(true);
-        layout->addWidget(mBoxes[i]);
+
+        mLeftVert->addWidget(mBoxes[i]);
+        mRightLeftVert->addWidget(mLabelsMin[i]);
+        mRightRightVert->addWidget(mLabelsMax[i]);
     }
 
-    mGroupbox->setLayout(layout);
 
     mpPlot->setTitle("Utilization");
     setWindowTitle("Utilization");
@@ -116,6 +119,8 @@ void QMSMUtilPlot::redraw()
     }
 
     redrawApplications();
+    redrawMinMax();
+
 
     for(unsigned int i = 0; i < mBoxes.size(); i++)
     {
@@ -181,6 +186,18 @@ void QMSMUtilPlot::updateValues(std::vector<double> &values)
         mGpu1values.erase(mGpu1values.begin());
         mFpga0values.erase(mFpga0values.begin());
         mMic0values.erase(mMic0values.begin());
+
+        mCpu0valuesMean.erase(mCpu0valuesMean.begin());
+        mGpu0valuesMean.erase(mGpu0valuesMean.begin());
+        mGpu1valuesMean.erase(mGpu1valuesMean.begin());
+        mFpga0valuesMean.erase(mFpga0valuesMean.begin());
+        mMic0valuesMean.erase(mMic0valuesMean.begin());
+
+        mCpu0valuesMedian.erase(mCpu0valuesMedian.begin());
+        mGpu0valuesMedian.erase(mGpu0valuesMedian.begin());
+        mGpu1valuesMedian.erase(mGpu1valuesMedian.begin());
+        mFpga0valuesMedian.erase(mFpga0valuesMedian.begin());
+        mMic0valuesMedian.erase(mMic0valuesMedian.begin());
     }
     mTimevalues.push_back(values[X]);
     mCpu0values.push_back(values[YUtilCpu]);
@@ -201,6 +218,52 @@ void QMSMUtilPlot::updateValues(std::vector<double> &values)
     computeMedian(mFpga0values, mFpga0valuesMedian);
     computeMedian(mMic0values, mMic0valuesMedian);
 
+    int i = 0;
+
+    if(mCpu0values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mCpu0values.back();
+    }
+    else if(mCpu0values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mCpu0values.back();
+    }
+    i++;
+    if(mGpu0values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mGpu0values.back();
+    }
+    else if(mGpu0values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mGpu0values.back();
+    }
+    i++;
+    if(mGpu1values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mGpu1values.back();
+    }
+    else if(mGpu1values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mGpu1values.back();
+    }
+    i++;
+    if(mFpga0values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mFpga0values.back();
+    }
+    else if(mFpga0values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mFpga0values.back();
+    }
+    i++;
+    if(mMic0values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mMic0values.back();
+    }
+    else if(mMic0values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mMic0values.back();
+    }
     scaleAxis(mTimevalues[mTimevalues.size()-1]);
 
 }

@@ -54,15 +54,19 @@ void QMSMClockPlot::initPlot()
     mBoxes.push_back(new QCheckBox("GPU Mem"));
     mBoxes.push_back(new QCheckBox("MIC Core"));
     mBoxes.push_back(new QCheckBox("MIC Mem"));
-    QVBoxLayout* layout = new QVBoxLayout;
 
     for(unsigned int i = 0; i < mBoxes.size(); i++)
     {
+        mLabelsMin.push_back(new QLabel("Min: "));
+        mLabelsMax.push_back(new QLabel("Max: "));
         mBoxes[i]->setChecked(true);
-        layout->addWidget(mBoxes[i]);
+
+        mLeftVert->addWidget(mBoxes[i]);
+        mRightLeftVert->addWidget(mLabelsMin[i]);
+        mRightRightVert->addWidget(mLabelsMax[i]);
     }
 
-    mGroupbox->setLayout(layout);
+
 
     mpPlot->setTitle("Clock");
     setWindowTitle("Clock");
@@ -121,6 +125,7 @@ void QMSMClockPlot::redraw()
         mpMic1->setSamples(mTimevalues.data(), mMic1valuesMedian.data(), size);
     }
     redrawApplications();
+    redrawMinMax();
 
     for(unsigned int i = 0; i < mBoxes.size(); i++)
     {
@@ -194,6 +199,20 @@ void QMSMClockPlot::updateValues(std::vector<double> &values)
         mGpu1values.erase(mGpu1values.begin());
         mMic0values.erase(mMic0values.begin());
         mMic1values.erase(mMic1values.begin());
+
+        mCpu0valuesMean.erase(mCpu0valuesMean.begin());
+        mCpu1valuesMean.erase(mCpu1valuesMean.begin());
+        mGpu0valuesMean.erase(mGpu0valuesMean.begin());
+        mGpu1valuesMean.erase(mGpu1valuesMean.begin());
+        mMic0valuesMean.erase(mMic0valuesMean.begin());
+        mMic1valuesMean.erase(mMic1valuesMean.begin());
+
+        mCpu0valuesMedian.erase(mCpu0valuesMedian.begin());
+        mCpu1valuesMedian.erase(mCpu1valuesMedian.begin());
+        mGpu0valuesMedian.erase(mGpu0valuesMedian.begin());
+        mGpu1valuesMedian.erase(mGpu1valuesMedian.begin());
+        mMic0valuesMedian.erase(mMic0valuesMedian.begin());
+        mMic1valuesMedian.erase(mMic1valuesMedian.begin());
     }
     mTimevalues.push_back(values[X]);
     mCpu0values.push_back(values[YClockCpu0]);
@@ -216,6 +235,62 @@ void QMSMClockPlot::updateValues(std::vector<double> &values)
     computeMedian(mGpu1values, mGpu1valuesMedian);
     computeMedian(mMic0values, mMic0valuesMedian);
     computeMedian(mMic1values, mMic1valuesMedian);
+
+    int i = 0;
+
+    if(mCpu0values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mCpu0values.back();
+    }
+    else if(mCpu0values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mCpu0values.back();
+    }
+    i++;
+    if(mCpu1values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mCpu1values.back();
+    }
+    else if(mCpu1values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mCpu1values.back();
+    }
+    i++;
+    if(mGpu0values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mGpu0values.back();
+    }
+    else if(mGpu0values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mGpu0values.back();
+    }
+    i++;
+    if(mGpu1values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mGpu1values.back();
+    }
+    else if(mGpu1values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mGpu1values.back();
+    }
+    i++;
+    if(mMic0values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mMic0values.back();
+    }
+    else if(mMic0values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mMic0values.back();
+    }
+    i++;
+    if(mMic1values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mMic1values.back();
+    }
+    else if(mMic1values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mMic1values.back();
+    }
 
     scaleAxis(mTimevalues[mTimevalues.size()-1]);
 }

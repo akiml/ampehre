@@ -55,15 +55,18 @@ void QMSMTemperaturePlot::initPlot()
     mBoxes.push_back(new QCheckBox("FPGA M"));
     mBoxes.push_back(new QCheckBox("MIC"));
     mBoxes.push_back(new QCheckBox("System"));
-    QVBoxLayout* layout = new QVBoxLayout;
 
     for(unsigned int i = 0; i < mBoxes.size(); i++)
     {
+        mLabelsMin.push_back(new QLabel("Min: "));
+        mLabelsMax.push_back(new QLabel("Max: "));
         mBoxes[i]->setChecked(true);
-        layout->addWidget(mBoxes[i]);
+
+        mLeftVert->addWidget(mBoxes[i]);
+        mRightLeftVert->addWidget(mLabelsMin[i]);
+        mRightRightVert->addWidget(mLabelsMax[i]);
     }
 
-    mGroupbox->setLayout(layout);
 
     mpPlot->setTitle("Temperature");
     setWindowTitle("Temperature");
@@ -125,6 +128,8 @@ void QMSMTemperaturePlot::redraw()
     }
 
     redrawApplications();
+    redrawMinMax();
+
 
     for(unsigned int i = 0; i < mBoxes.size(); i++)
     {
@@ -207,6 +212,22 @@ void QMSMTemperaturePlot::updateValues(std::vector<double> &values)
         mFpga1values.erase(mFpga1values.begin());
         mMic0values.erase(mMic0values.begin());
         mSystemvalues.erase(mSystemvalues.begin());
+
+        mCpu0valuesMean.erase(mCpu0valuesMean.begin());
+        mCpu1valuesMean.erase(mCpu1valuesMean.begin());
+        mGpu0valuesMean.erase(mGpu0valuesMean.begin());
+        mFpga0valuesMean.erase(mFpga0valuesMean.begin());
+        mFpga1valuesMean.erase(mFpga1valuesMean.begin());
+        mMic0valuesMean.erase(mMic0valuesMean.begin());
+        mSystemvaluesMean.erase(mSystemvaluesMean.begin());
+
+        mCpu0valuesMedian.erase(mCpu0valuesMedian.begin());
+        mCpu1valuesMedian.erase(mCpu1valuesMedian.begin());
+        mGpu0valuesMedian.erase(mGpu0valuesMedian.begin());
+        mFpga0valuesMedian.erase(mFpga0valuesMedian.begin());
+        mFpga1valuesMedian.erase(mFpga1valuesMedian.begin());
+        mMic0valuesMedian.erase(mMic0valuesMedian.begin());
+        mSystemvaluesMedian.erase(mSystemvaluesMedian.begin());
     }
     mTimevalues.push_back(values[X]);
     mCpu0values.push_back(values[YTempCpu0]);
@@ -232,6 +253,71 @@ void QMSMTemperaturePlot::updateValues(std::vector<double> &values)
     computeMedian(mFpga1values, mFpga1valuesMedian);
     computeMedian(mMic0values, mMic0valuesMedian);
     computeMedian(mSystemvalues, mSystemvaluesMedian);
+
+    int i = 0;
+
+    if(mCpu0values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mCpu0values.back();
+    }
+    else if(mCpu0values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mCpu0values.back();
+    }
+    i++;
+    if(mCpu1values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mCpu1values.back();
+    }
+    else if(mCpu1values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mCpu1values.back();
+    }
+    i++;
+    if(mGpu0values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mGpu0values.back();
+    }
+    else if(mGpu0values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mGpu0values.back();
+    }
+    i++;
+    if(mFpga0values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mFpga0values.back();
+    }
+    else if(mFpga0values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mFpga0values.back();
+    }
+    i++;
+    if(mFpga1values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mFpga1values.back();
+    }
+    else if(mFpga1values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mFpga1values.back();
+    }
+    i++;
+    if(mMic0values.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mMic0values.back();
+    }
+    else if(mMic0values.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mMic0values.back();
+    }
+    i++;
+    if(mSystemvalues.back() > mExVal[i].max)
+    {
+        mExVal[i].max =  mSystemvalues.back();
+    }
+    else if(mSystemvalues.back() < mExVal[i].min)
+    {
+        mExVal[i].min =  mSystemvalues.back();
+    }
 
     scaleAxis(mTimevalues[mTimevalues.size()-1]);
 
