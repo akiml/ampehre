@@ -581,11 +581,11 @@ static long long convert_rapl_energy(int index, long long value) {
    return_val.ll = value; /* default case: return raw input value */
 
    if (rapl_native_events[index].type==PACKAGE_ENERGY) {
-      return_val.ll = (long long)(((double)value/cpu_energy_divisor)*1e9);
+      return_val.ll = (long long)((((value & 0xFFFFFFFF)<<31)/cpu_energy_divisor));
    }
 
    if (rapl_native_events[index].type==DRAM_ENERGY) {
-      return_val.ll = (long long)(((double)value/dram_energy_divisor)*1e9);
+      return_val.ll = (long long)((((value & 0xFFFFFFFF)<<31)/dram_energy_divisor));
    }
 
    if (rapl_native_events[index].type==PACKAGE_THERMAL) {
