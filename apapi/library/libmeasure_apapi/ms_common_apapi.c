@@ -1469,6 +1469,7 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
 }
 
 void ms_init_fpga_force_idle(MS_SYSTEM *ms_system) {
+	printf("ms_init_fpga_force_idle: This method is not available in ms_common_apapi\n");
 }
 void ms_fini(MS_SYSTEM *ms_system) {
 
@@ -1749,6 +1750,8 @@ void ms_join_measurement(MS_SYSTEM *ms_system) {
 }
 
 void ms_reg_sighandler_start(MS_SYSTEM *ms_system, void(*signal_handler)(int)) {
+	printf("ms_reg_sighandler_start: This method is not available in ms_common_apapi\n");
 }
 void ms_reg_sighandler_stop(MS_SYSTEM *ms_system, void(*signal_handler)(int)) {
+	printf("ms_reg_sighandler_stop: This method is not available in ms_common_apapi\n");
 }
