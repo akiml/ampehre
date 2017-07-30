@@ -1,0 +1,80 @@
+%
+% het_node_doc.tex
+%
+% Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>
+% All rights reserved.
+%
+% This documentation may be modified and distributed under the terms
+% of the BSD license. See the LICENSE file for details.
+%
+% encoding: UTF-8
+% tab size: 4
+%
+% author: Achim Lösch (achim.loesch@upb.de)
+% created: 7/20/14
+% version: 0.5.8 - change project name to ampehre
+%
+
+\documentclass[a4paper,10pt]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{framed, color}
+\usepackage{colortbl}
+\usepackage{amssymb}
+\usepackage[markup=default]{changes}
+\usepackage{hhline}
+\usepackage{tabularx}
+\usepackage[titletoc]{appendix}
+\usepackage{pdflscape}
+
+\graphicspath{{./figures/}}
+
+\definecolor{lightgray}{rgb}{0.7,0.7,0.7}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{backcolour},
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{magenta},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\footnotesize,
+	breakatwhitespace=false,
+	breaklines=true,
+	captionpos=b,
+	keepspaces=true,
+	numbers=left,
+	numbersep=5pt,
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	tabsize=4
+}
+\lstset{language=C++,frame=shadowbox,frameround=tftf, numbers =left,captionpos=b, style=mystyle}
+
+\definechangesauthor[name={Christoph Knorr}, color=orange]{ck}
+\definechangesauthor[name={Achim Lösch}, color=blue]{al}
+
+\begin{document}
+
+\input{titlepage.tex}
+\clearpage
+\input{project.tex}
+\clearpage
+\input{manual.tex}
+\clearpage
+\input{protocol.tex}
+\clearpage
+
+\begin{appendices}
+\appendixpage
+\input{appendix.tex}
+\end{appendices}
+
+\end{document}
