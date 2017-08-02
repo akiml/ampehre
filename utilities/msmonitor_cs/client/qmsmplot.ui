@@ -23,7 +23,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="plot_tab">
       <attribute name="title">
@@ -109,17 +109,17 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_left"/>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_rightLeft"/>
-            </item>
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_rightRight"/>
+             <layout class="QVBoxLayout" name="verticalLayout_left"/>
             </item>
            </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_leftrightleft"/>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_leftrightright"/>
           </item>
          </layout>
         </widget>

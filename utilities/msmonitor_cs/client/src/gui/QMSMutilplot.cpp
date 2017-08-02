@@ -55,13 +55,10 @@ void QMSMUtilPlot::initPlot()
 
     for(unsigned int i = 0; i < mBoxes.size(); i++)
     {
-        mLabelsMin.push_back(new QLabel("Min: "));
-        mLabelsMax.push_back(new QLabel("Max: "));
         mBoxes[i]->setChecked(true);
 
         mLeftVert->addWidget(mBoxes[i]);
-        mRightLeftVert->addWidget(mLabelsMin[i]);
-        mRightRightVert->addWidget(mLabelsMax[i]);
+
     }
 
 

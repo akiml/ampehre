@@ -43,10 +43,10 @@ QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, 
     mpPaintMic0(new QPen(Qt::darkMagenta, mLineWidth)),
     mpPaintMic1(new QPen(Qt::magenta, mLineWidth)),
     mpPaintSystem( new QPen(QColor(255,165,0), mLineWidth)),
+    mpPaintMin(new QPen(Qt::darkCyan, mLineWidth)),
+    mpPaintMax(new QPen(Qt::darkYellow, mLineWidth)),
     mVerticalLineStart(QwtSymbol::VLine, QBrush(Qt::green), QPen(Qt::green), QSize(1, 300)), //change color
-    mVerticalLineEnd(QwtSymbol::VLine, QBrush(Qt::red), QPen(Qt::red), QSize(1, 300)),
-    mHorizontalMax(QwtSymbol::HLine, QBrush(Qt::blue), QPen(Qt::blue), QSize(1, 300)),
-    mHorizontalMin(QwtSymbol::HLine, QBrush(Qt::yellow), QPen(Qt::yellow), QSize(1, 300))
+    mVerticalLineEnd(QwtSymbol::VLine, QBrush(Qt::red), QPen(Qt::red), QSize(1, 300))
 {
     mMedianInterval = 2;
     mMeanInterval = 2;
@@ -66,8 +66,8 @@ QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, 
     ui->setupUi(this);
     mGroupbox = ui->groupBox;
     mLeftVert = ui->verticalLayout_left;
-    mRightLeftVert = ui->verticalLayout_rightLeft;
-    mRightRightVert = ui->verticalLayout_rightRight;
+    mLeftRightLeftVert = ui->verticalLayout_leftrightleft;
+    mLeftRightRightVert = ui->verticalLayout_leftrightright;
     setLineWidth(mLineWidth);
     mpPlot = ui->qwtPlot;
     mpLegend->setFrameStyle(QFrame::Box | QFrame::Sunken);
@@ -96,8 +96,6 @@ QMSMplot::~QMSMplot()
     for(unsigned int i = 0; i < mBoxes.size(); i++)
     {
         delete mBoxes[i];
-//        delete mBoxesMin[i];
-//        delete mBoxesMax[i];
     }
 
     delete mpLegend;
@@ -247,6 +245,26 @@ void QMSMplot::clearAllData()
     mMic0values.clear();
     mMic1values.clear();
     mSystemvalues.clear();
+
+    mCpu0valuesMax.clear();
+    mCpu1valuesMax.clear();
+    mGpu0valuesMax.clear();
+    mGpu1valuesMax.clear();
+    mFpga0valuesMax.clear();
+    mFpga1valuesMax.clear();
+    mMic0valuesMax.clear();
+    mMic1valuesMax.clear();
+    mSystemvaluesMax.clear();
+
+    mCpu0valuesMin.clear();
+    mCpu1valuesMin.clear();
+    mGpu0valuesMin.clear();
+    mGpu1valuesMin.clear();
+    mFpga0valuesMin.clear();
+    mFpga1valuesMin.clear();
+    mMic0valuesMin.clear();
+    mMic1valuesMin.clear();
+    mSystemvaluesMin.clear();
 
     mCpu0valuesMean.clear();
     mCpu1valuesMean.clear();
@@ -467,18 +485,18 @@ void QMSMplot::redrawApplications()
 void QMSMplot::redrawMinMax()
 {
 
-    for(unsigned int i = 0; i < mLabelsMin.size(); i++)
+    for(unsigned int i = 0; i < mBoxesMin.size(); i++)
     {
 
         if(mExVal[i].min != 1000000)
         {
            QString str = "Min: " + QString::number(mExVal[i].min);
-           mLabelsMin[i]->setText(str);
+           mBoxesMin[i]->setText(str);
         }
         if(mExVal[i].max != -1000000)
         {
            QString str = "Max: " +QString::number(mExVal[i].max);
-           mLabelsMax[i]->setText(str);
+           mBoxesMax[i]->setText(str);
         }
 
     }

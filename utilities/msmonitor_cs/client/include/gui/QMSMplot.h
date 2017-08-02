@@ -124,6 +124,26 @@ public:
     std::vector<double> mMic1values;
     std::vector<double> mSystemvalues;
 
+    std::vector<double> mCpu0valuesMax;
+    std::vector<double> mCpu1valuesMax;
+    std::vector<double> mGpu0valuesMax;
+    std::vector<double> mGpu1valuesMax;
+    std::vector<double> mFpga0valuesMax;
+    std::vector<double> mFpga1valuesMax;
+    std::vector<double> mMic0valuesMax;
+    std::vector<double> mMic1valuesMax;
+    std::vector<double> mSystemvaluesMax;
+
+    std::vector<double> mCpu0valuesMin;
+    std::vector<double> mCpu1valuesMin;
+    std::vector<double> mGpu0valuesMin;
+    std::vector<double> mGpu1valuesMin;
+    std::vector<double> mFpga0valuesMin;
+    std::vector<double> mFpga1valuesMin;
+    std::vector<double> mMic0valuesMin;
+    std::vector<double> mMic1valuesMin;
+    std::vector<double> mSystemvaluesMin;
+
     std::vector<double> mCpu0valuesMean;
     std::vector<double> mCpu1valuesMean;
     std::vector<double> mGpu0valuesMean;
@@ -148,8 +168,6 @@ public:
     bool enableApplications;
     std::vector<Application> mApplications;
     std::vector<QwtPlotMarker*> mMarker;
-    std::vector<QwtPlotMarker*> mMarkerMin;
-    std::vector<QwtPlotMarker*> mMarkerMax;
     int mType;
 
     virtual void setLineWidth(int val);
@@ -204,6 +222,25 @@ protected:
     QwtPlotCurve* mpMic1;
     QwtPlotCurve* mpSystem;
 
+    QwtPlotCurve* mpCpu0Max;
+    QwtPlotCurve* mpCpu0Min;
+    QwtPlotCurve* mpCpu1Max;
+    QwtPlotCurve* mpCpu1Min;
+    QwtPlotCurve* mpGpu0Max;
+    QwtPlotCurve* mpGpu0Min;
+    QwtPlotCurve* mpGpu1Max;
+    QwtPlotCurve* mpGpu1Min;
+    QwtPlotCurve* mpFpga0Max;
+    QwtPlotCurve* mpFpga0Min;
+    QwtPlotCurve* mpFpga1Max;
+    QwtPlotCurve* mpFpga1Min;
+    QwtPlotCurve* mpMic0Max;
+    QwtPlotCurve* mpMic0Min;
+    QwtPlotCurve* mpMic1Max;
+    QwtPlotCurve* mpMic1Min;
+    QwtPlotCurve* mpSystemMax;
+    QwtPlotCurve* mpSystemMin;
+
     QPen* mpPaintCpu0;
     QPen* mpPaintCpu1;
     QPen* mpPaintGpu0;
@@ -213,23 +250,25 @@ protected:
     QPen* mpPaintMic0;
     QPen* mpPaintMic1;
     QPen* mpPaintSystem;
+    QPen* mpPaintMin;
+    QPen* mpPaintMax;
 
     QwtSymbol mVerticalLineStart;
     QwtSymbol mVerticalLineEnd;
-    QwtSymbol mHorizontalMax;
-    QwtSymbol mHorizontalMin;
 
     QwtPlotMagnifier* mpMagnifier;
     QwtPlotPanner* mpPanner;
     QwtPlotGrid* mpGrid;
 
     std::vector<QCheckBox*> mBoxes;
-    std::vector<QLabel*> mLabelsMin;
-    std::vector<QLabel*> mLabelsMax;
+    std::vector<QCheckBox*> mBoxesMin;
+    std::vector<QCheckBox*> mBoxesMax;
+
     QGroupBox* mGroupbox;
     QVBoxLayout* mLeftVert;
-    QVBoxLayout* mRightLeftVert;
-    QVBoxLayout* mRightRightVert;
+    QVBoxLayout* mLeftRightLeftVert;
+    QVBoxLayout* mLeftRightRightVert;
+
     std::vector <MSMminmax> mExVal;
 
 

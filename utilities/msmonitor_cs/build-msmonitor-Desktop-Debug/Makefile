@@ -47,7 +47,6 @@ OBJECTS_DIR   = build/obj/
 
 SOURCES       = ../client/src/main.cpp \
 		../client/src/CClient.cpp \
-		../client/src/CComC.cpp \
 		../client/src/CProtocolC.cpp \
 		../client/src/CConfig.cpp \
 		../client/src/gui/mainwindow.cpp \
@@ -62,6 +61,9 @@ SOURCES       = ../client/src/main.cpp \
 		../client/src/gui/QMSMsystemoverview.cpp \
 		../common/CProtocol.cpp \
 		../common/utils.cpp \
+		../common/CComTCPAbstract.cpp \
+		../common/CComTCPClient.cpp \
+		../common/CComTCPData.cpp \
 		../client/src/gui/QMSMlinearcolormaprgb.cpp \
 		../client/src/gui/QMSMabout.cpp build/rcc/qrc_rsrc.cpp \
 		build/moc/moc_mainwindow.cpp \
@@ -73,7 +75,6 @@ SOURCES       = ../client/src/main.cpp \
 		build/moc/moc_QMSMabout.cpp
 OBJECTS       = build/obj/main.o \
 		build/obj/CClient.o \
-		build/obj/CComC.o \
 		build/obj/CProtocolC.o \
 		build/obj/CConfig.o \
 		build/obj/mainwindow.o \
@@ -88,6 +89,9 @@ OBJECTS       = build/obj/main.o \
 		build/obj/QMSMsystemoverview.o \
 		build/obj/CProtocol.o \
 		build/obj/utils.o \
+		build/obj/CComTCPAbstract.o \
+		build/obj/CComTCPClient.o \
+		build/obj/CComTCPData.o \
 		build/obj/QMSMlinearcolormaprgb.o \
 		build/obj/QMSMabout.o \
 		build/obj/qrc_rsrc.o \
@@ -159,7 +163,6 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
 		../client/msmonitor.pro ../client/src/main.cpp \
 		../client/src/CClient.cpp \
-		../client/src/CComC.cpp \
 		../client/src/CProtocolC.cpp \
 		../client/src/CConfig.cpp \
 		../client/src/gui/mainwindow.cpp \
@@ -174,6 +177,9 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		../client/src/gui/QMSMsystemoverview.cpp \
 		../common/CProtocol.cpp \
 		../common/utils.cpp \
+		../common/CComTCPAbstract.cpp \
+		../common/CComTCPClient.cpp \
+		../common/CComTCPData.cpp \
 		../client/src/gui/QMSMlinearcolormaprgb.cpp \
 		../client/src/gui/QMSMabout.cpp
 QMAKE_TARGET  = msmonitor_client
@@ -345,7 +351,7 @@ qmake_all: FORCE
 
 dist: 
 	@test -d build/obj/msmonitor_client1.0.0 || mkdir -p build/obj/msmonitor_client1.0.0
-	$(COPY_FILE) --parents $(DIST) build/obj/msmonitor_client1.0.0/ && $(COPY_FILE) --parents ../client/resource/rsrc.qrc build/obj/msmonitor_client1.0.0/ && $(COPY_FILE) --parents ../client/include/gui/mainwindow.h ../client/include/gui/QMSMpowerplot.h ../client/include/gui/QMSMplot.h ../client/include/CClient.hpp ../client/include/CComC.hpp ../client/include/CProtocolC.hpp ../client/include/CConfig.h ../client/include/gui/QMSMtemperatureplot.h ../client/include/gui/QMSMclockplot.h ../client/include/gui/QMSMutilplot.h ../client/include/gui/QMSMmemoryplot.h ../client/include/gui/QMSMheatmap.h ../client/include/gui/QMSMsettings.h ../client/include/gui/QMSMsystemoverview.h ../common/CProtocol.hpp ../common/utils.h ../client/include/gui/QMSMlinearcolormaprgb.h ../client/include/gui/QMSMabout.h build/obj/msmonitor_client1.0.0/ && $(COPY_FILE) --parents ../client/src/main.cpp ../client/src/CClient.cpp ../client/src/CComC.cpp ../client/src/CProtocolC.cpp ../client/src/CConfig.cpp ../client/src/gui/mainwindow.cpp ../client/src/gui/QMSMpowerplot.cpp ../client/src/gui/QMSMplot.cpp ../client/src/gui/QMSMtemperatureplot.cpp ../client/src/gui/QMSMclockplot.cpp ../client/src/gui/QMSMmemoryplot.cpp ../client/src/gui/QMSMutilplot.cpp ../client/src/gui/QMSMheatmap.cpp ../client/src/gui/QMSMsettings.cpp ../client/src/gui/QMSMsystemoverview.cpp ../common/CProtocol.cpp ../common/utils.cpp ../client/src/gui/QMSMlinearcolormaprgb.cpp ../client/src/gui/QMSMabout.cpp build/obj/msmonitor_client1.0.0/ && $(COPY_FILE) --parents ../client/mainwindow.ui ../client/qmsmsettings.ui ../client/qmsmplot.ui ../client/qmsmsystemoverview.ui ../client/qmsmabout.ui build/obj/msmonitor_client1.0.0/ && (cd `dirname build/obj/msmonitor_client1.0.0` && $(TAR) msmonitor_client1.0.0.tar msmonitor_client1.0.0 && $(COMPRESS) msmonitor_client1.0.0.tar) && $(MOVE) `dirname build/obj/msmonitor_client1.0.0`/msmonitor_client1.0.0.tar.gz . && $(DEL_FILE) -r build/obj/msmonitor_client1.0.0
+	$(COPY_FILE) --parents $(DIST) build/obj/msmonitor_client1.0.0/ && $(COPY_FILE) --parents ../client/resource/rsrc.qrc build/obj/msmonitor_client1.0.0/ && $(COPY_FILE) --parents ../client/include/gui/mainwindow.h ../client/include/gui/QMSMpowerplot.h ../client/include/gui/QMSMplot.h ../client/include/CClient.hpp ../client/include/CProtocolC.hpp ../client/include/CConfig.h ../client/include/gui/QMSMtemperatureplot.h ../client/include/gui/QMSMclockplot.h ../client/include/gui/QMSMutilplot.h ../client/include/gui/QMSMmemoryplot.h ../client/include/gui/QMSMheatmap.h ../client/include/gui/QMSMsettings.h ../client/include/gui/QMSMsystemoverview.h ../common/CProtocol.hpp ../common/utils.h ../common/CComTCPAbstract.hpp ../common/CComTCPClient.hpp ../common/CComTCPData.hpp ../client/include/gui/QMSMlinearcolormaprgb.h ../client/include/gui/QMSMabout.h build/obj/msmonitor_client1.0.0/ && $(COPY_FILE) --parents ../client/src/main.cpp ../client/src/CClient.cpp ../client/src/CProtocolC.cpp ../client/src/CConfig.cpp ../client/src/gui/mainwindow.cpp ../client/src/gui/QMSMpowerplot.cpp ../client/src/gui/QMSMplot.cpp ../client/src/gui/QMSMtemperatureplot.cpp ../client/src/gui/QMSMclockplot.cpp ../client/src/gui/QMSMmemoryplot.cpp ../client/src/gui/QMSMutilplot.cpp ../client/src/gui/QMSMheatmap.cpp ../client/src/gui/QMSMsettings.cpp ../client/src/gui/QMSMsystemoverview.cpp ../common/CProtocol.cpp ../common/utils.cpp ../common/CComTCPAbstract.cpp ../common/CComTCPClient.cpp ../common/CComTCPData.cpp ../client/src/gui/QMSMlinearcolormaprgb.cpp ../client/src/gui/QMSMabout.cpp build/obj/msmonitor_client1.0.0/ && $(COPY_FILE) --parents ../client/mainwindow.ui ../client/qmsmsettings.ui ../client/qmsmplot.ui ../client/qmsmsystemoverview.ui ../client/qmsmabout.ui build/obj/msmonitor_client1.0.0/ && (cd `dirname build/obj/msmonitor_client1.0.0` && $(TAR) msmonitor_client1.0.0.tar msmonitor_client1.0.0 && $(COMPRESS) msmonitor_client1.0.0.tar) && $(MOVE) `dirname build/obj/msmonitor_client1.0.0`/msmonitor_client1.0.0.tar.gz . && $(DEL_FILE) -r build/obj/msmonitor_client1.0.0
 
 
 clean:compiler_clean 
@@ -407,8 +413,8 @@ build/moc/moc_mainwindow.cpp: ../client/include/gui/QMSMpowerplot.h \
 		/usr/local/qwt-6.1.3/include/qwt_magnifier.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_panner.h \
 		/usr/local/qwt-6.1.3/include/qwt_panner.h \
-		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_marker.h \
+		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		../common/utils.h \
 		../common/CProtocol.hpp \
 		../client/include/gui/QMSMtemperatureplot.h \
@@ -432,8 +438,10 @@ build/moc/moc_mainwindow.cpp: ../client/include/gui/QMSMpowerplot.h \
 		/usr/local/qwt-6.1.3/include/qwt_matrix_raster_data.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_rescaler.h \
 		../client/include/CClient.hpp \
-		../client/include/CComC.hpp \
 		../client/include/CProtocolC.hpp \
+		../common/CComTCPClient.hpp \
+		../common/CComTCPAbstract.hpp \
+		../common/CComTCPData.hpp \
 		../client/include/gui/QMSMsettings.h \
 		../client/include/CConfig.h \
 		../client/include/gui/QMSMsystemoverview.h \
@@ -469,8 +477,8 @@ build/moc/moc_QMSMplot.cpp: /usr/local/qwt-6.1.3/include/qwt_plot.h \
 		/usr/local/qwt-6.1.3/include/qwt_magnifier.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_panner.h \
 		/usr/local/qwt-6.1.3/include/qwt_panner.h \
-		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_marker.h \
+		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		../common/utils.h \
 		../client/include/gui/QMSMplot.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/aelali/ampehre/utilities/msmonitor_cs/client -I/home/aelali/ampehre/utilities/msmonitor_cs/client/include -I/home/aelali/ampehre/utilities/msmonitor_cs/common -I/usr/local/qwt-6.1.3/include -I/usr/include/qwt -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/4.9 -I/usr/include/x86_64-linux-gnu/c++/4.9 -I/usr/include/c++/4.9/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../client/include/gui/QMSMplot.h -o build/moc/moc_QMSMplot.cpp
@@ -504,8 +512,8 @@ build/moc/moc_CConfig.cpp: ../client/include/gui/QMSMplot.h \
 		/usr/local/qwt-6.1.3/include/qwt_magnifier.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_panner.h \
 		/usr/local/qwt-6.1.3/include/qwt_panner.h \
-		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_marker.h \
+		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		../common/utils.h \
 		../client/include/CConfig.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/aelali/ampehre/utilities/msmonitor_cs/client -I/home/aelali/ampehre/utilities/msmonitor_cs/client/include -I/home/aelali/ampehre/utilities/msmonitor_cs/common -I/usr/local/qwt-6.1.3/include -I/usr/include/qwt -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/4.9 -I/usr/include/x86_64-linux-gnu/c++/4.9 -I/usr/include/c++/4.9/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../client/include/CConfig.h -o build/moc/moc_CConfig.cpp
@@ -578,8 +586,8 @@ build/moc/moc_QMSMsystemoverview.cpp: ../client/include/gui/QMSMutilplot.h \
 		/usr/local/qwt-6.1.3/include/qwt_magnifier.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_panner.h \
 		/usr/local/qwt-6.1.3/include/qwt_panner.h \
-		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_marker.h \
+		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		../common/utils.h \
 		../common/CProtocol.hpp \
 		../client/include/gui/QMSMtemperatureplot.h \
@@ -661,8 +669,8 @@ build/obj/main.o: ../client/src/main.cpp ../client/include/gui/mainwindow.h \
 		/usr/local/qwt-6.1.3/include/qwt_magnifier.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_panner.h \
 		/usr/local/qwt-6.1.3/include/qwt_panner.h \
-		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_marker.h \
+		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		../common/utils.h \
 		../common/CProtocol.hpp \
 		../client/include/gui/QMSMtemperatureplot.h \
@@ -686,8 +694,10 @@ build/obj/main.o: ../client/src/main.cpp ../client/include/gui/mainwindow.h \
 		/usr/local/qwt-6.1.3/include/qwt_matrix_raster_data.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_rescaler.h \
 		../client/include/CClient.hpp \
-		../client/include/CComC.hpp \
 		../client/include/CProtocolC.hpp \
+		../common/CComTCPClient.hpp \
+		../common/CComTCPAbstract.hpp \
+		../common/CComTCPData.hpp \
 		../client/include/gui/QMSMsettings.h \
 		../client/include/CConfig.h \
 		../client/include/gui/QMSMsystemoverview.h \
@@ -695,14 +705,13 @@ build/obj/main.o: ../client/src/main.cpp ../client/include/gui/mainwindow.h \
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/obj/main.o ../client/src/main.cpp
 
 build/obj/CClient.o: ../client/src/CClient.cpp ../client/include/CClient.hpp \
-		../client/include/CComC.hpp \
 		../client/include/CProtocolC.hpp \
 		../common/CProtocol.hpp \
-		../common/utils.h
+		../common/utils.h \
+		../common/CComTCPClient.hpp \
+		../common/CComTCPAbstract.hpp \
+		../common/CComTCPData.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/obj/CClient.o ../client/src/CClient.cpp
-
-build/obj/CComC.o: ../client/src/CComC.cpp ../client/include/CComC.hpp
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/obj/CComC.o ../client/src/CComC.cpp
 
 build/obj/CProtocolC.o: ../client/src/CProtocolC.cpp ../client/include/CProtocolC.hpp \
 		../common/CProtocol.hpp \
@@ -739,8 +748,8 @@ build/obj/CConfig.o: ../client/src/CConfig.cpp ../client/include/CConfig.h \
 		/usr/local/qwt-6.1.3/include/qwt_magnifier.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_panner.h \
 		/usr/local/qwt-6.1.3/include/qwt_panner.h \
-		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_marker.h \
+		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		../common/utils.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/obj/CConfig.o ../client/src/CConfig.cpp
 
@@ -775,8 +784,8 @@ build/obj/mainwindow.o: ../client/src/gui/mainwindow.cpp ../client/include/gui/m
 		/usr/local/qwt-6.1.3/include/qwt_magnifier.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_panner.h \
 		/usr/local/qwt-6.1.3/include/qwt_panner.h \
-		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_marker.h \
+		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		../common/utils.h \
 		../common/CProtocol.hpp \
 		../client/include/gui/QMSMtemperatureplot.h \
@@ -800,8 +809,10 @@ build/obj/mainwindow.o: ../client/src/gui/mainwindow.cpp ../client/include/gui/m
 		/usr/local/qwt-6.1.3/include/qwt_matrix_raster_data.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_rescaler.h \
 		../client/include/CClient.hpp \
-		../client/include/CComC.hpp \
 		../client/include/CProtocolC.hpp \
+		../common/CComTCPClient.hpp \
+		../common/CComTCPAbstract.hpp \
+		../common/CComTCPData.hpp \
 		../client/include/gui/QMSMsettings.h \
 		../client/include/CConfig.h \
 		../client/include/gui/QMSMsystemoverview.h \
@@ -839,8 +850,8 @@ build/obj/QMSMpowerplot.o: ../client/src/gui/QMSMpowerplot.cpp ../client/include
 		/usr/local/qwt-6.1.3/include/qwt_magnifier.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_panner.h \
 		/usr/local/qwt-6.1.3/include/qwt_panner.h \
-		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_marker.h \
+		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		../common/utils.h \
 		../common/CProtocol.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/obj/QMSMpowerplot.o ../client/src/gui/QMSMpowerplot.cpp
@@ -874,8 +885,8 @@ build/obj/QMSMplot.o: ../client/src/gui/QMSMplot.cpp ../client/include/gui/QMSMp
 		/usr/local/qwt-6.1.3/include/qwt_magnifier.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_panner.h \
 		/usr/local/qwt-6.1.3/include/qwt_panner.h \
-		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_marker.h \
+		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		../common/utils.h \
 		../client/build/ui/ui_qmsmplot.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/obj/QMSMplot.o ../client/src/gui/QMSMplot.cpp
@@ -910,8 +921,8 @@ build/obj/QMSMtemperatureplot.o: ../client/src/gui/QMSMtemperatureplot.cpp ../cl
 		/usr/local/qwt-6.1.3/include/qwt_magnifier.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_panner.h \
 		/usr/local/qwt-6.1.3/include/qwt_panner.h \
-		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_marker.h \
+		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		../common/utils.h \
 		../common/CProtocol.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/obj/QMSMtemperatureplot.o ../client/src/gui/QMSMtemperatureplot.cpp
@@ -946,8 +957,8 @@ build/obj/QMSMclockplot.o: ../client/src/gui/QMSMclockplot.cpp ../client/include
 		/usr/local/qwt-6.1.3/include/qwt_magnifier.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_panner.h \
 		/usr/local/qwt-6.1.3/include/qwt_panner.h \
-		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_marker.h \
+		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		../common/utils.h \
 		../common/CProtocol.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/obj/QMSMclockplot.o ../client/src/gui/QMSMclockplot.cpp
@@ -982,8 +993,8 @@ build/obj/QMSMmemoryplot.o: ../client/src/gui/QMSMmemoryplot.cpp ../client/inclu
 		/usr/local/qwt-6.1.3/include/qwt_magnifier.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_panner.h \
 		/usr/local/qwt-6.1.3/include/qwt_panner.h \
-		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_marker.h \
+		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		../common/utils.h \
 		../common/CProtocol.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/obj/QMSMmemoryplot.o ../client/src/gui/QMSMmemoryplot.cpp
@@ -1018,8 +1029,8 @@ build/obj/QMSMutilplot.o: ../client/src/gui/QMSMutilplot.cpp ../client/include/g
 		/usr/local/qwt-6.1.3/include/qwt_magnifier.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_panner.h \
 		/usr/local/qwt-6.1.3/include/qwt_panner.h \
-		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_marker.h \
+		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		../common/utils.h \
 		../common/CProtocol.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/obj/QMSMutilplot.o ../client/src/gui/QMSMutilplot.cpp
@@ -1094,8 +1105,8 @@ build/obj/QMSMsystemoverview.o: ../client/src/gui/QMSMsystemoverview.cpp ../clie
 		/usr/local/qwt-6.1.3/include/qwt_magnifier.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_panner.h \
 		/usr/local/qwt-6.1.3/include/qwt_panner.h \
-		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot_marker.h \
+		/usr/local/qwt-6.1.3/include/qwt_symbol.h \
 		../common/utils.h \
 		../common/CProtocol.hpp \
 		../client/include/gui/QMSMtemperatureplot.h \
@@ -1108,6 +1119,18 @@ build/obj/CProtocol.o: ../common/CProtocol.cpp ../common/CProtocol.hpp \
 
 build/obj/utils.o: ../common/utils.cpp ../common/utils.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/obj/utils.o ../common/utils.cpp
+
+build/obj/CComTCPAbstract.o: ../common/CComTCPAbstract.cpp ../common/CComTCPAbstract.hpp \
+		../common/CComTCPData.hpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/obj/CComTCPAbstract.o ../common/CComTCPAbstract.cpp
+
+build/obj/CComTCPClient.o: ../common/CComTCPClient.cpp ../common/CComTCPClient.hpp \
+		../common/CComTCPAbstract.hpp \
+		../common/CComTCPData.hpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/obj/CComTCPClient.o ../common/CComTCPClient.cpp
+
+build/obj/CComTCPData.o: ../common/CComTCPData.cpp ../common/CComTCPData.hpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/obj/CComTCPData.o ../common/CComTCPData.cpp
 
 build/obj/QMSMlinearcolormaprgb.o: ../client/src/gui/QMSMlinearcolormaprgb.cpp ../client/include/gui/QMSMlinearcolormaprgb.h \
 		/usr/local/qwt-6.1.3/include/qwt_plot.h \

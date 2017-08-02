@@ -89,8 +89,7 @@ void CServer::controlClients()
 
 void* CServer::clientTask(void* d) 
 {
-//	signal(SIGUSR1, SIG_IGN);
-//	signal(SIGUSR2, SIG_IGN);		//lieber forken??
+
 	int s = pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 	CComTCPData* pData = (CComTCPData*) d;
 	CServer* pSrv = (CServer*) pData->mpSrv;
@@ -124,6 +123,7 @@ void* CServer::clientTask(void* d)
 void CServer::acceptLoop() {
 	int count = 0;
 	
+	
 	while(1)
 	{
 		controlClients();
@@ -141,11 +141,25 @@ void CServer::acceptLoop() {
 			mThreads.push_back(t);
 			mDataVec.push_back(pData);
 			
+			sigset_t set;
+			int s;
+
+			/* Block SIGQUIT and SIGUSR1; other threads created by main()
+			will inherit a copy of the signal mask. */
+
+			sigemptyset(&set);
+			sigaddset(&set, SIGUSR1);
+			sigaddset(&set, SIGUSR2);
+			s = pthread_sigmask(SIG_BLOCK, &set, NULL);
+			if(s != 0)
+				return;
+				
 			int ret = pthread_create(&mThreads[count], NULL, clientTask, (void*)mDataVec[count]);
 			if(ret)
 			{
 				std::cout << "error creating p_thread, return code: " << ret << std::endl;
 			}
+			s = pthread_sigmask(SIG_UNBLOCK, &set, NULL);
 			std::cout << "thread created!" << std::endl;
 		}
 		else{
