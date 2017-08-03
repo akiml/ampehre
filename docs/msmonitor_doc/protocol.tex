@@ -58,9 +58,9 @@ GET /file.html HTTP/1.1
 The main body of the message highly depends on its type. So possible messages might be:
 \begin{lstlisting}[caption={client registers to server}, label=lst:msg]
 CLIENT_REG / MSMP/0.1
-1101000000000000010000000000000000000000000000000000000000000000
+0b1101000000000000010000000000000000000000000000000000000000000000
 \end{lstlisting}
-The value of datatype long, indicates which data is being requested. Each Bit set to '1' means, that the corresponding value is needed and '0', that it is not. The server will only send back those values, which are requested by the client. In this case it would be only four values.\newline
+The value of datatype long, indicates which data is being requested. Each Bit set to '1' means, that the corresponding value is needed and '0', that it is not. The server will only send back those values, which are requested by the client. In this case it would be only four values. Please note, that it is a long value which is being transmitted. It is presented human readable in order to clarify the principle.\newline
 \begin{lstlisting}[caption={server registers client}, label=lst:msg1]
 CLIENT_REG / MSMP/0.1
 REG: 0
@@ -78,7 +78,7 @@ DATA_RES / MSMP/0.1
 17
 23
 \end{lstlisting}
-The server responds with the requested data in a defined order, which is equally known by server and client.\newline
+The server responds with the requested data in a defined order, which is equally known by server and client. The data is of datatype double. Please note again, that the message is not human readable but presented as such in order to explain the idea.\newline
 \begin{lstlisting}[caption={client terminates communication}, label=lst:msg4]
 TERM_COM / MSMP/0.1
 REG: 0

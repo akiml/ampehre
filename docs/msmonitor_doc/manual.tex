@@ -43,7 +43,15 @@ After starting the client, a graphical user interface, made with Qt, is loaded. 
 	\end{center}
 \end{figure}
 The settings window and all the plots can be opened from the menu bar or via keyboard shortcuts. They will appear on the mdi area, where they can be moved around according to the user's preference.\newline
-The most important window is the settings window, which contains all controls to connect to the server, set up the gui refresh rates and data frequency. This can be seen in \ref{fig:msm_settings}. Tooltips are available for each setting, in order to receive further information.\newline
+The most important window is the settings window, which contains all controls to connect to the server, set up the gui refresh rates and data frequency. This can be seen in \ref{fig:msm_settings}. The data frequency sets the interval of time, in which new data is being requested from the server. The Save Data spinbox sets the amount of values to be drawn. Setting this to 1 would only draw a point. If "Save Data" is set to 100 and data has been requested for the 102nd time, then the first two values will be deleted, because only 100 values are needed.\newline The gui refresh rate sets the interval of time, in which the graphs are being redrawn, no matter if new data is already available or not.\newline Tooltips are available for each setting, in order to receive further information.\newline In order to connect to the server, its ip address and port need to be given. In case a firewall is set up on the heterogeneous node, a direct connection will usually not be possible. Therefore a workaround was also developed and made available in the repository.\newline
+After compiling the client run the client script, which can be done as follows:
+\begin{lstlisting}[caption={install the client}, label=lst:msg4]
+git clone https://github.com/akiml/ampehre.git
+cd ampehre
+make client
+./msmonitor_client.sh "192.123.32.12" 2900
+\end{lstlisting}
+The first argument is the ip address of the server and the second argument is the port.\newline
 The settings can be exported to a configuration file, which can also be loaded on the next session, sothat the user does not have to redo the settings each time after starting the program.
 \begin{figure}[t!]
 	\begin{center}
@@ -53,7 +61,7 @@ The settings can be exported to a configuration file, which can also be loaded o
 	\end{center}
 \end{figure}
 Directly after connecting to the server, the plots will be drawn.\newline 
-A plot consists of two tabs. The first tab (plot) contains the coordinate system itself, a legend, a spin box to choose the thickness of the graphs, a screenshot button to export the current graph to png and a csv export button to export the values into a highly manageable comma separated format. This can be seen in \ref{fig:msm_graph}.
+A plot consists of two tabs. The first tab (plot) contains the coordinate system itself, a legend, a spin box to choose the thickness of the curves , a screenshot button to export the current graph to png and a csv export button to export the values into a highly manageable comma separated format. This can be seen in \ref{fig:msm_graph}.
 \begin{figure}[t!]
 	\begin{center}
 		\includegraphics[width=0.9\textwidth]{msm_graph.png} 
@@ -61,8 +69,8 @@ A plot consists of two tabs. The first tab (plot) contains the coordinate system
 		\label{fig:msm_graph}
 	\end{center}
 \end{figure}
-The second tab (settings), as shown in \ref{fig:msm_secondTab}, gives the options to remove currently unneeded graphs by simply clicking on the corresponding labels. Recorded global minimum and maximum values are listed next to the labels.\newline
-If the graphs have high fluctuation, median and mean filter can be applied over an interval of the user's choice, in order to clarify the tendency of the graph. If the chosen interval is higher than the actual amount of values, nothing will be drawn until the amount of recorded data exceeds the chosen interval.
+The second tab (settings), as shown in \ref{fig:msm_secondTab}, gives the options to remove currently unneeded graphs by simply clicking on the corresponding labels. Recorded global minimum and maximum values are listed next to the labels and can also be drawn inside the graph.\newline
+If the curves have high fluctuation, median and mean filter can be applied over an interval of the user's choice, in order to clarify the tendency. If the chosen interval is higher than the actual amount of values, nothing will be drawn until the amount of recorded data exceeds the chosen interval.
 \begin{figure}[t!]
 	\begin{center}
 		\includegraphics[width=0.9\textwidth]{msm_secondTab.png} 
@@ -70,7 +78,9 @@ If the graphs have high fluctuation, median and mean filter can be applied over 
 		\label{fig:msm_secondTab}
 	\end{center}
 \end{figure}
-Besides the option of drawing graphs, start and termination of specific programs can be symbolized on the graphs, by informing the server using the signals SIGUSR1 and SIGUSR2. If an application sends a SIGUSR1 prior to starting, the server informs the clients about a newly started application. Sending a SIGUSR2 to the server, just before terminating the application, makes it inform the clients about a finished application. The unique pid ensures the exclusion of any mix-ups. 
+Besides the option of drawing graphs, start and termination of specific programs can be symbolized on the graphs, by informing the server using the signals SIGUSR1 and SIGUSR2. If an application sends a SIGUSR1 prior to starting, the server informs the clients about a newly started application. Sending a SIGUSR2 to the server, just before terminating the application, makes it inform the clients about a finished application. The unique pid ensures the exclusion of any mix-ups.\newline
+Besides the mentioned graphs and curves there are also other forms of visualization available. The heatmaps give a feedback using a defined color-scale. For example high temperature will be presented in red and low temperature in blue.\newline
+The system overview gives a summary about current processes on the heterogeneous node and gives an overview over most of the currently measured data.  
 
 
 
