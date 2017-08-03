@@ -47,6 +47,17 @@ void QMSMUtilPlot::initPlot()
     mpFpga0     = new QwtPlotCurve("Compute FPGA");
     mpMic0      = new QwtPlotCurve("MIC");
 
+    mpCpu0Max   = new QwtPlotCurve("Cpu0 Max");
+    mpCpu0Min   = new QwtPlotCurve("Cpu0 Min");
+    mpGpu0Max   = new QwtPlotCurve("Gpu0 Max");
+    mpGpu0Min   = new QwtPlotCurve("Gpu0 Min");
+    mpGpu1Max   = new QwtPlotCurve("Gpu1 Max");
+    mpGpu1Min   = new QwtPlotCurve("Gpu1 Min");
+    mpFpga0Max  = new QwtPlotCurve("Fpga0 Max");
+    mpFpga0Min  = new QwtPlotCurve("Fpga0 Min");
+    mpMic0Max   = new QwtPlotCurve("Mic0 Max");
+    mpMic0Min   = new QwtPlotCurve("Mic0 Min");
+
     mBoxes.push_back(new QCheckBox("CPU"));
     mBoxes.push_back(new QCheckBox("GPU Core"));
     mBoxes.push_back(new QCheckBox("GPU Memory"));
@@ -56,9 +67,14 @@ void QMSMUtilPlot::initPlot()
     for(unsigned int i = 0; i < mBoxes.size(); i++)
     {
         mBoxes[i]->setChecked(true);
+        mBoxesMin.push_back(new QCheckBox("Min"));
+        mBoxesMax.push_back(new QCheckBox("Max"));
+        mBoxesMin[i]->setChecked(false);
+        mBoxesMax[i]->setChecked(false);
 
         mLeftVert->addWidget(mBoxes[i]);
-
+        mLeftRightLeftVert->addWidget(mBoxesMin[i]);
+        mLeftRightRightVert->addWidget(mBoxesMax[i]);
     }
 
 
@@ -76,6 +92,18 @@ void QMSMUtilPlot::initPlot()
     mpFpga0->attach(mpPlot);
     mpMic0->attach(mpPlot);
 
+    mpCpu0Max->attach(mpPlot);
+    mpGpu0Max->attach(mpPlot);
+    mpGpu1Max->attach(mpPlot);
+    mpFpga0Max->attach(mpPlot);
+    mpMic0Max->attach(mpPlot);
+
+    mpCpu0Min->attach(mpPlot);
+    mpGpu0Min->attach(mpPlot);
+    mpGpu1Min->attach(mpPlot);
+    mpFpga0Min->attach(mpPlot);
+    mpMic0Min->attach(mpPlot);
+
     makeZoomable();
     makeGrid();
 
@@ -84,6 +112,17 @@ void QMSMUtilPlot::initPlot()
 
 void QMSMUtilPlot::redraw()
 {
+    mpCpu0Max->setSamples(mTimevalues.data(), mCpu0valuesMax.data(), mCpu0valuesMax.size());
+    mpCpu0Min->setSamples(mTimevalues.data(), mCpu0valuesMin.data(), mCpu0valuesMin.size());
+    mpGpu0Max->setSamples(mTimevalues.data(), mGpu0valuesMax.data(), mGpu0valuesMax.size());
+    mpGpu0Min->setSamples(mTimevalues.data(), mGpu0valuesMin.data(), mGpu0valuesMin.size());
+    mpGpu1Max->setSamples(mTimevalues.data(), mGpu1valuesMax.data(), mGpu1valuesMax.size());
+    mpGpu1Min->setSamples(mTimevalues.data(), mGpu1valuesMin.data(), mGpu1valuesMin.size());
+    mpFpga0Max->setSamples(mTimevalues.data(), mFpga0valuesMax.data(), mFpga0valuesMax.size());
+    mpFpga0Min->setSamples(mTimevalues.data(), mFpga0valuesMin.data(), mFpga0valuesMin.size());
+    mpMic0Max->setSamples(mTimevalues.data(), mMic0valuesMax.data(), mMic0valuesMax.size());
+    mpMic0Min->setSamples(mTimevalues.data(), mMic0valuesMin.data(), mMic0valuesMin.size());
+
     if(mValue == ABSOLUTE)
     {
         int size = mTimevalues.size();
@@ -167,6 +206,99 @@ void QMSMUtilPlot::redraw()
                 mpMic0->setVisible(false);
             }
         }
+        if(mBoxesMax[i]->isChecked())
+        {
+            if(i == 0)
+            {
+                mpCpu0Max->setVisible(true);
+            }
+            else if(i == 1)
+            {
+                mpGpu0Max->setVisible(true);
+            }
+            else if(i == 2)
+            {
+                mpGpu1Max->setVisible(true);
+            }
+            else if(i == 3)
+            {
+                mpFpga0Max->setVisible(true);
+            }
+            else if(i == 4)
+            {
+                mpMic0Max->setVisible(true);
+            }
+        }
+        else
+        {
+            if(i == 0)
+            {
+                mpCpu0Max->setVisible(false);
+            }
+            else if(i == 1)
+            {
+                mpGpu0Max->setVisible(false);
+            }
+            else if(i == 2)
+            {
+                mpGpu1Max->setVisible(false);
+            }
+            else if(i == 3)
+            {
+                mpFpga0Max->setVisible(false);
+            }
+            else if(i == 4)
+            {
+                mpMic0Max->setVisible(false);
+            }
+        }
+
+        if(mBoxesMin[i]->isChecked())
+        {
+            if(i == 0)
+            {
+                mpCpu0Min->setVisible(true);
+            }
+            else if(i == 1)
+            {
+                mpGpu0Min->setVisible(true);
+            }
+            else if(i == 2)
+            {
+                mpGpu1Min->setVisible(true);
+            }
+            else if(i == 3)
+            {
+                mpFpga0Min->setVisible(true);
+            }
+            else if(i == 4)
+            {
+                mpMic0Min->setVisible(true);
+            }
+        }
+        else
+        {
+            if(i == 0)
+            {
+                mpCpu0Min->setVisible(false);
+            }
+            else if(i == 1)
+            {
+                mpGpu0Min->setVisible(false);
+            }
+            else if(i == 2)
+            {
+                mpGpu1Min->setVisible(false);
+            }
+            else if(i == 3)
+            {
+                mpFpga0Min->setVisible(false);
+            }
+            else if(i == 4)
+            {
+                mpMic0Min->setVisible(false);
+            }
+        }
     }
 
 
@@ -220,47 +352,98 @@ void QMSMUtilPlot::updateValues(std::vector<double> &values)
     if(mCpu0values.back() > mExVal[i].max)
     {
         mExVal[i].max =  mCpu0values.back();
+        for(unsigned int i = 0; i < mCpu0valuesMax.size(); i++)
+        {
+            mCpu0valuesMax[i] = mCpu0values.back();
+        }
     }
     else if(mCpu0values.back() < mExVal[i].min)
     {
         mExVal[i].min =  mCpu0values.back();
+        for(unsigned int i = 0; i < mCpu0valuesMin.size(); i++)
+        {
+            mCpu0valuesMin[i] = mCpu0values.back();
+        }
     }
+    mCpu0valuesMin.push_back(mExVal[i].min);
+    mCpu0valuesMax.push_back(mExVal[i].max);
     i++;
     if(mGpu0values.back() > mExVal[i].max)
     {
         mExVal[i].max =  mGpu0values.back();
+        for(unsigned int i = 0; i < mGpu0valuesMax.size(); i++)
+        {
+            mGpu0valuesMax[i] = mGpu0values.back();
+        }
     }
     else if(mGpu0values.back() < mExVal[i].min)
     {
         mExVal[i].min =  mGpu0values.back();
+        for(unsigned int i = 0; i < mGpu0valuesMin.size(); i++)
+        {
+            mGpu0valuesMin[i] = mGpu0values.back();
+        }
     }
+    mGpu0valuesMin.push_back(mExVal[i].min);
+    mGpu0valuesMax.push_back(mExVal[i].max);
     i++;
     if(mGpu1values.back() > mExVal[i].max)
     {
         mExVal[i].max =  mGpu1values.back();
+        for(unsigned int i = 0; i < mGpu1valuesMax.size(); i++)
+        {
+            mGpu1valuesMax[i] = mGpu1values.back();
+        }
     }
     else if(mGpu1values.back() < mExVal[i].min)
     {
         mExVal[i].min =  mGpu1values.back();
+        for(unsigned int i = 0; i < mGpu1valuesMin.size(); i++)
+        {
+            mGpu1valuesMin[i] = mGpu1values.back();
+        }
     }
+    mGpu1valuesMin.push_back(mExVal[i].min);
+    mGpu1valuesMax.push_back(mExVal[i].max);
     i++;
     if(mFpga0values.back() > mExVal[i].max)
     {
         mExVal[i].max =  mFpga0values.back();
+        for(unsigned int i = 0; i < mFpga0valuesMax.size(); i++)
+        {
+            mFpga0valuesMax[i] = mFpga0values.back();
+        }
     }
     else if(mFpga0values.back() < mExVal[i].min)
     {
         mExVal[i].min =  mFpga0values.back();
+        for(unsigned int i = 0; i < mFpga0valuesMin.size(); i++)
+        {
+            mFpga0valuesMin[i] = mFpga0values.back();
+        }
     }
+    mFpga0valuesMin.push_back(mExVal[i].min);
+    mFpga0valuesMax.push_back(mExVal[i].max);
     i++;
     if(mMic0values.back() > mExVal[i].max)
     {
         mExVal[i].max =  mMic0values.back();
+        for(unsigned int i = 0; i < mMic0valuesMax.size(); i++)
+        {
+            mMic0valuesMax[i] = mMic0values.back();
+        }
     }
     else if(mMic0values.back() < mExVal[i].min)
     {
         mExVal[i].min =  mMic0values.back();
+        for(unsigned int i = 0; i < mMic0valuesMin.size(); i++)
+        {
+            mMic0valuesMin[i] = mMic0values.back();
+        }
     }
+    mMic0valuesMin.push_back(mExVal[i].min);
+    mMic0valuesMax.push_back(mExVal[i].max);
+
     scaleAxis(mTimevalues[mTimevalues.size()-1]);
 
 }
@@ -272,4 +455,16 @@ void QMSMUtilPlot::resetPen()
     mpGpu1->setPen(*mpPaintGpu1);
     mpFpga0->setPen(*mpPaintFpga0);
     mpMic0->setPen(*mpPaintMic0);
+
+    mpCpu0Max->setPen(*mpPaintMax);
+    mpGpu0Max->setPen(*mpPaintMax);
+    mpGpu1Max->setPen(*mpPaintMax);
+    mpFpga0Max->setPen(*mpPaintMax);
+    mpMic0Max->setPen(*mpPaintMax);
+
+    mpCpu0Min->setPen(*mpPaintMin);
+    mpGpu0Min->setPen(*mpPaintMin);
+    mpGpu1Min->setPen(*mpPaintMin);
+    mpFpga0Min->setPen(*mpPaintMin);
+    mpMic0Min->setPen(*mpPaintMin);
 }

@@ -91,6 +91,7 @@ void* CServer::clientTask(void* d)
 {
 
 	int s = pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+	
 	CComTCPData* pData = (CComTCPData*) d;
 	CServer* pSrv = (CServer*) pData->mpSrv;
 	
@@ -142,24 +143,16 @@ void CServer::acceptLoop() {
 			mDataVec.push_back(pData);
 			
 			sigset_t set;
-			int s;
-
-			/* Block SIGQUIT and SIGUSR1; other threads created by main()
-			will inherit a copy of the signal mask. */
-
 			sigemptyset(&set);
 			sigaddset(&set, SIGUSR1);
 			sigaddset(&set, SIGUSR2);
-			s = pthread_sigmask(SIG_BLOCK, &set, NULL);
-			if(s != 0)
-				return;
+			int s = pthread_sigmask(SIG_BLOCK, &set, NULL);
 				
 			int ret = pthread_create(&mThreads[count], NULL, clientTask, (void*)mDataVec[count]);
 			if(ret)
 			{
 				std::cout << "error creating p_thread, return code: " << ret << std::endl;
 			}
-			s = pthread_sigmask(SIG_UNBLOCK, &set, NULL);
 			std::cout << "thread created!" << std::endl;
 		}
 		else{

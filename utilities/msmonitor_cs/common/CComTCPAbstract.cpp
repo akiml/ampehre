@@ -41,14 +41,14 @@ int CComTCPAbstract::msmSend(CComTCPData *pComData) {
 	
 	char *msg	= pComData->getMsg(&msg_length);
 	
-	
+
 	ret_value	= send(pComData->mSocketFildes , msg , msg_length , 0);
 	
 	
     //ECONNRESET -> connection reset by peer, EINTR -> signal occured before any data transmitted
 	if (-1 == ret_value) {
-        std::cout << "ERROR: " << strerror(errno) << std::endl;
-        return -1;
+		std::cout << "ERROR: " << strerror(errno) << std::endl;
+		return -1;
 	} /*else if (pComData->mMsgLength != ret_value) {
 		std::cout << "ERROR: " << "Could not send all data." << std::endl;
 		exit(EXIT_FAILURE);
@@ -69,8 +69,8 @@ int CComTCPAbstract::msmRecv(CComTCPData *pComData){
 	{
 		tmp = recv(pComData->mSocketFildes , reply , size, 0);
 		//ECONNREFUSED, EINTR, ENOTCONN
-        if(errno != 0){
-            return -1;
+		if(errno != 0){
+			return -1;
         }
 		if(tmp > 0){
 			length += tmp;

@@ -48,6 +48,21 @@ void QMSMTemperaturePlot::initPlot()
     mpMic0      = new QwtPlotCurve("MIC");
     mpSystem    = new QwtPlotCurve("System");
 
+    mpCpu0Max   = new QwtPlotCurve("Cpu0 Max");
+    mpCpu0Min   = new QwtPlotCurve("Cpu0 Min");
+    mpCpu1Max   = new QwtPlotCurve("Cpu1 Max");
+    mpCpu1Min   = new QwtPlotCurve("Cpu1 Min");
+    mpGpu0Max   = new QwtPlotCurve("Gpu0 Max");
+    mpGpu0Min   = new QwtPlotCurve("Gpu0 Min");
+    mpFpga0Max  = new QwtPlotCurve("Fpga0 Max");
+    mpFpga0Min  = new QwtPlotCurve("Fpga0 Min");
+    mpFpga1Max  = new QwtPlotCurve("Fpga1 Max");
+    mpFpga1Min  = new QwtPlotCurve("Fpga1 Min");
+    mpMic0Max   = new QwtPlotCurve("Mic0 Max");
+    mpMic0Min   = new QwtPlotCurve("Mic0 Min");
+    mpSystemMax = new QwtPlotCurve("System Max");
+    mpSystemMin = new QwtPlotCurve("System Min");
+
     mBoxes.push_back(new QCheckBox("CPU0"));
     mBoxes.push_back(new QCheckBox("CPU1"));
     mBoxes.push_back(new QCheckBox("GPU"));
@@ -59,8 +74,14 @@ void QMSMTemperaturePlot::initPlot()
     for(unsigned int i = 0; i < mBoxes.size(); i++)
     {
         mBoxes[i]->setChecked(true);
+        mBoxesMin.push_back(new QCheckBox("Min"));
+        mBoxesMax.push_back(new QCheckBox("Max"));
+        mBoxesMin[i]->setChecked(false);
+        mBoxesMax[i]->setChecked(false);
 
         mLeftVert->addWidget(mBoxes[i]);
+        mLeftRightLeftVert->addWidget(mBoxesMin[i]);
+        mLeftRightRightVert->addWidget(mBoxesMax[i]);
     }
 
 
@@ -80,12 +101,43 @@ void QMSMTemperaturePlot::initPlot()
     mpMic0->attach(mpPlot);
     mpSystem->attach(mpPlot);
 
+    mpCpu0Max->attach(mpPlot);
+    mpCpu1Max->attach(mpPlot);
+    mpGpu0Max->attach(mpPlot);
+    mpFpga0Max->attach(mpPlot);
+    mpFpga1Max->attach(mpPlot);
+    mpMic0Max->attach(mpPlot);
+    mpSystemMax->attach(mpPlot);
+
+    mpCpu0Min->attach(mpPlot);
+    mpCpu1Min->attach(mpPlot);
+    mpGpu0Min->attach(mpPlot);
+    mpFpga0Min->attach(mpPlot);
+    mpFpga1Min->attach(mpPlot);
+    mpMic0Min->attach(mpPlot);
+    mpSystemMin->attach(mpPlot);
+
     makeZoomable();
     makeGrid();
 }
 
 void QMSMTemperaturePlot::redraw()
 {
+    mpCpu0Max->setSamples(mTimevalues.data(), mCpu0valuesMax.data(), mCpu0valuesMax.size());
+    mpCpu0Min->setSamples(mTimevalues.data(), mCpu0valuesMin.data(), mCpu0valuesMin.size());
+    mpCpu1Max->setSamples(mTimevalues.data(), mCpu1valuesMax.data(), mCpu1valuesMax.size());
+    mpCpu1Min->setSamples(mTimevalues.data(), mCpu1valuesMin.data(), mCpu1valuesMin.size());
+    mpGpu0Max->setSamples(mTimevalues.data(), mGpu0valuesMax.data(), mGpu0valuesMax.size());
+    mpGpu0Min->setSamples(mTimevalues.data(), mGpu0valuesMin.data(), mGpu0valuesMin.size());
+    mpFpga0Max->setSamples(mTimevalues.data(), mFpga0valuesMax.data(), mFpga0valuesMax.size());
+    mpFpga0Min->setSamples(mTimevalues.data(), mFpga0valuesMin.data(), mFpga0valuesMin.size());
+    mpFpga1Max->setSamples(mTimevalues.data(), mFpga1valuesMax.data(), mFpga1valuesMax.size());
+    mpFpga1Min->setSamples(mTimevalues.data(), mFpga1valuesMin.data(), mFpga1valuesMin.size());
+    mpMic0Max->setSamples(mTimevalues.data(), mMic0valuesMax.data(), mMic0valuesMax.size());
+    mpMic0Min->setSamples(mTimevalues.data(), mMic0valuesMin.data(), mMic0valuesMin.size());
+    mpSystemMax->setSamples(mTimevalues.data(), mSystemvaluesMax.data(), mSystemvaluesMax.size());
+    mpSystemMin->setSamples(mTimevalues.data(), mSystemvaluesMin.data(), mSystemvaluesMin.size());
+
     if(mValue == ABSOLUTE)
     {
         int size = mTimevalues.size();
@@ -191,6 +243,132 @@ void QMSMTemperaturePlot::redraw()
                 mpSystem->setVisible(false);
             }
         }
+
+        if(mBoxesMax[i]->isChecked())
+        {
+            if(i == 0)
+            {
+                mpCpu0Max->setVisible(true);
+            }
+            else if(i == 1)
+            {
+                mpCpu1Max->setVisible(true);
+            }
+            else if(i == 2)
+            {
+                mpGpu0Max->setVisible(true);
+            }
+            else if(i == 3)
+            {
+                mpFpga0Max->setVisible(true);
+            }
+            else if(i == 4)
+            {
+                mpFpga1Max->setVisible(true);
+            }
+            else if(i == 5)
+            {
+                mpMic0Max->setVisible(true);
+            }
+            else if(i == 6)
+            {
+                mpSystemMax->setVisible(true);
+            }
+        }
+        else
+        {
+            if(i == 0)
+            {
+                mpCpu0Max->setVisible(false);
+            }
+            else if(i == 1)
+            {
+                mpCpu1Max->setVisible(false);
+            }
+            else if(i == 2)
+            {
+                mpGpu0Max->setVisible(false);
+            }
+            else if(i == 3)
+            {
+                mpFpga0Max->setVisible(false);
+            }
+            else if(i == 4)
+            {
+                mpFpga1Max->setVisible(false);
+            }
+            else if(i == 5)
+            {
+                mpMic0Max->setVisible(false);
+            }
+            else if(i == 6)
+            {
+                mpSystemMax->setVisible(false);
+            }
+        }
+
+        if(mBoxesMin[i]->isChecked())
+        {
+            if(i == 0)
+            {
+                mpCpu0Min->setVisible(true);
+            }
+            else if(i == 1)
+            {
+                mpCpu1Min->setVisible(true);
+            }
+            else if(i == 2)
+            {
+                mpGpu0Min->setVisible(true);
+            }
+            else if(i == 3)
+            {
+                mpFpga0Min->setVisible(true);
+            }
+            else if(i == 4)
+            {
+                mpFpga1Min->setVisible(true);
+            }
+            else if(i == 5)
+            {
+                mpMic0Min->setVisible(true);
+            }
+            else if(i == 6)
+            {
+                mpSystemMin->setVisible(true);
+            }
+        }
+        else
+        {
+            if(i == 0)
+            {
+                mpCpu0Min->setVisible(false);
+            }
+            else if(i == 1)
+            {
+                mpCpu1Min->setVisible(false);
+            }
+            else if(i == 2)
+            {
+                mpGpu0Min->setVisible(false);
+            }
+            else if(i == 3)
+            {
+                mpFpga0Min->setVisible(false);
+            }
+            else if(i == 4)
+            {
+                mpFpga1Min->setVisible(false);
+            }
+            else if(i == 5)
+            {
+                mpMic0Min->setVisible(false);
+            }
+            else if(i == 6)
+            {
+                mpSystemMin->setVisible(false);
+            }
+        }
     }
 
     mpPlot->replot();
@@ -255,65 +433,135 @@ void QMSMTemperaturePlot::updateValues(std::vector<double> &values)
     if(mCpu0values.back() > mExVal[i].max)
     {
         mExVal[i].max =  mCpu0values.back();
+        for(unsigned int i = 0; i < mCpu0valuesMax.size(); i++)
+        {
+            mCpu0valuesMax[i] = mCpu0values.back();
+        }
     }
     else if(mCpu0values.back() < mExVal[i].min)
     {
         mExVal[i].min =  mCpu0values.back();
+        for(unsigned int i = 0; i < mCpu0valuesMin.size(); i++)
+        {
+            mCpu0valuesMin[i] = mCpu0values.back();
+        }
     }
+    mCpu0valuesMin.push_back(mExVal[i].min);
+    mCpu0valuesMax.push_back(mExVal[i].max);
     i++;
     if(mCpu1values.back() > mExVal[i].max)
     {
         mExVal[i].max =  mCpu1values.back();
+        for(unsigned int i = 0; i < mCpu1valuesMax.size(); i++)
+        {
+            mCpu1valuesMax[i] = mCpu1values.back();
+        }
     }
     else if(mCpu1values.back() < mExVal[i].min)
     {
         mExVal[i].min =  mCpu1values.back();
+        for(unsigned int i = 0; i < mCpu1valuesMin.size(); i++)
+        {
+            mCpu1valuesMin[i] = mCpu1values.back();
+        }
     }
+    mCpu1valuesMin.push_back(mExVal[i].min);
+    mCpu1valuesMax.push_back(mExVal[i].max);
     i++;
     if(mGpu0values.back() > mExVal[i].max)
     {
         mExVal[i].max =  mGpu0values.back();
+        for(unsigned int i = 0; i < mGpu0valuesMax.size(); i++)
+        {
+            mGpu0valuesMax[i] = mGpu0values.back();
+        }
     }
     else if(mGpu0values.back() < mExVal[i].min)
     {
         mExVal[i].min =  mGpu0values.back();
+        for(unsigned int i = 0; i < mGpu0valuesMin.size(); i++)
+        {
+            mGpu0valuesMin[i] = mGpu0values.back();
+        }
     }
+    mGpu0valuesMin.push_back(mExVal[i].min);
+    mGpu0valuesMax.push_back(mExVal[i].max);
     i++;
     if(mFpga0values.back() > mExVal[i].max)
     {
         mExVal[i].max =  mFpga0values.back();
+        for(unsigned int i = 0; i < mFpga0valuesMax.size(); i++)
+        {
+            mFpga0valuesMax[i] = mFpga0values.back();
+        }
     }
     else if(mFpga0values.back() < mExVal[i].min)
     {
         mExVal[i].min =  mFpga0values.back();
+        for(unsigned int i = 0; i < mFpga0valuesMin.size(); i++)
+        {
+            mFpga0valuesMin[i] = mFpga0values.back();
+        }
     }
+    mFpga1valuesMin.push_back(mExVal[i].min);
+    mFpga1valuesMax.push_back(mExVal[i].max);
     i++;
     if(mFpga1values.back() > mExVal[i].max)
     {
         mExVal[i].max =  mFpga1values.back();
+        for(unsigned int i = 0; i < mFpga1valuesMax.size(); i++)
+        {
+            mFpga1valuesMax[i] = mFpga1values.back();
+        }
     }
     else if(mFpga1values.back() < mExVal[i].min)
     {
         mExVal[i].min =  mFpga1values.back();
+        for(unsigned int i = 0; i < mFpga1valuesMin.size(); i++)
+        {
+            mFpga1valuesMin[i] = mFpga1values.back();
+        }
     }
+    mFpga1valuesMin.push_back(mExVal[i].min);
+    mFpga1valuesMax.push_back(mExVal[i].max);
     i++;
     if(mMic0values.back() > mExVal[i].max)
     {
         mExVal[i].max =  mMic0values.back();
+        for(unsigned int i = 0; i < mMic0valuesMax.size(); i++)
+        {
+            mMic0valuesMax[i] = mMic0values.back();
+        }
     }
     else if(mMic0values.back() < mExVal[i].min)
     {
         mExVal[i].min =  mMic0values.back();
+        for(unsigned int i = 0; i < mMic0valuesMin.size(); i++)
+        {
+            mMic0valuesMin[i] = mMic0values.back();
+        }
     }
+    mMic0valuesMin.push_back(mExVal[i].min);
+    mMic0valuesMax.push_back(mExVal[i].max);
     i++;
     if(mSystemvalues.back() > mExVal[i].max)
     {
         mExVal[i].max =  mSystemvalues.back();
+        for(unsigned int i = 0; i < mSystemvaluesMax.size(); i++)
+        {
+            mSystemvaluesMax[i] = mSystemvalues.back();
+        }
     }
     else if(mSystemvalues.back() < mExVal[i].min)
     {
         mExVal[i].min =  mSystemvalues.back();
+        for(unsigned int i = 0; i < mSystemvaluesMin.size(); i++)
+        {
+            mSystemvaluesMin[i] = mSystemvalues.back();
+        }
     }
+    mSystemvaluesMin.push_back(mExVal[i].min);
+    mSystemvaluesMax.push_back(mExVal[i].max);
 
     scaleAxis(mTimevalues[mTimevalues.size()-1]);
 
@@ -328,5 +576,21 @@ void QMSMTemperaturePlot::resetPen()
     mpFpga1->setPen(*mpPaintFpga1);
     mpMic0->setPen(*mpPaintMic0);
     mpSystem->setPen(*mpPaintSystem);
+
+    mpCpu0Max->setPen(*mpPaintMax);
+    mpCpu1Max->setPen(*mpPaintMax);
+    mpGpu0Max->setPen(*mpPaintMax);
+    mpFpga0Max->setPen(*mpPaintMax);
+    mpFpga1Max->setPen(*mpPaintMax);
+    mpMic0Max->setPen(*mpPaintMax);
+    mpSystemMax->setPen(*mpPaintMax);
+
+    mpCpu0Min->setPen(*mpPaintMin);
+    mpCpu1Min->setPen(*mpPaintMin);
+    mpGpu0Min->setPen(*mpPaintMin);
+    mpFpga0Min->setPen(*mpPaintMin);
+    mpFpga1Min->setPen(*mpPaintMin);
+    mpMic0Min->setPen(*mpPaintMin);
+    mpSystemMin->setPen(*mpPaintMin);
 }
 
