@@ -130,6 +130,8 @@ int CClient::terminate()
     mCom->msmRecv(mClientData);
     rep = mClientData->getMsg(&rep_len);
 
+    std::cout << std::string(rep, rep_len) << std::endl;
+
     mCom->msmShutdown(&mClientData);
 
     return 0;

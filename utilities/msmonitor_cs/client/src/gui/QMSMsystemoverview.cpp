@@ -67,8 +67,8 @@ void QMSMSystemOverview::updatePID(std::vector<std::string>& str)
     {
         if(str[i][0] == 'f')
         {
-            int z = i;
-            int k = 2;
+//            int z = i;
+            unsigned int k = 2;
             while(k < str[i].size() && str[i][k] != ' ')
             {
                 tmp += str[i][k];
@@ -98,7 +98,7 @@ void QMSMSystemOverview::updatePID(std::vector<std::string>& str)
         else if(str[i][0] == 'g')
         {
             int z = i;
-            int k = 2;
+            unsigned int k = 2;
             while(k < str[i].size() && str[i][k] != ' ')
             {
                 tmp += str[i][k];

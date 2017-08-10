@@ -92,6 +92,8 @@ void* CServer::clientTask(void* d)
 
 	int s = pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 	
+	std::cout << "pthread_setcanceltype: "<< s << std::endl;
+	
 	CComTCPData* pData = (CComTCPData*) d;
 	CServer* pSrv = (CServer*) pData->mpSrv;
 	
@@ -147,6 +149,9 @@ void CServer::acceptLoop() {
 			sigaddset(&set, SIGUSR1);
 			sigaddset(&set, SIGUSR2);
 			int s = pthread_sigmask(SIG_BLOCK, &set, NULL);
+			
+			std::cout << "pthread_sigmask: "<< s << std::endl;
+
 				
 			int ret = pthread_create(&mThreads[count], NULL, clientTask, (void*)mDataVec[count]);
 			if(ret)
@@ -356,7 +361,8 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 	std::vector<double> values;
 	std::vector<std::string> values_pid;
 	std::vector<std::string> values_app;
-	char *rn = "\r\n";
+	std::string string = "\r\n";
+	const char *rn = string.c_str();
 
 	mProtocol.extractData(d, dataCode);		//extract wanted data from 64Bit dataCode
 	mMeasure.getValues(values, d);			//read needed values into double vector
@@ -403,7 +409,7 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 	const char* str_c = msg.c_str();
 	memcpy(*answer, str_c, strlen(str_c));
 
-	void* b = *answer+msg.size();	
+	void* b = (uint8_t*)*answer+msg.size();	
 	const char* c;
 
 	for(unsigned int i = 0; i < values.size(); i++)
@@ -411,9 +417,9 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 //		std::cout << "value: " << values[i] << std::endl;
 		//mProtocol.addData(msg, values[i]);		//write all data values 
 		memcpy(b, &values[i], sizeof(double));
-		b+=sizeof(double);
+		b = (uint8_t*)b + sizeof(double);
 		memcpy(b, rn, strlen(rn));
-		b += strlen(rn);
+		b = (uint8_t*)b + strlen(rn);
 	}
 	for(unsigned int i = 0; i < values_pid.size(); i++)	
 	{
@@ -422,7 +428,7 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 			c = values_pid[i].c_str();
 			std::cout << std::string(c, values_pid[i].size()) << std::endl;
 			memcpy(b, c, values_pid[i].size());
-			b+=values_pid[i].size();
+			b = (uint8_t*)b + values_pid[i].size();
 		}
 	}
 	for(unsigned int i = 0; i < values_app.size(); i++)	
@@ -432,7 +438,7 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 			c = values_app[i].c_str();
 			std::cout << values_app[i] << std::endl;
 			memcpy(b, c, values_app[i].size());
-			b+=values_app[i].size();
+			b = (uint8_t*)b + values_app[i].size();
 		}
 	}
 	

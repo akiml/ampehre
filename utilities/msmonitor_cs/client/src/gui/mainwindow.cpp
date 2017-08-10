@@ -25,8 +25,8 @@
 #include <cstdlib>
 
 MainWindow::MainWindow(int port, QWidget *parent) :
-    mPort(port),
     QMainWindow(parent),
+    mPort(port),
     ui(new Ui::MainWindow),
     mpConfig(new CConfig(QString(getenv("HOME")) + "/default.conf")),
     mpPowerplot (new QMSMPowerPlot(mpConfig->lineWidth, mpConfig->maxDataRecord, mpConfig->width, mpConfig->height, parent)),

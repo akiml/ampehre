@@ -64,7 +64,7 @@ int CProtocolC::parseMsg(void* msg, unsigned int length, int& reg, int& tsk, std
                     return 0;
                 }
                 else if(tsk == DATA_RES){
-                    if(getData(msg+before, length-before, values, values_pid) < 0){
+                    if(getData((uint8_t*)msg+before, length-before, values, values_pid) < 0){
                         return -1;
                     }
                     return 0;
@@ -140,12 +140,12 @@ int CProtocolC::getData(void* msg, int size, std::vector< double >& values, std:
 
  
     //read static values first (minimum response)
-    while(k < size+msg && i < 29)
+    while(k < size+(uint8_t*)msg && i < 29)
     {
 		memcpy(&val, k, sizeof(double));
 		std::cout << val << std::endl;
 		values.push_back(val);
-		k+= sizeof(double)+2*sizeof(char);
+        k= (uint8_t*) k + (sizeof(double)+2*sizeof(char));
         i++;
 	}
     //read the rest (pid/user) + start stop of applications
