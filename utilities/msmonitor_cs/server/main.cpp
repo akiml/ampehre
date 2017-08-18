@@ -26,7 +26,7 @@
 #include "CServer.hpp"
 
 static void termHandler(int s, siginfo_t* info, void* context);
-CServer srv = CServer(2901, 5);
+CServer srv = CServer(2900, 5);
 
 int main(int argc, char **argv) {
 
