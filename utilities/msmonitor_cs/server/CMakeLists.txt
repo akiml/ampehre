@@ -23,10 +23,12 @@ include_directories(${CMAKE_SOURCE_DIR}/utilities/msmonitor/data)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set(MSMONITOR_SERVER_SOURCES
-	src/CComS.cpp
 	src/CMeasure.cpp
 	src/CServer.cpp
 	src/CProtocolS.cpp
+	../common/CComTCPAbstract.cpp
+	../common/CComTCPServer.cpp
+	../common/CComTCPData.cpp
 	../common/CProtocol.cpp
 	../common/utils.cpp
 	main.cpp

@@ -212,4 +212,11 @@ void CMeasure::getValues(std::vector<double>& sol, std::vector<int>& req){
 			
 		}
 	}
+	
+// 	std::cout << "********MEASUREMENTS*******" << std::endl;
+// 	for(unsigned int i = 0; i < sol.size(); i++)
+// 	{
+// 		std::cout << sol[i] << std::endl;
+// 	}
+	
 }

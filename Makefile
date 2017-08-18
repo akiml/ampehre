@@ -78,6 +78,9 @@ mic_start:
 	sudo service mpss restart
 
 client:
+	cd utilities/msmonitor_cs/client && qmake msmonitor.pro &&  make
+
+client_het:
 	cd utilities/msmonitor_cs/client && qmake-qt4 PREFIX=/usr/local/bin msmonitor.pro && make
 
 clean_client:

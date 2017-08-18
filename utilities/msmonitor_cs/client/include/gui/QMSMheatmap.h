@@ -58,6 +58,7 @@ public Q_SLOTS:
     void setAlpha( int );
     void updateValues(std::vector<double>& values, int val);
     void redraw();
+    void clearData();
 
 private:
     QwtPlotSpectrogram* mpSpectrogram;

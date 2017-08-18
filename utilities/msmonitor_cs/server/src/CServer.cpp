@@ -21,13 +21,12 @@
 #include "CServer.hpp"
 
 CServer::CServer(int port, int maxClients):
-     mVERSION("0.1"),
-     mMeasure(CMeasure()),
-     mCom(CComS()),
+	 mVERSION("0.1"),
+     mCom( new CComTCPServer(port)),
      mProtocol(CProtocolS(mVERSION)),
+     mMeasure(CMeasure()),
      mPort(port),
      mMaxClients(maxClients),
-     mSocket(0),
      mCurrentTime(0)
 {
 	for(unsigned int k = 0; k < 5; k++)
@@ -36,7 +35,7 @@ CServer::CServer(int port, int maxClients):
 	}
 	getFrequencies();
 	
-	for(unsigned int i = 0; i < maxClients; i++)
+	for(int i = 0; i < maxClients; i++)
 	{
 		mTimesForClients.push_back(-1);
 	}
@@ -48,10 +47,19 @@ CServer::~CServer()
 	mMeasure.stop();
 }
 
-void CServer::init(){
+void CServer::setPort(int port)
+{
+	mPort = port;
+	mCom->setPort(port);
+}
+
+void CServer::init()
+{
 	mMeasure.start();
-	if(mCom.initSocket(mPort) < 0)
-		exit(-1);
+	mCom->msmSocket();
+	mCom->msmSetSockOpt();
+	mCom->msmBind();
+	mCom->msmListen();
 }
 
 void CServer::getCurrentTime(double& time) 
@@ -71,50 +79,100 @@ void CServer::controlClients()
 			if(dur > 1)
 			{
 				std::cout << "exceeded maximal interval!" << std::endl;
-				terminate(i);
+				eraseClient(mDataVec[i]);
+				mDataVec.erase(mDataVec.begin() + i);
+				mThreads.erase(mThreads.begin() + i);
 			}
 		}
 	}
 }
 
+void* CServer::clientTask(void* d) 
+{
 
-
-void CServer::acceptLoop() {
-	int recv_length;
-	char buffer[4096] = {0};
-	int task_code = 0;
-	int registry = 0;
-	uint64_t data = 0;
-
-
-	while(1){
-		for(unsigned int n = 0; n < mApplications.size(); n++)
-		{
-			if(mApplications[n].mTime == 0)
-			{
-				mApplications[n].mTime = mCurrentTime;
-			}
+	int s = pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+	
+	std::cout << "pthread_setcanceltype: "<< s << std::endl;
+	
+	CComTCPData* pData = (CComTCPData*) d;
+	CServer* pSrv = (CServer*) pData->mpSrv;
+	
+	while(!pData->mTermflag)
+	{
+		pSrv->mCom->msmRecv(pData);
+		
+		ssize_t recv_length;
+		char* buffer = pData->getMsg(&recv_length);
+		if(recv_length <= 0){
+			break;
 		}
-		controlClients();
-		mCom.acceptSocket(mSocket);
-		recv_length = recv(mSocket, buffer, 4096, 0);
-		
-		std::cout<<"************************" << std::endl;
-		std::cout<<"received: "<<std::endl;
-		std::string str(buffer, recv_length);
-		std::cout << str;
-			
-		
-		std::cout<<"************************" << std::endl;
-		
-		if(mProtocol.parseMsg(buffer, recv_length, task_code, registry, data) < 0){
+		if(pSrv->mProtocol.parseMsg(buffer, recv_length, pData->mTaskCode, pData->mRegistry, pData->mData) < 0){
 			std::cout << "[!]error parsing message" << std::endl;
 		}
 		else{
-			answer(task_code, registry, data);
+			pSrv->answer(pData);
 		}	
+		if(pData->mTaskCode == TERM_COM)
+		{
+			pData->mTermflag = true;
+		}
+	}
+	pSrv->mCom->msmShutdown(&pData);
+	
+	pthread_exit(NULL);
+}
 
-		close(mSocket);
+
+void CServer::acceptLoop() {
+	int count = 0;
+	
+	
+	while(1)
+	{
+		controlClients();
+		
+		count = mThreads.size();
+		if(count < mMaxClients){
+			pthread_t t;
+			CComTCPData* pData;
+			
+			std::cout << "waiting for incoming clients..." << std::endl;
+			
+			mCom->msmAccept(&pData);
+			pData->mpSrv = (void *) this;
+			
+			mThreads.push_back(t);
+			mDataVec.push_back(pData);
+			
+			sigset_t set;
+			sigemptyset(&set);
+			sigaddset(&set, SIGUSR1);
+			sigaddset(&set, SIGUSR2);
+			int s = pthread_sigmask(SIG_BLOCK, &set, NULL);
+			
+			std::cout << "pthread_sigmask: "<< s << std::endl;
+
+				
+			int ret = pthread_create(&mThreads[count], NULL, clientTask, (void*)mDataVec[count]);
+			if(ret)
+			{
+				std::cout << "error creating p_thread, return code: " << ret << std::endl;
+			}
+			std::cout << "thread created!" << std::endl;
+		}
+		else{
+			for(unsigned int i = 0; i < mThreads.size(); i++){
+				int ret = pthread_join(mThreads[i], NULL);
+				if( ret != 0){
+					std::cout << "error joining thread! Error number: " << ret << std::endl;
+				}
+				else{
+					std::cout << "client thread terminated!" << std::endl;
+				}
+			}
+			mThreads.clear();
+			mDataVec.clear();
+		}
 	}
 }
 
@@ -146,14 +204,14 @@ void CServer::getFrequencies()
 			
 }
 
-void CServer::answer(int taskCode, int registry, uint64_t datacode){
-	switch(taskCode){
+void CServer::answer(CComTCPData* pData) {
+		switch(pData->mTaskCode){
 		case DATA_REQ:{
-			dataRequest(registry);
+			dataRequest(pData);
 			break;
 		}
 		case CLIENT_REG:{
-			registerClient(datacode);
+			registerClient(pData);
 			break;
 		}
 		case DATA_RES:{
@@ -161,43 +219,89 @@ void CServer::answer(int taskCode, int registry, uint64_t datacode){
 			break;
 		}
 		case TERM_COM:{
-			terminate(registry);
+			terminate(pData);
 			break;
 		}
 		case SET_FREQ:{
-			confirmFreq(registry);
+			confirmFreq(pData);
 			break;
 		}
 	}
 }
 
-void CServer::registerClient(uint64_t datacode){	
+
+// void CServer::registerClient(uint64_t datacode){	
+// 	int reg = ut::getReg(mRegClients, mMaxClients);		//find available registry
+// 	clReg a = {reg, datacode};
+// 	mRegClients.push_back(a);							//add to register
+// 	std::string answer;
+// 	mTimesForClients[reg] = std::clock();
+// 	mProtocol.answerRegisterMsg(answer, reg);
+// 	mCom.msm_send(answer.c_str());
+// 	mCom->msmSend(m);
+// }
+
+void CServer::registerClient(CComTCPData* pData){	
 	int reg = ut::getReg(mRegClients, mMaxClients);		//find available registry
-	clReg a = {reg, datacode};
+	clReg a = {reg, pData->mData};
 	mRegClients.push_back(a);							//add to register
 	std::string answer;
 	mTimesForClients[reg] = std::clock();
 	mProtocol.answerRegisterMsg(answer, reg);
-	mCom.sendMsg(answer, mSocket);
+	
+	pData->setMsg(answer.c_str());
+	mCom->msmSend(pData);
 }
 
-void CServer::confirmFreq(int registry){
-	if(ut::find(mRegClients, registry, mIterator) == 0){
+// void CServer::confirmFreq(int registry){
+// 	if(ut::find(mRegClients, registry, mIterator) == 0){
+// 		std::string m;
+// 		mProtocol.freqMsg(m, mFreq);
+// 		mCom.msm_send(m.c_str());
+// 
+// 	}else{
+// 		std::cout<<"client not registered yet!" << std::endl;
+// 	}
+// }
+
+void CServer::confirmFreq(CComTCPData* pData){
+	if(ut::find(mRegClients, pData->mRegistry, mIterator) == 0){
 		std::string m;
 		mProtocol.freqMsg(m, mFreq);
-		mCom.sendMsg(m,  mSocket);
-
+		pData->setMsg(m.c_str());
+		mCom->msmSend(pData);
 	}else{
 		std::cout<<"client not registered yet!" << std::endl;
 	}
 }
 
-void CServer::dataRequest(int registry){
-	if(ut::find(mRegClients, registry, mIterator) == 0){
+//void CServer::dataRequest(int registry){
+// 	if(ut::find(mRegClients, registry, mIterator) == 0){
+// 		void* m;
+// 		int s = createDataAnswer(&m, mIterator->dataCode);
+// 		mCom.msm_send(m, s);
+// 		mTimesForClients[registry] = std::clock();
+// 		free(m);
+// 
+// 	}else{
+// 		std::cout<<"client not registered yet!" << std::endl;
+// 	}
+// }
+
+void CServer::dataRequest(CComTCPData* pData){
+	if(ut::find(mRegClients, pData->mRegistry, mIterator) == 0){
 		void* m;
 		int s = createDataAnswer(&m, mIterator->dataCode);
-		mCom.sendMsg(m, s, mSocket);
-		mTimesForClients[registry] = std::clock();
+		std::string str ((char*) m , s);
+		pData->setMsg(m, s);	//getmsg zu wenig inhalt nach setmsg
+// 		std::cout << "?!?!??!?!" << std::endl << str << std::endl<< std::endl;
+// 		char* tstmsg;
+// 		ssize_t tstsize;
+// 		tstmsg =  pData->getMsg(&tstsize);
+// 		std::string tststring (tstmsg, tstsize);
+// 		std::cout << "!!!!!!!!!!" << std::endl << tststring << std::endl;
+		mCom->msmSend(pData);
+		mTimesForClients[pData->mRegistry] = std::clock();
 		free(m);
 
 	}else{
@@ -205,15 +309,34 @@ void CServer::dataRequest(int registry){
 	}
 }
 
-void CServer::terminate(int registry){
-	if(ut::find(mRegClients, registry, mIterator) == 0){
+// void CServer::terminate(int registry){
+// 	if(ut::find(mRegClients, registry, mIterator) == 0){
+// 		mRegClients.erase(mIterator);
+// 		std::string msg;
+// 		mTimesForClients[registry] = -1;
+// 		mProtocol.termComMsg(msg, registry);
+// 		mCom.msm_send(msg.c_str());
+// 	}
+// }
+
+void CServer::terminate(CComTCPData* pData){
+	if(ut::find(mRegClients, pData->mRegistry, mIterator) == 0){
 		mRegClients.erase(mIterator);
 		std::string msg;
-		mTimesForClients[registry] = -1;
-		mProtocol.termComMsg(msg, registry);
-		mCom.sendMsg(msg, mSocket);
+		mTimesForClients[pData->mRegistry] = -1;
+		mProtocol.termComMsg(msg, pData->mRegistry);
+		pData->setMsg(msg.c_str());
+		mCom->msmSend(pData);
 	}
 }
+
+void CServer::eraseClient(CComTCPData* pData){
+		if(ut::find(mRegClients, pData->mRegistry, mIterator) == 0){
+		mRegClients.erase(mIterator);
+		mTimesForClients[pData->mRegistry] = -1;
+	}
+}
+
 
 void CServer::createDataAnswer(std::string& msg, uint64_t dataCode) {
 	mProtocol.addCmdVersion(msg, DATA_RES, mVERSION);
@@ -238,12 +361,13 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 	std::vector<double> values;
 	std::vector<std::string> values_pid;
 	std::vector<std::string> values_app;
-	char *rn = "\r\n";
+	std::string string = "\r\n";
+	const char *rn = string.c_str();
 
 	mProtocol.extractData(d, dataCode);		//extract wanted data from 64Bit dataCode
 	mMeasure.getValues(values, d);			//read needed values into double vector
 	mMeasure.getProcesses(values_pid);
-
+	
 	std::size_t size_str = 0;
 	for(unsigned int i = 0; i < values_pid.size(); i++)
 	{
@@ -263,13 +387,14 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 		}
 		std::stringstream ss;
 		ss << mApplications[i].mPid;
-		std::string pid_str = ss.str();
-		tmp += pid_str; 
+		std::string str = ss.str();
+		tmp += str; 
 		tmp += " ";
-		ss.clear();
-		ss << (unsigned long)mApplications[i].mTime;
-		std::string time_str = ss.str();
-		tmp += time_str;
+		
+		std::stringstream st;
+		st << (unsigned long)mApplications[i].mTime;
+		str = st.str();
+		tmp += str;
 		tmp += "\r\n";
 		size_str += tmp.size();
 		values_app.push_back(tmp);
@@ -284,7 +409,7 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 	const char* str_c = msg.c_str();
 	memcpy(*answer, str_c, strlen(str_c));
 
-	void* b = *answer+msg.size();	
+	void* b = (uint8_t*)*answer+msg.size();	
 	const char* c;
 
 	for(unsigned int i = 0; i < values.size(); i++)
@@ -292,9 +417,9 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 //		std::cout << "value: " << values[i] << std::endl;
 		//mProtocol.addData(msg, values[i]);		//write all data values 
 		memcpy(b, &values[i], sizeof(double));
-		b+=sizeof(double);
+		b = (uint8_t*)b + sizeof(double);
 		memcpy(b, rn, strlen(rn));
-		b += strlen(rn);
+		b = (uint8_t*)b + strlen(rn);
 	}
 	for(unsigned int i = 0; i < values_pid.size(); i++)	
 	{
@@ -303,7 +428,7 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 			c = values_pid[i].c_str();
 			std::cout << std::string(c, values_pid[i].size()) << std::endl;
 			memcpy(b, c, values_pid[i].size());
-			b+=values_pid[i].size();
+			b = (uint8_t*)b + values_pid[i].size();
 		}
 	}
 	for(unsigned int i = 0; i < values_app.size(); i++)	
@@ -313,7 +438,7 @@ int CServer::createDataAnswer(void** answer, uint64_t dataCode) {
 			c = values_app[i].c_str();
 			std::cout << values_app[i] << std::endl;
 			memcpy(b, c, values_app[i].size());
-			b+=values_app[i].size();
+			b = (uint8_t*)b + values_app[i].size();
 		}
 	}
 	
