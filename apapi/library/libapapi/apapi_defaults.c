@@ -335,6 +335,7 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
         // free memory
         APAPI_PRINTERR("An error occured while reading events\n")
         free(*events_out);
+		*events_out = NULL;
         return -1;
     }
 
@@ -402,6 +403,7 @@ int _apapi_read_file(char* filename, char **file_buffer, long *filesize) {
     if (read != 1) {
         APAPI_PRINTERR("Reading file %s failed.\n.",filename)
         free(*file_buffer);
+		*file_buffer = NULL;
         fclose(file);
         return 1;
     }
@@ -442,7 +444,7 @@ int _apapi_read_eventops_file(char *filename, struct apapi_event_ops **events_ou
 		return PAPI_OK;
     } else {
         APAPI_PRINTERR("Reading event operations failed.\n")
-		if (*defaults_file_buffer != NULL) {
+		if (NULL != *defaults_file_buffer) {
 			free(*defaults_file_buffer);
 			*defaults_file_buffer = NULL;
 		}
@@ -634,6 +636,7 @@ int32_t _apapi_sort_events(char **cmp_list, char **events, char ***used_cmp, cha
 	int32_t *event_cmp_map = calloc(sizeof(int32_t), event_count);
 	if (event_cmp_map == NULL) {
 		free(event_counts);
+		event_counts = NULL;
 		return -1;
 	}
 	int unknown = 0;
@@ -643,7 +646,9 @@ int32_t _apapi_sort_events(char **cmp_list, char **events, char ***used_cmp, cha
 	retv = _apapi_count_cmp_events(cmp_list, events, event_cmp_map, event_counts, &unknown);
 	if (retv != 0) {
 		free(event_cmp_map);
+		event_cmp_map = NULL;
 		free(event_counts);
+		event_counts = NULL;
 		return -1;
 	}
 
@@ -657,22 +662,31 @@ int32_t _apapi_sort_events(char **cmp_list, char **events, char ***used_cmp, cha
 	*sorted_events = calloc(sizeof(char**), selected_cmp_count+1);
 	if (*sorted_events == NULL) {
 		free(event_cmp_map);
+		event_cmp_map = NULL;
 		free(event_counts);
+		event_counts = NULL;
 		return -1;
 	}
 	int *used_cmp_map = calloc(sizeof(int), cmp_count);
 	if (used_cmp_map == NULL) {
 		free(*sorted_events);
+		*sorted_events = NULL;
 		free(event_cmp_map);
+		event_cmp_map = NULL;
 		free(event_counts);
+		event_counts = NULL;
 		return -1;
 	}
 	*used_cmp = calloc(sizeof(char*), selected_cmp_count+1);
 	if (*used_cmp == NULL) {
 		free(used_cmp_map);
+		used_cmp_map = NULL;
 		free(*sorted_events);
+		*sorted_events = NULL;
 		free(event_cmp_map);
+		event_cmp_map = NULL;
 		free(event_counts);
+		event_counts = NULL;
 		return -1;
 	}
    
@@ -700,8 +714,11 @@ int32_t _apapi_sort_events(char **cmp_list, char **events, char ***used_cmp, cha
 	}
 
 	free(event_cmp_map);
+	event_cmp_map = NULL;
 	free(event_counts);
+	event_counts = NULL;
 	free(used_cmp_map);
+	used_cmp_map = NULL;
 
 	return 0;
 }
@@ -772,11 +789,12 @@ int _apapi_read_eventlist_file(char *filename, char **cmp_list, char **buffer, c
 		free(*buffer);
 		*buffer = NULL;
 		free(all_events);
-		free(all_events);
+		all_events = NULL;
 		return -1;
 	}
 
 	free(all_events);
+	all_events = NULL;
 	return PAPI_OK;
 }
 

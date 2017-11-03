@@ -843,6 +843,7 @@ int APAPI_destroy_timer(struct apapi_timer **timer){
 	pthread_mutex_destroy(&(oldtimer->mutex));
 
 	free(*timer);
+	*timer = NULL;
 	return PAPI_OK;
 }
 

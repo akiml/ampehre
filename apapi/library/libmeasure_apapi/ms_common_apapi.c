@@ -1328,6 +1328,7 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
 	struct __mgmt_internal *mgmt = (struct __mgmt_internal*) calloc(1, sizeof(struct __mgmt_internal));
 	if (mgmt == NULL) {
 		free(ms);
+		ms = NULL;
 		return NULL;
 	}
 	ms->mgmt = mgmt;
@@ -1335,7 +1336,9 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
 	ms->config = (MS_CONFIG*) calloc(1, sizeof(MS_CONFIG));
 	if (ms->config == NULL) {
 		free(mgmt);
+		mgmt = NULL;
 		free(ms);
+		ms = NULL;
 		return NULL;
 	}
 
@@ -1348,7 +1351,9 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
 		APAPI_PRINTERR("papi init: %d\n", retv)
 		free(ms->config);
 		free(mgmt);
+		mgmt = NULL;
 		free(ms);
+		ms = NULL;
 		return NULL;
     }
 
@@ -1458,6 +1463,7 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
 	retv = APAPI_read_env_eventlist(avail_cmp, &(mgmt->user_eventlist_file), &(mgmt->user_eventlist_sorted), &(mgmt->user_eventlist_cmp));
 
 	free(avail_cmp);
+	avail_cmp = NULL;
 
 	// prepare other arrays
 	mgmt->sets = (struct apapi_eventset **) calloc(known_cmp_count, sizeof(struct apapi_eventset *));
