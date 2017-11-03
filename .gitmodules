@@ -1,4 +1,4 @@
 [submodule "apapi/papi"]
 	path = papi
-	url = https://git.cs.upb.de/awiens/papi.git
-	branch = apapi
+	url = https://github.com/akiml/ampehre.git
+	branch = papi
