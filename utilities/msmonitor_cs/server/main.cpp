@@ -30,18 +30,59 @@ CServer srv = CServer(2900, 5);
 
 int main(int argc, char **argv) {
 
-	if(argc == 2){
-	    std::string s = argv[1];
-	    if(s != "-d" && s != "--debug")
-	    {
-	        std::cout<<"-d (--debug)\t\tdebug information"<< std::endl;
-	        return 1;
-	    }
-	}else if (argc == 1){
-	    std::cout.setstate(std::ios_base::failbit);
+    int port = -1;
+    if(argc > 1)
+    {
+        std::string s = argv[1];
+        if(s != "-d" && s != "-p")
+        {
+            std::cout<<"-d \t\tdebug information"<< std::endl;
+            std::cout<<"-p [port]\tspecify server port"<< std::endl;
+            return 1;
+        }
+        else if( s == "-d")
+        {
+            if(argc > 3)
+            {
+                s = argv[2];
+                if(s == "-p")
+                {
+                    s = argv[3];
+                    port = atoi(s.c_str());
+                }
+            }
+        }
+        else if( s == "-p")
+        {
+            if(argc > 3)
+            {
+                s = argv[2];
+                port = atoi(s.c_str());
+
+                s = argv[3];
+                if( s != "-d")
+                {
+                   std::cout.setstate(std::ios_base::failbit);
+                }
+            }
+            else if(argc == 3)
+            {
+                s = argv[2];
+                port = atoi(s.c_str());
+                std::cout.setstate(std::ios_base::failbit);
+            }
+        }
+    }else if (argc == 1)
+    {
+        std::cout.setstate(std::ios_base::failbit);
+    }
+    else
+        return 1;
+	
+	if(port != -1)
+	{
+		srv.setPort(port);
 	}
-	else
-	    return 1;
 
 
 	std::cout << "initiating server..." << std::endl; 
@@ -50,6 +91,10 @@ int main(int argc, char **argv) {
 	memset (&act, '\0', sizeof(act));
 	act.sa_sigaction = &termHandler;
 	act.sa_flags = SA_SIGINFO;
+	if(sigaction(SIGINT, &act, NULL) < 0)
+	{
+		std::cout << "cannot catch SIGINT!" << std::endl;
+	}
 	if(sigaction(SIGUSR1, &act, NULL) < 0)
 	{
 		std::cout << "cannot catch SIGUSR1!" << std::endl;
@@ -66,9 +111,25 @@ int main(int argc, char **argv) {
 
 void termHandler(int s, siginfo_t* info, void* context) 
 {
-	std::cout << "termHandler:" << std::endl;
-	if(s == SIGINT)
+	if(s == SIGINT)	//closes client threads and joins them 
 	{
+		std::cout << "interrupt triggered!" << std::endl;
+		for(unsigned int i = 0; i < srv.mThreads.size(); i++){
+			int ret = pthread_cancel(srv.mThreads[i]);
+			if(ret == 0){
+				ret = pthread_join(srv.mThreads[i], NULL);
+				if( ret != 0){
+					std::cout << "error joining thread! Error: " << strerror(ret) << std::endl;
+				}
+				else{
+					std::cout << "client thread terminated!" << std::endl;
+				}
+			}
+		}
+		if(srv.mThreads.size() > 0){
+			srv.mThreads.clear();
+			srv.mDataVec.clear();
+		}
 		std::cout << "terminating server..." << std::endl;
 		exit(0);
 	}

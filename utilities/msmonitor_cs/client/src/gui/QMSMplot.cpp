@@ -22,9 +22,13 @@
 #include "gui/QMSMplot.h"
 #include "ui_qmsmplot.h"
 
+//seg fault
+//socket closes after some time -> CComC.cpp while anstatt if
+//draw start stop better
+
 QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, QWidget* parent):
-    mType(type),
     QWidget(parent),
+    mType(type),
     ui(new Ui::QMSMplot),
     mLineWidth(linewidth),
     maxData(maxData),
@@ -38,9 +42,32 @@ QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, 
     mpPaintFpga1(new QPen(Qt::green, mLineWidth)),
     mpPaintMic0(new QPen(Qt::darkMagenta, mLineWidth)),
     mpPaintMic1(new QPen(Qt::magenta, mLineWidth)),
-    mpPaintSystem( new QPen(QColor(255,165,0), mLineWidth))
+    mpPaintSystem( new QPen(QColor(255,165,0), mLineWidth)),
+    mpPaintMin(new QPen(Qt::darkCyan, mLineWidth)),
+    mpPaintMax(new QPen(Qt::darkYellow, mLineWidth)),
+    mVerticalLineStart(QwtSymbol::VLine, QBrush(Qt::green), QPen(Qt::green), QSize(1, 300)), //change color
+    mVerticalLineEnd(QwtSymbol::VLine, QBrush(Qt::red), QPen(Qt::red), QSize(1, 300))
 {
+    mMedianInterval = 2;
+    mMeanInterval = 2;
+    mValue = ABSOLUTE;
+    mRefreshRateMult = 1.0;
+    mCurrentAppSize = 0;
+    enableApplications = true;
+
+    for(unsigned int i = 0; i < CHECKBOX_SIZE; i++)
+    {
+        MSMminmax v;
+        v.min = 1000000;
+        v.max = -1000000;
+        mExVal.push_back(v);
+    }
+
     ui->setupUi(this);
+    mGroupbox = ui->groupBox;
+    mLeftVert = ui->verticalLayout_left;
+    mLeftRightLeftVert = ui->verticalLayout_leftrightleft;
+    mLeftRightRightVert = ui->verticalLayout_leftrightright;
     setLineWidth(mLineWidth);
     mpPlot = ui->qwtPlot;
     mpLegend->setFrameStyle(QFrame::Box | QFrame::Sunken);
@@ -50,11 +77,26 @@ QMSMplot::QMSMplot(int type, int linewidth, int maxData, int width, int height, 
     connect(ui->spinBox, SIGNAL(valueChanged(int)), this, SLOT(resetLineWidth(int)));
     connect(ui->pushButtonScreenshot, SIGNAL(clicked()), this, SLOT(screenshot()));
     connect(ui->pushButtonCSV, SIGNAL(clicked()), this, SLOT(exportToCSV()));
+    connect(ui->checkBox, SIGNAL(clicked(bool)), this, SLOT(applicationsEnabled(bool)));
+    connect(ui->radioButton_absolute, SIGNAL(clicked()), this, SLOT(radioButtonChecked_Abs()));
+    connect(ui->radioButton_mean, SIGNAL(clicked()), this, SLOT(radioButtonChecked_Mean()));
+    connect(ui->radioButton_median, SIGNAL(clicked()), this, SLOT(radioButtonChecked_Median()));
+    connect(ui->spinBox_mean, SIGNAL(valueChanged(int)), this, SLOT(spinBoxIntervalMean(int)));
+    connect(ui->spinBox_median, SIGNAL(valueChanged(int)), this, SLOT(spinBoxIntervalMedian(int)));
+
+    radioButtonChecked_Abs();
 }
 
 QMSMplot::~QMSMplot()
 {
     delete ui;
+
+    mMarker.clear();
+
+    for(unsigned int i = 0; i < mBoxes.size(); i++)
+    {
+        delete mBoxes[i];
+    }
 
     delete mpLegend;
     delete mpPaintCpu0;
@@ -70,6 +112,45 @@ QMSMplot::~QMSMplot()
     delete mpMagnifier;
     delete mpPanner;
     delete mpGrid;
+}
+
+void QMSMplot::radioButtonChecked_Abs()
+{
+    ui->radioButton_absolute->setChecked(true);
+    ui->radioButton_mean->setChecked(false);
+    ui->radioButton_median->setChecked(false);
+    mValue = ABSOLUTE;
+}
+
+void QMSMplot::radioButtonChecked_Mean()
+{
+    ui->radioButton_mean->setChecked(true);
+    ui->radioButton_absolute->setChecked(false);
+    ui->radioButton_median->setChecked(false);
+    mValue = MEAN;
+}
+
+void QMSMplot::radioButtonChecked_Median()
+{
+    ui->radioButton_median->setChecked(true);
+    ui->radioButton_absolute->setChecked(false);
+    ui->radioButton_mean->setChecked(false);
+    mValue = MEDIAN;
+}
+
+void QMSMplot::spinBoxIntervalMean(int val)
+{
+    mMeanInterval = val;
+}
+
+void QMSMplot::spinBoxIntervalMedian(int val)
+{
+    mMedianInterval = val;
+}
+
+void QMSMplot::applicationsEnabled(bool val)
+{
+    enableApplications = val;
 }
 
 double QMSMplot::getCurrentCpu0()
@@ -152,6 +233,60 @@ double QMSMplot::getCurrentSystem()
         return 0;
 }
 
+void QMSMplot::clearAllData()
+{
+    mTimevalues.clear();
+    mCpu0values.clear();
+    mCpu1values.clear();
+    mGpu0values.clear();
+    mGpu1values.clear();
+    mFpga0values.clear();
+    mFpga1values.clear();
+    mMic0values.clear();
+    mMic1values.clear();
+    mSystemvalues.clear();
+
+    mCpu0valuesMax.clear();
+    mCpu1valuesMax.clear();
+    mGpu0valuesMax.clear();
+    mGpu1valuesMax.clear();
+    mFpga0valuesMax.clear();
+    mFpga1valuesMax.clear();
+    mMic0valuesMax.clear();
+    mMic1valuesMax.clear();
+    mSystemvaluesMax.clear();
+
+    mCpu0valuesMin.clear();
+    mCpu1valuesMin.clear();
+    mGpu0valuesMin.clear();
+    mGpu1valuesMin.clear();
+    mFpga0valuesMin.clear();
+    mFpga1valuesMin.clear();
+    mMic0valuesMin.clear();
+    mMic1valuesMin.clear();
+    mSystemvaluesMin.clear();
+
+    mCpu0valuesMean.clear();
+    mCpu1valuesMean.clear();
+    mGpu0valuesMean.clear();
+    mGpu1valuesMean.clear();
+    mFpga0valuesMean.clear();
+    mFpga1valuesMean.clear();
+    mMic0valuesMean.clear();
+    mMic1valuesMean.clear();
+    mSystemvaluesMean.clear();
+
+    mCpu0valuesMedian.clear();
+    mCpu1valuesMedian.clear();
+    mGpu0valuesMedian.clear();
+    mGpu1valuesMedian.clear();
+    mFpga0valuesMedian.clear();
+    mFpga1valuesMedian.clear();
+    mMic0valuesMedian.clear();
+    mMic1valuesMedian.clear();
+    mSystemvaluesMedian.clear();
+}
+
 
 void QMSMplot::setLineWidth(int val)
 {
@@ -166,6 +301,65 @@ void QMSMplot::exportToCSV()
 QWidget* QMSMplot::getPlot()
 {
     return this->mpPlot;
+}
+
+void QMSMplot::computeMean(std::vector<double>& src, std::vector<double> &dst)
+{
+    unsigned int numValues = mMeanInterval*mRefreshRateMult;
+    if(src.size() > numValues)
+    {
+        double tmp = 0;
+
+        //add up all values and devide by interval
+        for(unsigned int i = 0; i < numValues; i++)
+        {
+            tmp += src[src.size()-(i+1)];
+        }
+
+        tmp = tmp/numValues;
+
+        dst.push_back(tmp);
+    }
+}
+
+void QMSMplot::computeMedian(std::vector<double> &src, std::vector<double> &dst)
+{
+    unsigned int numValues = mMedianInterval*mRefreshRateMult;
+    if(src.size() > numValues)
+    {
+        std::vector<double> tmp;
+
+        //save last n data
+        for(unsigned int i = 0; i < numValues; i++)
+        {
+            tmp.push_back(src[src.size()-(i+1)]);
+        }
+
+        //delete the n/2 smallest ones
+        for(unsigned int i = 0; i < numValues/2; i++)
+        {
+            int pos = 0;
+            for(unsigned int n = 0; n < tmp.size(); n++)
+            {
+                if(tmp[pos] > tmp[n])
+                {
+                    pos = n;
+                }
+            }
+            tmp.erase(tmp.begin() + pos);
+        }
+
+        //find smallest one -> middle value
+        int pos = 0;
+        for(unsigned int n = 0; n < tmp.size(); n++)
+        {
+            if(tmp[pos] > tmp[n])
+            {
+                pos = n;
+            }
+        }
+        dst.push_back(tmp[pos]);
+    }
 }
 
 void QMSMplot::screenshot()
@@ -184,6 +378,11 @@ void QMSMplot::screenshot()
 QWidget* QMSMplot::getParent()
 {
     return this->parent;
+}
+
+void QMSMplot::setRefreshRate(float val)
+{
+    this->mRefreshRateMult = val;
 }
 
 void QMSMplot::makeGrid()
@@ -244,4 +443,61 @@ void QMSMplot::resetLineWidth(int lValue)
 void QMSMplot::resetPen()
 {
     //nothing to do here
+}
+
+void QMSMplot::updateApplications(const std::vector<Application> &apps)
+{
+    this->mApplications = apps;
+}
+
+void QMSMplot::redrawApplications()
+{
+
+    for(unsigned int i = 0; i < mMarker.size(); i++)
+    {
+        mMarker[i]->setVisible(enableApplications);
+    }
+
+    if(mCurrentAppSize < mApplications.size())
+    {
+        for(unsigned int i = mCurrentAppSize; i < mApplications.size(); i++)
+        {
+            QwtPlotMarker *marker = new QwtPlotMarker();
+
+            if(mApplications[i].start)
+                marker->setSymbol(&mVerticalLineStart);
+            else
+                marker->setSymbol(&mVerticalLineEnd);
+
+            marker->setLabel(QwtText(QString::number(mApplications[i].mPid)));
+            marker->setLabelAlignment(Qt::AlignTop);
+            marker->setXValue(mApplications[i].mTime);
+            marker->setVisible(enableApplications);
+            mMarker.push_back(marker);
+            mMarker.back()->attach(mpPlot);
+            qDebug() << "added application symbol";
+        }
+        mCurrentAppSize = mApplications.size();
+    }
+}
+
+
+void QMSMplot::redrawMinMax()
+{
+
+    for(unsigned int i = 0; i < mBoxesMin.size(); i++)
+    {
+
+        if(mExVal[i].min != 1000000)
+        {
+           QString str = "Min: " + QString::number(mExVal[i].min);
+           mBoxesMin[i]->setText(str);
+        }
+        if(mExVal[i].max != -1000000)
+        {
+           QString str = "Max: " +QString::number(mExVal[i].max);
+           mBoxesMax[i]->setText(str);
+        }
+
+    }
 }

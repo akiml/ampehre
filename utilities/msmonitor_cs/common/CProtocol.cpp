@@ -80,7 +80,7 @@ int CProtocol::setReg(std::string msg, int& registry) {
 		return 0;
 	}
 	else {
-		registry = NULL;
+        //registry = NULL;
 		return -1;
 	}
 }

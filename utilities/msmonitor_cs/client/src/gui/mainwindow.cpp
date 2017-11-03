@@ -24,8 +24,9 @@
 
 #include <cstdlib>
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(int port, QWidget *parent) :
     QMainWindow(parent),
+    mPort(port),
     ui(new Ui::MainWindow),
     mpConfig(new CConfig(QString(getenv("HOME")) + "/default.conf")),
     mpPowerplot (new QMSMPowerPlot(mpConfig->lineWidth, mpConfig->maxDataRecord, mpConfig->width, mpConfig->height, parent)),
@@ -61,7 +62,12 @@ MainWindow::MainWindow(QWidget *parent) :
     mpGuiTimer(new QTimer()),
     mPlotInterval(mpConfig->plot),
     mGuiInterval(mpConfig->gui),
-    mSafetyTimeServer(500)
+    mSafetyTimeServer(500),
+    mValuePower(0),
+    mValueUtil(0),
+    mValueTemp(0),
+    mValueMemory(0),
+    mValueClock(0)
 {
     ui->setupUi(this);
     connectActions();
@@ -131,7 +137,14 @@ void MainWindow::setInitSettings()
     mpSettings->emit_guiRate(mpConfig->gui);
     mpSettings->setSaveData(mpConfig->maxDataRecord);
     mpSettings->set_ip(mpConfig->serverIP);
-    mpSettings->set_port(mpConfig->serverPort);
+    if(mPort == -1)
+    {
+        mpSettings->set_port(mpConfig->serverPort);
+    }
+    else
+    {
+        mpSettings->set_port(mPort);
+    }
 
     mpPowerplot->setLineWidth(mpConfig->lineWidth);
     mpTempplot->setLineWidth(mpConfig->lineWidth);
@@ -233,9 +246,6 @@ void MainWindow::connectActions()
     connect((QMSMplot*)mpUtilplot, SIGNAL(signal_export(QMSMplot*)), mpConfig, SLOT(exportPlotToCSV(QMSMplot*)));
     connect((QMSMplot*)mpMemoryplot, SIGNAL(signal_export(QMSMplot*)), mpConfig, SLOT(exportPlotToCSV(QMSMplot*)));
 
-
-
-
     connect(mpSettings, SIGNAL(signal_guiRate(int)), this, SLOT(setGuiInterval(int)));
     connect(mpSettings, SIGNAL(signal_dataPlot(int)), this, SLOT(setInterval(int)));
 
@@ -272,6 +282,17 @@ void MainWindow::start()
     mClient.getFreq(frequencies);
     mpSettings->setFreqLabels(frequencies);
 
+    mpPowerplot->clearAllData();
+    mpClockplot->clearAllData();
+    mpMemoryplot->clearAllData();
+    mpTempplot->clearAllData();
+    mpUtilplot->clearAllData();
+    mpHeatmapCpu->clearData();
+    mpHeatmapFpga->clearData();
+    mpHeatmapGpuCore->clearData();
+    mpHeatmapGpuMemory->clearData();
+    mpHeatmapMic->clearData();
+
     mpTimer->setInterval(mPlotInterval);
     mpGuiTimer->setInterval(mGuiInterval);
     mpTimer->start();
@@ -305,6 +326,31 @@ void MainWindow::requestData()
     controlTimer(exchangeTimer.elapsed());
 }
 
+void MainWindow::valuePower(int v)
+{
+    mValuePower = v;
+}
+
+void MainWindow::valueClock(int v)
+{
+    mValueClock = v;
+}
+
+void MainWindow::valueMemory(int v)
+{
+    mValueMemory = v;
+}
+
+void MainWindow::valueTemp(int v)
+{
+    mValueTemp = v;
+}
+
+void MainWindow::valueUtil(int v)
+{
+    mValueUtil = v;
+}
+
 void MainWindow::controlTimer(const int time)
 {
     if(time >= mpTimer->interval()-mSafetyTimeServer)
@@ -335,6 +381,16 @@ void MainWindow::setGuiInterval(int val)
     {
         this->mGuiInterval = val;
         mpGuiTimer->setInterval(mGuiInterval);
+        if((float)(mGuiInterval/1000) != 0)
+        {
+            float multiplier = (1/((float)mGuiInterval/1000));
+
+            mpPowerplot->setRefreshRate(multiplier);
+            mpTempplot->setRefreshRate(multiplier);
+            mpUtilplot->setRefreshRate(multiplier);
+            mpClockplot->setRefreshRate(multiplier);
+            mpMemoryplot->setRefreshRate(multiplier);
+        }
     }
 }
 
@@ -347,7 +403,6 @@ void MainWindow::setInterval(int val)
         mpTimer->setInterval(mPlotInterval);
     }
 }
-
 
 void MainWindow::showPower()
 {
@@ -449,26 +504,33 @@ void MainWindow::updateSystemOverview()
 void MainWindow::updatePower()
 {
     mpPowerplot->updateValues(mClient.mValues);
+    mpPowerplot->updateApplications(mClient.mSigPid);
 }
 
 void MainWindow::updateClock()
 {
     mpClockplot->updateValues(mClient.mValues);
+    mpClockplot->updateApplications(mClient.mSigPid);
 }
 
 void MainWindow::updateTemp()
 {
+
     mpTempplot->updateValues(mClient.mValues);
+    mpTempplot->updateApplications(mClient.mSigPid);
 }
 
 void MainWindow::updateMemory()
 {
+
     mpMemoryplot->updateValues(mClient.mValues);
+    mpMemoryplot->updateApplications(mClient.mSigPid);
 }
 
 void MainWindow::updateUtil()
 {
     mpUtilplot->updateValues(mClient.mValues);
+    mpUtilplot->updateApplications(mClient.mSigPid);
 }
 
 void MainWindow::updateHeatmapUtil()

@@ -23,15 +23,8 @@
 #define CCLIENT_HPP
 
 #include <vector>
-#include "CComC.hpp"
 #include "CProtocolC.hpp"
-
-struct Application
-{
-    unsigned int mPid;
-    double mTime;
-    bool start;
-};
+#include "CComTCPClient.hpp"
 
 class CClient{
 public:
@@ -51,13 +44,13 @@ private:
     int initSocket();
     void extractAppSignals();
 	std::string mVERSION;
-	CComC mCom;
 	CProtocolC mProtocol;
-	int mSocket;
 	int mReg;
 	int mPort;
 	int mAmtValues;
 	std::string mIPaddr;
+    CComTCPClient* mCom;
+    CComTCPData* mClientData;
 	
 };
 
