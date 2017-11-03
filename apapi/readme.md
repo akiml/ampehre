@@ -82,11 +82,11 @@ atime [-t intervals] program [program arguments]
 * program [program arguments] -- atime will start the program with its arguments and measure while it is running
 
 atime will use the environment variables as following:
-If APAPI_CMPLIST is not specified the default component list will be used.
+If APAPI_CMPLIST is not specified then the default component list will be used.
 Only components in APAPI_CMPLIST are used.
-If in the APAPI_EVENTLIST file no events for a component are specified the list from default_eventlist.txt is used.
+If in the APAPI_EVENTLIST file no events for a component are specified then the list from default_eventlist.txt is used.
 If the list is neither in the APAPI_EVENTLIST file nor in default_eventlist.txt specified, all events from the component are used.
-For a event the definition from the APAPI_EVENTOPS file is prioritized over the definition in default_eventops.csv.
+For an event the definition from the APAPI_EVENTOPS file is prioritized over the definition in default_eventops.csv.
 
 ### hettime ###
 
