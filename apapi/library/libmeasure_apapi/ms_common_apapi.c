@@ -22,7 +22,6 @@
 #include <time.h>
 #include <math.h>
 #include "ms_common_apapi.h"
-//#include "ms_measurement.h"
 #include "papi.h"
 #define APAPI_PRINTERR(...) fprintf(stderr, "MS_COMMON_APAPI %s:%d ", __FILE__, __LINE__);fprintf(stderr, __VA_ARGS__);
 #define APAPI_PRINT(...) fprintf(stdout, "MS_COMMON_APAPI: ");fprintf(stdout, __VA_ARGS__);
@@ -1471,6 +1470,7 @@ MS_SYSTEM *ms_init(MS_VERSION* version, enum cpu_governor cpu_gov, uint64_t cpu_
 void ms_init_fpga_force_idle(MS_SYSTEM *ms_system) {
 	printf("ms_init_fpga_force_idle: This method is not available in ms_common_apapi\n");
 }
+
 void ms_fini(MS_SYSTEM *ms_system) {
 
 	if (ms_system == NULL) {
@@ -1546,6 +1546,7 @@ MS_LIST *ms_alloc_measurement(MS_SYSTEM *ms_system) {
     
     return ms_list;
 }
+
 void ms_free_measurement(MS_LIST *ms_list) {
 	deleteList(&ms_list);
 }
@@ -1605,18 +1606,7 @@ void ms_set_timer(MS_LIST *ms_list, int flag, uint64_t sec, uint64_t nsec, uint3
             //exit(EXIT_FAILURE);
 		break;
     }
-/*	
-	struct __mgmt_internal *mgmt = (struct __mgmt_internal*) ms_system->mgmt;
-	int cmpIx;
-	int ret;
-	for (cmpIx = 0; cmpIx < mgmt->num_cmp; ++cmpIx) {
-		// check mapping of measurement id and given flag (flag maybe combination of multiple measurement ids)
-		if ( ((component_mapping[cmpIx] & flag) == component_mapping[cmpIx])  && mgmt->timers[cmpIx] != NULL) {
-			// update timer
-			ret = APAPI_change_timer(mgmt->timers[cmpIx], sec, nsec, measure_update, (void**) &(mgmt->update_args[cmpIx]), mgmt->sets[cmpIx]);
-		}
-	}
-*/
+	// ms_init_measurement() has to be called after ms_set_timer to apply the timer changes.
 }
 
 void getInterval(void *ms_measurement, int flag, struct timespec *time) {
@@ -1712,9 +1702,10 @@ void ms_init_measurement(MS_SYSTEM *ms_system, MS_LIST *ms_list, int flags) {
 }
 
 void ms_fini_measurement(MS_SYSTEM *ms_system) {
-	free(ms_system->mgmt);
-	ms_system->mgmt = NULL;
+	// There is only one measurement at a time and resources are reused for next measurement.
+	// Resources are actually freed on ms_fini().
 }
+
 void ms_start_measurement(MS_SYSTEM *ms_system) {
 	struct __mgmt_internal *mgmt = (struct __mgmt_internal*) ms_system->mgmt;
 	int ret;
