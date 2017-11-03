@@ -22,6 +22,7 @@
 #          0.5.5 - add ResourceLibraryHandler to hide specific libraries in CMgmt
 #          0.5.8 - change project name to ampehre
 #          0.7.1 - move functions to query measurement results into the modules
+#          1.0.0 - add apapi
 #
 
 cmake_minimum_required (VERSION 2.6)

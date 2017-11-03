@@ -11,7 +11,7 @@
  * 
  * author: Alex Wiens (awiens@mail.uni-paderborn.de)
  * created: 6/01/17
- * version: 0.8.0 - initial implementation
+ * version: 1.0.0 - initial implementation
  */
 
 // parse csv
