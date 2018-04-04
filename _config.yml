@@ -2,6 +2,7 @@
 title: Ampehre
 email: achim.loesch@upb.de
 email2: cknorr@mail.upb.de
+email3: awiens@mail.uni-paderborn.de
 description: > # this means to ignore newlines until "baseurl:"
     Ampehre is a software framework used to measure the energy consumption
     and power dissipation of computing resources in heterogeneous computing environments.
@@ -10,6 +11,7 @@ baseurl: ""
 #twitter_username: jekyllrb
 github_username: akiml
 github_username2: cknorr1
+github_username3: aw32
 
 # Build settings
 markdown: kramdown
