@@ -258,15 +258,19 @@ static int open_fd(int offset) {
   char filename[BUFSIZ];
 
   if (fd_array[offset].open==0) {
-	  sprintf(filename,"/dev/cpu/%d/msr_safe",offset);
+	  sprintf(filename,"/dev/cpu/%d/amsr",offset);
       fd = open(filename, O_RDONLY);
 	  if (fd<0) {
-		  sprintf(filename,"/dev/cpu/%d/msr",offset);
+          sprintf(filename,"/dev/cpu/%d/msr_safe",offset);
           fd = open(filename, O_RDONLY);
-	  }
-	  if (fd>=0) {
-		  fd_array[offset].fd=fd;
-	      fd_array[offset].open=1;
+          if (fd<0) {
+              sprintf(filename,"/dev/cpu/%d/msr",offset);
+              fd = open(filename, O_RDONLY);
+          }
+      }
+      if (fd>=0) {
+          fd_array[offset].fd=fd;
+          fd_array[offset].open=1;
       } 
   }
   else {
