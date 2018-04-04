@@ -1,0 +1,57 @@
+\section{Extend measurement capabilities}
+
+To add additional indicators you need to modify several files:
+
+\begin{itemize}
+\item PAPI component
+\item libapapi event definitions
+\item libapapi value copying
+\item libmeasurement data structures and methods
+\end{itemize}
+
+\subsection{PAPI component}
+The PAPI library supports extension by defining a new component.
+The components can be found in the \verb+papi/src/components+ directory and every component has its own folder.
+If you want to create a completely new component you can find an example component in the \verb+example+ folder.
+Every component creates an internal list of available events on initialization in \verb+_example_init_component+.
+\verb+_example_update_control_state+ is called to maintain a struct that contains the chosen events.
+If the read method \verb+_example_read+ is called the values of chosen events need to be read and copied to the output array.
+In all of this steps the different events need to be handled and modified in case of extension, however available components contain additional support methods.
+
+If a new component is created it needs to be added to the list of compiled components \verb+--with-components+ in the build script \verb+papi/cmake_build.sh+.
+
+\subsection{libapapi event definitions}
+
+Once the component is available in PAPI the event definitions for libapapi must be adjusted.
+The detailed file formats are described in appendix \ref{appendixapapi}.
+
+The file defined in the environment variable \verb+APAPI_EVENTLIST+ contains the list of events to be considered if a component is activated.
+Simply add the new events to the list similar to the default file.
+Since the specified file will override the default file you also need to copy the desired events from the default file into the specified eventlist file.
+
+The file defined in the environment variable \verb+APAPI_EVENTOPS+ contains a list of parameters that specifiy how to handle event values.
+Accumulating values are treated differently.
+Add a new entry per event according to the specifications in the appendix.
+Your specified file will be merged with the default definitions so no copying of default definitions is necessary, except to override a default definition.
+
+Finally, to activate the component you need to declare the list of used components in the \verb+APAPI_CMPLIST+ environment variable.
+
+\subsection{libmeasurement data structures and methods}
+
+For every libmeasurement component exists a struct containing the desired variables and the accessing methods.
+
+\subsection{libapapi value copying}
+
+To copy the measured event values to the libmeasurement structs the \verb+libms_common_apapi+ wrapper copies the values from the internal PAPI arrays into the target data structures.
+To minimize the overhead of event traversing a list of mappings between the PAPI arrays and the libmeasurement structs are created in the method \verb+__create_mapper+.
+Follow the pattern of the existing entries of checking the current component and existence of the event and finally defining the four entries for the mapping:
+
+\begin{itemize}
+\item \verb+source+ -- pointer to the PAPI array entry
+\item \verb+destination+ -- pointer to the struct variable
+\item \verb+type+ -- type conversion specifier
+\item \verb+factor+ -- factor to convert value to the destination prefix
+\end{itemize}
+
+For struct variables that only need to be changed at the end of the measurement, check the \verb+last_measurement+ variable.
+

@@ -1,0 +1,97 @@
+%
+% build.tex
+%
+% Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>
+% All rights reserved.
+%
+% This documentation may be modified and distributed under the terms
+% of the BSD license. See the LICENSE file for details.
+%
+% encoding: UTF-8
+% tab size: 4
+%
+% author: Achim Lösch (achim.loesch@upb.de)
+% created: 7/24/14
+% version: 0.5.8 - change project name to ampehre
+%
+
+\section{Build instructions}
+
+Required dependencies:
+\begin{itemize}
+    \item CMake
+    \item gcc, g++
+\end{itemize}
+
+\noindent Optional dependencies:
+\begin{itemize}
+    \item NVML for Nvidia GPU support
+    \item maxeleros for Maxeler FPGA support
+    \item mpss-micmgmt for Intel Xeon Phi support
+    \item cpufrequtils/cpupowerutils
+    \item QT and QWT for GUI tools
+\end{itemize}
+
+\noindent Included dependencies:
+\begin{itemize}
+    \item PAPI
+    \item cjson
+\end{itemize}
+
+\subsection{Cloning}
+
+Clone the project to a local directory.
+
+~
+
+\verb+git clone --recurse-submodules https://github.com/akiml/ampehre+
+
+~
+
+\noindent This also clones the PAPI repository as a submodule to the \verb+papi/+ folder.
+
+\subsection{Building}
+
+Ampehre uses CMake as primary build system.
+The Makefile is used for starting the build, installing and cleaning up.
+Run \verb+make+ to start the build process into the subdirectory \verb+build/+.
+
+The PAPI build process was not changed and is triggered from the CMake build script.
+The called script can be found in the file \verb+papi/cmake_build.sh+.
+
+Run \verb+make clean+ to clean the CMake and PAPI build folders.
+
+Using \verb+make install+ you can install Ampehre to your system.
+
+\subsection{Adjust build parameters}
+
+It might be necessary to adjust certain build parameters.
+Foremost you can change paths to \emph{gcc} and \emph{g++} inside the file \verb+Makefile+.
+Next you can deactivate options for certain supported measurement sources at the top of the root \verb+CMakeLists.txt+.
+
+You might have a newer version of cpufrequtils installed named cpupowerutils.
+In this case adjust the linked library in \\\verb+libmeasure/cpu_intel_xeon_sandy/CMakeLists.txt+ or create a symlink to \verb+libcpupower.so+ called \verb+libcpufreq.so+ at the adequate position.
+However, there is no guarantee for compatibility to newer versions.
+
+In case the paths to optional dependencies for the NVML or Maxeler libraries can't be found, adjust the search paths in the \emph{find external libraries} section of the root CMake file \verb+CMakeLists.txt+.
+
+Note that it is most certainly necessary to call \verb+make clean+ after changing build parameters to remove the CMake cache and generated Makefiles.
+
+\subsection{Linux Kernel Modules}
+
+The \emph{driver\_measure} module offers access to mainboard power readings through DELL IDRAC7 IPMI messages.
+To build and install the \emph{driver\_measure} module run \verb+make+ and \verb+make install+ in \verb+driver/+.
+There are folders with two versions: the module in \verb+driver+ offers IPMI and MSR measurements, while the module in \verb+driver_ipmi+ only supports IPMI.
+The old \emph{libmeasurement} requires the module in \verb+driver+.
+
+The \emph{amsr} module offers access to MSR values used to read energy, temperature and frequency values for Intel CPUs.
+It is a modified version of the original \emph{msr} kernel module, extended with whitelisting of available registers.
+The \emph{amsr} device nodes can be made available to normal users since only whitelisted registers are accessible.
+To add registers to the whitelist modify the arrays at the top of the \verb+amsr.c+ file and rebuild.
+To build the \emph{amsr} module run \verb+make+.
+Note: \emph{msr\_safe} is a similar kernel module supported by the PAPI rapl component.
+
+For both modules, make sure that the respective device files are accessible to users.
+Adjust accessibility using \emph{chmod}.
+
+

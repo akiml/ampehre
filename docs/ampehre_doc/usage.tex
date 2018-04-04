@@ -1,0 +1,158 @@
+%
+% usage.tex
+%
+% Copyright (C) 2015, Achim Lösch <achim.loesch@upb.de>, Christoph Knorr <cknorr@mail.uni-paderborn.de>
+% All rights reserved.
+%
+% This documentation may be modified and distributed under the terms
+% of the BSD license. See the LICENSE file for details.
+%
+% encoding: UTF-8
+% tab size: 4
+%
+% author: Achim Lösch (achim.loesch@upb.de)
+% created: 7/24/14
+% version: 0.5.8 - change project name to ampehre
+%
+
+\section{Usage}
+
+Ampehre provides several possibilities to execute measurements.
+\begin{itemize}
+\item Measurement of a complete program execution
+\item Integration into your own program to measure a certain section
+\item Live monitoring of the system including a graphical output
+\end{itemize}
+
+\subsection{Tools}
+
+\subsubsection{hettime}
+\emph{hettime} allows to measure the execution of a newly started application similar to \emph{time}.
+For this hettime starts the measurement, executes the program and waits for its completion before stopping the measurement.
+hettime has several parameters to configure the measurement, but it expects at least the path to the executable.
+Using \verb+-a+ you can pass arguments to the measured program.
+
+~
+
+\verb+hettime [OPTIONS] -e EXECUTABLE [-a ARGS]+
+
+~
+
+By default measurements for the modules are performed at a sampling rate of 100 ms.
+To adjust the sampling rate use the following parameters in ms:
+
+~
+
+\verb+-c SAMPLE_CPU+
+
+\verb+-g SAMPLE_GPU+
+
+\verb+-f SAMPLE_FPGA+
+
+\verb+-m SAMPLE_MIC+
+
+\verb+-s SAMPLE_SYS+
+
+~
+
+By default hettime uses the libmeasurement library for measurment.
+To start hettime with the libapapi library use the \verb+LD_PRELOAD+ environment variable.
+
+~
+
+\verb+LD_PRELOAD=/path/to/libms_common_apapi.so hettime+
+
+~
+
+This allows to use additional configuration of the APAPI library.
+
+\subsubsection{msmonitor}
+
+To do a live monitoring of your system you can use the msmonitor gui tool.
+
+\subsubsection{msmonitor\_cs}
+
+To use msmonitor remotely start the msmonitor server program on the host you want to monitor, the default port is 2900:
+
+\verb+msmonitor_server [-p PORT]+
+
+Now you can start the client on a different host to receive the monitored data:
+
+\verb+msmonitor_client+
+
+In the settings menu you can define the target address and port to connect to the monitored server.
+
+\subsection{Program integration}
+
+To integrate the measurement tool in your own program you need to include the \verb+ms_measurement.h+ header file and link against the \verb+libms_common.so+ library.
+Now you can make use of the measurement library to measure a certain section of you program.
+The following listing shows the necessary steps to execute a measurement.
+
+\begin{lstlisting}
+// initialize the measurement library using the default parameters
+MS_VERSION version = { .major = MS_MAJOR_VERSION,
+                       .minor = MS_MINOR_VERSION,
+                       .revision = MS_REVISION_VERSION };
+MS_SYSTEM *ms = ms_init(&version, CPU_GOVERNOR_ONDEMAND,
+                      2000000, 2500000, GPU_FREQUENCY_CUR, 
+                      IPMI_SET_TIMEOUT, SKIP_PERIODIC,
+                      VARIANT_FULL);
+
+// allocate the data structure for one measurement
+MS_LIST *m1 = ms_alloc_measurement(ms);
+
+// Set timer for m1
+// Measurements perform every (10ms/30ms)
+ms_set_timer(m1, CPU,    0, 10000000, 10);
+ms_set_timer(m1, GPU,    0, 10000000, 10);
+ms_set_timer(m1, FPGA,   0, 30000000, 10);
+ms_set_timer(m1, SYSTEM, 0, 30000000, 10);
+ms_set_timer(m1, MIC,    0, 30000000, 10);
+
+// setup the m1 data structure for the next measurement
+ms_init_measurement(ms, m1, CPU | GPU | FPGA | SYSTEM | MIC);
+
+// measure the section you want to analyze
+ms_start_measurement(ms);
+
+do_something();
+
+ms_stop_measurement(ms);
+ms_join_measurement(ms);
+ms_fini_measurement(ms);
+
+// now you can look at the results
+
+// destroy the measurement data structure
+ms_free_measurement(m1);
+
+// finally shutdown the measurement library
+ms_fini(ms);
+\end{lstlisting}
+
+To analyze the measurement results use the methods in the respective module headers.
+
+\begin{lstlisting}
+// method for dram energy consumption
+// defined in the ms_cpu_intel_xeon_sandy.h header
+printf("consumed energy of cpu 1 dram bank : %.2lf mWs\n",
+           cpu_energy_total_dram(m, 1));
+\end{lstlisting}
+
+\subsection{APAPI configuration}
+
+On invocation libapapi reads certain environment variables for configuration.
+This might be especially handy when using hettime with libapapi.
+The detailed file formats are described in appendix \ref{appendixapapi}.
+
+\begin{itemize}
+\item \verb+APAPI_CMPLIST+ allows to define which components are measured.
+The default is \verb+rapl:nvml:maxeler:micknc:ipmi+
+\item \verb+APAPI_EVENTLIST+ allows to define the list of events per component that are measured.
+The default list \verb+default_eventlist.txt+ is included.
+\item \verb+APAPI_EVENTOPS+ allows to define how the events are processed.
+This is only needed when adding new events.
+The default list \verb+default_eventops.txt+ is included.
+\end{itemize}
+
+
