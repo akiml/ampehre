@@ -1,0 +1,13 @@
+amsr.ko
+amsr.mod.c
+amsr.mod.o
+amsr.o
+modules.order
+Module.symvers
+.amsr.ko.cmd
+.amsr.mod.o.cmd
+amsr.ko.unsigned
+.amsr.ko.unsigned.cmd
+.amsr.o.cmd
+.cache.mk
+.tmp_versions
