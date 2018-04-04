@@ -36,6 +36,10 @@ option(GPU_NVIDIA_TESLA_SUPPORT "build library with gpu nvidia tesla support" ON
 option(FPGA_MAXELER_MAX3A_SUPPORT "build library with fpga maxeler max3a support" ON)
 option(CPU_INTEL_SANDY_SUPPORT "build library with cpu intel xeon sandy support" ON)
 
+option(GUI_TOOLS "build tools with gui" ON)
+
+
+
 set(CMAKE_C_FLAGS "-O3 -Wall -std=gnu99")
 set(CMAKE_CXX_FLAGS "-O3 -Wall -std=gnu++98")
 #set(CMAKE_C_FLAGS "-O0 -Wall -DDEBUG")

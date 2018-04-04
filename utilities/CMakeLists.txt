@@ -16,5 +16,7 @@
 #
 
 add_subdirectory(hettime)
+if (GUI_TOOLS)
 add_subdirectory(msmonitor)
 add_subdirectory(msmonitor_cs)
+endif (GUI_TOOLS)
