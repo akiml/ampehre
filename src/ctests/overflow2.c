@@ -1,10 +1,7 @@
-/* 
+/*
 * File:    overflow.c
-* CVS:     $Id$
 * Author:  Nils Smeds  [Based on tests/overflow.c by Philip Mucci]
 *          smeds@pdc.kth.se
-* Mods:    <your name here>
-*          <your email address>
 */
 
 /* This file performs the following test: overflow dispatch
@@ -22,13 +19,18 @@
    - Stop eventset 1
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "papi.h"
 #include "papi_test.h"
+
+#include "do_loops.h"
 
 #define OVER_FMT    "handler(%d ) Overflow at %p! bit=%#llx \n"
 #define OUT_FMT     "%-12s : %16lld%16lld\n"
 
 int total = 0;						   /* total overflows */
-extern int TESTS_QUIET;				   /* Declared in test_utils.c */
 
 void
 handler( int EventSet, void *address, long long overflow_vector, void *context )
@@ -51,16 +53,20 @@ main( int argc, char **argv )
 	int PAPI_event, mythreshold;
 	char event_name[PAPI_MAX_STR_LEN];
 	const PAPI_hw_info_t *hw_info = NULL;
+	int quiet;
 
-	tests_quiet( argc, argv );	/* Set TESTS_QUIET variable */
+	/* Set TESTS_QUIET variable */
+	quiet = tests_quiet( argc, argv );
 
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
-	if ( retval != PAPI_VER_CURRENT )
+	if ( retval != PAPI_VER_CURRENT ) {
 		test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
+	}
 
 	hw_info = PAPI_get_hardware_info(  );
-	if ( hw_info == NULL )
+	if ( hw_info == NULL ) {
 		test_fail( __FILE__, __LINE__, "PAPI_get_hardware_info", 2 );
+	}
 
 #if defined(POWER3) || defined(__sparc__)
 	PAPI_event = PAPI_TOT_INS;
@@ -68,6 +74,11 @@ main( int argc, char **argv )
 	/* query and set up the right instruction to monitor */
 	PAPI_event = find_nonderived_event( );
 #endif
+
+	if (PAPI_event==0) {
+		if (!quiet) printf("Trouble creating events\n");
+		test_skip(__FILE__,__LINE__,"Creating event",1);
+	}
 
 	if (( PAPI_event == PAPI_FP_OPS ) || ( PAPI_event == PAPI_FP_INS ))
 		mythreshold = THRESHOLD;
@@ -123,7 +134,7 @@ main( int argc, char **argv )
 	num_flops *= 2;
 #endif
 
-	if ( !TESTS_QUIET ) {
+	if ( !quiet ) {
 		if ( ( retval =
 			   PAPI_event_code_to_name( PAPI_event, event_name ) ) != PAPI_OK )
 			test_fail( __FILE__, __LINE__, "PAPI_event_code_to_name", retval );
@@ -172,6 +183,7 @@ main( int argc, char **argv )
 	if ( total > max || total < min )
 		test_fail( __FILE__, __LINE__, "Overflows", 1 );
 
-	test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+	test_pass( __FILE__ );
+
+	return 0;
 }

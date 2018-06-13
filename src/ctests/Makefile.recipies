@@ -5,16 +5,17 @@ PTHREADS= pthrtough pthrtough2 thrspecific profile_pthreads overflow_pthreads \
 	zero_pthreads clockres_pthreads overflow3_pthreads locks_pthreads \
 	krentel_pthreads
 MPX	= max_multiplex multiplex1 multiplex2 mendes-alt sdsc-mpx sdsc2-mpx \
-	sdsc4-mpx reset_multiplex
+	sdsc2-mpx-noreset sdsc4-mpx reset_multiplex
 MPXPTHR	= multiplex1_pthreads multiplex3_pthreads kufrin
 MPI	= mpifirst
 SHARED  = shlib
-SERIAL  = inherit hwinfo code2name reset cmpinfo realtime virttime first \
-	exeinfo zero zero_named branches dmem_info all_native_events \
-	all_events derived high-level2 hl_rates describe memory  \
-	zero_flip low-level high-level eventname case1 case2 \
-	calibrate flops second johnmay2 matrix-hl tenth ipc nmi_watchdog \
-	get_event_component disable_component remove_events cycle_ratio
+SERIAL  = all_events all_native_events branches calibrate case1 case2 \
+	cmpinfo code2name derived describe destroy disable_component \
+	dmem_info eventname exeinfo failed_events first flops \
+	get_event_component inherit high-level high-level2 hl_rates \
+	hwinfo ipc johnmay2 low-level matrix-hl memory \
+	realtime remove_events reset second tenth version virttime \
+	zero zero_flip zero_named
 FORKEXEC  = fork fork2 exec exec2 forkexec forkexec2 forkexec3 forkexec4 \
 	fork_overflow exec_overflow child_overflow system_child_overflow \
 	system_overflow burn zero_fork
@@ -28,7 +29,7 @@ ATTACH	= multiattach multiattach2 zero_attach attach3 attach2 attach_target atta
 P4_TEST	= p4_lst_ins
 EAR	= earprofile
 RANGE	= data_range
-BROKEN	= pernode
+BROKEN	= pernode val_omp
 API = api
 ifneq ($(MPICC),)
 ALL	= $(PTHREADS) $(SERIAL) $(FORKEXEC) $(OVERFLOW) $(PROFILE) $(MPI) $(MPX) $(MPXPTHR) $(OMP) $(SMP) $(SHMEM)\
@@ -42,7 +43,7 @@ DEFAULT = papi_api serial forkexec_tests overflow_tests profile_tests attach mul
 
 all: $(ALL)
 
-default ctests ctest: $(DEFAULT) 
+default ctests ctest: $(DEFAULT)
 
 attach: $(ATTACH)
 
@@ -58,7 +59,7 @@ shared: $(SHARED)
 
 multiplex_and_pthreads: $(MPXPTHR) $(MPX) $(PTHREADS)
 
-multiplex: $(MPX) 
+multiplex: $(MPX)
 
 omp: $(OMP)
 
@@ -78,65 +79,65 @@ profile_tests: $(PROFILE)
 
 papi_api: $(API)
 
-api: api.c $(TESTLIB) $(PAPILIB) 
+api: api.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) api.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o $@
 
-sdsc2: sdsc2.c $(TESTLIB) $(PAPILIB) 
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) sdsc.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -lm -o $@
+sdsc2: sdsc2.c $(TESTLIB) $(PAPILIB) $(TESTFLOPS)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) sdsc.c $(TESTLIB) $(TESTFLOPS) $(PAPILIB) $(LDFLAGS) -lm -o $@
 
-sdsc2-mpx: sdsc2.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) -DMPX $(TOPTFLAGS) sdsc2.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -lm -o $@
+sdsc2-mpx: sdsc2.c $(TESTLIB) $(PAPILIB) $(TESTFLOPS)
+	$(CC) $(INCLUDE) $(CFLAGS) -DMPX $(TOPTFLAGS) sdsc2.c $(TESTLIB) $(TESTFLOPS) $(PAPILIB) $(LDFLAGS) -lm -o $@
 
-branches: branches.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) branches.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -lm -o $@
+branches: branches.c $(TESTLIB) $(PAPILIB) $(TESTFLOPS)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) branches.c $(TESTLIB) $(PAPILIB) $(TESTFLOPS) $(LDFLAGS) -lm -o $@
 
-sdsc2-mpx-noreset: sdsc2.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) -DMPX -DSTARTSTOP $(TOPTFLAGS) sdsc.c $(TESTLIB) $(PAPILIB) -lm $(LDFLAGS) -o $@
+sdsc2-mpx-noreset: sdsc2.c $(TESTLIB) $(PAPILIB) $(TESTFLOPS)
+	$(CC) $(INCLUDE) $(CFLAGS) -DMPX -DSTARTSTOP $(TOPTFLAGS) sdsc2.c $(TESTLIB) $(TESTFLOPS) $(PAPILIB) -lm $(LDFLAGS) -o $@
 
-sdsc-mpx: sdsc.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) -DMPX $(TOPTFLAGS) sdsc.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o $@
+sdsc-mpx: sdsc-mpx.c $(TESTLIB) $(PAPILIB) $(TESTFLOPS)
+	$(CC) $(INCLUDE) $(CFLAGS) -DMPX $(TOPTFLAGS) sdsc-mpx.c $(TESTLIB) $(TESTFLOPS) $(PAPILIB) $(LDFLAGS) -o $@
 
-sdsc4-mpx: sdsc4.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) -DMPX $(TOPTFLAGS) sdsc4.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -lm -o $@
+sdsc4-mpx: sdsc4-mpx.c $(TESTLIB) $(PAPILIB) $(TESTFLOPS)
+	$(CC) $(INCLUDE) $(CFLAGS) -DMPX $(TOPTFLAGS) sdsc4-mpx.c $(TESTLIB) $(TESTFLOPS) $(PAPILIB) $(LDFLAGS) -lm -o $@
 
-calibrate: calibrate.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) calibrate.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o calibrate
+calibrate: calibrate.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) calibrate.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o calibrate
 
 data_range: data_range.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) data_range.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o data_range
 
-p4_lst_ins: p4_lst_ins.c $(TESTLIB) $(PAPILIB) 
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) p4_lst_ins.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o p4_lst_ins
+p4_lst_ins: p4_lst_ins.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) p4_lst_ins.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o p4_lst_ins
 
-acpi: acpi.c dummy.o $(TESTLIB) $(PAPILIB) 
+acpi: acpi.c dummy.o $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) acpi.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o acpi
 
-timer_overflow: timer_overflow.c $(TESTLIB) $(PAPILIB) 
+timer_overflow: timer_overflow.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) timer_overflow.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o $@ 
 
-mendes-alt: mendes-alt.c $(TESTLIB) $(PAPILIB) 
+mendes-alt: mendes-alt.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) -DMULTIPLEX mendes-alt.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o $@ 
 
-max_multiplex: max_multiplex.c $(TESTLIB) $(PAPILIB) 
+max_multiplex: max_multiplex.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) max_multiplex.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o $@ 
 
-multiplex1: multiplex1.c $(TESTLIB) $(PAPILIB) 
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) multiplex1.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o $@ 
+multiplex1: multiplex1.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) multiplex1.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o $@ 
 
-multiplex2: multiplex2.c $(TESTLIB) $(PAPILIB) 
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) multiplex2.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o $@ 
+multiplex2: multiplex2.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) multiplex2.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o $@ 
 
-multiplex1_pthreads: multiplex1_pthreads.c $(TESTLIB) $(PAPILIB)
-	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) multiplex1_pthreads.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o $@ -lpthread
+multiplex1_pthreads: multiplex1_pthreads.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) multiplex1_pthreads.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o $@ -lpthread
 
-kufrin: kufrin.c $(TESTLIB) $(PAPILIB)
-	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) kufrin.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o $@ -lpthread
+kufrin: kufrin.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) kufrin.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o $@ -lpthread
 
-multiplex3_pthreads: multiplex3_pthreads.c $(TESTLIB) $(PAPILIB)
-	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) multiplex3_pthreads.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o $@ -lpthread
+multiplex3_pthreads: multiplex3_pthreads.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) multiplex3_pthreads.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o $@ -lpthread
 
-overflow3_pthreads: overflow3_pthreads.c $(TESTLIB) $(PAPILIB)
-	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow3_pthreads.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o $@ -lpthread
+overflow3_pthreads: overflow3_pthreads.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow3_pthreads.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o $@ -lpthread
 
 thrspecific: thrspecific.c $(TESTLIB) $(PAPILIB)
 	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) thrspecific.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o thrspecific -lpthread
@@ -147,29 +148,32 @@ pthrtough: pthrtough.c $(TESTLIB) $(PAPILIB)
 pthrtough2: pthrtough2.c $(TESTLIB) $(PAPILIB)
 	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) pthrtough2.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o pthrtough2 -lpthread
 
-profile_pthreads: profile_pthreads.c $(TESTLIB) $(PAPILIB)
-	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) profile_pthreads.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o profile_pthreads -lpthread
+profile_pthreads: profile_pthreads.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) profile_pthreads.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o profile_pthreads -lpthread
 
 locks_pthreads: locks_pthreads.c $(TESTLIB) $(PAPILIB)
-	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) locks_pthreads.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o locks_pthreads -lpthread
+	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) locks_pthreads.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o locks_pthreads -lpthread -lm
 
 krentel_pthreads: krentel_pthreads.c $(TESTLIB) $(PAPILIB)
 	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) krentel_pthreads.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o krentel_pthreads -lpthread
 
-overflow_pthreads: overflow_pthreads.c $(TESTLIB) $(PAPILIB)
-	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_pthreads.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o overflow_pthreads -lpthread
+overflow_pthreads: overflow_pthreads.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_pthreads.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o overflow_pthreads -lpthread
 
-zero_pthreads: zero_pthreads.c $(TESTLIB) $(PAPILIB)
-	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) zero_pthreads.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o zero_pthreads -lpthread
+version: version.c $(TESTLIB) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) version.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o version
 
-zero_smp: zero_smp.c $(TESTLIB) $(PAPILIB)
-	$(CC_R) $(INCLUDE) $(SMPCFLGS) $(CFLAGS) $(TOPTFLAGS) zero_smp.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o zero_smp $(SMPLIBS)
+zero_pthreads: zero_pthreads.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) zero_pthreads.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o zero_pthreads -lpthread
 
-zero_shmem: zero_shmem.c $(TESTLIB) $(PAPILIB)
-	$(CC_R) $(INCLUDE) $(SMPCFLGS) $(CFLAGS) $(TOPTFLAGS) zero_shmem.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o zero_shmem $(SMPLIBS)
+zero_smp: zero_smp.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC_R) $(INCLUDE) $(SMPCFLGS) $(CFLAGS) $(TOPTFLAGS) zero_smp.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o zero_smp $(SMPLIBS)
 
-zero_omp: zero_omp.c $(TESTLIB) $(PAPILIB)
-	-$(CC_R) $(INCLUDE) $(OMPCFLGS) $(CFLAGS) $(TOPTFLAGS) zero_omp.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o zero_omp $(OMPLIBS)
+zero_shmem: zero_shmem.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC_R) $(INCLUDE) $(SMPCFLGS) $(CFLAGS) $(TOPTFLAGS) zero_shmem.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o zero_shmem $(SMPLIBS)
+
+zero_omp: zero_omp.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	-$(CC_R) $(INCLUDE) $(OMPCFLGS) $(CFLAGS) $(TOPTFLAGS) zero_omp.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o zero_omp $(OMPLIBS)
 
 omptough: omptough.c $(TESTLIB) $(PAPILIB)
 	-$(CC_R) $(INCLUDE) $(OMPCFLGS) $(CFLAGS) $(TOPTFLAGS) omptough.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o omptough $(OMPLIBS)
@@ -177,44 +181,41 @@ omptough: omptough.c $(TESTLIB) $(PAPILIB)
 val_omp: val_omp.c $(TESTLIB) $(PAPILIB)
 	-$(CC_R) $(INCLUDE) $(OMPCFLGS) $(CFLAGS) $(TOPTFLAGS) val_omp.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o val_omp $(OMPLIBS)
 
-clockres_pthreads: clockres_pthreads.c $(TESTLIB) $(PAPILIB)
-	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) clockres_pthreads.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o clockres_pthreads -lpthread -lm
+clockres_pthreads: clockres_pthreads.c $(TESTLIB) $(CLOCKCORE) $(PAPILIB)
+	$(CC_R) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) clockres_pthreads.c $(TESTLIB) $(CLOCKCORE) $(PAPILIB) $(LDFLAGS) -o clockres_pthreads -lpthread -lm
 
-inherit: inherit.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) inherit.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o inherit
+inherit: inherit.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) inherit.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o inherit
 
-johnmay2: johnmay2.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) johnmay2.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o johnmay2
+johnmay2: johnmay2.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) johnmay2.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o johnmay2
 
 describe: describe.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) describe.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o describe
 
-derived: derived.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) derived.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o derived
+derived: derived.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) derived.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o derived
 
-zero: zero.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) zero.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o zero
+destroy: destroy.c $(TESTLIB) $(TESTINS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) destroy.c $(TESTLIB) $(TESTINS) $(PAPILIB) $(LDFLAGS) -o destroy
 
-zero_named: zero_named.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) zero_named.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o zero_named
+zero: zero.c $(TESTLIB) $(TESTINS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) zero.c $(TESTLIB) $(TESTINS) $(PAPILIB) $(LDFLAGS) -o zero
 
-remove_events: remove_events.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) remove_events.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o remove_events
+zero_named: zero_named.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) zero_named.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o zero_named
 
-nmi_watchdog: nmi_watchdog.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) nmi_watchdog.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o nmi_watchdog
+remove_events: remove_events.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) remove_events.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o remove_events
 
-cycle_ratio: cycle_ratio.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) cycle_ratio.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o cycle_ratio
-
-zero_fork: zero_fork.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) zero_fork.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o zero_fork
+zero_fork: zero_fork.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) zero_fork.c $(DOLOOPS) $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o zero_fork
 
 try: try.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) try.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o try
 
-zero_flip: zero_flip.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) zero_flip.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o zero_flip
+zero_flip: zero_flip.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) zero_flip.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o zero_flip
 
 realtime: realtime.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) realtime.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o realtime
@@ -222,74 +223,74 @@ realtime: realtime.c $(TESTLIB) $(PAPILIB)
 virttime: virttime.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) virttime.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o virttime
 
-first: first.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) first.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o first
+first: first.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) first.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o first
 
-mpifirst: mpifirst.c $(TESTLIB) $(PAPILIB)
-	$(MPICC) $(INCLUDE) $(MPFLAGS) $(CFLAGS) $(TOPTFLAGS) first.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o mpifirst
+mpifirst: mpifirst.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(MPICC) $(INCLUDE) $(MPFLAGS) $(CFLAGS) $(TOPTFLAGS) first.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o mpifirst
 
 first-twice: first-twice.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) first-twice.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o first-twice
 
-second: second.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) second.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o second
+second: second.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) second.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o second
 
-flops: flops.c $(TESTLIB) $(PAPILIB) 
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) flops.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o flops
+flops: flops.c $(TESTLIB) $(TESTFLOPS) $(DISPLAYERROR) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) flops.c $(TESTLIB) $(TESTFLOPS) $(DISPLAYERROR) $(PAPILIB) $(LDFLAGS) -o flops
 
-ipc: ipc.c $(TESTLIB) $(PAPILIB) 
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) ipc.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o ipc
+ipc: ipc.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) ipc.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o ipc
 
-overflow: overflow.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o overflow
+overflow: overflow.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o overflow
 
-overflow_allcounters: overflow_allcounters.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_allcounters.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o overflow_allcounters
+overflow_allcounters: overflow_allcounters.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_allcounters.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o overflow_allcounters
 
-overflow_twoevents: overflow_twoevents.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_twoevents.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o overflow_twoevents
+overflow_twoevents: overflow_twoevents.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_twoevents.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o overflow_twoevents
 
-overflow_one_and_read: overflow_one_and_read.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_one_and_read.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o overflow_one_and_read
+overflow_one_and_read: overflow_one_and_read.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_one_and_read.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o overflow_one_and_read
 
-overflow_index: overflow_index.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_index.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o overflow_index
+overflow_index: overflow_index.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_index.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o overflow_index
 
 overflow_values: overflow_values.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_values.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o overflow_values
 
-overflow2: overflow2.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow2.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o overflow2
+overflow2: overflow2.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow2.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o overflow2
 
-overflow_single_event: overflow_single_event.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_single_event.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o overflow_single_event
+overflow_single_event: overflow_single_event.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_single_event.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o overflow_single_event
 
-overflow_force_software: overflow_force_software.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_force_software.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o overflow_force_software
+overflow_force_software: overflow_force_software.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) overflow_force_software.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o overflow_force_software
 
-sprofile: sprofile.c $(TESTLIB) prof_utils.o $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) sprofile.c prof_utils.o $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o sprofile
+sprofile: sprofile.c $(TESTLIB) $(DOLOOPS) prof_utils.o $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) sprofile.c prof_utils.o $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o sprofile
 
-profile: profile.c $(TESTLIB) prof_utils.o $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) profile.c prof_utils.o $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o profile
+profile: profile.c $(TESTLIB) $(DOLOOPS) prof_utils.o $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) profile.c prof_utils.o $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o profile
 
-profile_force_software: profile.c $(TESTLIB) prof_utils.o $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) -DSWPROFILE profile.c prof_utils.o $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o profile_force_software
+profile_force_software: profile.c $(TESTLIB) $(DOLOOPS) prof_utils.o $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) -DSWPROFILE profile.c prof_utils.o $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o profile_force_software
 
-profile_twoevents: profile_twoevents.c $(TESTLIB) prof_utils.o $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) profile_twoevents.c prof_utils.o $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o profile_twoevents
+profile_twoevents: profile_twoevents.c $(TESTLIB) $(DOLOOPS) prof_utils.o $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) profile_twoevents.c prof_utils.o $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o profile_twoevents
 
-earprofile: earprofile.c $(TESTLIB) prof_utils.o $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) earprofile.c $(TESTLIB) prof_utils.o $(PAPILIB) $(LDFLAGS) -o earprofile
+earprofile: earprofile.c $(TESTLIB) $(DOLOOPS) prof_utils.o $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) earprofile.c $(TESTLIB) $(DOLOOPS) prof_utils.o $(PAPILIB) $(LDFLAGS) -o earprofile
 
-byte_profile: byte_profile.c $(TESTLIB) prof_utils.o $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) byte_profile.c prof_utils.o $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o byte_profile
+byte_profile: byte_profile.c $(TESTLIB) $(DOLOOPS) prof_utils.o $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) byte_profile.c prof_utils.o $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o byte_profile
 
 pernode: pernode.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) pernode.c $(LDFLAGS) -o pernode
 
-dmem_info: dmem_info.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) dmem_info.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o dmem_info
+dmem_info: dmem_info.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) dmem_info.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o dmem_info
 
 all_events: all_events.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) all_events.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o all_events
@@ -297,38 +298,41 @@ all_events: all_events.c $(TESTLIB) $(PAPILIB)
 all_native_events: all_native_events.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) all_native_events.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o all_native_events
 
+failed_events: failed_events.c $(TESTLIB) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) failed_events.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o failed_events
+
 get_event_component: get_event_component.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) get_event_component.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o get_event_component
 
 disable_component: disable_component.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) disable_component.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o disable_component
 
-memory: memory.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) memory.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o memory
+memory: memory.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) memory.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o memory
 
-tenth: tenth.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) tenth.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o tenth
+tenth: tenth.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) tenth.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o tenth
 
 eventname: eventname.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) eventname.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o eventname
 
-case1: case1.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) case1.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o case1
+case1: case1.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) case1.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o case1
 
 case2: case2.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) case2.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o case2
 
-low-level: low-level.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) low-level.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o low-level
+low-level: low-level.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) low-level.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o low-level
 
-matrix-hl: matrix-hl.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS)  matrix-hl.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o matrix-hl
+matrix-hl: matrix-hl.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS)  matrix-hl.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o matrix-hl
 
-hl_rates: hl_rates.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) hl_rates.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o hl_rates
+hl_rates: hl_rates.c $(TESTLIB) $(TESTFLOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) hl_rates.c $(TESTLIB) $(TESTFLOPS) $(PAPILIB) $(LDFLAGS) -o hl_rates
 
-high-level: high-level.c $(TESTLIB) $(PAPILIB)
-	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) high-level.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o high-level
+high-level: high-level.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) high-level.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o high-level
 
 high-level2: high-level2.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) high-level2.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o high-level2
@@ -348,17 +352,17 @@ hwinfo: hwinfo.c $(TESTLIB) $(PAPILIB)
 code2name: code2name.c $(TESTLIB) $(PAPILIB)
 	$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) code2name.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o code2name
 
-attach_target: attach_target.c
-	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) attach_target.c -o attach_target $(TESTLIB)
+attach_target: attach_target.c $(DOLOOPS)
+	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) attach_target.c -o attach_target $(DOLOOPS) $(TESTLIB) $(LDFLAGS)
 
-zero_attach: zero_attach.c $(TESTLIB) $(PAPILIB)
-	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) zero_attach.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o zero_attach 
+zero_attach: zero_attach.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) zero_attach.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o zero_attach
 
-multiattach: multiattach.c $(TESTLIB) $(PAPILIB)
-	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) multiattach.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o multiattach 
+multiattach: multiattach.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) multiattach.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o multiattach
 
-multiattach2: multiattach2.c $(TESTLIB) $(PAPILIB)
-	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) multiattach2.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o multiattach2 
+multiattach2: multiattach2.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) multiattach2.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o multiattach2
 
 attach3: attach3.c attach_target $(TESTLIB) $(PAPILIB)
 	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) attach3.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o attach3 
@@ -366,32 +370,32 @@ attach3: attach3.c attach_target $(TESTLIB) $(PAPILIB)
 attach2: attach2.c attach_target $(TESTLIB) $(PAPILIB)
 	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) attach2.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o attach2 
 
-attach_cpu: attach_cpu.c $(TESTLIB) $(PAPILIB)
-	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) attach_cpu.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o attach_cpu 
+attach_cpu: attach_cpu.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) attach_cpu.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o attach_cpu 
 
-reset: reset.c $(TESTLIB) $(PAPILIB)
-	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) reset.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o reset 
+reset: reset.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) reset.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o reset 
 
-reset_multiplex: reset_multiplex.c $(TESTLIB) $(PAPILIB)
-	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) reset_multiplex.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o reset_multiplex 
+reset_multiplex: reset_multiplex.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) reset_multiplex.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o reset_multiplex
 
-fork_overflow: fork_exec_overflow.c $(TESTLIB) $(PAPILIB)
-	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) fork_exec_overflow.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o fork_overflow
+fork_overflow: fork_overflow.c $(TESTLIB) $(PAPILIB)
+	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) fork_overflow.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o fork_overflow
 
-exec_overflow: fork_exec_overflow.c $(TESTLIB) $(PAPILIB)
-	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) -DPEXEC fork_exec_overflow.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o exec_overflow
+exec_overflow: exec_overflow.c $(TESTLIB) $(PAPILIB) $(TESTCYCLES)
+	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) -DPEXEC exec_overflow.c $(TESTLIB) $(PAPILIB) $(TESTCYCLES) $(LDFLAGS) -o exec_overflow
 
-child_overflow: fork_exec_overflow.c $(TESTLIB) $(PAPILIB)
-	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) -DPCHILD fork_exec_overflow.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o child_overflow
+child_overflow: child_overflow.c $(TESTLIB) $(PAPILIB) $(TESTCYCLES)
+	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) -DPCHILD child_overflow.c $(TESTLIB) $(PAPILIB) $(TESTCYCLES) $(LDFLAGS) -o child_overflow
 
-system_child_overflow: fork_exec_overflow.c $(TESTLIB) $(PAPILIB)
-	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) -DSYSTEM fork_exec_overflow.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o system_child_overflow
+system_child_overflow: system_child_overflow.c $(TESTLIB) $(PAPILIB)
+	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) -DSYSTEM system_child_overflow.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o system_child_overflow
 
-system_overflow: fork_exec_overflow.c $(TESTLIB) $(PAPILIB)
-	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) -DSYSTEM2 fork_exec_overflow.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o system_overflow
+system_overflow: system_overflow.c $(TESTLIB) $(PAPILIB)
+	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) -DSYSTEM2 system_overflow.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o system_overflow
 
-burn: burn.c $(TESTLIB) $(PAPILIB)
-	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) burn.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o burn
+burn: burn.c $(TESTLIB) $(DOLOOPS) $(PAPILIB)
+	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) burn.c $(TESTLIB) $(DOLOOPS) $(PAPILIB) $(LDFLAGS) -o burn
 
 fork: fork.c $(TESTLIB) $(PAPILIB)
 	-$(CC) $(INCLUDE) $(CFLAGS) $(TOPTFLAGS) fork.c $(TESTLIB) $(PAPILIB) $(LDFLAGS) -o fork 
@@ -424,3 +428,6 @@ prof_utils.o: prof_utils.c $(testlibdir)/papi_test.h prof_utils.h
 
 clean:
 	rm -f *.o *.stderr *.stdout core *~ $(ALL) unregister_pthreads
+
+distclean clobber: clean
+	  rm -f Makefile.target

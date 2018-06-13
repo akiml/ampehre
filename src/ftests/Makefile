@@ -1,13 +1,12 @@
 # File: ftests/Makefile
-# CVS:  $Id$
-INCLUDE = -I../testlib
-LIBRARY = -lpapi
-PAPILIB = $(LIBRARY)
-CC	= gcc
-CFLAGS	= -g -O 
-FFLAGS	= -g -O -ffixed-line-length-132
 
-TESTLIB = ../testlib/libtestlib.a
+include Makefile.target
+
+INCLUDE = -I../testlib -I. -I..
+FFLAGS	= $(CFLAGS) -ffixed-line-length-132
+testlibdir=../testlib
+TESTLIB= $(testlibdir)/libtestlib.a
+DOLOOPS= $(testlibdir)/do_loops.o
 
 ifneq ($(F77),)
 include Makefile.recipies

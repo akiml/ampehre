@@ -1,6 +1,5 @@
 /*
 * File: overflow_force_software.c
-* CVS: $Id$
 * Author: Kevin London
 * london@cs.utk.edu
 * Mods: Maynard Johnson
@@ -32,7 +31,15 @@ The Eventset contains:
 - Stop eventset 1
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/time.h>
+
+#include "papi.h"
 #include "papi_test.h"
+
+#include "do_loops.h"
 
 #define OVER_FMT "handler(%d) Overflow at %p overflow_vector=%#llx!\n"
 #define OUT_FMT		"%-12s : %16lld%16d%16lld\n"
@@ -310,6 +317,8 @@ main( int argc, char **argv )
 	if ( ( total[2] == 0 ) || ( total[3] == 0 ) || ( total[4] == 0 ) )
 		test_fail( __FILE__, __LINE__, "Software Overflows", 1 );
 
-	test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+	test_pass( __FILE__ );
+
+	return 0;
+
 }

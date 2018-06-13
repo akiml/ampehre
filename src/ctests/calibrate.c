@@ -16,10 +16,12 @@
   n, measured counts, theoretical counts, (measured - theory), % error
  */
 
-#include "papi_test.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-static void resultline( int i, int j, int EventSet, int fail );
-static void headerlines( char *title, int TESTS_QUIET );
+#include "papi.h"
+#include "papi_test.h"
 
 #define INDEX1 100
 #define INDEX5 500
@@ -28,7 +30,73 @@ static void headerlines( char *title, int TESTS_QUIET );
 #define MAX_ERROR 80
 #define MAX_DIFF  14
 
-extern int TESTS_QUIET;
+/*
+        Extract and display hardware information for this processor.
+        (Re)Initialize PAPI_flops() and begin counting floating ops.
+*/
+static void
+headerlines( const char *title, int quiet )
+{
+
+	if ( !quiet ) {
+		printf( "\n%s:\n%8s %12s %12s %8s %8s\n", title, "i", "papi", "theory",
+				"diff", "%error" );
+		printf( "-------------------------------------------------------------------------\n" );
+	}
+}
+
+/*
+  Read PAPI_flops.
+  Format and display results.
+  Compute error without using floating ops.
+*/
+#if defined(mips)
+#define FMA 1
+#elif (defined(sparc) && defined(sun))
+#define FMA 1
+#else
+#define FMA 0
+#endif
+
+static void
+resultline( int i, int j, int EventSet, int fail, int quiet )
+{
+	float ferror = 0;
+	long long flpins = 0;
+	long long papi, theory;
+	int diff, retval;
+	char err_str[PAPI_MAX_STR_LEN];
+
+	retval = PAPI_stop( EventSet, &flpins );
+	if ( retval != PAPI_OK )
+		test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
+
+	i++;					 /* convert to 1s base  */
+	theory = 2;
+	while ( j-- )
+		theory *= i;		 /* theoretical ops   */
+	papi = flpins << FMA;
+
+	diff = ( int ) ( papi - theory );
+
+	ferror = ( ( float ) abs( diff ) ) / ( ( float ) theory ) * 100;
+
+	if (!quiet) {
+		printf( "%8d %12lld %12lld %8d %10.4f\n", i, papi, theory, diff, ferror );
+	}
+
+	if ( ferror > MAX_WARN && abs( diff ) > MAX_DIFF && i > 20 ) {
+		sprintf( err_str, "Calibrate: difference exceeds %d percent", MAX_WARN );
+		test_warn( __FILE__, __LINE__, err_str, 0 );
+	}
+	if (fail) {
+		if ( ferror > MAX_ERROR && abs( diff ) > MAX_DIFF && i > 20 ) {
+			sprintf( err_str, "Calibrate: error exceeds %d percent", MAX_ERROR );
+			test_fail( __FILE__, __LINE__, err_str, PAPI_EMISC );
+		}
+	}
+}
+
 
 static void
 print_help( char **argv )
@@ -39,13 +107,11 @@ print_help( char **argv )
 	printf( "\t-v            Matrix-Vector multiply test.\n" );
 	printf( "\t-m            Matrix-Matrix multiply test.\n" );
 	printf( "\t-d            Double precision data. Default is float.\n" );
-	printf
-		( "\t-e event      Use <event> as PAPI event instead of PAPI_FP_OPS\n" );
+	printf( "\t-e event      Use <event> as PAPI event instead of PAPI_FP_OPS\n" );
 	printf( "\t-f            Suppress failures\n" );
 	printf( "\t-h            Print this help message\n" );
 	printf( "\n" );
-	printf
-		( "This test measures floating point operations for the specified test.\n" );
+	printf( "This test measures floating point operations for the specified test.\n" );
 	printf( "Operations can be performed in single or double precision.\n" );
 	printf( "Default operation is all three tests in single precision.\n" );
 }
@@ -115,7 +181,7 @@ matrix_double( int n, double *c, double *a, double *b )
 }
 
 static void
-reset_flops( char *title, int EventSet )
+reset_flops( const char *title, int EventSet )
 {
 	int retval;
 	char err_str[PAPI_MAX_STR_LEN];
@@ -132,8 +198,8 @@ main( int argc, char *argv[] )
 {
 	extern void dummy( void * );
 
-	float aa, *a, *b, *c, *x, *y;
-	double aad, *ad, *bd, *cd, *xd, *yd;
+	float aa, *a=NULL, *b=NULL, *c=NULL, *x=NULL, *y=NULL;
+	double aad, *ad=NULL, *bd=NULL, *cd=NULL, *xd=NULL, *yd=NULL;
 	int i, j, n;
 	int inner = 0;
 	int vector = 0;
@@ -144,8 +210,9 @@ main( int argc, char *argv[] )
 	char papi_event_str[PAPI_MIN_STR_LEN] = "PAPI_FP_OPS";
 	int papi_event;
 	int EventSet = PAPI_NULL;
+	int quiet;
 
-/* Parse the input arguments */
+	/* Parse the input arguments */
 	for ( i = 0; i < argc; i++ ) {
 		if ( strstr( argv[i], "-i" ) )
 			inner = 1;
@@ -176,31 +243,38 @@ main( int argc, char *argv[] )
 		inner = vector = matrix = 1;
 
 
-	tests_quiet( argc, argv );	/* Set TESTS_QUIET variable */
+	/* Set TESTS_QUIET variable */
+	quiet = tests_quiet( argc, argv );
 
-	if ( !TESTS_QUIET )
+	if ( !quiet ) {
 		printf( "Initializing..." );
+	}
 
 	/* Initialize PAPI */
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
-	if ( retval != PAPI_VER_CURRENT )
+	if ( retval != PAPI_VER_CURRENT ) {
 		test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
+	}
 
 	/* Translate name */
 	retval = PAPI_event_name_to_code( papi_event_str, &papi_event );
-	if ( retval != PAPI_OK )
+	if ( retval != PAPI_OK ) {
 		test_fail( __FILE__, __LINE__, "PAPI_event_name_to_code", retval );
+	}
 
-	if ( PAPI_query_event( papi_event ) != PAPI_OK )
+	if ( PAPI_query_event( papi_event ) != PAPI_OK ) {
 		test_skip( __FILE__, __LINE__, "PAPI_query_event", PAPI_ENOEVNT );
+	}
 
-	if ( ( retval = PAPI_create_eventset( &EventSet ) ) != PAPI_OK )
+	if ( ( retval = PAPI_create_eventset( &EventSet ) ) != PAPI_OK ) {
 		test_fail( __FILE__, __LINE__, "PAPI_create_eventset", retval );
+	}
 
-	if ( ( retval = PAPI_add_event( EventSet, papi_event ) ) != PAPI_OK )
+	if ( ( retval = PAPI_add_event( EventSet, papi_event ) ) != PAPI_OK ) {
 		test_fail( __FILE__, __LINE__, "PAPI_add_event", retval );
+	}
 
-	printf( "\n" );
+	if (!quiet) printf( "\n" );
 
 	retval = PAPI_OK;
 
@@ -221,7 +295,7 @@ main( int argc, char *argv[] )
 	   }
 
 		if ( retval == PAPI_OK ) {
-			headerlines( "Inner Product Test", TESTS_QUIET );
+			headerlines( "Inner Product Test", quiet );
 
 			/* step through the different array sizes */
 			for ( n = 0; n < INDEX5; n++ ) {
@@ -251,7 +325,7 @@ main( int argc, char *argv[] )
 						aa = inner_single( n, x, y );
 						dummy( ( void * ) &aa );
 					}
-					resultline( n, 1, EventSet, fail );
+					resultline( n, 1, EventSet, fail, quiet );
 				}
 			}
 		}
@@ -282,7 +356,7 @@ main( int argc, char *argv[] )
 	  }
 
 		if ( retval == PAPI_OK ) {
-			headerlines( "Matrix Vector Test", TESTS_QUIET );
+			headerlines( "Matrix Vector Test", quiet );
 
 			/* step through the different array sizes */
 			for ( n = 0; n < INDEX5; n++ ) {
@@ -318,7 +392,7 @@ main( int argc, char *argv[] )
 						vector_single( n, a, x, y );
 						dummy( ( void * ) y );
 					}
-					resultline( n, 2, EventSet, fail );
+					resultline( n, 2, EventSet, fail, quiet );
 				}
 			}
 		}
@@ -352,7 +426,7 @@ main( int argc, char *argv[] )
 
 
 		if ( retval == PAPI_OK ) {
-			headerlines( "Matrix Multiply Test", TESTS_QUIET );
+			headerlines( "Matrix Multiply Test", quiet );
 
 			/* step through the different array sizes */
 			for ( n = 0; n < INDEX5; n++ ) {
@@ -384,7 +458,7 @@ main( int argc, char *argv[] )
 						matrix_single( n, c, a, b );
 						dummy( ( void * ) c );
 					}
-					resultline( n, 3, EventSet, fail );
+					resultline( n, 3, EventSet, fail, quiet );
 				}
 			}
 		}
@@ -400,79 +474,12 @@ main( int argc, char *argv[] )
 	}
 
 	/* exit with status code */
-	if ( retval == PAPI_ENOMEM )
+	if ( retval == PAPI_ENOMEM ) {
 		test_fail( __FILE__, __LINE__, "malloc", retval );
-	else
-		test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+	}
+
+	test_pass( __FILE__ );
+
+	return 0;
 }
 
-/*
-        Extract and display hardware information for this processor.
-        (Re)Initialize PAPI_flops() and begin counting floating ops.
-*/
-static void
-headerlines( char *title, int TESTS_QUIET )
-{
-	const PAPI_hw_info_t *hwinfo = NULL;
-
-	if ( !TESTS_QUIET ) {
-		if ( papi_print_header( "", &hwinfo ) != PAPI_OK )
-			test_fail( __FILE__, __LINE__, "PAPI_get_hardware_info", 2 );
-
-		printf( "\n%s:\n%8s %12s %12s %8s %8s\n", title, "i", "papi", "theory",
-				"diff", "%error" );
-		printf
-			( "-------------------------------------------------------------------------\n" );
-	}
-}
-
-/*
-  Read PAPI_flops.
-  Format and display results.
-  Compute error without using floating ops.
-*/
-#if defined(mips)
-#define FMA 1
-#elif (defined(sparc) && defined(sun))
-#define FMA 1
-#else
-#define FMA 0
-#endif
-
-static void
-resultline( int i, int j, int EventSet, int fail )
-{
-	float ferror = 0;
-	long long flpins = 0;
-	long long papi, theory;
-	int diff, retval;
-	char err_str[PAPI_MAX_STR_LEN];
-
-	retval = PAPI_stop( EventSet, &flpins );
-	if ( retval != PAPI_OK )
-		test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
-
-	i++;					 /* convert to 1s base  */
-	theory = 2;
-	while ( j-- )
-		theory *= i;		 /* theoretical ops   */
-	papi = flpins << FMA;
-
-	diff = ( int ) ( papi - theory );
-
-	ferror = ( ( float ) abs( diff ) ) / ( ( float ) theory ) * 100;
-
-	printf( "%8d %12lld %12lld %8d %10.4f\n", i, papi, theory, diff, ferror );
-
-	if ( ferror > MAX_WARN && abs( diff ) > MAX_DIFF && i > 20 ) {
-		sprintf( err_str, "Calibrate: difference exceeds %d percent", MAX_WARN );
-		test_warn( __FILE__, __LINE__, err_str, 0 );
-	}
-	if (fail) {
-		if ( ferror > MAX_ERROR && abs( diff ) > MAX_DIFF && i > 20 ) {
-			sprintf( err_str, "Calibrate: error exceeds %d percent", MAX_ERROR );
-			test_fail( __FILE__, __LINE__, err_str, PAPI_EMISC );
-		}
-	}
-}

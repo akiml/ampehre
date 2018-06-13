@@ -1,4 +1,4 @@
-.PHONY:	clean install force_me all
+.PHONY:	clean clobber distclean install force_me all
 
 all: man
 	@echo "Built PAPI user documentation"
@@ -11,11 +11,13 @@ man: man/man1 man/man3
 man/man3: ../src/papi.h ../src/papi.c ../src/papi_hl.c ../src/papi_fwrappers.c
 	doxygen Doxyfile-man3
 
-man/man1: ../src/utils/avail.c ../src/utils/clockres.c  ../src/utils/command_line.c ../src/utils/component.c ../src/utils/cost.c ../src/utils/decode.c ../src/utils/error_codes.c ../src/utils/event_chooser.c ../src/utils/event_info.c ../src/utils/mem_info.c ../src/utils/multiplex_cost.c ../src/utils/native_avail.c  ../src/utils/version.c
+man/man1: ../src/utils/papi_avail.c ../src/utils/papi_clockres.c  ../src/utils/papi_command_line.c ../src/utils/papi_component_avail.c ../src/utils/papi_cost.c ../src/utils/papi_decode.c ../src/utils/papi_error_codes.c ../src/utils/papi_event_chooser.c ../src/utils/papi_xml_event_info.c ../src/utils/papi_mem_info.c ../src/utils/papi_multiplex_cost.c ../src/utils/papi_native_avail.c  ../src/utils/papi_version.c
 	doxygen Doxyfile-man1
  
 clean:
 	rm -rf man html doxyerror
+
+distclean clobber: clean
 
 install: man
 	-rm -f man/man3/HighLevelInfo.3

@@ -7,6 +7,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "papi.h"
 #include "papi_test.h"
 
 #define MAX_powercap_EVENTS 64
@@ -67,7 +71,8 @@ void run_test( int quiet )
 
 int main ( int argc, char **argv )
 {
-
+    (void) argv;
+    (void) argc;
     int retval,cid,powercap_cid=-1,numcmp;
     int EventSet = PAPI_NULL;
     long long *values;
@@ -77,7 +82,8 @@ int main ( int argc, char **argv )
     char event_descrs[MAX_powercap_EVENTS][PAPI_MAX_STR_LEN];
     char units[MAX_powercap_EVENTS][PAPI_MIN_STR_LEN];
     int data_type[MAX_powercap_EVENTS];
-    int r,i, do_wrap = 0;
+    int r,i;
+
     const PAPI_component_info_t *cmpinfo = NULL;
     PAPI_event_info_t evinfo;
     long long before_time,after_time;
@@ -85,9 +91,16 @@ int main ( int argc, char **argv )
 
     /* Set TESTS_QUIET variable */
     tests_quiet( argc, argv );
-    if ( argc > 1 )
-        if ( strstr( argv[1], "-w" ) )
-            do_wrap = 1;
+
+	/* Currently unimplemented? */
+#if 0
+	int do_wrap = 0;
+	if ( argc > 1 ) {
+		if ( strstr( argv[1], "-w" ) ) {
+			do_wrap = 1;
+		}
+	}
+#endif
 
     /* PAPI Initialization */
     retval = PAPI_library_init( PAPI_VER_CURRENT );
@@ -121,6 +134,10 @@ int main ( int argc, char **argv )
     if ( cid==numcmp )
         test_skip( __FILE__,__LINE__,"No powercap component found\n",0 );
 
+    /* Skip if component has no counters */
+    if ( cmpinfo->num_cntrs==0 )
+        test_skip( __FILE__,__LINE__,"No counters in the powercap component\n",0 );
+
     /* Create EventSet */
     retval = PAPI_create_eventset( &EventSet );
     if ( retval != PAPI_OK )
@@ -129,7 +146,6 @@ int main ( int argc, char **argv )
     /* Add all events */
     code = PAPI_NATIVE_MASK;
     r = PAPI_enum_cmp_event( &code, PAPI_ENUM_FIRST, powercap_cid );
-
     while ( r == PAPI_OK ) {
         retval = PAPI_event_code_to_name( code, event_names[num_events] );
         if ( retval != PAPI_OK )
@@ -263,7 +279,7 @@ int main ( int argc, char **argv )
     if ( retval != PAPI_OK )
         test_fail( __FILE__, __LINE__, "PAPI_destroy_eventset()",retval );
 
-    test_pass( __FILE__, NULL, 0 );
+    test_pass( __FILE__ );
 
     return 0;
 }

@@ -1,6 +1,9 @@
-#include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <pthread.h>
+
+#include "papi.h"
 #include "papi_test.h"
 
 #define NITER 2000
@@ -93,6 +96,7 @@ main( int argc, char *argv[] )
 		pthread_join( th[j], NULL );
 	}
 
-	test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+	test_pass( __FILE__ );
+
+	return 0;
 }

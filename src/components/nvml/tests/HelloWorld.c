@@ -24,6 +24,7 @@
  */
 
 #include <stdio.h>
+#include "papi.h"
 #include "papi_test.h"
 
 #define NUM_EVENTS 6

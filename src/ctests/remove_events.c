@@ -4,7 +4,12 @@
 
   */
 
+#include <stdio.h>
+
+#include "papi.h"
 #include "papi_test.h"
+
+#include "do_loops.h"
 
 int
 main( int argc, char **argv )
@@ -12,33 +17,35 @@ main( int argc, char **argv )
 	int retval;
 	int EventSet = PAPI_NULL;
 	long long values1[2],values2[2];
-	char *event_names[] = {"PAPI_TOT_CYC","PAPI_TOT_INS"};
+	const char *event_names[] = {"PAPI_TOT_CYC","PAPI_TOT_INS"};
 	char add_event_str[PAPI_MAX_STR_LEN];
 	double instructions_error;
 	long long old_instructions;
+	int quiet;
 
 	/* Set TESTS_QUIET variable */
-	tests_quiet( argc, argv );	
+	quiet = tests_quiet( argc, argv );
 
 	/* Init the PAPI library */
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
 	if ( retval != PAPI_VER_CURRENT ) {
 	   test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
 	}
-		
+
 	/* Create an empty event set */
 	retval = PAPI_create_eventset( &EventSet );
 	if ( retval != PAPI_OK ) {
 	   test_fail( __FILE__, __LINE__, "PAPI_create_eventset", retval );
-	}   
+	}
 
 	/* add the events named above */
 	retval = PAPI_add_named_event( EventSet, event_names[0] );
 	if ( retval != PAPI_OK ) {
 		sprintf( add_event_str, "PAPI_add_named_event[%s]", event_names[0] );
-		test_fail( __FILE__, __LINE__, add_event_str, retval );
+		if (!quiet) printf("Trouble %s\n",add_event_str);
+		test_skip( __FILE__, __LINE__, add_event_str, retval );
 	}
-	
+
 	retval = PAPI_add_named_event( EventSet, event_names[1] );
 	if ( retval != PAPI_OK ) {
 		sprintf( add_event_str, "PAPI_add_named_event[%s]", event_names[1] );
@@ -62,8 +69,8 @@ main( int argc, char **argv )
 
 
 	old_instructions=values1[1];
-	
-	if ( !TESTS_QUIET ) {
+
+	if ( !quiet ) {
 
 	   printf( "========================\n" );
 
@@ -81,7 +88,7 @@ main( int argc, char **argv )
 		sprintf( add_event_str, "PAPI_add_named_event[%s]", event_names[0] );
 		test_fail( __FILE__, __LINE__, add_event_str, retval );
 	}
-	
+
 
 	/* Start PAPI */
 	retval = PAPI_start( EventSet );
@@ -104,7 +111,7 @@ main( int argc, char **argv )
 
 	/* this only works if IPC != 1 */
 
-	if ( !TESTS_QUIET ) {
+	if ( !quiet ) {
 
 	   printf( "==========================\n" );
 	   printf( "After removing PAP_TOT_CYC\n");
@@ -119,7 +126,7 @@ main( int argc, char **argv )
 	   }
 
 	}
-	test_pass( __FILE__, NULL, 0 );
-	
+	test_pass( __FILE__ );
+
 	return 0;
 }

@@ -1,8 +1,8 @@
 /* This file performs the following test: overflow dispatch with pthreads
 
-   - This tests the dispatch of overflow calls from PAPI. These are counted 
-   in the default counting domain and default granularity, depending on 
-   the platform. Usually this is the user domain (PAPI_DOM_USER) and 
+   - This tests the dispatch of overflow calls from PAPI. These are counted
+   in the default counting domain and default granularity, depending on
+   the platform. Usually this is the user domain (PAPI_DOM_USER) and
    thread context (PAPI_GRN_THR).
 
      The Eventset contains:
@@ -15,7 +15,13 @@
    - Stop eventset 1
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
+
+#include "papi.h"
+#include "do_loops.h"
 #include "papi_test.h"
 
 static const PAPI_hw_info_t *hw_info = NULL;
@@ -23,7 +29,7 @@ static int total[NUM_THREADS];
 static int expected[NUM_THREADS];
 static pthread_t myid[NUM_THREADS];
 
-void
+static void
 handler( int EventSet, void *address, long long overflow_vector, void *context )
 {
 #if 0
@@ -39,9 +45,9 @@ handler( int EventSet, void *address, long long overflow_vector, void *context )
 	total[EventSet]++;
 }
 
-long long mythreshold=0;
+static long long mythreshold=0;
 
-void *
+static void *
 Thread( void *arg )
 {
 	int retval, num_tests = 1;
@@ -93,15 +99,17 @@ Thread( void *arg )
 
 	elapsed_cyc = PAPI_get_real_cyc(  ) - elapsed_cyc;
 
-	if ( ( retval =
-		   PAPI_overflow( EventSet1, papi_event, 0, 0, NULL ) ) != PAPI_OK )
+	retval = PAPI_overflow( EventSet1, papi_event, 0, 0, NULL );
+	if (retval != PAPI_OK ) {
 		test_fail( __FILE__, __LINE__, "PAPI_overflow", retval );
+	}
 
 	remove_test_events( &EventSet1, mask1 );
 
-	if ( ( retval =
-		   PAPI_event_code_to_name( papi_event, event_name ) ) != PAPI_OK )
+	retval = PAPI_event_code_to_name( papi_event, event_name );
+	if (retval != PAPI_OK ) {
 		test_fail( __FILE__, __LINE__, "PAPI_event_code_to_name", retval );
+	}
 
 	if ( !TESTS_QUIET ) {
 		printf( "Thread %#x %s : \t%lld\n", ( int ) pthread_self(  ),
@@ -128,31 +136,35 @@ main( int argc, char **argv )
 	int i, rc, retval;
 	pthread_attr_t attr;
 	float ratio;
+	int quiet;
+
+	/* Set TESTS_QUIET variable */
+	quiet = tests_quiet( argc, argv );
 
 	memset( total, 0x0, NUM_THREADS * sizeof ( *total ) );
 	memset( expected, 0x0, NUM_THREADS * sizeof ( *expected ) );
 	memset( myid, 0x0, NUM_THREADS * sizeof ( *myid ) );
-	tests_quiet( argc, argv );	/* Set TESTS_QUIET variable */
 
-	if ( ( retval =
-		   PAPI_library_init( PAPI_VER_CURRENT ) ) != PAPI_VER_CURRENT )
+	retval = PAPI_library_init( PAPI_VER_CURRENT );
+	if (retval != PAPI_VER_CURRENT ) {
 		test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
+	}
 
 	hw_info = PAPI_get_hardware_info(  );
-	if ( hw_info == NULL )
+	if ( hw_info == NULL ) {
 		test_fail( __FILE__, __LINE__, "PAPI_get_hardware_info", 2 );
+	}
 
-	if ( ( retval =
-		   PAPI_thread_init( ( unsigned
-							   long ( * )( void ) ) ( pthread_self ) ) ) !=
-		 PAPI_OK ) {
+	retval = PAPI_thread_init( ( unsigned long ( * )( void ) )
+					( pthread_self ) );
+	if (retval != PAPI_OK ) {
 		if ( retval == PAPI_ECMP )
 			test_skip( __FILE__, __LINE__, "PAPI_thread_init", retval );
 		else
 			test_fail( __FILE__, __LINE__, "PAPI_thread_init", retval );
 	}
 #if defined(linux)
-	mythreshold = hw_info->cpu_max_mhz * 10000 * 2;
+	mythreshold = ((long long)hw_info->cpu_max_mhz) * 10000 * 2;
 #else
 	mythreshold = THRESHOLD * 2;
 #endif
@@ -184,15 +196,18 @@ main( int argc, char **argv )
 			t += ( NUM_FLOPS * ( i + 1 ) ) / mythreshold;
 			r += total[i];
 		}
-		printf( "Expected total overflows: %lld\n", t );
-		printf( "Received total overflows: %lld\n", r );
+		if (!quiet) {
+			printf( "Expected total overflows: %lld\n", t );
+			printf( "Received total overflows: %lld\n", r );
+		}
 	}
+// FIXME: are we actually testing this properly?
 
 /*   ratio = (float)total[0] / (float)expected[0]; */
 /*   printf("Ratio of total to expected: %f\n",ratio); */
 	ratio = 1.0;
 	for ( i = 0; i < NUM_THREADS; i++ ) {
-		printf( "Overflows thread %d: %d, expected %d\n",
+		if (!quiet) printf( "Overflows thread %d: %d, expected %d\n",
 				i, total[i], ( int ) ( ratio * ( float ) expected[i] ) );
 	}
 
@@ -201,7 +216,10 @@ main( int argc, char **argv )
 			test_fail( __FILE__, __LINE__, "not enough overflows", PAPI_EMISC );
 	}
 
-	test_pass( __FILE__, NULL, 0 );
+	test_pass( __FILE__ );
+
 	pthread_exit( NULL );
-	exit( 1 );
+
+	return 0;
+
 }

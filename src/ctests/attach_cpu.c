@@ -14,9 +14,13 @@
  *
  */
 
+#include <stdio.h>
+#include <stdlib.h>
 
+#include "papi.h"
 #include "papi_test.h"
 
+#include "do_loops.h"
 
 int
 main( int argc, char **argv )
@@ -29,6 +33,10 @@ main( int argc, char **argv )
 	long long **values;
 	char event_name[PAPI_MAX_STR_LEN] = "PAPI_TOT_CYC";
 	PAPI_option_t opts;
+	int quiet;
+
+	/* Set TESTS_QUIET variable */
+	quiet=tests_quiet( argc, argv );
 
 	// user can provide cpu number on which to count events as arg 1
 	if (argc > 1) {
@@ -40,47 +48,55 @@ main( int argc, char **argv )
 
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
 	if ( retval != PAPI_VER_CURRENT )
-		test_fail_exit( __FILE__, __LINE__, "PAPI_library_init", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
 
 	retval = PAPI_create_eventset(&EventSet1);
 	if ( retval != PAPI_OK )
-		test_fail_exit( __FILE__, __LINE__, "PAPI_attach", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_attach", retval );
 
 	// Force event set to be associated with component 0 (perf_events component provides all core events)
 	retval = PAPI_assign_eventset_component( EventSet1, 0 );
 	if ( retval != PAPI_OK )
-		test_fail_exit( __FILE__, __LINE__, "PAPI_assign_eventset_component", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_assign_eventset_component", retval );
 
 	// Attach this event set to cpu 1
 	opts.cpu.eventset = EventSet1;
 	opts.cpu.cpu_num = cpu_num;
 
 	retval = PAPI_set_opt( PAPI_CPU_ATTACH, &opts );
-	if ( retval != PAPI_OK )
-		test_fail_exit( __FILE__, __LINE__, "PAPI_set_opt", retval );
+	if ( retval != PAPI_OK ) {
+		if (!quiet) printf("Can't PAPI_CPU_ATTACH: %s\n",
+				PAPI_strerror(retval));
+		test_skip( __FILE__, __LINE__, "PAPI_set_opt", retval );
+	}
 
 	retval = PAPI_add_named_event(EventSet1, event_name);
-	if ( retval != PAPI_OK )
-		test_fail_exit( __FILE__, __LINE__, "PAPI_add_named_event", retval );
-	
+	if ( retval != PAPI_OK ) {
+		if (!quiet) printf("Trouble adding event %s\n",event_name);
+		test_skip( __FILE__, __LINE__, "PAPI_add_named_event", retval );
+	}
+
 	// get space for counter values (this needs to do this call because it malloc's space that test_pass and friends free)
 	values = allocate_test_space( num_tests, num_events);
-	
+
 	retval = PAPI_start( EventSet1 );
-	if ( retval != PAPI_OK )
-		test_fail_exit( __FILE__, __LINE__, "PAPI_start", retval );
-	
+	if ( retval != PAPI_OK ) {
+		test_fail( __FILE__, __LINE__, "PAPI_start", retval );
+	}
+
 	// do some work
 	do_flops(NUM_FLOPS);
-	
+
 	retval = PAPI_stop( EventSet1, values[0] );
 	if ( retval != PAPI_OK )
-		test_fail_exit( __FILE__, __LINE__, "PAPI_stop", retval );
-	
-	printf ("Event: %s: %8lld on Cpu: %d\n", event_name, values[0][0], cpu_num);
-	
+		test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
+
+	if (!quiet) printf ("Event: %s: %8lld on Cpu: %d\n", event_name, values[0][0], cpu_num);
+
 	PAPI_shutdown( );
-	
-	test_pass( __FILE__, values, 1 );
-	return PAPI_OK;
+
+	test_pass( __FILE__ );
+
+	return 0;
+
 }

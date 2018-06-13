@@ -1,10 +1,7 @@
-/* 
+/*
 * File:    prof_utils.c
-* CVS:     $Id$
 * Author:  Dan Terpstra
 *          terpstra@cs.utk.edu
-* Mods:    <your name here>
-*          <your email address>
 */
 
 /* This file contains utility functions useful for all profiling tests
@@ -17,7 +14,15 @@
    - future profiling tests.
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "papi.h"
 #include "papi_test.h"
+
+#include "do_loops.h"
+
 #include "prof_utils.h"
 
 /* variables global to profiling tests */
@@ -27,28 +32,6 @@ int PAPI_event;
 int EventSet = PAPI_NULL;
 void *profbuf[5];
 
-/* This function does the generic initialization stuff found at the top of most
-   profile tests (most tests in general). This includes:
-   - setting the QUIET flag;
-   - initing the PAPI library;
-   - setting the debug level;
-   - getting hardware and executable info.
-   It assumes that prginfo is global to the parent routine.
-*/
-void
-prof_init( int argc, char **argv, const PAPI_exe_info_t ** prginfo )
-{
-	int retval;
-
-	tests_quiet( argc, argv );	/* Set TESTS_QUIET variable */
-
-	if ( ( retval =
-		   PAPI_library_init( PAPI_VER_CURRENT ) ) != PAPI_VER_CURRENT )
-		test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
-
-	if ( ( *prginfo = PAPI_get_executable_info(  ) ) == NULL )
-		test_fail( __FILE__, __LINE__, "PAPI_get_executable_info", 1 );
-}
 
 /* Many profiling tests count one of {FP_INS, FP_OPS, TOT_INS} and TOT_CYC.
    This function creates an event set containing the appropriate pair of events.
@@ -64,22 +47,26 @@ prof_events( int num_tests)
 	/* add PAPI_TOT_CYC and one of the events in PAPI_FP_INS, PAPI_FP_OPS or
 	   PAPI_TOT_INS, depends on the availability of the event on the
 	   platform */
-	EventSet =
-		add_two_nonderived_events( &num_events, &PAPI_event, &mask );
+	EventSet = add_two_nonderived_events( &num_events, &PAPI_event, &mask );
+
+	if (num_events==0) {
+		return 0;
+	}
 
 	values = allocate_test_space( num_tests, num_events );
 
-	if ( ( retval =
-		   PAPI_event_code_to_name( PAPI_event, event_name ) ) != PAPI_OK )
+	retval = PAPI_event_code_to_name( PAPI_event, event_name );
+	if (retval != PAPI_OK ) {
 		test_fail( __FILE__, __LINE__, "PAPI_event_code_to_name", retval );
+	}
 
-	return ( mask );
+	return mask;
 }
 
 /* This function displays info from the prginfo structure in a standardized format.
 */
 void
-prof_print_address( char *title, const PAPI_exe_info_t * prginfo )
+prof_print_address( const char *title, const PAPI_exe_info_t * prginfo )
 {
 	printf( "%s\n", title );
 	printf
@@ -123,7 +110,7 @@ prof_print_prof_info( caddr_t start, caddr_t end, int threshold,
    Assumed globals: EventSet, values, event_name.
 */
 void
-do_no_profile( void )
+do_no_profile( int quiet )
 {
 	int retval;
 
@@ -136,9 +123,11 @@ do_no_profile( void )
 	if ( ( retval = PAPI_stop( EventSet, values[0] ) ) != PAPI_OK )
 		test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
 
-	printf( "Test type   : \t%s\n", "No profiling" );
-	printf( TAB1, event_name, ( values[0] )[0] );
-	printf( TAB1, "PAPI_TOT_CYC", ( values[0] )[1] );
+	if (!quiet) {
+		printf( "Test type   : \t%s\n", "No profiling" );
+		printf( TAB1, event_name, ( values[0] )[0] );
+		printf( TAB1, "PAPI_TOT_CYC", ( values[0] )[1] );
+	}
 }
 
 /* This routine allocates and initializes up to 5 equal sized profiling buffers.
@@ -191,7 +180,7 @@ prof_buckets( int bucket )
 /* A standardized header printing routine. No assumed globals.
 */
 void
-prof_head( unsigned long blength, int bucket, int num_buckets, char *header )
+prof_head( unsigned long blength, int bucket, int num_buckets, const char *header )
 {
 	int bucket_size = prof_buckets( bucket );
 	printf

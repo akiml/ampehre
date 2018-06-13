@@ -14,8 +14,16 @@
    - Get us.
 */
 
-#include "papi_test.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <sys/ptrace.h>
+#include <sys/wait.h>
+
+#include "papi.h"
+#include "papi_test.h"
+
+#include "do_loops.h"
 
 #ifdef _AIX
 #define _LINUX_SOURCE_COMPAT
@@ -54,11 +62,11 @@ main( int argc, char **argv )
 	/* Initialize the PAPI library */
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
 	if ( retval != PAPI_VER_CURRENT ) {
-	   test_fail_exit( __FILE__, __LINE__, "PAPI_library_init", retval );
+	   test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
 	}
 
 	if ( ( cmpinfo = PAPI_get_component_info( 0 ) ) == NULL ) {
-	   test_fail_exit( __FILE__, __LINE__, "PAPI_get_component_info", 0 );
+	   test_fail( __FILE__, __LINE__, "PAPI_get_component_info", 0 );
 	}
 
 	if ( cmpinfo->attach == 0 ) {
@@ -180,37 +188,39 @@ main( int argc, char **argv )
 		perror( "waitpid()" );
 		exit( 1 );
 	}
-	if ( WIFEXITED( status ) == 0 )
+	if ( WIFEXITED( status ) == 0 ) {
 		test_fail( __FILE__, __LINE__,
 				   "Child process didn't return true to WIFEXITED", 0 );
+	}
 
-
-	printf( "Test case: 3rd party attach start, stop.\n" );
-	printf( "-----------------------------------------------\n" );
-	tmp = PAPI_get_opt( PAPI_DEFDOM, NULL );
-	printf( "Default domain is: %d (%s)\n", tmp, 
-		stringify_all_domains( tmp ) );
-	tmp = PAPI_get_opt( PAPI_DEFGRN, NULL );
-	printf( "Default granularity is: %d (%s)\n", tmp,
+	if (!TESTS_QUIET) {
+		printf( "Test case: 3rd party attach start, stop.\n" );
+		printf( "-----------------------------------------------\n" );
+		tmp = PAPI_get_opt( PAPI_DEFDOM, NULL );
+		printf( "Default domain is: %d (%s)\n", tmp,
+			stringify_all_domains( tmp ) );
+		tmp = PAPI_get_opt( PAPI_DEFGRN, NULL );
+		printf( "Default granularity is: %d (%s)\n", tmp,
 			stringify_granularity( tmp ) );
-	printf( "Using %d iterations of c += a*b\n", NUM_FLOPS );
-	printf( "-------------------------------------------------------------------------\n" );
+		printf( "Using %d iterations of c += a*b\n", NUM_FLOPS );
+		printf( "-------------------------------------------------------------------------\n" );
 
-	printf( "Test type    : \t           1\n" );
+		printf( "Test type    : \t           1\n" );
 
-	sprintf( add_event_str, "%-12s : \t", event_name );
-	printf( TAB1, add_event_str, values[0][1] );
-	printf( TAB1, "PAPI_TOT_CYC : \t", values[0][0] );
-	printf( TAB1, "Real usec    : \t", elapsed_us );
-	printf( TAB1, "Real cycles  : \t", elapsed_cyc );
-	printf( TAB1, "Virt usec    : \t", elapsed_virt_us );
-	printf( TAB1, "Virt cycles  : \t", elapsed_virt_cyc );
+		sprintf( add_event_str, "%-12s : \t", event_name );
+		printf( TAB1, add_event_str, values[0][1] );
+		printf( TAB1, "PAPI_TOT_CYC : \t", values[0][0] );
+		printf( TAB1, "Real usec    : \t", elapsed_us );
+		printf( TAB1, "Real cycles  : \t", elapsed_cyc );
+		printf( TAB1, "Virt usec    : \t", elapsed_virt_us );
+		printf( TAB1, "Virt cycles  : \t", elapsed_virt_cyc );
 
-	printf( "-------------------------------------------------------------------------\n" );
+		printf( "-------------------------------------------------------------------------\n" );
 
-	printf( "Verification: none\n" );
+		printf( "Verification: none\n" );
+	}
 
-	test_pass( __FILE__, values, num_tests );
-	
+	test_pass( __FILE__ );
+
 	return 0;
 }

@@ -2,7 +2,12 @@
  * This tests the use of offcore_response events
  */
 
+#include <stdio.h>
+
+#include "papi.h"
 #include "papi_test.h"
+
+#include "do_loops.h"
 
 #include "event_name_lib.h"
 
@@ -63,8 +68,10 @@ int main( int argc, char **argv ) {
    int EventSet_two = PAPI_NULL;
    long long two_values[2];
 
-   /* Set TESTS_QUIET variable */
-   tests_quiet( argc, argv );
+	int quiet=0;
+
+	/* Set TESTS_QUIET variable */
+	quiet=tests_quiet( argc, argv );
 
    /* Init the PAPI library */
    retval = PAPI_library_init( PAPI_VER_CURRENT );
@@ -77,7 +84,7 @@ int main( int argc, char **argv ) {
    instructions_event=get_instructions_event(event_name, BUFSIZ);
    if (instructions_event==NULL) {
       test_skip( __FILE__, __LINE__,
-                "No instructions event definition for this arch", 
+                "No instructions event definition for this arch",
 		 PAPI_ENOSUPP );
    }
 
@@ -89,7 +96,7 @@ int main( int argc, char **argv ) {
    /* Two Events                    */
    /*********************************/
 
-   if (!TESTS_QUIET) {
+   if (!quiet) {
       printf("\tTwo Events in same EventSet\n");
    }
 
@@ -101,14 +108,14 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_two, user_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
-	 fprintf(stderr,"Error trying to add %s\n",user_event);
+      if ( !quiet ) {
+	 fprintf(stderr,"Error trying to add %s %s\n",user_event,PAPI_strerror(retval));
       }
-      test_fail(__FILE__, __LINE__, "adding user event ",retval);
+	test_skip( __FILE__, __LINE__,"Could not add event",PAPI_ENOSUPP);
    }
    retval = PAPI_add_named_event(EventSet_two, kernel_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",kernel_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -126,7 +133,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld, %s count = %lld\n",
 	    user_event,two_values[0],
 	    kernel_event,two_values[1]);
@@ -137,7 +144,7 @@ int main( int argc, char **argv ) {
    /* Default Domain, Default Event */
    /*********************************/
 
-   if (!TESTS_QUIET) {
+   if (!quiet) {
       printf("\tDefault Domain\n");
    }
 
@@ -149,7 +156,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_default, instructions_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",instructions_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -167,7 +174,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",instructions_event,default_values[0]);
    }
 
@@ -184,7 +191,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_default_user, user_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",user_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -202,7 +209,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",user_event,default_user_values[0]);
    }
 
@@ -218,7 +225,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_default_kernel, kernel_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",kernel_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -236,7 +243,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",kernel_event,default_kernel_values[0]);
    }
 
@@ -253,7 +260,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_default_user_kernel, user_kernel_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",user_kernel_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -271,7 +278,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",user_kernel_event,default_user_kernel_values[0]);
    }
 
@@ -279,7 +286,7 @@ int main( int argc, char **argv ) {
    /* User Domain, Default Event    */
    /*********************************/
 
-   if (!TESTS_QUIET) {
+   if (!quiet) {
       printf("\tPAPI_DOM_USER Domain\n");
    }
 
@@ -293,7 +300,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_user, instructions_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",instructions_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -311,7 +318,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",instructions_event,user_values[0]);
    }
 
@@ -328,7 +335,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_user_user, user_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",user_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -346,7 +353,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",user_event,user_user_values[0]);
    }
 
@@ -362,7 +369,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_user_kernel, kernel_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",user_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -380,7 +387,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",kernel_event,user_kernel_values[0]);
    }
 
@@ -396,7 +403,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_user_user_kernel, user_kernel_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",user_kernel_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -414,7 +421,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",user_kernel_event,user_user_kernel_values[0]);
    }
 
@@ -422,7 +429,7 @@ int main( int argc, char **argv ) {
    /* Kernel Domain, Default Event  */
    /*********************************/
 
-   if (!TESTS_QUIET) {
+   if (!quiet) {
       printf("\tPAPI_DOM_KERNEL Domain\n");
    }
 
@@ -436,7 +443,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_kernel, instructions_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",instructions_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -454,7 +461,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",instructions_event,kernel_values[0]);
    }
 
@@ -471,7 +478,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_kernel_user, user_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",user_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -489,7 +496,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",user_event,kernel_user_values[0]);
    }
 
@@ -505,7 +512,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_kernel_kernel, kernel_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",user_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -523,7 +530,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",kernel_event,kernel_kernel_values[0]);
    }
 
@@ -539,7 +546,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_kernel_user_kernel, user_kernel_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",user_kernel_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -557,7 +564,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",user_kernel_event,kernel_user_kernel_values[0]);
    }
 
@@ -565,7 +572,7 @@ int main( int argc, char **argv ) {
    /* All Domain, Default Event  */
    /*********************************/
 
-   if (!TESTS_QUIET) {
+   if (!quiet) {
       printf("\tPAPI_DOM_ALL Domain\n");
    }
 
@@ -579,7 +586,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_all, instructions_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",instructions_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -597,7 +604,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",instructions_event,all_values[0]);
    }
 
@@ -614,7 +621,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_all_user, user_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",user_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -632,7 +639,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",user_event,all_user_values[0]);
    }
 
@@ -648,7 +655,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_all_kernel, kernel_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",user_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -666,7 +673,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",kernel_event,all_kernel_values[0]);
    }
 
@@ -682,7 +689,7 @@ int main( int argc, char **argv ) {
 
    retval = PAPI_add_named_event(EventSet_all_user_kernel, user_kernel_event);
    if (retval != PAPI_OK) {
-      if ( !TESTS_QUIET ) {
+      if ( !quiet ) {
 	 fprintf(stderr,"Error trying to add %s\n",user_kernel_event);
       }
       test_fail(__FILE__, __LINE__, "adding instructions event ",retval);
@@ -700,7 +707,7 @@ int main( int argc, char **argv ) {
       test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
    }
 
-   if ( !TESTS_QUIET ) {
+   if ( !quiet ) {
      printf("\t\t%s count = %lld\n",user_kernel_event,all_user_kernel_values[0]);
    }
 
@@ -710,7 +717,7 @@ int main( int argc, char **argv ) {
 
    //TODO
 
-   test_pass( __FILE__, NULL, 0 );
+	test_pass( __FILE__ );
 
-   return 0;
+	return 0;
 }

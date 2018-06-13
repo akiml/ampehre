@@ -2,7 +2,7 @@
 /* THIS IS OPEN SOURCE CODE */
 /****************************/
 
-/** 
+/**
  * @author  Jose Pedro Oliveira
  *
  * test case for the linux-infiniband component
@@ -14,6 +14,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "papi.h"
 #include "papi_test.h"
 
 int main (int argc, char **argv)
@@ -61,7 +65,7 @@ int main (int argc, char **argv)
             test_skip(__FILE__,__LINE__,"Component infiniband is disabled", 0);
             continue;
         }
-        
+
         values = (long long*) malloc(sizeof(long long) * cmpinfo->num_native_events);
         codes = (int*) malloc(sizeof(int) * cmpinfo->num_native_events);
         names = (char*) malloc(PAPI_MAX_STR_LEN * cmpinfo->num_native_events);
@@ -127,7 +131,7 @@ int main (int argc, char **argv)
         if (retval != PAPI_OK) {
             test_fail(__FILE__, __LINE__, "PAPI_destroy_eventset()", retval);
         }
-        
+
         free(names);
         free(codes);
         free(values);
@@ -137,7 +141,7 @@ int main (int argc, char **argv)
         test_skip(__FILE__,__LINE__,"No infiniband events found", 0);
     }
 
-    test_pass( __FILE__, NULL, 0 );
+    test_pass( __FILE__ );
 
     return 0;
 }

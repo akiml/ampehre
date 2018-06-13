@@ -1,16 +1,14 @@
-/* 
+/*
 * File:    overflow_allcounters.c
 * Author:  Haihang You
 *          you@cs.utk.edu
 * Mods:    Vince Weaver
 *          vweaver1@eecs.utk.edu
-* Mods:    <your name here>
-*          <your email address>
 */
 
 /* This file performs the following test: overflow all counters
    to test availability of overflow of all counters
-  
+
    - Start eventset 1
    - Do flops
    - Stop and measure eventset 1
@@ -20,7 +18,14 @@
    - Stop eventset 1
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "papi.h"
 #include "papi_test.h"
+
+#include "do_loops.h"
 
 #define OVER_FMT	"handler(%d ) Overflow at %p! bit=%#llx \n"
 #define OUT_FMT		"%-12s : %16lld%16lld\n"
@@ -54,18 +59,20 @@ main( int argc, char **argv )
 	int using_perfmon = 0;
 	int using_aix = 0;
 	int cid;
+	int quiet;
+	long long value;
 
 	/* Set TESTS_QUIET variable */
-	tests_quiet( argc, argv );	
+	quiet = tests_quiet( argc, argv );
 
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
 	if ( retval != PAPI_VER_CURRENT ) {
-	   test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
 	}
 
 	hw_info = PAPI_get_hardware_info(  );
 	if ( hw_info == NULL ) {
-	   test_fail( __FILE__, __LINE__, "PAPI_get_hardware_info", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_get_hardware_info", retval );
 	}
 
         cid = PAPI_get_component_index("perfmon");
@@ -80,9 +87,14 @@ main( int argc, char **argv )
 	/* on the platform */
 	EventSet = enum_add_native_events( &num_events, &events, 1 , 1, 0);
 
-	if (!TESTS_QUIET) printf("Trying %d events\n",num_events);
+	if (num_events==0) {
+		if (!quiet) printf("No events found\n");
+		test_skip(__FILE__,__LINE__,"No events found",0);
+	}
 
-	names = ( char ** ) calloc( ( unsigned int ) num_events, 
+	if (!quiet) printf("Trying %d events\n",num_events);
+
+	names = ( char ** ) calloc( ( unsigned int ) num_events,
 				    sizeof ( char * ) );
 
 	for ( i = 0; i < num_events; i++ ) {
@@ -91,7 +103,7 @@ main( int argc, char **argv )
 	   }
 	   else {
 	      names[i] = strdup( name );
-	      if (!TESTS_QUIET) printf("%i: %s\n",i,names[i]);
+	      if (!quiet) printf("%i: %s\n",i,names[i]);
 	   }
 	}
 
@@ -108,11 +120,11 @@ main( int argc, char **argv )
 		}
 		else if (hw_info->cpu_max_mhz!=0) {
 		   mythreshold = ( int ) hw_info->cpu_max_mhz * 20000;
-		  if (!TESTS_QUIET) printf("Using a threshold of %d (20,000 * MHz)\n",mythreshold);
+		  if (!quiet) printf("Using a threshold of %d (20,000 * MHz)\n",mythreshold);
 
 		}
 		else {
-		  if (!TESTS_QUIET) printf("Using default threshold of %d\n",THRESHOLD);
+		  if (!quiet) printf("Using default threshold of %d\n",THRESHOLD);
 		   mythreshold = THRESHOLD;
 		}
 	}
@@ -123,7 +135,7 @@ main( int argc, char **argv )
 	num_flops = NUM_FLOPS * 2;
 
 	   /* initial test to make sure they all work */
-	if (!TESTS_QUIET) printf("Testing that the events all work with no overflow\n");
+	if (!quiet) printf("Testing that the events all work with no overflow\n");
 
        	retval = PAPI_start( EventSet );
 	if ( retval != PAPI_OK ) {
@@ -143,10 +155,10 @@ main( int argc, char **argv )
 	for ( i = 0; i < num_events; i++ ) {
 
 	      /* Enable overflow */
-	   if (!TESTS_QUIET) printf("Testing with overflow set on %s\n",
+	   if (!quiet) printf("Testing with overflow set on %s\n",
 				   names[i]);
 
-	   retval = PAPI_overflow( EventSet, events[i], 
+	   retval = PAPI_overflow( EventSet, events[i],
 					mythreshold, 0, handler );
 	   if ( retval != PAPI_OK ) {
 	      test_fail( __FILE__, __LINE__, "PAPI_overflow", retval );
@@ -156,7 +168,7 @@ main( int argc, char **argv )
 	   if ( retval != PAPI_OK ) {
 	      test_fail( __FILE__, __LINE__, "PAPI_start", retval );
 	   }
-		
+
 	   do_flops( num_flops );
 
 	   retval = PAPI_stop( EventSet, values + ( i + 1 ) * num_events );
@@ -173,7 +185,7 @@ main( int argc, char **argv )
 	   total = 0;
 	}
 
-	if ( !TESTS_QUIET ) {
+	if ( !quiet ) {
 
 	   printf("\nResults in Matrix-view:\n");
 	   printf( "Test Overflow on %d counters with %d events.\n", 
@@ -205,11 +217,11 @@ main( int argc, char **argv )
 
 	/* validation */
 
-	if ( !TESTS_QUIET ) {
+	if ( !quiet ) {
 	   printf("\nResults broken out for validation\n");
 	}
 
-	if (!TESTS_QUIET) {
+	if (!quiet) {
 
 	for ( j = 0; j < num_events+1; j++ ) {
 	  if (j==0) {
@@ -243,7 +255,10 @@ main( int argc, char **argv )
 		//       mythreshold,
 		//       ovt[j],
 		//       *(values+j+num_events*(j+1))/mythreshold);
-		if ( *( values + j + num_events * ( j + 1 ) ) / mythreshold != ovt[j] ) {
+
+		value = values[j+num_events*(j+1)];
+
+		if ( value / mythreshold != ovt[j] ) {
 			char error_string[BUFSIZ];
 
 			if ( using_perfmon )
@@ -256,11 +271,10 @@ main( int argc, char **argv )
 						   1 );
 			else {
 				sprintf( error_string,
-						 "Overflow value differs from expected %lld / %d != %d (%lld)",
-						 *( values + j + num_events * ( j + 1 ) ), mythreshold,
-						 ovt[j],
-						 *( values + j +
-							num_events * ( j + 1 ) ) / mythreshold );
+					"Overflow value differs from expected %lld / %d should be %lld, we got %d",
+					value , mythreshold,
+					value / mythreshold,
+					ovt[j] );
 				test_fail( __FILE__, __LINE__, error_string, 1 );
 			}
 		}
@@ -280,6 +294,8 @@ main( int argc, char **argv )
 	free( names );
 	free( events );
 	free( values );
-	test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+
+	test_pass( __FILE__ );
+
+	return 0;
 }

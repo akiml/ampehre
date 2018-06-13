@@ -2,6 +2,8 @@
 /* to a multiplexed event set.  This tests that we properly set the    */
 /* maximum events value.                                               */
 
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "papi.h"
 #include "papi_test.h"
@@ -14,7 +16,7 @@ int main(int argc, char **argv) {
   int events_tried=0;
 
         /* Set TESTS_QUIET variable */
-        tests_quiet( argc, argv );      
+        tests_quiet( argc, argv );
 
 	/* Initialize the library */
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
@@ -32,7 +34,7 @@ int main(int argc, char **argv) {
         if (!TESTS_QUIET) {
 	   printf("Maximum multiplexed counters=%d\n",max_multiplex);
 	}
-	
+
 	if (!TESTS_QUIET) {
 	   printf("Trying to multiplex as many as possible:\n");
 	}
@@ -44,7 +46,7 @@ int main(int argc, char **argv) {
 
 	retval = PAPI_assign_eventset_component( EventSet, 0 );
 	if ( retval != PAPI_OK ) {
-	   test_fail(__FILE__, __LINE__, "PAPI_assign_eventset_component", 
+	   test_fail(__FILE__, __LINE__, "PAPI_assign_eventset_component",
 		     retval );
 	}
 
@@ -82,15 +84,17 @@ int main(int argc, char **argv) {
 
 	if (events_tried<max_multiplex) {
 	   if (!TESTS_QUIET) {
-              printf("Ran out of events before we ran out of room\n");	      
+              printf("Ran out of events before we ran out of room\n");
 	   }
 	}
 	else if (added!=max_multiplex) {
-	   test_fail(__FILE__, __LINE__, 
+	   test_fail(__FILE__, __LINE__,
 		     "Couldn't max out multiplexed events", 1);
 	}
 
-	test_pass( __FILE__, NULL, 0 );
-	exit( 0 );
+	test_pass( __FILE__ );
+
+	return 0;
+
 }
 

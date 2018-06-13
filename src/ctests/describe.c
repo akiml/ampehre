@@ -8,15 +8,18 @@
     for that matter. :-)
 */
 
-/*  PAPI_describe_event has been deprecated in PAPI 3, since 
+/*  PAPI_describe_event has been deprecated in PAPI 3, since
     its functionality exists in other API calls. Below shows
-    several ways that this call was used, with replacement 
+    several ways that this call was used, with replacement
     code compatible with PAPI 3.
 */
 
-#include "papi_test.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-extern int TESTS_QUIET;				   /* Declared in test_utils.c */
+#include "papi.h"
+#include "papi_test.h"
 
 int
 main( int argc, char **argv )
@@ -26,20 +29,26 @@ main( int argc, char **argv )
 	long long g1[2];
 	int eventcode = PAPI_TOT_INS;
 	PAPI_event_info_t info, info1, info2;
+	int quiet;
 
-	tests_quiet( argc, argv );	/* Set TESTS_QUIET variable */
+	/* Set TESTS_QUIET variable */
+	quiet=tests_quiet( argc, argv );
 
-	if ( ( retval =
-		   PAPI_library_init( PAPI_VER_CURRENT ) ) != PAPI_VER_CURRENT )
+
+	retval = PAPI_library_init( PAPI_VER_CURRENT );
+	if (retval != PAPI_VER_CURRENT ) {
 		test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
+	}
 
-
-	if ( ( retval = PAPI_create_eventset( &EventSet ) ) != PAPI_OK )
+	if ( ( retval = PAPI_create_eventset( &EventSet ) ) != PAPI_OK ) {
 		test_fail( __FILE__, __LINE__, "PAPI_create_eventset", retval );
+	}
 
-	if ( ( retval = PAPI_query_event( eventcode ) ) != PAPI_OK )
-		test_fail( __FILE__, __LINE__, "PAPI_query_event(PAPI_TOT_INS)",
+	if ( ( retval = PAPI_query_event( eventcode ) ) != PAPI_OK ) {
+		if (!quiet) printf("Trouble checking event\n");
+		test_skip( __FILE__, __LINE__, "PAPI_query_event(PAPI_TOT_INS)",
 				   retval );
+	}
 
 	if ( ( retval = PAPI_add_event( EventSet, eventcode ) ) != PAPI_OK )
 		test_fail( __FILE__, __LINE__, "PAPI_add_event(PAPI_TOT_INS)", retval );
@@ -54,9 +63,9 @@ main( int argc, char **argv )
 	eventcode = 0;
 /*
    if ( ( retval = PAPI_describe_event(eventname,(int *)&eventcode,eventdesc) ) == PAPI_OK)
-     test_fail(__FILE__,__LINE__,"PAPI_describe_event",retval);	   
+     test_fail(__FILE__,__LINE__,"PAPI_describe_event",retval);
 */
-	if (!TESTS_QUIET) {
+	if (!quiet) {
 	    printf("This test expects a 'PAPI Error' to be returned from this PAPI call.\n");
 	}
 	if ( ( retval = PAPI_get_event_info( eventcode, &info ) ) == PAPI_OK )
@@ -66,7 +75,7 @@ main( int argc, char **argv )
 	eventcode = PAPI_TOT_INS;
 /*
    if ( ( retval = PAPI_describe_event(eventname,(int *)&eventcode,eventdesc) ) != PAPI_OK)
-     test_fail(__FILE__,__LINE__,"PAPI_describe_event",retval);	   
+     test_fail(__FILE__,__LINE__,"PAPI_describe_event",retval);
 */
 	if ( ( retval = PAPI_get_event_info( eventcode, &info1 ) ) != PAPI_OK )
 		test_fail( __FILE__, __LINE__, "PAPI_get_event_info", retval );
@@ -83,7 +92,7 @@ main( int argc, char **argv )
 	/* Case 2, fill in code field. */
 /*
    if ( ( retval = PAPI_describe_event(eventname,(int *)&eventcode,eventdesc) ) != PAPI_OK)
-     test_fail(__FILE__,__LINE__,"PAPI_describe_event",retval);	   
+     test_fail(__FILE__,__LINE__,"PAPI_describe_event",retval);
 */
 	if ( ( retval = PAPI_event_name_to_code( info1.symbol, ( int * ) &eventcode ) ) != PAPI_OK ) {
 		test_fail( __FILE__, __LINE__, "PAPI_event_name_to_code", retval );
@@ -103,6 +112,7 @@ main( int argc, char **argv )
 		test_fail( __FILE__, __LINE__,
 				   "PAPI_get_event_info long_descr value is bogus", retval );
 
-	test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+	test_pass( __FILE__ );
+
+	return 0;
 }

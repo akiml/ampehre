@@ -1,7 +1,7 @@
 /* This file performs the following test: counter domain testing
 
    - It attempts to use the following two counters. It may use less depending on
-     hardware counter resource limitations. 
+     hardware counter resource limitations.
      + PAPI_TOT_INS
      + PAPI_TOT_CYC
    - Start system domain counters
@@ -15,7 +15,14 @@
    - Stop and read user domain counters
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "papi.h"
 #include "papi_test.h"
+
+#include "do_loops.h"
 
 #define TAB_DOM	"%s%12lld%15lld%17lld\n"
 
@@ -31,28 +38,28 @@ dump_and_verify( int test_case, long long **values )
 {
 	long long min, max, min2, max2;
 
-	printf
-		( "-----------------------------------------------------------------\n" );
-	printf( "Using %d iterations of c += a*b\n", NUM_FLOPS );
-	printf( "-------------------------------------------------------------\n" );
-
+	if (!TESTS_QUIET) {
+		printf( "-----------------------------------------------------------------\n" );
+		printf( "Using %d iterations of c += a*b\n", NUM_FLOPS );
+		printf( "-------------------------------------------------------------\n" );
+	}
 	if ( test_case == CASE2 ) {
-		printf
-			( "Test type   :   Before Create   Before Add       Between Adds\n" );
-		printf( TAB_DOM, "PAPI_TOT_INS: ", ( values[0] )[0], ( values[1] )[0],
+		if (!TESTS_QUIET) {
+			printf( "Test type   :   Before Create   Before Add       Between Adds\n" );
+			printf( TAB_DOM, "PAPI_TOT_INS: ", ( values[0] )[0], ( values[1] )[0],
 				( values[2] )[0] );
-		printf( TAB_DOM, "PAPI_TOT_CYC: ", ( values[0] )[1], ( values[1] )[1],
+			printf( TAB_DOM, "PAPI_TOT_CYC: ", ( values[0] )[1], ( values[1] )[1],
 				( values[2] )[1] );
-		printf
-			( "-------------------------------------------------------------\n" );
-		printf( "Verification:\n" );
-		printf( "Both rows equal 'n  N  N' where n << N\n" );
-		return;
+			printf( "-------------------------------------------------------------\n" );
+			printf( "Verification:\n" );
+			printf( "Both rows equal 'n  N  N' where n << N\n" );
+			return;
+		}
 	} else if ( test_case == CHANGE ) {
 		min = ( long long ) ( ( double ) values[0][0] * ( 1 - TOLERANCE ) );
 		max = ( long long ) ( ( double ) values[0][0] * ( 1 + TOLERANCE ) );
 		if ( values[1][0] > max || values[1][0] < min )
-			test_fail( __FILE__, __LINE__, "PAPI_TOT_INS", 1 );
+		test_fail( __FILE__, __LINE__, "PAPI_TOT_INS", 1 );
 
 		min = ( long long ) ( ( double ) values[1][1] * ( 1 - TOLERANCE ) );
 		max = ( long long ) ( ( double ) values[1][1] * ( 1 + TOLERANCE ) );
@@ -60,30 +67,30 @@ dump_and_verify( int test_case, long long **values )
 			 ( values[2][1] + values[0][1] ) < min )
 			test_fail( __FILE__, __LINE__, "PAPI_TOT_CYC", 1 );
 
-		printf
-			( "Test type   :   PAPI_DOM_ALL  PAPI_DOM_KERNEL  PAPI_DOM_USER\n" );
-		printf( TAB_DOM, "PAPI_TOT_INS: ", ( values[1] )[0], ( values[2] )[0],
+		if (!TESTS_QUIET) {
+			printf( "Test type   :   PAPI_DOM_ALL  PAPI_DOM_KERNEL  PAPI_DOM_USER\n" );
+			printf( TAB_DOM, "PAPI_TOT_INS: ", ( values[1] )[0], ( values[2] )[0],
 				( values[0] )[0] );
-		printf( TAB_DOM, "PAPI_TOT_CYC: ", ( values[1] )[1], ( values[2] )[1],
+			printf( TAB_DOM, "PAPI_TOT_CYC: ", ( values[1] )[1], ( values[2] )[1],
 				( values[0] )[1] );
-		printf
-			( "-------------------------------------------------------------\n" );
+			printf( "-------------------------------------------------------------\n" );
 
-		printf( "Verification:\n" );
-		printf( "Both rows approximately equal '(N+n)  n  N', where n << N\n" );
-		printf( "Column 1 approximately equals column 2 plus column 3\n" );
+			printf( "Verification:\n" );
+			printf( "Both rows approximately equal '(N+n)  n  N', where n << N\n" );
+			printf( "Column 1 approximately equals column 2 plus column 3\n" );
+		}
 	} else if ( test_case == SUPERVISOR ) {
-		printf
-			( "Test type   :   PAPI_DOM_ALL  All-minus-supervisor  Supervisor-only\n" );
-		printf( TAB_DOM, "PAPI_TOT_INS: ", ( values[0] )[0], ( values[1] )[0],
+		if (!TESTS_QUIET) {
+			printf( "Test type   :   PAPI_DOM_ALL  All-minus-supervisor  Supervisor-only\n" );
+			printf( TAB_DOM, "PAPI_TOT_INS: ", ( values[0] )[0], ( values[1] )[0],
 				( values[2] )[0] );
-		printf( TAB_DOM, "PAPI_TOT_CYC: ", ( values[0] )[1], ( values[1] )[1],
+			printf( TAB_DOM, "PAPI_TOT_CYC: ", ( values[0] )[1], ( values[1] )[1],
 				( values[2] )[1] );
-		printf
-			( "-------------------------------------------------------------\n" );
-		printf( "Verification:\n" );
-		printf( "Both rows approximately equal '(N+n)  n  N', where n << N\n" );
-		printf( "Column 1 approximately equals column 2 plus column 3\n" );
+			printf( "-------------------------------------------------------------\n" );
+			printf( "Verification:\n" );
+			printf( "Both rows approximately equal '(N+n)  n  N', where n << N\n" );
+			printf( "Column 1 approximately equals column 2 plus column 3\n" );
+		}
 	} else {
 		min = ( long long ) ( ( double ) values[2][0] * ( 1 - TOLERANCE ) );
 		max = ( long long ) ( ( double ) values[2][0] * ( 1 + TOLERANCE ) );
@@ -93,18 +100,17 @@ dump_and_verify( int test_case, long long **values )
 			( long long ) ( ( double ) ( double ) values[0][1] *
 							( 1 + TOLERANCE ) );
 
-		printf
-			( "Test type   :   PAPI_DOM_ALL  PAPI_DOM_KERNEL  PAPI_DOM_USER\n" );
-		printf( TAB_DOM, "PAPI_TOT_INS: ", ( values[0] )[0], ( values[1] )[0],
+		if (!TESTS_QUIET) {
+			printf( "Test type   :   PAPI_DOM_ALL  PAPI_DOM_KERNEL  PAPI_DOM_USER\n" );
+			printf( TAB_DOM, "PAPI_TOT_INS: ", ( values[0] )[0], ( values[1] )[0],
 				( values[2] )[0] );
-		printf( TAB_DOM, "PAPI_TOT_CYC: ", ( values[0] )[1], ( values[1] )[1],
+			printf( TAB_DOM, "PAPI_TOT_CYC: ", ( values[0] )[1], ( values[1] )[1],
 				( values[2] )[1] );
-		printf
-			( "-------------------------------------------------------------\n" );
-		printf( "Verification:\n" );
-		printf( "Both rows approximately equal '(N+n)  n  N', where n << N\n" );
-		printf( "Column 1 approximately equals column 2 plus column 3\n" );
-
+			printf( "-------------------------------------------------------------\n" );
+			printf( "Verification:\n" );
+			printf( "Both rows approximately equal '(N+n)  n  N', where n << N\n" );
+			printf( "Column 1 approximately equals column 2 plus column 3\n" );
+		}
 		if ( values[0][0] > max || values[0][0] < min )
 			test_fail( __FILE__, __LINE__, "PAPI_TOT_INS", 1 );
 
@@ -120,8 +126,7 @@ dump_and_verify( int test_case, long long **values )
 
 	if ( values[2][0] == 0 || values[2][1] == 0 ) {
 		if ( test_case == SUPERVISOR ) {
-			printf
-				( "WARNING: No events counted in supervisor context.  This is expected in a non-virtualized environment.\n" );
+			if (!TESTS_QUIET) printf( "WARNING: No events counted in supervisor context.  This is expected in a non-virtualized environment.\n" );
 		} else {
 			test_fail( __FILE__, __LINE__,
 					   "Verify non-zero count for all domain types", 1 );
@@ -178,8 +183,7 @@ case1( int num )
 				   retval );
 
 	if ( num == CREATE ) {
-		printf
-			( "\nTest case CREATE: Call PAPI_set_opt(PAPI_DOMAIN) on EventSet before add\n" );
+		if (!TESTS_QUIET) printf( "\nTest case CREATE: Call PAPI_set_opt(PAPI_DOMAIN) on EventSet before add\n" );
 		options.domain.eventset = EventSet1;
 		options.domain.domain = PAPI_DOM_ALL;
 
@@ -223,8 +227,7 @@ case1( int num )
 		test_fail( __FILE__, __LINE__, "PAPI_add_event(PAPI_TOT_INS)", retval );
 
 	if ( num == MIDDLE ) {
-		printf
-			( "\nTest case MIDDLE: Call PAPI_set_opt(PAPI_DOMAIN) on EventSet between adds\n" );
+		if (!TESTS_QUIET) printf( "\nTest case MIDDLE: Call PAPI_set_opt(PAPI_DOMAIN) on EventSet between adds\n" );
 		options.domain.eventset = EventSet1;
 		options.domain.domain = PAPI_DOM_ALL;
 
@@ -253,8 +256,7 @@ case1( int num )
 		test_fail( __FILE__, __LINE__, "PAPI_add_event(PAPI_TOT_CYC)", retval );
 
 	if ( num == ADD ) {
-		printf
-			( "\nTest case ADD: Call PAPI_set_opt(PAPI_DOMAIN) on EventSet after add\n" );
+		if (!TESTS_QUIET) printf( "\nTest case ADD: Call PAPI_set_opt(PAPI_DOMAIN) on EventSet after add\n" );
 		options.domain.eventset = EventSet1;
 		options.domain.domain = PAPI_DOM_ALL;
 
@@ -286,8 +288,7 @@ case1( int num )
 		 * domain settings of "All", "Kernel" and "User", on event sets 1, 2, and 3, respectively.
 		 */
 		PAPI_option_t option;
-		printf
-			( "\nTest case CHANGE 1: Change domain on EventSet between runs, using generic domain options:\n" );
+		if (!TESTS_QUIET) printf( "\nTest case CHANGE 1: Change domain on EventSet between runs, using generic domain options:\n" );
 		PAPI_start( EventSet1 );
 		PAPI_stop( EventSet1, values[0] );
 
@@ -327,8 +328,7 @@ case1( int num )
 		 ( cmpinfo->available_domains & PAPI_DOM_SUPERVISOR ) ) {
 		PAPI_option_t option;
 
-		printf
-			( "\nTest case CHANGE 2: Change domain on EventSets to include/exclude supervisor events:\n" );
+		if (!TESTS_QUIET) printf( "\nTest case CHANGE 2: Change domain on EventSets to include/exclude supervisor events:\n" );
 
 		option.domain.domain = PAPI_DOM_ALL;
 		option.domain.eventset = EventSet1;
@@ -452,12 +452,11 @@ case2( int num, int domain, long long *values )
 		test_skip( __FILE__, __LINE__, "PAPI_query_event", retval );
 
 	if ( num == CREATE ) {
-		printf
-			( "\nTest case 2, CREATE: Call PAPI_set_domain(%s) before create\n",
-			  stringify_domain( domain ) );
-		printf
-			( "This should override the domain setting for this EventSet.\n" );
-
+		if (!TESTS_QUIET) {
+			printf( "\nTest case 2, CREATE: Call PAPI_set_domain(%s) before create\n",
+				stringify_domain( domain ) );
+			printf( "This should override the domain setting for this EventSet.\n" );
+		}
 		retval = PAPI_set_domain( domain );
 		if ( retval != PAPI_OK )
 			test_fail( __FILE__, __LINE__, "PAPI_set_domain", retval );
@@ -468,10 +467,11 @@ case2( int num, int domain, long long *values )
 		test_fail( __FILE__, __LINE__, "PAPI_create_eventset", retval );
 
 	if ( num == ADD ) {
-		printf( "\nTest case 2, ADD: Call PAPI_set_domain(%s) before add\n",
-				stringify_domain( domain ) );
-		printf
-			( "This should have no effect on the domain setting for this EventSet.\n" );
+		if (!TESTS_QUIET) {
+			printf( "\nTest case 2, ADD: Call PAPI_set_domain(%s) before add\n",
+					stringify_domain( domain ) );
+			printf( "This should have no effect on the domain setting for this EventSet.\n" );
+		}
 
 		retval = PAPI_set_domain( domain );
 		if ( retval != PAPI_OK )
@@ -483,11 +483,11 @@ case2( int num, int domain, long long *values )
 		test_fail( __FILE__, __LINE__, "PAPI_add_event(PAPI_TOT_INS)", retval );
 
 	if ( num == MIDDLE ) {
-		printf
-			( "\nTest case 2, MIDDLE: Call PAPI_set_domain(%s) between adds\n",
-			  stringify_domain( domain ) );
-		printf
-			( "This should have no effect on the domain setting for this EventSet.\n" );
+		if (!TESTS_QUIET) {
+			printf( "\nTest case 2, MIDDLE: Call PAPI_set_domain(%s) between adds\n",
+				stringify_domain( domain ) );
+			printf( "This should have no effect on the domain setting for this EventSet.\n" );
+		}
 
 		retval = PAPI_set_domain( domain );
 		if ( retval != PAPI_OK )
@@ -568,18 +568,18 @@ main( int argc, char **argv )
 	}
 #endif
 
-	printf
-		( "Test second.c: set domain of eventset via PAPI_set_domain and PAPI_set_opt.\n\n" );
-	printf
-		( "* PAPI_set_domain(DOMAIN) sets the default domain \napplied to subsequently created EventSets.\n" );
-	printf( "It should have no effect on existing EventSets.\n\n" );
-	printf
-		( "* PAPI_set_opt(DOMAIN,xxx) sets the domain for a specific EventSet.\n" );
-	printf
-		( "It should always override the default setting for that EventSet.\n" );
+	if (!TESTS_QUIET) {
+		printf( "Test second.c: set domain of eventset via PAPI_set_domain and PAPI_set_opt.\n\n" );
+		printf( "* PAPI_set_domain(DOMAIN) sets the default domain \napplied to subsequently created EventSets.\n" );
+		printf( "It should have no effect on existing EventSets.\n\n" );
+		printf( "* PAPI_set_opt(DOMAIN,xxx) sets the domain for a specific EventSet.\n" );
+		printf( "It should always override the default setting for that EventSet.\n" );
+	}
+
 	case2_driver(  );
 	case1_driver(  );
 
-	test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+	test_pass( __FILE__ );
+
+	return 0;
 }

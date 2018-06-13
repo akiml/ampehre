@@ -2,30 +2,21 @@
 	This file is customized to hide Windows / Unix differences.
 */
 
-#include <stdlib.h>
-#include <stdio.h>
 
-#include <unistd.h>
-#include <sys/wait.h>
-#if (!defined(NO_DLFCN) && !defined(_BGL) && !defined(_BGP))
-#include <dlfcn.h>
+#ifdef __cplusplus
+extern "C"
+{
 #endif
 
-#include <errno.h>
-#include <memory.h>
-#if !defined(__FreeBSD__) && !defined(__APPLE__)
-#include <malloc.h>
-#endif
-#include <assert.h>
-#include <string.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <math.h>
 
-#include "papiStdEventDefs.h"
-#include "papi.h"
-#include "test_utils.h"
+//#if (!defined(NO_DLFCN) && !defined(_BGL) && !defined(_BGP))
+//#include <dlfcn.h>
+//#endif
+
+//#include <memory.h>
+//#if !defined(__FreeBSD__) && !defined(__APPLE__)
+//#include <malloc.h>
+//#endif
 
 /* Masks to select operations for add_test_events() and remove_test_events()
 	Mask value tells us what events to select.
@@ -50,15 +41,14 @@
 
 #define MAX_TEST_EVENTS 18
 
-struct test_events_t {                                                       
-  unsigned int mask;                                                         
-  unsigned int event;                                                        
-};      
+struct test_events_t {
+	unsigned int mask;
+	unsigned int event;
+};
 
 extern struct test_events_t test_events[];
 
-int papi_print_header (char *prompt, const PAPI_hw_info_t **hwinfo);
-void validate_string(char *name, char *s);
+void validate_string(const char *name, char *s);
 void *get_overflow_address(void *context);
 void free_test_space(long long ** values, int num_tests);
 long long **allocate_test_space(int num_tests, int num_events);
@@ -69,32 +59,18 @@ int add_test_events_r(int *number, int *mask, void *handle);
 int find_nonderived_event( void );
 int enum_add_native_events(int *num_events, int **evtcodes, int need_interrupts, int no_software_events, int cidx);
 int remove_test_events(int *EventSet, int mask);
-void do_flush(void);
-void do_misses(int n, int size);
-void do_flops(int n);
-/* export the next symbol as 'end' address of do_flops for profiling */
-void fdo_flops(int *n); 
-void do_reads(int n);
-void do_both(int n);
-void do_l1misses(int n);
-void do_stuff(void);
-void dummy(void *);
+
 char *stringify_domain(int domain);
 char *stringify_all_domains(int domains);
 char *stringify_granularity(int granularity);
 char *stringify_all_granularities(int granularities);
-void tests_quiet(int argc, char **argv);
-void test_pass(char *file, long long ** values, int num_tests);
-void test_fail(char *file, int line, char *call, int retval);
-void test_fail_exit(char *file, int line, char *call, int retval);
-void test_skip(char *file, int line, char *call, int retval);
-void test_warn(char *file, int line, char *call, int retval);
-void test_print_event_header(char *call, int evset);
-void touch_dummy(double *ptr, int size);
+int tests_quiet(int argc, char **argv);
+void test_pass(const char *filename);
+void test_fail(const char *file, int line, const char *call, int retval);
+void test_skip(const char *file, int line, const char *call, int retval);
+void test_warn(const char *file, int line, const char *call, int retval);
+void test_print_event_header(const char *call, int evset);
 int approx_equals(double a, double b);
-void init_multiplex(void);
-
-void clockcore(void);
 
 /* Unix systems use %lld to display long long values
 	Windows uses %I64d for the same purpose.
@@ -122,5 +98,7 @@ void clockcore(void);
 
 extern int TESTS_QUIET;         /* Declared in test_utils.c */
 
-#define printf if (!TESTS_QUIET) printf
+#ifdef __cplusplus
+}
+#endif
 

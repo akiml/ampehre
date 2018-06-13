@@ -2,25 +2,31 @@
  *  Test PAPI with multiple threads.
  */
 
+#define MAX_THREADS 256
+
+#include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
 #include <sys/time.h>
+
+#include "papi.h"
 #include "papi_test.h"
 
 #define EVENT  PAPI_TOT_CYC
 
-int program_time = 5;
-int threshold = 20000000;
-int num_threads = 3;
+static int program_time = 5;
+static int threshold = 20000000;
+static int num_threads = 3;
 
-long count[MAX_THREADS];
-long iter[MAX_THREADS];
-struct timeval last[MAX_THREADS];
+static long count[MAX_THREADS];
+static long iter[MAX_THREADS];
+static struct timeval last[MAX_THREADS];
 
-pthread_key_t key;
+static pthread_key_t key;
 
-struct timeval start;
+static struct timeval start;
 
-void
+static void
 my_handler( int EventSet, void *pc, long long ovec, void *context )
 {
 	( void ) EventSet;
@@ -35,7 +41,7 @@ my_handler( int EventSet, void *pc, long long ovec, void *context )
 	count[num]++;
 }
 
-void
+static void
 print_rate( long num )
 {
 	struct timeval now;
@@ -49,17 +55,19 @@ print_rate( long num )
 	if ( last_secs <= 0.001 )
 		last_secs = 0.001;
 
-	printf( "[%ld] time = %ld, count = %ld, iter = %ld, "
+	if (!TESTS_QUIET) {
+		printf( "[%ld] time = %ld, count = %ld, iter = %ld, "
 			"rate = %.1f/Kiter\n",
 			num, st_secs, count[num], iter[num],
 			( 1000.0 * ( double ) count[num] ) / ( double ) iter[num] );
+	}
 
 	count[num] = 0;
 	iter[num] = 0;
 	last[num] = now;
 }
 
-void
+static void
 do_cycles( long num, int len )
 {
 	struct timeval start, now;
@@ -82,7 +90,7 @@ do_cycles( long num, int len )
 	}
 }
 
-void *
+static void *
 my_thread( void *v )
 {
 	long num = ( long ) v;
@@ -90,20 +98,28 @@ my_thread( void *v )
 	int EventSet = PAPI_NULL;
 	long long value;
 
-	int retval = PAPI_register_thread(  );
-	if ( retval != PAPI_OK )
+	int retval;
+
+	retval = PAPI_register_thread(  );
+	if ( retval != PAPI_OK ) {
 		test_fail( __FILE__, __LINE__, "PAPI_register_thread", retval );
+	}
 	pthread_setspecific( key, v );
 
 	count[num] = 0;
 	iter[num] = 0;
 	last[num] = start;
-        
-	if ( PAPI_create_eventset( &EventSet ) != PAPI_OK )
-		test_fail( __FILE__, __LINE__, "PAPI_create_eventset failed", 1 );
 
-	if ( PAPI_add_event( EventSet, EVENT ) != PAPI_OK )
-		test_fail( __FILE__, __LINE__, "PAPI_add_event failed", 1 );
+	retval = PAPI_create_eventset( &EventSet );
+	if ( retval != PAPI_OK ) {
+		test_fail( __FILE__, __LINE__, "PAPI_create_eventset failed", retval );
+	}
+
+	retval = PAPI_add_event( EventSet, EVENT );
+	if (retval != PAPI_OK ) {
+		if (!TESTS_QUIET) printf("Trouble adding event\n");
+		test_fail( __FILE__, __LINE__, "PAPI_add_event failed", retval );
+	}
 
 	if ( PAPI_overflow( EventSet, EVENT, threshold, 0, my_handler ) != PAPI_OK )
 		test_fail( __FILE__, __LINE__, "PAPI_overflow failed", 1 );
@@ -111,7 +127,7 @@ my_thread( void *v )
 	if ( PAPI_start( EventSet ) != PAPI_OK )
 		test_fail( __FILE__, __LINE__, "PAPI_start failed", 1 );
 
-	printf( "launched timer in thread %ld\n", num );
+	if (!TESTS_QUIET) printf( "launched timer in thread %ld\n", num );
 
 	for ( n = 1; n <= program_time; n++ ) {
 		do_cycles( num, 1 );
@@ -141,8 +157,10 @@ main( int argc, char **argv )
 {
 	pthread_t *td = NULL;
 	long n;
+	int quiet,retval;
 
-	tests_quiet( argc, argv );	/*Set TESTS_QUIET variable */
+	/* Set TESTS_QUIET variable */
+	quiet=tests_quiet( argc, argv );
 
 	if ( argc < 2 || sscanf( argv[1], "%d", &program_time ) < 1 )
 		program_time = 6;
@@ -152,14 +170,24 @@ main( int argc, char **argv )
 		num_threads = 3;
 
 	td = malloc((num_threads+1) * sizeof(pthread_t));
-	if (!td)
+	if (!td) {
 		test_fail( __FILE__, __LINE__, "td malloc failed", 1 );
+	}
 
-	printf( "program_time = %d, threshold = %d, num_threads = %d\n\n",
+	if (!quiet) {
+		printf( "program_time = %d, threshold = %d, num_threads = %d\n\n",
 			program_time, threshold, num_threads );
+	}
 
 	if ( PAPI_library_init( PAPI_VER_CURRENT ) != PAPI_VER_CURRENT )
 		test_fail( __FILE__, __LINE__, "PAPI_library_init failed", 1 );
+
+	/* Test to be sure we can add events */
+	retval = PAPI_query_event( EVENT );
+	if (retval!=PAPI_OK) {
+		if (!quiet) printf("Trouble finding event\n");
+		test_skip(__FILE__,__LINE__,"Event not available",1);
+	}
 
 	if ( PAPI_thread_init( ( unsigned long ( * )( void ) ) ( pthread_self ) ) !=
 		 PAPI_OK )
@@ -185,8 +213,9 @@ main( int argc, char **argv )
 
 	free(td);
 
-	printf( "done\n" );
+	if (!quiet) printf( "done\n" );
 
-	test_pass( __FILE__, NULL, 0 );
-	return ( 0 );
+	test_pass( __FILE__ );
+
+	return 0;
 }

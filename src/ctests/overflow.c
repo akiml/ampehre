@@ -1,10 +1,7 @@
-/* 
+/*
 * File:    overflow.c
-* CVS:     $Id$
 * Author:  Philip Mucci
 *          mucci@cs.utk.edu
-* Mods:    <your name here>
-*          <your email address>
 */
 
 /* This file performs the following test: overflow dispatch
@@ -22,7 +19,13 @@
    - Stop eventset 1
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "papi.h"
 #include "papi_test.h"
+
+#include "do_loops.h"
 
 #define OVER_FMT	"handler(%d ) Overflow at %p! bit=%#llx \n"
 #define OUT_FMT		"%-12s : %16lld%16lld\n"
@@ -52,28 +55,37 @@ main( int argc, char **argv )
 	char event_name1[PAPI_MAX_STR_LEN];
 	const PAPI_hw_info_t *hw_info = NULL;
 	int num_events, mask;
+	int quiet;
 
 	/* Set TESTS_QUIET variable */
-	tests_quiet( argc, argv );	
+	quiet = tests_quiet( argc, argv );
 
 	/* Init PAPI */
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
-	if ( retval != PAPI_VER_CURRENT )
+	if ( retval != PAPI_VER_CURRENT ) {
 		test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
+	}
 
 	/* Get hardware info */
 	hw_info = PAPI_get_hardware_info(  );
-	if ( hw_info == NULL )
+	if ( hw_info == NULL ) {
 		test_fail( __FILE__, __LINE__, "PAPI_get_hardware_info", 2 );
+	}
 
 	/* add PAPI_TOT_CYC and one of the events in     */
         /*     PAPI_FP_INS, PAPI_FP_OPS or PAPI_TOT_INS, */
-	/* depending on the availability of the event on */ 
+	/* depending on the availability of the event on */
 	/* the platform */
-	EventSet =
-		add_two_nonderived_events( &num_events, &PAPI_event, &mask );
+	EventSet = add_two_nonderived_events( &num_events, &PAPI_event, &mask );
 
-	printf("Using %#x for the overflow event\n",PAPI_event);
+	if (num_events==0) {
+		if (!quiet) printf("Trouble adding event!\n");
+		test_skip(__FILE__,__LINE__,"Event add",1);
+	}
+
+	if (!quiet) {
+		printf("Using %#x for the overflow event\n",PAPI_event);
+	}
 
 	if ( PAPI_event == PAPI_FP_INS ) {
 		mythreshold = THRESHOLD;
@@ -122,14 +134,13 @@ main( int argc, char **argv )
 		test_fail( __FILE__, __LINE__, "PAPI_overflow", retval );
 
 	if ( !TESTS_QUIET ) {
-		if ( ( retval =
-			   PAPI_event_code_to_name( PAPI_event, event_name1 ) ) != PAPI_OK )
+		retval = PAPI_event_code_to_name( PAPI_event, event_name1 );
+		if (retval != PAPI_OK ) {
 			test_fail( __FILE__, __LINE__, "PAPI_event_code_to_name", retval );
+		}
 
-		printf
-			( "Test case: Overflow dispatch of 2nd event in set with 2 events.\n" );
-		printf
-			( "---------------------------------------------------------------\n" );
+		printf( "Test case: Overflow dispatch of 2nd event in set with 2 events.\n" );
+		printf( "---------------------------------------------------------------\n" );
 		printf( "Threshold for overflow is: %d\n", mythreshold );
 		printf( "Using %d iterations of c += a*b\n", num_flops );
 		printf( "-----------------------------------------------\n" );
@@ -176,11 +187,15 @@ main( int argc, char **argv )
 	max =
 		( long long ) ( ( ( double ) values[0][1] * ( 1.0 + OVR_TOLERANCE ) ) /
 						( double ) mythreshold );
-	printf( "Overflows: total(%d) > max(%lld) || total(%d) < min(%lld) \n", total,
-			max, total, min );
-	if ( total > max || total < min )
+	if (!quiet) {
+		printf( "Overflows: total(%d) > max(%lld) || "
+			"total(%d) < min(%lld) \n", total, max, total, min );
+	}
+	if ( total > max || total < min ) {
 		test_fail( __FILE__, __LINE__, "Overflows", 1 );
+	}
 
-	test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+	test_pass( __FILE__ );
+	return 0;
+
 }

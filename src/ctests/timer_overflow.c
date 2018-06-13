@@ -8,10 +8,15 @@
 
 /* This file looks for possible timer overflows. */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+
+#include "papi.h"
 #include "papi_test.h"
 
 #define TIMER_THRESHOLD 100
-extern int TESTS_QUIET;
 
 int
 main( int argc, char **argv )
@@ -55,6 +60,7 @@ main( int argc, char **argv )
 	if ( timer < 0 )
 		test_fail( __FILE__, __LINE__, "PAPI_get_real_usec: overflow", 1 );
 	else
-		test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+		test_pass( __FILE__ );
+
+	return 0;
 }

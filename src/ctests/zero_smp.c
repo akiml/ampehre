@@ -1,5 +1,3 @@
-/* $Id$ */
-
 /* This file performs the following test: start, stop and timer
 functionality for 2 slave native SMP threads
 
@@ -31,13 +29,19 @@ Master pthread:
 */
 
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "papi.h"
 #include "papi_test.h"
+
+#include "do_loops.h"
 
 #if defined(sun) && defined(sparc)
 #include <thread.h>
 #elif defined(mips) && defined(sgi) && defined(unix)
 #include <mpc.h>
-#elif defined(_AIX)
+#elif defined(_AIX) || defined(__linux__)
 #include <pthread.h>
 #endif
 
@@ -102,20 +106,22 @@ Thread( int t, int n )
 int
 main( int argc, char **argv )
 {
-	int i, retval;
+	int i, retval, quiet;
 	long long elapsed_us, elapsed_cyc;
 
-	tests_quiet( argc, argv );	/* Set TESTS_QUIET variable */
+	/* Set TESTS_QUIET variable */
+	quiet=tests_quiet( argc, argv );
 
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
-	if ( retval != PAPI_VER_CURRENT )
+	if ( retval != PAPI_VER_CURRENT ) {
 		test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
+	}
 
 	elapsed_us = PAPI_get_real_usec(  );
 
 	elapsed_cyc = PAPI_get_real_cyc(  );
 
-#if defined(_AIX)
+#if defined(_AIX) || defined(__linux__)
 	retval =
 		PAPI_thread_init( ( unsigned long ( * )( void ) ) ( pthread_self ) );
 	if ( retval != PAPI_OK ) {
@@ -124,7 +130,10 @@ main( int argc, char **argv )
 		else
 			test_fail( __FILE__, __LINE__, "PAPI_thread_init", retval );
 	}
+#if defined(_AIX)
 #pragma ibm parallel_loop
+#endif
+
 #elif defined(sgi) && defined(mips)
 	retval =
 		PAPI_thread_init( ( unsigned long ( * )( void ) ) ( mp_my_threadnum ) );
@@ -141,19 +150,27 @@ main( int argc, char **argv )
 	}
 #pragma MP taskloop private(i)
 #else
-    test_skip(__FILE__, __LINE__, "Architecture not included in this test file yet.", 0);
+	if (!quiet) {
+		printf("This test only runs on AIX/IRIX/SOLOARIS\n");
+	}
+	test_skip(__FILE__, __LINE__, "Architecture not included in this test file yet.", 0);
 #endif
-	for ( i = 1; i < 3; i++ )
+	for ( i = 1; i < 3; i++ ) {
 		Thread( i, 10000000 * i );
+	}
 
 	elapsed_cyc = PAPI_get_real_cyc(  ) - elapsed_cyc;
 
 	elapsed_us = PAPI_get_real_usec(  ) - elapsed_us;
 
-	if ( !TESTS_QUIET ) {
+	if ( !quiet ) {
 		printf( "Master real usec   : \t%lld\n", elapsed_us );
 		printf( "Master real cycles : \t%lld\n", elapsed_cyc );
 	}
-	test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+
+	// FIXME: we don't really validate anything here
+
+	test_pass( __FILE__ );
+
+	return 0;
 }

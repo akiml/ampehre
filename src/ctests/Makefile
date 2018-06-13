@@ -1,11 +1,19 @@
 # File: ctests/Makefile
-INCLUDE = -I.. -I../testlib
-PAPILIB=$(LIBRARY)
-CC	= gcc
-CC_R	= $(CC) -pthread
-CFLAGS	= -g -O -Wall
-testlibdir=../testlib
+
+include Makefile.target
+
+INCLUDE = -I../testlib -I../validation_tests -I.. -I.
+
+testlibdir= ../testlib
 TESTLIB= $(testlibdir)/libtestlib.a
+DOLOOPS= $(testlibdir)/do_loops.o
+CLOCKCORE= $(testlibdir)/clockcore.o
+
+validationlibdir= ../validation_tests
+TESTFLOPS= $(validationlibdir)/flops_testcode.o
+TESTINS= $(validationlibdir)/instructions_testcode.o
+TESTCYCLES = $(validationlibdir)/busy_work.o
+DISPLAYERROR= $(validationlibdir)/display_error.o
 
 include Makefile.recipies
 

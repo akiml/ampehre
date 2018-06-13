@@ -1,4 +1,4 @@
-/* 
+/*
 * File:    zero_omp.c
 * Author:  Philip Mucci
 *          mucci@cs.utk.edu
@@ -37,7 +37,13 @@ Master serial thread:
    - Get cyc.
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "papi.h"
 #include "papi_test.h"
+
+#include "do_loops.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -58,14 +64,19 @@ Thread( int n )
 	long long elapsed_us, elapsed_cyc;
 	char event_name[PAPI_MAX_STR_LEN];
 
-	printf( "Thread %#x started\n", omp_get_thread_num(  ) );
-	num_events1 = 2;
+	if (!TESTS_QUIET) {
+		printf( "Thread %#x started\n", omp_get_thread_num(  ) );
+	}
 
-	/* add PAPI_TOT_CYC and one of the events in 
-	   PAPI_FP_INS, PAPI_FP_OPS or PAPI_TOT_INS, 
-	   depending on the availability of the event 
+	/* add PAPI_TOT_CYC and one of the events in
+	   PAPI_FP_INS, PAPI_FP_OPS or PAPI_TOT_INS,
+	   depending on the availability of the event
 	   on the platform */
 	EventSet1 = add_two_events( &num_events1, &PAPI_event, &mask1 );
+	if (num_events1==0) {
+		if (!TESTS_QUIET) printf("No events added!\n");
+		test_fail(__FILE__,__LINE__,"No events",0);
+	}
 
 	retval = PAPI_event_code_to_name( PAPI_event, event_name );
 	if ( retval != PAPI_OK )
@@ -109,7 +120,9 @@ Thread( int n )
 	free_test_space( values, num_tests );
 
 	PAPI_unregister_thread(  );
-	printf( "Thread %#x finished\n", omp_get_thread_num(  ) );
+	if (!TESTS_QUIET) {
+		printf( "Thread %#x finished\n", omp_get_thread_num(  ) );
+	}
 }
 
 int
@@ -117,30 +130,46 @@ main( int argc, char **argv )
 {
 	int retval;
 	long long elapsed_us, elapsed_cyc;
+	int quiet;
 
-	tests_quiet( argc, argv );	/* Set TESTS_QUIET variable */
+	/* Set TESTS_QUIET variable */
+	quiet = tests_quiet( argc, argv );
 
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
-	if ( retval != PAPI_VER_CURRENT )
+	if ( retval != PAPI_VER_CURRENT ) {
 		test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
+	}
 
 	hw_info = PAPI_get_hardware_info(  );
-	if ( hw_info == NULL )
+	if ( hw_info == NULL ) {
 		test_fail( __FILE__, __LINE__, "PAPI_get_hardware_info", 2 );
+	}
+
+	if (PAPI_query_event(PAPI_TOT_INS)!=PAPI_OK) {
+		if (!quiet) printf("Can't find PAPI_TOT_INS\n");
+		test_skip(__FILE__,__LINE__,"Event missing",1);
+	}
+
+	if (PAPI_query_event(PAPI_TOT_CYC)!=PAPI_OK) {
+		if (!quiet) printf("Can't find PAPI_TOT_CYC\n");
+		test_skip(__FILE__,__LINE__,"Event missing",1);
+	}
 
 	elapsed_us = PAPI_get_real_usec(  );
 
 	elapsed_cyc = PAPI_get_real_cyc(  );
 
 
-	retval =
-		PAPI_thread_init( ( unsigned
-							long ( * )( void ) ) ( omp_get_thread_num ) );
+	retval = PAPI_thread_init( ( unsigned long ( * )( void ) )
+						( omp_get_thread_num ) );
 	if ( retval != PAPI_OK ) {
-		if ( retval == PAPI_ECMP )
+		if ( retval == PAPI_ECMP ) {
+			if (!quiet) printf("Trouble init threads\n");
 			test_skip( __FILE__, __LINE__, "PAPI_thread_init", retval );
-		else
+		}
+		else {
 			test_fail( __FILE__, __LINE__, "PAPI_thread_init", retval );
+		}
 	}
 #pragma omp parallel
 	{
@@ -163,6 +192,7 @@ main( int argc, char **argv )
 		printf( "Master real cycles : \t%lld\n", elapsed_cyc );
 	}
 
-	test_pass( __FILE__, NULL, 0 );
-	exit( 0 );
+	test_pass( __FILE__ );
+
+	return 0;
 }

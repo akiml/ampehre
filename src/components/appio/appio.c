@@ -427,7 +427,7 @@ _appio_init_component( int cidx  )
 {
 
     SUBDBG("_appio_component %d\n", cidx);
-    _appio_native_events = (APPIO_native_event_entry_t *) papi_calloc(sizeof(APPIO_native_event_entry_t), APPIO_MAX_COUNTERS);
+    _appio_native_events = (APPIO_native_event_entry_t *) papi_calloc(APPIO_MAX_COUNTERS, sizeof(APPIO_native_event_entry_t));
 
     if (_appio_native_events == NULL ) {
       PAPIERROR( "malloc():Could not get memory for events table" );
@@ -655,7 +655,7 @@ _appio_ntv_enum_events( unsigned int *EventCode, int modifier )
  *
  */
 static int
-_appio_ntv_name_to_code( char *name, unsigned int *EventCode )
+_appio_ntv_name_to_code( const char *name, unsigned int *EventCode )
 {
     int i;
 

@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <omp.h>
+
+#include "papi.h"
 #include "papi_test.h"
 
 #define NITER (100000)
@@ -105,6 +107,7 @@ main( int argc, char *argv[] )
 			}
 		}
 	}
-	test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+	test_pass( __FILE__ );
+
+	return 0;
 }

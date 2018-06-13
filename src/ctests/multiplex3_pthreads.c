@@ -1,4 +1,4 @@
-/* 
+/*
 * File:    multiplex3_pthreads.c
 * Author:  Philip Mucci
 *          mucci@cs.utk.edu
@@ -11,8 +11,14 @@
  * one thread that is calling PAPI.)
  */
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
+
+#include "papi.h"
 #include "papi_test.h"
+
+#include "do_loops.h"
 
 #define MAX_TO_ADD 5
 
@@ -26,12 +32,12 @@ thread_fn( void *dummy )
 	while ( 1 ) {
 		do_stuff(  );
 	}
-	return ( NULL );
+	return NULL;
 }
 
 /* Runs a bunch of multiplexed events */
 
-void
+static void
 mainloop( int arg )
 {
 	int allvalid;
@@ -45,33 +51,38 @@ mainloop( int arg )
 	/* Initialize the library */
 
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
-	if ( retval != PAPI_VER_CURRENT )
+	if ( retval != PAPI_VER_CURRENT ) {
 		test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
+	}
 
-	init_multiplex(  );
+	retval = PAPI_multiplex_init(  );
+	if ( retval != PAPI_OK ) {
+		test_fail( __FILE__, __LINE__, "PAPI multiplex init fail\n", retval );
+	}
 
 	retval = PAPI_create_eventset( &EventSet );
-	if ( retval != PAPI_OK )
+	if ( retval != PAPI_OK ) {
 		test_fail( __FILE__, __LINE__, "PAPI_create_eventset", retval );
+	}
 
 	/* In Component PAPI, EventSets must be assigned a component index
 	   before you can fiddle with their internals.
 	   0 is always the cpu component */
 	retval = PAPI_assign_eventset_component( EventSet, 0 );
-	if ( retval != PAPI_OK )
+	if ( retval != PAPI_OK ) {
 		test_fail( __FILE__, __LINE__, "PAPI_assign_eventset_component",
 				   retval );
+	}
 
 	retval = PAPI_set_multiplex( EventSet );
         if ( retval == PAPI_ENOSUPP) {
-	   test_skip(__FILE__, __LINE__, "Multiplex not supported", 1);
-	} else if ( retval != PAPI_OK )
+		test_skip(__FILE__, __LINE__, "Multiplex not supported", 1);
+	} else if ( retval != PAPI_OK ) {
 		test_fail( __FILE__, __LINE__, "PAPI_set_multiplex", retval );
+	}
 
-	if ( ( retval =
-		   PAPI_thread_init( ( unsigned
-							   long ( * )( void ) ) ( pthread_self ) ) ) !=
-		 PAPI_OK ) {
+	retval = PAPI_thread_init( ( unsigned long ( * )( void ) ) ( pthread_self ) );
+	if (retval != PAPI_OK ) {
 		if ( retval == PAPI_ECMP )
 			test_skip( __FILE__, __LINE__, "PAPI_thread_init", retval );
 		else
@@ -79,8 +90,11 @@ mainloop( int arg )
 	}
 
 	retval = PAPI_add_event( EventSet, PAPI_TOT_INS );
-	if ( ( retval != PAPI_OK ) && ( retval != PAPI_ECNFLCT ) )
-		test_fail( __FILE__, __LINE__, "PAPI_add_event", retval );
+	if ( ( retval != PAPI_OK ) && ( retval != PAPI_ECNFLCT ) ) {
+		if (!TESTS_QUIET) printf("Trouble adding PAPI_TOT_INS\n");
+		test_skip( __FILE__, __LINE__, "PAPI_add_event", retval );
+	}
+
 	if ( !TESTS_QUIET ) {
 		printf( "Added %s\n", "PAPI_TOT_INS" );
 	}
@@ -102,16 +116,16 @@ mainloop( int arg )
 			test_fail( __FILE__, __LINE__, "PAPI_get_event_info", retval );
 
 		if ( pset.count ) {
-			printf( "Adding %s\n", pset.symbol );
+			if (!TESTS_QUIET) printf( "Adding %s\n", pset.symbol );
 
 			retval = PAPI_add_event( EventSet, ( int ) pset.event_code );
 			if ( ( retval != PAPI_OK ) && ( retval != PAPI_ECNFLCT ) )
 				test_fail( __FILE__, __LINE__, "PAPI_add_event", retval );
 
 			if ( retval == PAPI_OK ) {
-				printf( "Added %s\n", pset.symbol );
+				if (!TESTS_QUIET) printf( "Added %s\n", pset.symbol );
 			} else {
-				printf( "Could not add %s\n", pset.symbol );
+				if (!TESTS_QUIET) printf( "Could not add %s\n", pset.symbol );
 			}
 
 			do_stuff(  );
@@ -134,7 +148,7 @@ mainloop( int arg )
 					retval =
 						PAPI_remove_event( EventSet, ( int ) pset.event_code );
 					if ( retval == PAPI_OK )
-						printf( "Removed %s\n", pset.symbol );
+						if (!TESTS_QUIET) printf( "Removed %s\n", pset.symbol );
 				        /* This added because the test */
 				        /* can take a long time if mplexing */
 				        /* is broken and all values are 0   */
@@ -156,14 +170,16 @@ mainloop( int arg )
 	if ( retval != PAPI_OK )
 		test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
 
-	test_print_event_header( "multiplex3_pthreads:\n", EventSet );
+	if (!TESTS_QUIET) {
+		test_print_event_header( "multiplex3_pthreads:\n", EventSet );
+	}
 	allvalid = 0;
 	for ( i = 0; i < MAX_TO_ADD; i++ ) {
-		printf( ONENUM, values[i] );
+		if (!TESTS_QUIET) printf( ONENUM, values[i] );
 		if ( values[i] != 0 )
 			allvalid++;
 	}
-	printf( "\n" );
+	if (!TESTS_QUIET) printf( "\n" );
 	if ( !allvalid )
 		test_fail( __FILE__, __LINE__, "all counter registered no counts", 1 );
 
@@ -185,12 +201,16 @@ main( int argc, char **argv )
 	int i, rc, retval;
 	pthread_t id[NUM_THREADS];
 	pthread_attr_t attr;
+	int quiet;
 
-	tests_quiet( argc, argv );	/* Set TESTS_QUIET variable */
+	/* Set TESTS_QUIET variable */
+	quiet = tests_quiet( argc, argv );
 
-	printf( "%s: Using %d threads\n\n", argv[0], NUM_THREADS );
-	printf
-		( "Does non-threaded multiplexing work with extraneous threads present?\n" );
+	if (!quiet) {
+		printf( "%s: Using %d threads\n\n", argv[0], NUM_THREADS );
+		printf( "Does non-threaded multiplexing work "
+			"with extraneous threads present?\n" );
+	}
 
 	/* Create a bunch of unused pthreads, to simulate threads created
 	 * by the system that the user doesn't know about.
@@ -229,6 +249,8 @@ main( int argc, char **argv )
 
 	mainloop( NUM_ITERS );
 
-	test_pass( __FILE__, NULL, 0 );
-	exit( 0 );
+	test_pass( __FILE__ );
+
+	return 0;
+
 }

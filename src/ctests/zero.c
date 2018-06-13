@@ -1,59 +1,74 @@
-/* This file performs the following test: start, stop and timer functionality
+/* zero.c */
 
-   - It attempts to use the following two counters. It may use less depending on
-     hardware counter resource limitations. These are counted in the default counting
-     domain and default granularity, depending on the platform. Usually this is 
-     the user domain (PAPI_DOM_USER) and thread context (PAPI_GRN_THR).
-     + PAPI_FP_INS
-     + PAPI_TOT_CYC
-   - Get us.
-   - Start counters
-   - Do flops
-   - Stop and read counters
-   - Get us.
-*/
+/* This is possibly the most important PAPI tests, and is the one */
+/* that is often used as a quick test that PAPI is working.       */
+/* We should make sure that it always passes, if possible.        */
 
+/* Traditionally it used FLOPS, due to the importance of this to HPC.       */
+/* This has been changed to use Instructions/Cycles as some recent          */
+/* major Intel chips do not have good floating point events and would fail. */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "papi.h"
 #include "papi_test.h"
 
-#define MAX_CYCLE_ERROR 30
+#include "testcode.h"
 
-int
-main( int argc, char **argv )
-{
-	int retval, num_tests = 1, tmp;
+#define NUM_EVENTS	2
+
+#define NUM_LOOPS	200
+
+int main( int argc, char **argv ) {
+
+	int retval, tmp, result, i;
 	int EventSet1 = PAPI_NULL;
-	int PAPI_event, mask1;
-	int num_events;
-	long long **values;
+	long long values[NUM_EVENTS];
 	long long elapsed_us, elapsed_cyc, elapsed_virt_us, elapsed_virt_cyc;
-	char event_name[PAPI_MAX_STR_LEN], add_event_str[PAPI_MAX_STR_LEN];
-	double cycles_error;
+	double ipc;
+	int quiet=0;
 
 	/* Set TESTS_QUIET variable */
-	tests_quiet( argc, argv );	
+	quiet=tests_quiet( argc, argv );
 
 	/* Init the PAPI library */
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
 	if ( retval != PAPI_VER_CURRENT ) {
-	   test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
 	}
 
-	/* add PAPI_TOT_CYC and one of the events in 
-           PAPI_FP_INS, PAPI_FP_OPS or PAPI_TOT_INS, 
-           depending on the availability of the event 
-           on the platform                            */
-	EventSet1 = add_two_events( &num_events, &PAPI_event, &mask1 );
-
-	retval = PAPI_event_code_to_name( PAPI_event, event_name );
-	if ( retval != PAPI_OK ) {
-	   test_fail( __FILE__, __LINE__, "PAPI_event_code_to_name", retval );
+	/* Initialize the EventSet */
+	retval=PAPI_create_eventset(&EventSet1);
+	if (retval!=PAPI_OK) {
+		test_fail( __FILE__, __LINE__, "PAPI_create_eventset", retval );
 	}
-	sprintf( add_event_str, "PAPI_add_event[%s]", event_name );
 
-	values = allocate_test_space( num_tests, num_events );
+	/* Add PAPI_TOT_CYC */
+	retval=PAPI_add_named_event(EventSet1,"PAPI_TOT_CYC");
+	if (retval!=PAPI_OK) {
+		if (!quiet) {
+			printf("Trouble adding PAPI_TOT_CYC: %s\n",
+				PAPI_strerror(retval));
+		}
+		test_skip( __FILE__, __LINE__, "adding PAPI_TOT_CYC", retval );
+	}
+
+	/* Add PAPI_TOT_INS */
+	retval=PAPI_add_named_event(EventSet1,"PAPI_TOT_INS");
+	if (retval!=PAPI_OK) {
+		test_fail( __FILE__, __LINE__, "adding PAPI_TOT_INS", retval );
+	}
 
 	/* warm up the processor to pull it out of idle state */
-	do_flops( NUM_FLOPS*10 );
+	for(i=0;i<100;i++) {
+		result=instructions_million();
+	}
+
+	if (result==CODE_UNIMPLEMENTED) {
+		if (!quiet) printf("Instructions testcode not available\n");
+		test_skip( __FILE__, __LINE__, "No instructions code", retval );
+	}
 
 	/* Gather before stats */
 	elapsed_us = PAPI_get_real_usec(  );
@@ -64,16 +79,18 @@ main( int argc, char **argv )
 	/* Start PAPI */
 	retval = PAPI_start( EventSet1 );
 	if ( retval != PAPI_OK ) {
-	   test_fail( __FILE__, __LINE__, "PAPI_start", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_start", retval );
 	}
 
 	/* our work code */
-	do_flops( NUM_FLOPS );
+	for(i=0;i<NUM_LOOPS;i++) {
+		instructions_million();
+	}
 
 	/* Stop PAPI */
-	retval = PAPI_stop( EventSet1, values[0] );
+	retval = PAPI_stop( EventSet1, values );
 	if ( retval != PAPI_OK ) {
-	   test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
 	}
 
 	/* Calculate total values */
@@ -82,59 +99,81 @@ main( int argc, char **argv )
 	elapsed_us = PAPI_get_real_usec(  ) - elapsed_us;
 	elapsed_cyc = PAPI_get_real_cyc(  ) - elapsed_cyc;
 
-	remove_test_events( &EventSet1, mask1 );
-
-	if ( !TESTS_QUIET ) {
-	   printf( "Test case 0: start, stop.\n" );
-	   printf( "-----------------------------------------------\n" );
-	   tmp = PAPI_get_opt( PAPI_DEFDOM, NULL );
-	   printf( "Default domain is: %d (%s)\n", tmp,
-				stringify_all_domains( tmp ) );
-	   tmp = PAPI_get_opt( PAPI_DEFGRN, NULL );
-	   printf( "Default granularity is: %d (%s)\n", tmp,
-				stringify_granularity( tmp ) );
-	   printf( "Using %d iterations of c += a*b\n", NUM_FLOPS );
-	   printf( "-------------------------------------------------------------------------\n" );
-
-	   printf( "Test type    : \t           1\n" );
-
-	   sprintf( add_event_str, "%-12s : \t", event_name );
-
-	   /* cycles is first, other event second */
-	   printf( TAB1, add_event_str, values[0][1] );
-	   
-	   /* If cycles is there, it's always the first event */
-	   if ( mask1 & MASK_TOT_CYC ) {
-	      printf( TAB1, "PAPI_TOT_CYC : \t", values[0][0] );
-	   }
-	   printf( TAB1, "Real usec    : \t", elapsed_us );
-	   printf( TAB1, "Real cycles  : \t", elapsed_cyc );
-	   printf( TAB1, "Virt usec    : \t", elapsed_virt_us );
-	   printf( TAB1, "Virt cycles  : \t", elapsed_virt_cyc );
-
-	   printf( "-------------------------------------------------------------------------\n" );
-
-	   printf( "Verification: PAPI_TOT_CYC should be roughly real_cycles\n" );
-	   printf( "NOTE: Not true if dynamic frequency scaling is enabled.\n" );
-	   printf( "Verification: PAPI_FP_INS should be roughly %d\n", 2*NUM_FLOPS );
+	/* Shutdown the EventSet */
+	retval = PAPI_remove_named_event( EventSet1, "PAPI_TOT_CYC" );
+	if (retval!=PAPI_OK) {
+		test_fail( __FILE__, __LINE__, "PAPI_remove_named_event", retval );
 	}
-	/* Check that TOT_CYC and real_cycles roughly match */
-	cycles_error=100.0*((double)values[0][0] - (double)elapsed_cyc)/((double)elapsed_cyc);
-	if ((cycles_error > MAX_CYCLE_ERROR) || (cycles_error < -MAX_CYCLE_ERROR)) {
-		printf("PAPI_TOT_CYC Error of %.2f%%\n",cycles_error);
+
+	retval = PAPI_remove_named_event( EventSet1, "PAPI_TOT_INS" );
+	if (retval!=PAPI_OK) {
+		test_fail( __FILE__, __LINE__, "PAPI_remove_named_event", retval );
+	}
+
+	retval=PAPI_destroy_eventset( &EventSet1 );
+	if (retval!=PAPI_OK) {
+		test_fail( __FILE__, __LINE__, "PAPI_destroy_eventset", retval );
+	}
+
+	/* Calculate Instructions per Cycle, avoiding division by zero */
+	if (values[0]!=0) {
+		ipc = (double)values[1]/(double)values[0];
+	}
+	else {
+		ipc=0.0;
+	}
+
+	/* Print the results */
+	if ( !quiet ) {
+		printf( "Test case 0: start, stop.\n" );
+		printf( "-----------------------------------------------\n" );
+		tmp = PAPI_get_opt( PAPI_DEFDOM, NULL );
+		printf( "Default domain is: %d (%s)\n", tmp,
+				stringify_all_domains( tmp ) );
+		tmp = PAPI_get_opt( PAPI_DEFGRN, NULL );
+		printf( "Default granularity is: %d (%s)\n", tmp,
+				stringify_granularity( tmp ) );
+		printf( "Using %d iterations 1 million instructions\n", NUM_LOOPS );
+		printf( "-------------------------------------------------------------------------\n" );
+
+		printf( "Test type    : \t           1\n" );
+
+		/* cycles is first, other event second */
+		printf( "%-12s %12lld\n", "PAPI_TOT_CYC : \t", values[0] );
+		printf( "%-12s %12lld\n", "PAPI_TOT_INS : \t", values[1] );
+		printf( "%-12s %12.2lf\n",  "IPC          : \t", ipc );
+
+		printf( "%-12s %12lld\n", "Real usec    : \t", elapsed_us );
+		printf( "%-12s %12lld\n", "Real cycles  : \t", elapsed_cyc );
+		printf( "%-12s %12lld\n", "Virt usec    : \t", elapsed_virt_us );
+		printf( "%-12s %12lld\n", "Virt cycles  : \t", elapsed_virt_cyc );
+
+		printf( "-------------------------------------------------------------------------\n" );
+
+
+		printf( "Verification: PAPI_TOT_INS should be roughly %d\n", NUM_LOOPS*1000000 );
+
+	}
+
+	/* Check that TOT_INS is reasonable */
+	if (abs(values[1] - (1000000*NUM_LOOPS)) > (1000000*NUM_LOOPS)) {
+		printf("%s Error of %.2f%%\n", "PAPI_TOT_INS", (100.0 * (double)(values[1] - (1000000*NUM_LOOPS)))/(1000000*NUM_LOOPS));
+		test_fail( __FILE__, __LINE__, "Instruction validation", 0 );
+	}
+
+	/* Check that TOT_CYC is non-zero */
+	if(values[0]==0) {
+		printf("Cycles is zero\n");
 		test_fail( __FILE__, __LINE__, "Cycles validation", 0 );
 	}
-	/* Check that FP_INS is reasonable */
-	if (abs(values[0][1] - (2*NUM_FLOPS)) > (2*NUM_FLOPS)) {
-		printf("%s Error of %.2f%%\n", event_name, (100.0 * (double)(values[0][1] - (2*NUM_FLOPS)))/(2*NUM_FLOPS));
-		test_fail( __FILE__, __LINE__, "FLOPS validation", 0 );
+
+	/* Unless you have an amazing processor, IPC should be < 100 */
+	if ((ipc <=0.01 ) || (ipc >=100.0)) {
+		printf("Unlikely IPC of %.2f%%\n", ipc);
+		test_fail( __FILE__, __LINE__, "IPC validation", 0 );
 	}
-	if (abs(values[0][1] - (2*NUM_FLOPS)) > (NUM_FLOPS/2)) {
-		printf("%s Error of %.2f%%\n", event_name, (100.0 * (double)(values[0][1] - (2*NUM_FLOPS)))/(2*NUM_FLOPS));
-		test_warn( __FILE__, __LINE__, "FLOPS validation", 0 );
-	}
-	
-	test_pass( __FILE__, values, num_tests );
-	
+
+	test_pass( __FILE__ );
+
 	return 0;
 }

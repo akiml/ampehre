@@ -1,12 +1,9 @@
-/* 
+/*
 * File:    prof_utils.h
-* CVS:     $Id$
 * Author:  Dan Terpstra
 *          terpstra@cs.utk.edu
 * Mods:    Maynard Johnson
 *          maynardj@us.ibm.com
-* Mods:    <your name here>
-*          <your email address>
 */
 
 /* This file contains utility definitions useful for all profiling tests
@@ -23,17 +20,16 @@
 #define FULL_SCALE 65536
 
 /* Internal prototype */
-void prof_init(int argc, char **argv, const PAPI_exe_info_t **prginfo);
 int prof_events(int num_tests);
-void prof_print_address(char *title, const PAPI_exe_info_t *prginfo);
+void prof_print_address(const char *title, const PAPI_exe_info_t *prginfo);
 void prof_print_prof_info(caddr_t start, caddr_t end, int threshold, char *event_name);
 void prof_alloc(int num, unsigned long plength);
-void prof_head(unsigned long blength, int bucket_size, int num_buckets, char *header);
+void prof_head(unsigned long blength, int bucket_size, int num_buckets, const char *header);
 void prof_out(caddr_t start, int n, int bucket, int num_buckets, unsigned int scale);
 unsigned long prof_size(unsigned long plength, unsigned scale, int bucket, int *num_buckets);
 int prof_check(int n, int bucket, int num_buckets);
 int prof_buckets(int bucket);
-void do_no_profile(void);
+void do_no_profile(int quiet);
 
 /* variables global to profiling tests */
 extern long long **values;

@@ -1,6 +1,13 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+
+#include "papi.h"
 #include "papi_test.h"
 
-#include <unistd.h>
+#define TOLERANCE       .2
+
 
 /*  Variable to hold reporting status
 	if TRUE, output is suppressed
@@ -9,79 +16,11 @@
 	declared here so it can be available globally
 */
 int TESTS_QUIET = 0;
-static int TESTS_COLOR = 0;
+static int TESTS_COLOR = 1;
 static int TEST_WARN = 0;
 
-/*  Support routine to display header information to the screen
-	from the hardware info data structure. The same code was duplicated
-	in a number of tests and utilities. Seems to make sense to refactor.
-	This may not be the best place for it to live, but it works for now.
- */
-int
-papi_print_header( char *prompt, const PAPI_hw_info_t ** hwinfo )
-{
-	int cnt, mpx;
-
-	if ( ( *hwinfo = PAPI_get_hardware_info(  ) ) == NULL ) {
-   		return PAPI_ESYS;
-	}
-
-	printf( "%s", prompt );
-	printf
-		( "--------------------------------------------------------------------------------\n" );
-	printf( "PAPI Version             : %d.%d.%d.%d\n",
-			PAPI_VERSION_MAJOR( PAPI_VERSION ),
-			PAPI_VERSION_MINOR( PAPI_VERSION ),
-			PAPI_VERSION_REVISION( PAPI_VERSION ),
-			PAPI_VERSION_INCREMENT( PAPI_VERSION ) );
-	printf( "Vendor string and code   : %s (%d)\n", ( *hwinfo )->vendor_string,
-			( *hwinfo )->vendor );
-	printf( "Model string and code    : %s (%d)\n", ( *hwinfo )->model_string,
-			( *hwinfo )->model );
-	printf( "CPU Revision             : %f\n", ( *hwinfo )->revision );
-	if ( ( *hwinfo )->cpuid_family > 0 )
-		printf
-			( "CPUID Info               : Family: %d  Model: %d  Stepping: %d\n",
-			  ( *hwinfo )->cpuid_family, ( *hwinfo )->cpuid_model,
-			  ( *hwinfo )->cpuid_stepping );
-	printf( "CPU Max Megahertz        : %d\n", ( *hwinfo )->cpu_max_mhz );
-	printf( "CPU Min Megahertz        : %d\n", ( *hwinfo )->cpu_min_mhz );
-	if ( ( *hwinfo )->threads > 0 )
-		printf( "Hdw Threads per core     : %d\n", ( *hwinfo )->threads );
-	if ( ( *hwinfo )->cores > 0 )
-		printf( "Cores per Socket         : %d\n", ( *hwinfo )->cores );
-	if ( ( *hwinfo )->sockets > 0 )
-		printf( "Sockets                  : %d\n", ( *hwinfo )->sockets );
-	if ( ( *hwinfo )->nnodes > 0 )
-		printf( "NUMA Nodes               : %d\n", ( *hwinfo )->nnodes );
-	printf( "CPUs per Node            : %d\n", ( *hwinfo )->ncpu );
-	printf( "Total CPUs               : %d\n", ( *hwinfo )->totalcpus );
-	printf( "Running in a VM          : %s\n", ( *hwinfo )->virtualized?
-		"yes":"no");
-	if ( (*hwinfo)->virtualized) {
-           printf( "VM Vendor:               : %s\n", (*hwinfo)->virtual_vendor_string);
-	}
-	cnt = PAPI_get_opt( PAPI_MAX_HWCTRS, NULL );
-	mpx = PAPI_get_opt( PAPI_MAX_MPX_CTRS, NULL );
-	if ( cnt >= 0 ) {
-		printf( "Number Hardware Counters : %d\n",cnt );
-	} else {
-		printf( "Number Hardware Counters : PAPI error %d: %s\n", cnt, PAPI_strerror(cnt));
-	}
-	if ( mpx >= 0 ) {
-		printf( "Max Multiplex Counters   : %d\n", mpx );
-	} else {
-		printf( "Max Multiplex Counters   : PAPI error %d: %s\n", mpx, PAPI_strerror(mpx));
-	}
-	printf
-		( "--------------------------------------------------------------------------------\n" );
-	printf( "\n" );
-	return PAPI_OK;
-}
-
-
 void
-validate_string( char *name, char *s )
+validate_string( const char *name, char *s )
 {
 	if ( ( s == NULL ) || ( strlen( s ) == 0 ) ) {
 		char s2[1024] = "";
@@ -212,65 +151,50 @@ struct test_events_t test_events[MAX_TEST_EVENTS] = {
 int
 add_test_events( int *number, int *mask, int allow_derived )
 {
-  int retval,i;
-  int EventSet = PAPI_NULL;
-  int num_counters = 0;
-  char name_string[BUFSIZ];
+	int retval,i;
+	int EventSet = PAPI_NULL;
+	char name_string[BUFSIZ];
 
-  *number = 0;
+	*number = 0;
 
-     /* get the number of available HW counters */
-  num_counters = PAPI_get_opt( PAPI_MAX_HWCTRS, NULL );
-  if ( num_counters < 1 ) {
-     test_fail( __FILE__, __LINE__, "Zero HW Counters available", 
-			   num_counters );
-  }
-
-     /* create the eventset */
-  retval = PAPI_create_eventset( &EventSet );
-  if ( retval != PAPI_OK ) {
-     test_fail( __FILE__, __LINE__, "PAPI_create_eventset", 
-			   retval );
-  }
-
-     /* check all the masks */
-  for(i=0;i<MAX_TEST_EVENTS;i++) {
-    
-     if ( *mask & test_events[i].mask ) {
-
-           /* remove any derived events if told to */
-        if ((is_event_derived(test_events[i].event)) && (!allow_derived)) {
-	   *mask = *mask ^ test_events[i].mask;
-	   continue;
-        }
-
-	retval = PAPI_add_event( EventSet, test_events[i].event );
-
-	if ( retval == PAPI_OK ) {
-
-	   ( *number )++;
-#if 0
-	   if ((*number)==num_counters) {
-	     if ( !TESTS_QUIET) {
-	       fprintf(stdout, "Stopping with %d events due to HW limit\n",
-		       num_counters);
-	     }
-	     break;
-	   }
-#endif
+	/* create the eventset */
+	retval = PAPI_create_eventset( &EventSet );
+	if ( retval != PAPI_OK ) {
+		test_fail(__FILE__,__LINE__,"Trouble creating eventset",retval);
 	}
-	else {
-	   if ( !TESTS_QUIET ) {
-	     PAPI_event_code_to_name(test_events[i].event,name_string);
-	     fprintf( stdout, "%#x %s is not available.\n", 
-		      test_events[i].event,name_string);
-	   }
-	   *mask = *mask ^ test_events[i].mask;
-	}
-     }
-  }
 
-  return EventSet;
+
+	/* check all the masks */
+	for(i=0;i<MAX_TEST_EVENTS;i++) {
+
+		if ( *mask & test_events[i].mask ) {
+
+			/* remove any derived events if told to */
+			if ((is_event_derived(test_events[i].event)) &&
+				(!allow_derived)) {
+				*mask = *mask ^ test_events[i].mask;
+				continue;
+			}
+
+			retval = PAPI_add_event( EventSet,
+				test_events[i].event );
+
+			if ( retval == PAPI_OK ) {
+				( *number )++;
+			}
+			else {
+				if ( !TESTS_QUIET ) {
+				PAPI_event_code_to_name(test_events[i].event,
+							name_string);
+				fprintf( stdout, "%#x %s is not available.\n",
+					test_events[i].event,name_string);
+				}
+				*mask = *mask ^ test_events[i].mask;
+			}
+		}
+	}
+
+	return EventSet;
 }
 
 int
@@ -445,24 +369,44 @@ stringify_granularity( int granularity )
 	return ( NULL );
 }
 
-void
+/* Checks for TESTS_QUIET or -q command line variable	*/
+/* Sets the TESTS_QUIET global variable			*/
+/* Also returns the value.				*/
+int
 tests_quiet( int argc, char **argv )
 {
+	char *value;
+	int retval;
+
 	if ( ( argc > 1 )
 		 && ( ( strcasecmp( argv[1], "TESTS_QUIET" ) == 0 )
 			  || ( strcasecmp( argv[1], "-q" ) == 0 ) ) ) {
 		TESTS_QUIET = 1;
-	} else {
-		int retval;
-
-		retval = PAPI_set_debug( PAPI_VERB_ECONT );
-		if ( retval != PAPI_OK )
-			test_fail( __FILE__, __LINE__, "PAPI_set_debug", retval );
 	}
-   if (getenv("TESTS_COLOR")!=NULL) {
-      TESTS_COLOR=1;
-   }
-   
+
+	/* Always report PAPI errors when testing */
+	/* Even in quiet mode */
+	retval = PAPI_set_debug( PAPI_VERB_ECONT );
+	if ( retval != PAPI_OK ) {
+		test_fail( __FILE__, __LINE__, "PAPI_set_debug", retval );
+	}
+
+	value=getenv("TESTS_COLOR");
+	if (value!=NULL) {
+		if (value[0]=='y') {
+			TESTS_COLOR=1;
+		}
+		else {
+			TESTS_COLOR=0;
+		}
+	}
+
+	/* Disable colors if sending to a file */
+	if (!isatty(fileno(stdout))) {
+		TESTS_COLOR=0;
+	}
+
+	return TESTS_QUIET;
 }
 
 #define RED    "\033[1;31m"
@@ -470,39 +414,50 @@ tests_quiet( int argc, char **argv )
 #define GREEN  "\033[1;32m"
 #define NORMAL "\033[0m"
 
+
+static void print_spaces(int count) {
+	int i;
+
+	for(i=0;i<count;i++) {
+		fprintf(stdout, " ");
+	}
+}
+
+
+/* Ugh, all these "fprintf(stdout)" are due to the */
+/* TESTS_QUIET #define printf hack		*/
+/* FIXME! Revert to printf once we are done converting */
+
 void
-test_pass( char *file, long long **values, int num_tests )
+test_pass( const char *filename )
 {
-  int line_pad;
+	(void)filename;
 
-  line_pad=(int)(50-strlen(file));
-  if (line_pad<0) line_pad=0;
+//	int line_pad;
 
-        if ( TEST_WARN ) {
-	  if (TESTS_COLOR) {
-	    fprintf( stdout, "%-*s %sPASSED with WARNING%s\n", 
-		     line_pad, file, YELLOW, NORMAL);	   
-	  }
-	  else {
-	        fprintf( stdout, "%-*s PASSED with WARNING\n", 
-			 line_pad, file );	   
-	  }
+//	line_pad=60-strlen(filename);
+//	if (line_pad<0) line_pad=0;
+
+//	fprintf(stdout,"%s",filename);
+//	print_spaces(line_pad);
+
+	if ( TEST_WARN ) {
+		print_spaces(59);
+		if (TESTS_COLOR) fprintf( stdout, "%s", YELLOW);
+		fprintf( stdout, "PASSED with WARNING");
+		if (TESTS_COLOR) fprintf( stdout, "%s", NORMAL);
+		fprintf( stdout, "\n");
 	}
-        else {
-	  if (TESTS_COLOR) {
-	    fprintf( stdout, "%-*s %sPASSED%s\n", line_pad, file, 
-		     GREEN, NORMAL );
-	  }
-	  else {
-	    fprintf( stdout, "%-*s PASSED\n", line_pad, file );
-	  }
+	else {
+		if (TESTS_COLOR) fprintf( stdout, "%s",GREEN);
+		fprintf( stdout, "PASSED");
+		if (TESTS_COLOR) fprintf( stdout, "%s",NORMAL);
+		fprintf( stdout, "\n");
 	}
-   
-	if ( values )
-		free_test_space( values, num_tests );
 
-	if ( PAPI_is_initialized(  ) )
+	if ( PAPI_is_initialized(  ) ) {
 		PAPI_shutdown(  );
+	}
 
 	exit( 0 );
 
@@ -510,46 +465,50 @@ test_pass( char *file, long long **values, int num_tests )
 
 /* Use a positive value of retval to simply print an error message */
 void
-test_fail( char *file, int line, char *call, int retval )
+test_fail( const char *file, int line, const char *call, int retval )
 {
+//	int line_pad;
+	char buf[128];
 
-  int line_pad;
-  char buf[128];
+	(void)file;
 
-  line_pad=(int)(50-strlen(file));
-  if (line_pad<0) line_pad=0;
+//	line_pad=(60-strlen(file));
+//	if (line_pad<0) line_pad=0;
 
-  memset( buf, '\0', sizeof ( buf ) );
+//	fprintf(stdout,"%s",file);
+//	print_spaces(line_pad);
 
-  if (TESTS_COLOR) {
-     fprintf( stdout, "%-*s %sFAILED%s\nLine # %d\n", line_pad, file, 
-		    RED,NORMAL,line );
-  }
-  else {
-     fprintf( stdout, "%-*s FAILED\nLine # %d\n", line_pad, file, line );
-  }
+	memset( buf, '\0', sizeof ( buf ) );
 
-  if ( retval == PAPI_ESYS ) {
-     sprintf( buf, "System error in %s", call );
-     perror( buf );
-  } else if ( retval > 0 ) {
-     fprintf( stdout, "Error: %s\n", call );
-  } else if ( retval == 0 ) {
+	if (TESTS_COLOR) fprintf(stdout,"%s",RED);
+	fprintf( stdout, "FAILED!!!");
+	if (TESTS_COLOR) fprintf(stdout,"%s",NORMAL);
+	fprintf( stdout, "\nLine # %d ", line );
+
+	if ( retval == PAPI_ESYS ) {
+		sprintf( buf, "System error in %s", call );
+		perror( buf );
+	} else if ( retval > 0 ) {
+		fprintf( stdout, "Error: %s\n", call );
+	} else if ( retval == 0 ) {
 #if defined(sgi)
 		fprintf( stdout, "SGI requires root permissions for this test\n" );
 #else
 		fprintf( stdout, "Error: %s\n", call );
 #endif
-  } else {
-     fprintf( stdout, "Error in %s: %s\n", call, PAPI_strerror( retval ) );
-  }
+	} else {
+		fprintf( stdout, "Error in %s: %s\n", call, PAPI_strerror( retval ) );
+	}
 
-  fprintf( stdout, "\n" );
+//	fprintf( stdout, "\n" );
 
-	/* NOTE: Because test_fail is called from thread functions, 
+	/* NOTE: Because test_fail is called from thread functions,
 	   calling PAPI_shutdown here could prevent some threads
 	   from being able to free memory they have allocated.
 	 */
+	if ( PAPI_is_initialized(  ) ) {
+		PAPI_shutdown(  );
+	}
 
 	/* This is stupid.  Threads are the rare case */
 	/* and in any case an exit() should clear everything out */
@@ -558,41 +517,29 @@ test_fail( char *file, int line, char *call, int retval )
 	exit(1);
 }
 
-/* This routine mimics the previous implementation of test_fail()
-	by exiting on completion. It caused problems for threaded apps.
-	If you are not threaded and want to exit, replace calls to 
-	test_fail() with calls to test_fail_exit().
-*/
-void
-test_fail_exit( char *file, int line, char *call, int retval )
-{
-	test_fail( file, line, call, retval );
-	if ( PAPI_is_initialized(  ) )
-		PAPI_shutdown(  );
-	exit( 1 );
-}
-
-
 /* Use a positive value of retval to simply print an error message */
 void
-test_warn( char *file, int line, char *call, int retval )
+test_warn( const char *file, int line, const char *call, int retval )
 {
 
-  int line_pad;
+	(void)file;
 
-  line_pad=(int)(50-strlen(file));
-  if (line_pad<0) line_pad=0;
+//	int line_pad;
+
+//	line_pad=60-strlen(file);
+//	if (line_pad<0) line_pad=0;
 
 	char buf[128];
 	memset( buf, '\0', sizeof ( buf ) );
 
-	if (TESTS_COLOR) {
-	  fprintf( stdout, "%-*s %sWARNING%s\nLine # %d\n", line_pad, file, 
-		   YELLOW, NORMAL, line );
-	}
-	else {
-	  fprintf( stdout, "%-*s WARNING\nLine # %d\n", line_pad, file, line );
-	}
+//	fprintf(stdout,"%s",file);
+//	print_spaces(line_pad);
+
+	if (TEST_WARN==0) fprintf(stdout,"\n");
+	if (TESTS_COLOR) fprintf( stdout, "%s", YELLOW);
+	fprintf( stdout, "WARNING ");
+	if (TESTS_COLOR) fprintf( stdout, "%s", NORMAL);
+	fprintf( stdout, "Line # %d ", line );
 
 	if ( retval == PAPI_ESYS ) {
 		sprintf( buf, "System warning in %s", call );
@@ -605,44 +552,32 @@ test_warn( char *file, int line, char *call, int retval )
 		fprintf( stdout, "Warning in %s: %s\n", call, PAPI_strerror( retval ));
 	}
 
-	fprintf( stdout, "\n" );
 	TEST_WARN++;
-
 }
 
 void
-test_skip( char *file, int line, char *call, int retval )
+test_skip( const char *file, int line, const char *call, int retval )
 {
-	char buf[128];
+//	int line_pad;
 
-	memset( buf, '\0', sizeof ( buf ) );
-	fprintf( stdout, "%-40s SKIPPED\n", file );
-	if ( !TESTS_QUIET ) {
-		if ( retval == PAPI_ESYS ) {
-			fprintf( stdout, "Line # %d\n", line );
-			sprintf( buf, "System error in %s:", call );
-			perror( buf );
-		} else if ( retval == PAPI_EPERM ) {
-			fprintf( stdout, "Line # %d\n", line );
-			fprintf( stdout, "Invalid permissions for %s.", call );
-		} else if ( retval == PAPI_ECMP ) {
-			fprintf( stdout, "Line # %d\n", line );
-			fprintf( stdout, "%s.", call );
-		} else if ( retval >= 0 ) {
-			fprintf( stdout, "Line # %d\n", line );
-			fprintf( stdout, "Error calculating: %s\n", call );
-		} else if ( retval < 0 ) {
-			fprintf( stdout, "Line # %d\n", line );
-			fprintf( stdout, "Error in %s: %s\n", call, PAPI_strerror(retval) );
-		}
-		fprintf( stdout, "\n" );
-	}
+	(void)file;
+	(void)line;
+	(void)call;
+	(void)retval;
+
+//	line_pad=(60-strlen(file));
+
+//	fprintf(stdout,"%s",file);
+//	print_spaces(line_pad);
+
+	fprintf( stdout, "SKIPPED\n");
+
 	exit( 0 );
 }
 
 
 void
-test_print_event_header( char *call, int evset )
+test_print_event_header( const char *call, int evset )
 {
         int *ev_ids;
 	int i, nev;
@@ -679,147 +614,134 @@ test_print_event_header( char *call, int evset )
 int
 add_two_events( int *num_events, int *papi_event, int *mask ) {
 
-     /* query and set up the right event to monitor */
-  int EventSet = PAPI_NULL;
-  PAPI_event_info_t info;
-  unsigned int potential_evt_to_add[3][2] =
-    { {( unsigned int ) PAPI_FP_INS, MASK_FP_INS},
-      {( unsigned int ) PAPI_FP_OPS, MASK_FP_OPS},
-      {( unsigned int ) PAPI_TOT_INS, MASK_TOT_INS}
-    };
-  int i = 0;
-  int counters = 0;
+	int retval;
+	int EventSet = PAPI_NULL;
 
-	const PAPI_component_info_t* cmpinfo;
+	*num_events=2;
+	*papi_event=PAPI_TOT_INS;
+	(void)mask;
 
-	*mask = 0;
-	counters = PAPI_num_hwctrs(  );
-
-	if (counters<=0) {
-		cmpinfo = PAPI_get_component_info( 0 );
-		fprintf(stderr,"\nComponent %s disabled due to %s\n",
-			cmpinfo->name, cmpinfo->disabled_reason);
-		test_fail(__FILE__,__LINE__,
-			"ERROR! Zero Counters Available!\n",0);
+	/* create the eventset */
+	retval = PAPI_create_eventset( &EventSet );
+	if ( retval != PAPI_OK ) {
+		test_fail( __FILE__, __LINE__, "PAPI_create_eventset", retval );
 	}
 
-  /* This code tries to ensure that the event  generated will fit in the */
-  /* number of available counters. It has the potential to leak up to    */
-  /* two event sets if events fail to add successfully.                  */
-
-  for(i=0;i<3;i++) {
-	if ( PAPI_query_event( (int) potential_evt_to_add[i][0] ) == PAPI_OK ) {
-		if ( PAPI_get_event_info( (int) potential_evt_to_add[i][0], &info ) == PAPI_OK ) {
-			if ( ( info.count > 0 ) && ( (unsigned) counters > info.count ) ) {
-				*papi_event = ( int ) potential_evt_to_add[i][0];
-				*mask = ( int ) potential_evt_to_add[i][1] | MASK_TOT_CYC;
-				EventSet = add_test_events( num_events, mask, 1 );
-				if ( *num_events == 2 ) break;
-			}
-		}
+	retval = PAPI_add_named_event( EventSet, "PAPI_TOT_CYC");
+	if ( retval != PAPI_OK ) {
+		if (!TESTS_QUIET) printf("Couldn't add PAPI_TOT_CYC\n");
+		test_skip(__FILE__,__LINE__,"Couldn't add PAPI_TOT_CYC",0);
 	}
-  }
-  if ( i == 3 ) {
-     test_fail( __FILE__, __LINE__, "Not enough room to add an event!", 0 );
-  }
-  return EventSet;
+
+	retval = PAPI_add_named_event( EventSet, "PAPI_TOT_INS");
+	if ( retval != PAPI_OK ) {
+		if (!TESTS_QUIET) printf("Couldn't add PAPI_TOT_CYC\n");
+		test_skip(__FILE__,__LINE__,"Couldn't add PAPI_TOT_CYC",0);
+	}
+
+	return EventSet;
 }
 
 int
 add_two_nonderived_events( int *num_events, int *papi_event, int *mask ) {
 
 	/* query and set up the right event to monitor */
-  int EventSet = PAPI_NULL;
+	int EventSet = PAPI_NULL;
+	int retval;
+
+	*num_events=0;
 
 #define POTENTIAL_EVENTS 3
 
-  unsigned int potential_evt_to_add[POTENTIAL_EVENTS][2] =
+	unsigned int potential_evt_to_add[POTENTIAL_EVENTS][2] =
 		{ {( unsigned int ) PAPI_FP_INS, MASK_FP_INS},
 		  {( unsigned int ) PAPI_FP_OPS, MASK_FP_OPS},
 		  {( unsigned int ) PAPI_TOT_INS, MASK_TOT_INS}
 		};
 
-  int i;
+	int i;
 
-  *mask = 0;
-  
-   /* could leak up to two event sets. */
-  for(i=0;i<POTENTIAL_EVENTS;i++) {
+	*mask = 0;
 
-     if ( PAPI_query_event( ( int ) potential_evt_to_add[i][0] ) == PAPI_OK ) {
-       if ( !is_event_derived(potential_evt_to_add[i][0])) {
-		 *papi_event = ( int ) potential_evt_to_add[i][0];
-		 *mask = ( int ) potential_evt_to_add[i][1] | MASK_TOT_CYC;
-		 EventSet = add_test_events( num_events, mask, 0 );
-		 if ( *num_events == 2 ) break;
-       }
-    }
-  }
-	
-  if ( i == POTENTIAL_EVENTS ) {
-     test_fail( __FILE__, __LINE__, "Can't find a non-derived event!", 0 );
-  }
-  return EventSet;
+	/* could leak up to two event sets. */
+	for(i=0;i<POTENTIAL_EVENTS;i++) {
+		retval = PAPI_query_event( ( int ) potential_evt_to_add[i][0] );
+		if (retval  == PAPI_OK ) {
+			if ( !is_event_derived(potential_evt_to_add[i][0])) {
+		 		*papi_event = ( int ) potential_evt_to_add[i][0];
+		 		*mask = ( int ) potential_evt_to_add[i][1] | MASK_TOT_CYC;
+		 		EventSet = add_test_events( num_events, mask, 0 );
+		 		if ( *num_events == 2 ) break;
+			}
+		}
+	}
+
+	return EventSet;
 }
 
 /* add native events to use all counters */
 int
-enum_add_native_events( int *num_events, int **evtcodes, 
+enum_add_native_events( int *num_events, int **evtcodes,
 			int need_interrupt, int no_software_events,
 			int cidx)
 {
 	/* query and set up the right event to monitor */
-     int EventSet = PAPI_NULL;
-     int i = 0, k, event_code, retval;
-     int counters, event_found = 0;
-     PAPI_event_info_t info;
-     const PAPI_component_info_t *s = NULL;
-     const PAPI_hw_info_t *hw_info = NULL;
-   
-     s = PAPI_get_component_info( cidx );
-     if ( s == NULL ) {
-	test_fail( __FILE__, __LINE__, 
-			   "PAPI_get_component_info", PAPI_ECMP );
-     }
 
-     hw_info = PAPI_get_hardware_info(  );
-     if ( hw_info == NULL ) {
-        test_fail( __FILE__, __LINE__, "PAPI_get_hardware_info", 2 );
-     }
-   
-     counters = PAPI_num_hwctrs(  );
-     if (counters<1) {
-	test_fail(__FILE__,__LINE__, "No counters available!\n",1);
-     }
+	int EventSet = PAPI_NULL;
+	int i = 0, k, event_code, retval;
+	int counters, event_found = 0;
+	PAPI_event_info_t info;
+	const PAPI_component_info_t *s = NULL;
+	const PAPI_hw_info_t *hw_info = NULL;
 
-     if (!TESTS_QUIET) printf("Trying to fill %d hardware counters...\n",
-			      counters);
-   
-     if (need_interrupt) {
-        if ( (!strcmp(hw_info->model_string,"POWER6")) ||
-	     (!strcmp(hw_info->model_string,"POWER5")) ) {
-	   
-	   test_warn(__FILE__, __LINE__,
-		    "Limiting num_counters because of LIMITED_PMC on Power5 and Power6",1);
-           counters=4;
+	*num_events=0;
+
+	s = PAPI_get_component_info( cidx );
+	if ( s == NULL ) {
+		test_fail( __FILE__, __LINE__,
+				"PAPI_get_component_info", PAPI_ECMP );
 	}
-     }
 
-     ( *evtcodes ) = ( int * ) calloc( counters, sizeof ( int ) );
+	hw_info = PAPI_get_hardware_info(  );
+	if ( hw_info == NULL ) {
+		test_fail( __FILE__, __LINE__, "PAPI_get_hardware_info", 2 );
+	}
 
-     retval = PAPI_create_eventset( &EventSet );
-     if ( retval != PAPI_OK ) {
-	test_fail( __FILE__, __LINE__, "PAPI_create_eventset", retval );
-     }
+	counters = PAPI_num_hwctrs(  );
+	if (counters<1) {
+		if (!TESTS_QUIET) printf("No counters available\n");
+		return EventSet;
+	}
 
-     /* For platform independence, always ASK FOR the first event */
-     /* Don't just assume it'll be the first numeric value */
-     i = 0 | PAPI_NATIVE_MASK;
-     retval = PAPI_enum_cmp_event( &i, PAPI_ENUM_FIRST, cidx );
-     if ( retval != PAPI_OK )
-     {
-	 test_fail( __FILE__, __LINE__, "PAPI_enum_cmp_event", retval );
-     }
+	if (!TESTS_QUIET) {
+		printf("Trying to fill %d hardware counters...\n", counters);
+	}
+
+	if (need_interrupt) {
+		if ( (!strcmp(hw_info->model_string,"POWER6")) ||
+			(!strcmp(hw_info->model_string,"POWER5")) ) {
+
+			test_warn(__FILE__, __LINE__,
+					"Limiting num_counters because of "
+					"LIMITED_PMC on Power5 and Power6",1);
+			counters=4;
+		}
+	}
+
+	( *evtcodes ) = ( int * ) calloc( counters, sizeof ( int ) );
+
+	retval = PAPI_create_eventset( &EventSet );
+	if ( retval != PAPI_OK ) {
+		test_fail( __FILE__, __LINE__, "PAPI_create_eventset", retval );
+	}
+
+	/* For platform independence, always ASK FOR the first event */
+	/* Don't just assume it'll be the first numeric value */
+	i = 0 | PAPI_NATIVE_MASK;
+	retval = PAPI_enum_cmp_event( &i, PAPI_ENUM_FIRST, cidx );
+	if ( retval != PAPI_OK ) {
+		test_fail( __FILE__, __LINE__, "PAPI_enum_cmp_event", retval );
+	}
 
      do {
         retval = PAPI_get_event_info( i, &info );
@@ -834,7 +756,7 @@ enum_add_native_events( int *num_events, int **evtcodes,
 
 	if ( s->cntr_umasks ) {
 	   k = i;
-			
+
 	   if ( PAPI_enum_cmp_event( &k, PAPI_NTV_ENUM_UMASKS, cidx ) == PAPI_OK ) {
 	      do {
 	         retval = PAPI_get_event_info( k, &info );
@@ -893,33 +815,3 @@ enum_add_native_events( int *num_events, int **evtcodes,
 
 	return EventSet;
 }
-
-void
-init_multiplex( void )
-{
-	int retval;
-	const PAPI_hw_info_t *hw_info;
-	const PAPI_component_info_t *cmpinfo;
-
-	/* Initialize the library */
-
-	/* for now, assume multiplexing on CPU compnent only */
-	cmpinfo = PAPI_get_component_info( 0 );
-	if ( cmpinfo == NULL )
-		test_fail( __FILE__, __LINE__, "PAPI_get_component_info", 2 );
-
-	hw_info = PAPI_get_hardware_info(  );
-	if ( hw_info == NULL )
-		test_fail( __FILE__, __LINE__, "PAPI_get_hardware_info", 2 );
-
-	if ( ( strstr( cmpinfo->name, "perfctr.c" ) ) && (hw_info !=NULL) &&
-		 strcmp( hw_info->model_string, "POWER6" ) == 0 ) {
-		retval = PAPI_set_domain( PAPI_DOM_ALL );
-		if ( retval != PAPI_OK )
-			test_fail( __FILE__, __LINE__, "PAPI_set_domain", retval );
-	}
-	retval = PAPI_multiplex_init(  );
-	if ( retval != PAPI_OK )
-		test_fail( __FILE__, __LINE__, "PAPI multiplex init fail\n", retval );
-}
-

@@ -1,12 +1,10 @@
-/* 
+/*
 * File:    forkexec2.c
 * Author:  Philip Mucci
 *          mucci@cs.utk.edu
-* Mods:    <your name here>
-*          <your email address>
 */
 
-/* This file performs the following test: 
+/* This file performs the following test:
 
     PAPI_library_init()
     PAPI_shutdown()
@@ -20,45 +18,68 @@
 
  */
 
-#include "papi_test.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 #include <sys/wait.h>
+
+#include "papi.h"
+#include "papi_test.h"
+
 
 int
 main( int argc, char **argv )
 {
 	int retval;
 	int status;
+	int quiet;
 
-	tests_quiet( argc, argv );	/* Set TESTS_QUIET variable */
+	/* Set TESTS_QUIET variable */
+	quiet = tests_quiet( argc, argv );
 
 	if ( ( argc > 1 ) && ( strcmp( argv[1], "xxx" ) == 0 ) ) {
+		/* In child */
 		retval = PAPI_library_init( PAPI_VER_CURRENT );
-		if ( retval != PAPI_VER_CURRENT )
+		if ( retval != PAPI_VER_CURRENT ) {
 			test_fail( __FILE__, __LINE__, "execed PAPI_library_init", retval );
+		}
+		return 0;
 	} else {
-		retval = PAPI_library_init( PAPI_VER_CURRENT );
-		if ( retval != PAPI_VER_CURRENT )
-			test_fail( __FILE__, __LINE__, "main PAPI_library_init", retval );
+		if (!quiet) printf("Testing fork/PAPI_init/PAPI_shudtdown/exec/PAPI_init\n");
 
+		/* Init PAPI */
+		retval = PAPI_library_init( PAPI_VER_CURRENT );
+		if ( retval != PAPI_VER_CURRENT ) {
+			test_fail( __FILE__, __LINE__, "main PAPI_library_init", retval );
+		}
 		PAPI_shutdown(  );
 
 		if ( fork(  ) == 0 ) {
+			/* Init PAPI in child before exec */
 			retval = PAPI_library_init( PAPI_VER_CURRENT );
-			if ( retval != PAPI_VER_CURRENT )
+			if ( retval != PAPI_VER_CURRENT ) {
 				test_fail( __FILE__, __LINE__, "forked PAPI_library_init",
 						   retval );
+			}
 
 			PAPI_shutdown(  );
 
-			if ( execlp( argv[0], argv[0], "xxx", NULL ) == -1 )
+			if ( execlp( argv[0], argv[0], "xxx", NULL ) == -1 ) {
 				test_fail( __FILE__, __LINE__, "execlp", PAPI_ESYS );
+			}
 		} else {
+			/* In parent, wait for child to finish */
 			wait( &status );
-			if ( WEXITSTATUS( status ) != 0 )
+			if ( WEXITSTATUS( status ) != 0 ) {
 				test_fail( __FILE__, __LINE__, "fork", WEXITSTATUS( status ) );
+			}
 		}
 	}
 
-	test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+	test_pass( __FILE__ );
+
+	return 0;
+
 }

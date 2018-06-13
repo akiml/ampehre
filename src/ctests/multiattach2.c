@@ -14,9 +14,19 @@
    - Get us.
 */
 
-#include "papi_test.h"
-#include <sys/ptrace.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <inttypes.h>
+#include <sys/ptrace.h>
+#include <sys/wait.h>
+
+#include "papi.h"
+#include "papi_test.h"
+
+#include "do_loops.h"
+
 
 #ifdef _AIX
 #define _LINUX_SOURCE_COMPAT
@@ -55,12 +65,12 @@ main( int argc, char **argv )
 	/* init the library */
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
 	if ( retval != PAPI_VER_CURRENT ) {
-	   test_fail_exit( __FILE__, __LINE__, "PAPI_library_init", retval );
+	   test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
 	}
 
 	/* get component info */
 	if ( ( cmpinfo = PAPI_get_component_info( 0 ) ) == NULL ) {
-	   test_fail_exit( __FILE__, __LINE__, "PAPI_get_component_info", 0 );
+	   test_fail( __FILE__, __LINE__, "PAPI_get_component_info", 0 );
 	}
 
 	/* see if we support attach */
@@ -72,7 +82,7 @@ main( int argc, char **argv )
 	/* fork! */
 	pid = fork(  );
 	if ( pid < 0 ) {
-	  test_fail_exit( __FILE__, __LINE__, "fork()", PAPI_ESYS );
+	  test_fail( __FILE__, __LINE__, "fork()", PAPI_ESYS );
 	}
 
 	/* if child, wait_for_attach_and_loop */
@@ -80,9 +90,9 @@ main( int argc, char **argv )
 	   exit( wait_for_attach_and_loop( 2 ) );
 	}
 
-	/* add PAPI_TOT_CYC and one of the events in 
-	   PAPI_FP_INS, PAPI_FP_OPS or PAPI_TOT_INS, 
-	   depending on the availability of the event 
+	/* add PAPI_TOT_CYC and one of the events in
+	   PAPI_FP_INS, PAPI_FP_OPS or PAPI_TOT_INS,
+	   depending on the availability of the event
 	   on the platform                            */
 	EventSet1 = add_two_events( &num_events1, &PAPI_event, &mask1 );
 	EventSet2 = add_two_events( &num_events2, &PAPI_event2, &mask2 );
@@ -104,13 +114,10 @@ main( int argc, char **argv )
 
 	retval = PAPI_attach( EventSet2, ( unsigned long ) pid );
 	if ( retval != PAPI_OK ) {
-	   test_fail( __FILE__, __LINE__, "PAPI_attach", retval ); 
+	   test_fail( __FILE__, __LINE__, "PAPI_attach", retval );
 	}
 
-	retval = PAPI_event_code_to_name( PAPI_event, event_name );
-	if ( retval != PAPI_OK ) {
-	   test_fail( __FILE__, __LINE__, "PAPI_event_code_to_name", retval );
-	}
+	strcpy(event_name,"PAPI_TOT_INS");
 	sprintf( add_event_str, "PAPI_add_event[%s]", event_name );
 
 	/* num_events1 is greater than num_events2 so don't worry. */
@@ -150,7 +157,7 @@ main( int argc, char **argv )
 
 	retval = PAPI_start( EventSet2 );
 	if ( retval != PAPI_OK ) {
-	   test_fail( __FILE__, __LINE__, "PAPI_start", retval );	   
+	   test_fail( __FILE__, __LINE__, "PAPI_start", retval );
 	}
 
 	/* Wait for the SIGSTOP. */
@@ -210,40 +217,43 @@ main( int argc, char **argv )
 	}
 
 	/* This code isn't necessary as we know the child has exited,
-	   it *may* return an error if the component so chooses. 
+	   it *may* return an error if the component so chooses.
            You should use read() instead. */
 
-	printf( "Test case: multiple 3rd party attach start, stop.\n" );
-	printf( "-----------------------------------------------\n" );
-	tmp = PAPI_get_opt( PAPI_DEFDOM, NULL );
-	printf( "Default domain is: %d (%s)\n", tmp, stringify_all_domains( tmp ) );
-	tmp = PAPI_get_opt( PAPI_DEFGRN, NULL );
-	printf( "Default granularity is: %d (%s)\n", tmp,
+	if (!TESTS_QUIET) {
+		printf( "Test case: multiple 3rd party attach start, stop.\n" );
+		printf( "-----------------------------------------------\n" );
+		tmp = PAPI_get_opt( PAPI_DEFDOM, NULL );
+		printf( "Default domain is: %d (%s)\n", tmp, stringify_all_domains( tmp ) );
+		tmp = PAPI_get_opt( PAPI_DEFGRN, NULL );
+		printf( "Default granularity is: %d (%s)\n", tmp,
 			stringify_granularity( tmp ) );
-	printf( "Using %d iterations of c += a*b\n", NUM_FLOPS );
-	printf( "-------------------------------------------------------------------------\n" );
+		printf( "Using %d iterations of c += a*b\n", NUM_FLOPS );
+		printf( "-------------------------------------------------------------------------\n" );
 
-	sprintf( add_event_str, "(PID self) %-12s : \t", 
+		sprintf( add_event_str, "(PID self) %-12s : \t",
 			 event_name );
-	printf( TAB1, add_event_str, values[0][1] );
-	sprintf( add_event_str, "(PID self) PAPI_TOT_CYC : \t" );
-	printf( TAB1, add_event_str, values[0][0] );
-	sprintf( add_event_str, "(PID %jd) %-12s : \t", ( intmax_t ) pid,
+		printf( TAB1, add_event_str, values[0][1] );
+		sprintf( add_event_str, "(PID self) PAPI_TOT_CYC : \t" );
+		printf( TAB1, add_event_str, values[0][0] );
+		sprintf( add_event_str, "(PID %jd) %-12s : \t", ( intmax_t ) pid,
 			 event_name );
-	printf( TAB1, add_event_str, values[1][1] );
-	sprintf( add_event_str, "(PID %jd) PAPI_TOT_CYC : \t", 
-		 ( intmax_t ) pid );
-	printf( TAB1, add_event_str, values[1][0] );
-	printf( TAB1, "Real usec    : \t", elapsed_us );
-	printf( TAB1, "Real cycles  : \t", elapsed_cyc );
-	printf( TAB1, "Virt usec    : \t", elapsed_virt_us );
-	printf( TAB1, "Virt cycles  : \t", elapsed_virt_cyc );
+		printf( TAB1, add_event_str, values[1][1] );
+		sprintf( add_event_str, "(PID %jd) PAPI_TOT_CYC : \t",
+			( intmax_t ) pid );
+		printf( TAB1, add_event_str, values[1][0] );
+		printf( TAB1, "Real usec    : \t", elapsed_us );
+		printf( TAB1, "Real cycles  : \t", elapsed_cyc );
+		printf( TAB1, "Virt usec    : \t", elapsed_virt_us );
+		printf( TAB1, "Virt cycles  : \t", elapsed_virt_cyc );
 
-	printf( "-------------------------------------------------------------------------\n" );
+		printf( "-------------------------------------------------------------------------\n" );
 
-	printf( "Verification: none\n" );
+		printf( "Verification: none\n" );
 
-	test_pass( __FILE__, values, num_tests );
-	
+	}
+
+	test_pass( __FILE__ );
+
 	return 0;
 }

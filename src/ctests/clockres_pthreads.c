@@ -1,6 +1,11 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
+
+#include "papi.h"
 #include "papi_test.h"
 
+#include "clockcore.h"
 
 void *
 pthread_main( void *arg )
@@ -11,7 +16,10 @@ pthread_main( void *arg )
 	   test_fail( __FILE__, __LINE__, "PAPI_register_thread", retval );
 	}
 
-	clockcore(  );
+	retval=clockcore( TESTS_QUIET );
+	if (retval != PAPI_OK ) {
+		test_fail(__FILE__, __LINE__, "clockcore failure", retval );
+	}
 
 	retval = PAPI_unregister_thread(  );
 	if ( retval != PAPI_OK ) {
@@ -28,12 +36,12 @@ main( int argc, char **argv )
     int retval;
 
     /* Set TESTS_QUIET variable */
-    tests_quiet( argc, argv );	
+    tests_quiet( argc, argv );
 
     if (( retval = PAPI_library_init( PAPI_VER_CURRENT)) != PAPI_VER_CURRENT) {
        test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
     }
-	
+
     retval = PAPI_thread_init( ( unsigned long ( * )(void) ) (pthread_self) );
     if ( retval != PAPI_OK ) {
        if ( retval == PAPI_ECMP ) {
@@ -66,11 +74,11 @@ main( int argc, char **argv )
     if (pthread_create( &t1, &attr, pthread_main, NULL )) {
        test_fail(__FILE__, __LINE__, "cannot create thread", retval);
     }
-	
+
     if (pthread_create( &t2, &attr, pthread_main, NULL )) {
        test_fail(__FILE__, __LINE__, "cannot create thread", retval);
     }
-	
+
     if (pthread_create( &t3, &attr, pthread_main, NULL )) {
        test_fail(__FILE__, __LINE__, "cannot create thread", retval);
     }
@@ -86,6 +94,7 @@ main( int argc, char **argv )
     pthread_join( t3, NULL );
     pthread_join( t4, NULL );
 
-    test_pass( __FILE__, NULL, 0 );
-    exit( 0 );
+    test_pass( __FILE__ );
+
+    return 0;
 }

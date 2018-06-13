@@ -1,11 +1,16 @@
-/* This file tries to add,start,stop all events in a component it
- * is meant not to test the accuracy of the mapping but to make sure
+/* This file tries to add,start,stop, and remove all pre-defined events.
+ * It is meant not to test the accuracy of the mapping but to make sure
  * that all events in the component will at least start (Helps to
- * catch typos.
+ * catch typos).
  *
  * Author: Kevin London
  *         london@cs.utk.edu
  */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "papi.h"
 #include "papi_test.h"
 
 int
@@ -15,27 +20,54 @@ main( int argc, char **argv )
 	int EventSet = PAPI_NULL, count = 0, err_count = 0;
 	long long values;
 	PAPI_event_info_t info;
+	int quiet=0;
+	char error_message[BUFSIZ];
 
+	/* Set TESTS_QUIET variable */
+	quiet=tests_quiet( argc, argv );
 
-	tests_quiet( argc, argv );	/* Set TESTS_QUIET variable */
+	if (!quiet) {
+		printf("\nTrying all pre-defined events:\n");
+	}
 
+	/* Initialize PAPI */
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
-	if ( retval != PAPI_VER_CURRENT )
+	if ( retval != PAPI_VER_CURRENT ) {
 		test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
+	}
 
+	/* Create an EventSet */
 	retval = PAPI_create_eventset( &EventSet );
-	if ( retval != PAPI_OK )
+	if ( retval != PAPI_OK ) {
 		test_fail( __FILE__, __LINE__, "PAPI_create_eventset", retval );
+	}
 
+	/* Add all preset events */
 	for ( i = 0; i < PAPI_MAX_PRESET_EVENTS; i++ ) {
+
 		if ( PAPI_get_event_info( PAPI_PRESET_MASK | i, &info ) != PAPI_OK )
 			continue;
+
 		if ( !( info.count ) )
 			continue;
-		printf( "Adding %-14s", info.symbol );
+
+		if (!quiet) printf( "Adding %-14s", info.symbol );
+
 		retval = PAPI_add_event( EventSet, ( int ) info.event_code );
 		if ( retval != PAPI_OK ) {
-			PAPI_perror( "PAPI_add_event" );
+			if (!quiet) {
+				printf("Error adding event %s\n",info.symbol);
+				if (retval==PAPI_ECNFLCT) {
+					printf("Probably NMI watchdog related\n");
+				}
+			}
+			if (retval==PAPI_ECNFLCT) {
+				sprintf(error_message,"Problem adding %s (probably NMI Watchdog related)",info.symbol);
+			}
+			else {
+				sprintf(error_message,"Problem adding %s",info.symbol);
+			}
+			test_warn( __FILE__, __LINE__, error_message, retval );
 			err_count++;
 		} else {
 			retval = PAPI_start( EventSet );
@@ -48,7 +80,7 @@ main( int argc, char **argv )
 					PAPI_perror( "PAPI_stop" );
 					err_count++;
 				} else {
-					printf( "successful\n" );
+					if (!quiet) printf( "successful\n" );
 					count++;
 				}
 			}
@@ -61,12 +93,20 @@ main( int argc, char **argv )
 	if ( retval != PAPI_OK )
 		test_fail( __FILE__, __LINE__, "PAPI_destroy_eventset", retval );
 
-	printf( "Successfully added, started and stopped %d events.\n", count );
-	if ( err_count )
-		printf( "Failed to add, start or stop %d events.\n", err_count );
-	if ( count > 0 )
-		test_pass( __FILE__, NULL, 0 );
-	else
+	if (!quiet) {
+		printf( "Successfully added, started and stopped %d events.\n", count );
+	}
+
+	if ( err_count ) {
+		if (!quiet) printf( "Failed to add, start or stop %d events.\n", err_count );
+	}
+
+	if (count<=0) {
 		test_fail( __FILE__, __LINE__, "No events added", 1 );
-	exit( 1 );
+	}
+
+	test_pass( __FILE__ );
+
+	return 0;
+
 }

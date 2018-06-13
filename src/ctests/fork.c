@@ -1,4 +1,4 @@
-/* 
+/*
 * File:    fork.c
 * Author:  Philip Mucci
 *          mucci@cs.utk.edu
@@ -6,18 +6,24 @@
 *          <your email address>
 */
 
-/* This file performs the following test: 
+/* This file performs the following test:
 
    PAPI_library_init()
          fork();
-         /    \ 
+         /    \
      parent   child
      wait()   PAPI_library_init()
 
  */
 
-#include "papi_test.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <sys/wait.h>
+
+#include "papi.h"
+#include "papi_test.h"
+
 
 int
 main( int argc, char **argv )
@@ -42,6 +48,8 @@ main( int argc, char **argv )
 			test_fail( __FILE__, __LINE__, "fork", WEXITSTATUS( status ) );
 	}
 
-	test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+	test_pass( __FILE__ );
+
+	return 0;
+
 }

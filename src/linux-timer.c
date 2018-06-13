@@ -1,6 +1,10 @@
 /*
  * File:    linux-timer.c
  *
+ * @author:  Vince Weaver
+ *           vincent.weaver @ maine.edu
+ * Mods:     Philip Mucci
+ *           mucci @ icl.utk.edu
  */
 
 #include <time.h>
@@ -23,10 +27,15 @@
 #include <sys/resource.h>
 
 #include <sys/times.h>
+#include <stdint.h>
 
 #ifdef __ia64__
 #include "perfmon/pfmlib_itanium2.h"
 #include "perfmon/pfmlib_montecito.h"
+#endif
+
+#ifdef __powerpc__
+#include <sys/platform/ppc.h>
 #endif
 
 #if defined(HAVE_MMTIMER)
@@ -113,7 +122,17 @@ int mmtimer_setup(void) {
 }
 
 #else
-int mmtimer_setup(void) { return PAPI_OK; }
+
+#if defined(__powerpc__)
+static uint64_t multiplier = 1;
+#endif
+
+int mmtimer_setup(void) {
+
+#if defined(__powerpc__)
+multiplier = ((uint64_t)_papi_hwi_system_info.hw_info.cpu_max_mhz * 1000000ULL) / (__ppc_get_timebase_freq()/(uint64_t)1000);
+#endif
+return PAPI_OK; }
 #endif
 
 
@@ -122,9 +141,9 @@ int mmtimer_setup(void) { return PAPI_OK; }
 
 /* Hardware clock functions */
 
-/* All architectures should set HAVE_CYCLES in configure if they have these. 
-   Not all do so for now, we have to guard at the end of the statement, 
-   instead of the top. When all archs set this, this region will be guarded 
+/* All architectures should set HAVE_CYCLES in configure if they have these.
+   Not all do so for now, we have to guard at the end of the statement,
+   instead of the top. When all archs set this, this region will be guarded
    with:
      #if defined(HAVE_CYCLE)
    which is equivalent to
@@ -230,16 +249,39 @@ get_cycles( void )
 /* POWER get_cycles()   */
 /************************/
 
-#elif (defined(__powerpc__) || defined(__arm__) || defined(__mips__))
-/*
- * It's not possible to read the cycles from user space on ppc970.
- * There is a 64-bit time-base register (TBU|TBL), but its
- * update rate is implementation-specific and cannot easily be translated
- * into a cycle count.  So don't implement get_cycles for now,
- * but instead, rely on the definition of HAVE_CLOCK_GETTIME_REALTIME in
- * _papi_hwd_get_real_usec() for the needed functionality.
-*/
+#elif defined(__powerpc__)
 
+static inline long long get_cycles()
+{
+    uint64_t result;
+	int64_t retval;
+#ifdef _ARCH_PPC64
+    /*
+        This reads timebase in one 64bit go.  Does *not* include a workaround for the cell (see 
+        http://ozlabs.org/pipermail/linuxppc-dev/2006-October/027052.html)
+    */
+    __asm__ volatile(
+        "mftb    %0"
+        : "=r" (result));
+#else
+    /*
+        Read the high 32bits of the timer, then the lower, and repeat if high order has changed in the meantime.  See
+        http://ozlabs.org/pipermail/linuxppc-dev/1999-October/003889.html
+    */
+    unsigned long dummy;
+    __asm__ volatile(
+        "mfspr   %1,269\n\t"  /* mftbu */
+        "mfspr   %L0,268\n\t" /* mftb */
+        "mfspr   %0,269\n\t"  /* mftbu */
+        "cmpw    %0,%1\n\t"   /* check if the high order word has chanegd */
+        "bne     $-16"
+        : "=r" (result), "=r" (dummy));
+#endif
+    retval = (result*multiplier)/1000ULL;
+    return retval;
+}
+
+#elif (defined(__arm__) || defined(__mips__))
 static inline long long
 get_cycles( void )
 {
@@ -260,7 +302,7 @@ long long
 _linux_get_real_cycles( void )
 {
 	long long retval;
-#if defined(HAVE_GETTIMEOFDAY)||defined(__powerpc__)||defined(__arm__)||defined(__mips__)
+#if defined(HAVE_GETTIMEOFDAY)||defined(__arm__)||defined(__mips__)
 
 	/* Crude estimate, not accurate in prescence of DVFS */
 
@@ -287,7 +329,7 @@ _linux_get_real_cycles( void )
 long long
 _linux_get_real_usec_gettime( void )
 {
-	
+
    long long retval;
 
    struct timespec foo;
@@ -309,14 +351,14 @@ _linux_get_real_usec_gettime( void )
 long long
 _linux_get_real_usec_gettimeofday( void )
 {
-	
+
    long long retval;
 
    struct timeval buffer;
    gettimeofday( &buffer, NULL );
    retval = ( long long ) buffer.tv_sec * ( long long ) 1000000;
    retval += ( long long ) ( buffer.tv_usec );
-	
+
    return retval;
 }
 
@@ -324,12 +366,12 @@ _linux_get_real_usec_gettimeofday( void )
 long long
 _linux_get_real_usec_cycles( void )
 {
-	
+
    long long retval;
 
    /* Not accurate in the prescence of DVFS */
 
-   retval = get_cycles(  ) / 
+   retval = get_cycles(  ) /
             ( long long ) _papi_hwi_system_info.hw_info.cpu_max_mhz;
 
    return retval;
@@ -337,7 +379,7 @@ _linux_get_real_usec_cycles( void )
 
 
 
-/******************************* 
+/*******************************
  * HAVE_PER_THREAD_GETRUSAGE   *
  *******************************/
 
@@ -375,11 +417,11 @@ _linux_get_virt_usec_times( void )
 
    SUBDBG( "user %d system %d\n", ( int ) buffer.tms_utime,
 				( int ) buffer.tms_stime );
-   retval = ( long long ) ( ( buffer.tms_utime + buffer.tms_stime ) * 
+   retval = ( long long ) ( ( buffer.tms_utime + buffer.tms_stime ) *
 			    1000000 / sysconf( _SC_CLK_TCK ));
 
    /* NOT CLOCKS_PER_SEC as in the headers! */
-	
+
    return retval;
 }
 
@@ -398,7 +440,7 @@ _linux_get_virt_usec_gettime( void )
     syscall( __NR_clock_gettime, CLOCK_THREAD_CPUTIME_ID, &foo );
     retval = ( long long ) foo.tv_sec * ( long long ) 1000000;
     retval += ( long long ) foo.tv_nsec / 1000;
-	
+
     return retval;
 }
 
@@ -428,7 +470,7 @@ again:
    rv = read( stat_fd, buf, LINE_MAX * sizeof ( char ) );
    if ( rv == -1 ) {
       if ( errno == EBADF ) {
-	 close(stat_fd);	 
+	 close(stat_fd);
 	 goto again;
       }
       PAPIERROR( "read()" );
@@ -480,7 +522,7 @@ again:
 long long
 _linux_get_real_nsec_gettime( void )
 {
-	
+
    long long retval;
 
    struct timespec foo;
@@ -511,10 +553,6 @@ _linux_get_virt_nsec_gettime( void )
     syscall( __NR_clock_gettime, CLOCK_THREAD_CPUTIME_ID, &foo );
     retval = ( long long ) foo.tv_sec * ( long long ) 1000000000;
     retval += ( long long ) foo.tv_nsec ;
-	
+
     return retval;
 }
-
-
-
-

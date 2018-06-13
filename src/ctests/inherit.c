@@ -1,11 +1,18 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
+
 #if defined(_AIX) || defined (__FreeBSD__) || defined (__APPLE__)
 #include <sys/wait.h>		 /* ARGH! */
 #else
 #include <wait.h>
 #endif
+
+#include "papi.h"
 #include "papi_test.h"
+
+#include "do_loops.h"
 
 int
 main( int argc, char **argv )
@@ -14,17 +21,18 @@ main( int argc, char **argv )
 	long long int values[] = {0,0};
 	PAPI_option_t opt;
 	char event_name[BUFSIZ];
+	int quiet;
 
-        tests_quiet( argc, argv );
+	quiet=tests_quiet( argc, argv );
 
 	if ( ( retval = PAPI_library_init( PAPI_VER_CURRENT ) ) != PAPI_VER_CURRENT )
-		test_fail_exit( __FILE__, __LINE__, "PAPI_library_init", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
 
 	if ( ( retval = PAPI_create_eventset( &EventSet ) ) != PAPI_OK )
-		test_fail_exit( __FILE__, __LINE__, "PAPI_create_eventset", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_create_eventset", retval );
 
 	if ( ( retval = PAPI_assign_eventset_component( EventSet, 0 ) ) != PAPI_OK )
-		test_fail_exit( __FILE__, __LINE__, "PAPI_assign_eventset_component", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_assign_eventset_component", retval );
 
 	memset( &opt, 0x0, sizeof ( PAPI_option_t ) );
 	opt.inherit.inherit = PAPI_INHERIT_ALL;
@@ -32,16 +40,20 @@ main( int argc, char **argv )
 	if ( ( retval = PAPI_set_opt( PAPI_INHERIT, &opt ) ) != PAPI_OK ) {
 		if ( retval == PAPI_ECMP) {
 			test_skip( __FILE__, __LINE__, "Inherit not supported by current component.\n", retval );
+		} else if (retval == PAPI_EPERM) {
+			test_skip( __FILE__, __LINE__, "Inherit not supported by current component.\n", retval );
 		} else {
-			test_fail_exit( __FILE__, __LINE__, "PAPI_set_opt", retval );
+			test_fail( __FILE__, __LINE__, "PAPI_set_opt", retval );
 		}
 	}
 
-	if ( ( retval = PAPI_query_event( PAPI_TOT_CYC ) ) != PAPI_OK )
-		test_fail_exit( __FILE__, __LINE__, "PAPI_query_event", retval );
+	if ( ( retval = PAPI_query_event( PAPI_TOT_CYC ) ) != PAPI_OK ) {
+		if (!quiet) printf("Trouble finding PAPI_TOT_CYC\n");
+		test_skip( __FILE__, __LINE__, "PAPI_query_event", retval );
+	}
 
 	if ( ( retval = PAPI_add_event( EventSet, PAPI_TOT_CYC ) ) != PAPI_OK )
-		test_fail_exit( __FILE__, __LINE__, "PAPI_add_event", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_add_event", retval );
 
 	strcpy(event_name,"PAPI_FP_INS");
 	retval = PAPI_add_named_event( EventSet, event_name );
@@ -51,11 +63,11 @@ main( int argc, char **argv )
 	}
 
 	if ( retval != PAPI_OK ) {
-		test_fail_exit( __FILE__, __LINE__, "PAPI_add_event", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_add_event", retval );
 	}
 
 	if ( ( retval = PAPI_start( EventSet ) ) != PAPI_OK )
-		test_fail_exit( __FILE__, __LINE__, "PAPI_start", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_start", retval );
 
 	pid = fork(  );
 	if ( pid == 0 ) {
@@ -68,9 +80,9 @@ main( int argc, char **argv )
 	}
 
 	if ( ( retval = PAPI_stop( EventSet, values ) ) != PAPI_OK )
-		test_fail_exit( __FILE__, __LINE__, "PAPI_stop", retval );
+		test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
 
-	if (!TESTS_QUIET) {
+	if (!quiet) {
 	   printf( "Test case inherit: parent starts, child works, parent stops.\n" );
 	   printf( "------------------------------------------------------------\n" );
 
@@ -92,6 +104,8 @@ main( int argc, char **argv )
 		test_fail( __FILE__, __LINE__, "PAPI_FP_INS", 1 );
 	}
 
-	test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+	test_pass( __FILE__ );
+
+	return 0;
+
 }

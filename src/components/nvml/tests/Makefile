@@ -4,23 +4,25 @@ include ../Makefile.nvml
 
 #NVCC = $(CUDA_DIR)/bin/nvcc
 NVCC = gcc
-NVCFLAGS =
-CUDALIBS = -L$(NVML_DIR)/lib64 -lnvidia-ml
+NVCFLAGS = -L$(NVML_INCDIR) -ccbin=$(CC)
+CUDALIBS = -L$(NVML_LIBDIR)/lib64 -lnvidia-ml
+PAPILIB := ../../../libpapi.a  -ldl
 
-%.o:%.c
-	$(NVCC) $(INCLUDE) $(NVCFLAGS) -c -o $@ $<
+%.o:%.cu
+	$(NVCC) $(NVCFLAGS) $(INCLUDE) -c -o $@ $<
 
-TESTS = HelloWorld
+TESTS = HelloWorld nvml_power_limiting_test
 
 nvml_tests: $(TESTS) 
 
-HelloWorld: HelloWorld.o $(UTILOBJS)
-	$(CC) $(CFLAGS) $(INCLUDE) -o HelloWorld HelloWorld.o $(UTILOBJS) $(PAPILIB) $(CUDALIBS) $(LDFLAGS)
+HelloWorld: HelloWorld.o $(UTILOBJS) 
+	$(NVCC) $(NVCFLAGS) $(INCLUDE) -o HelloWorld HelloWorld.o $(UTILOBJS) $(PAPILIB) $(CUDALIBS)
+
+nvml_power_limiting_test: nvml_power_limiting_test.o $(UTILOBJS) 
+	$(NVCC) $(NVCFLAGS) $(INCLUDE) -o nvml_power_limiting_test nvml_power_limiting_test.o $(UTILOBJS) $(PAPILIB) $(CUDALIBS)
+	cp nvml_power_limiting_test ~/nvml_power_limiting_test
 
 clean:
 	rm -f $(TESTS) *.o
 
-
-
-
-
+FORCE:

@@ -8,9 +8,11 @@ event, then the 2nd one get an error when I tried to add it, is it possible for
 PAPI_start to work but just count the first event?
 */
 
-#include "papi_test.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-extern int TESTS_QUIET;				   /* Declared in test_utils.c */
+#include "papi.h"
+#include "papi_test.h"
 
 int
 main( int argc, char **argv )
@@ -64,6 +66,8 @@ main( int argc, char **argv )
 		if ( ( retval = PAPI_stop( EventSet, g1 ) ) != PAPI_OK )
 			test_fail( __FILE__, __LINE__, "PAPI_stop", retval );
 	}
-	test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+
+	test_pass( __FILE__ );
+
+	return 0;
 }

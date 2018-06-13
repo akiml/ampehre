@@ -173,7 +173,12 @@ amd64_get_revision(pfm_amd64_config_t *cfg)
                 }
 	} else if (cfg->family == 21) { /* family 15h */
 		rev = PFM_PMU_AMD64_FAM15H_INTERLAGOS;
+	} else if (cfg->family == 23) { /* family 17h */
+		rev = PFM_PMU_AMD64_FAM17H;
+	} else if (cfg->family == 22) { /* family 16h */
+		rev = PFM_PMU_AMD64_FAM16H;
 	}
+
         cfg->revision = rev;
 }
 
@@ -426,7 +431,7 @@ pfm_amd64_get_encoding(void *this, pfmlib_event_desc_t *e)
 {
 	const amd64_entry_t *pe = this_pe(this);
 	pfm_amd64_reg_t reg;
-	pfm_event_attr_info_t *a;
+	pfmlib_event_attr_info_t *a;
 	uint64_t umask = 0;
 	unsigned int plmmsk = 0;
 	int k, ret, grpid;
@@ -661,7 +666,7 @@ pfm_amd64_event_is_valid(void *this, int pidx)
 }
 
 int
-pfm_amd64_get_event_attr_info(void *this, int pidx, int attr_idx, pfm_event_attr_info_t *info)
+pfm_amd64_get_event_attr_info(void *this, int pidx, int attr_idx, pfmlib_event_attr_info_t *info)
 {
 	const amd64_entry_t *pe = this_pe(this);
 	int numasks, idx;

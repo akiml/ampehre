@@ -4,7 +4,6 @@
 
 /* 
 * File:    papi_fwrappers.c
-* CVS:     $Id$
 * Author:  Philip Mucci
 *          mucci@cs.utk.edu
 * Mods:    Nils Smeds
@@ -530,6 +529,14 @@ PAPI_FCALL( papif_register_thread, PAPIF_REGISTER_THREAD, ( int *check ) )
  *
  * @see PAPI_unregister_thread
  */
+PAPI_FCALL( papif_unregister_thread, PAPIF_UNREGISTER_THREAD, ( int *check ) )
+{
+	*check = PAPI_unregister_thread(  );
+}
+
+/* There was a long (10+ years!) typo that was not noticed here */
+/* Leaving it here as not to break any existing code out there */
+
 PAPI_FCALL( papif_unregster_thread, PAPIF_UNREGSTER_THREAD, ( int *check ) )
 {
 	*check = PAPI_unregister_thread(  );
@@ -1322,7 +1329,7 @@ PAPI_FCALL( papif_flops, PAPIF_FLOPS,
  */
 PAPI_FCALL( papif_get_clockrate, PAPIF_GET_CLOCKRATE, ( int *cr ) )
 {
-	*cr = PAPI_get_opt( PAPI_CLOCKRATE, NULL );
+	*cr = PAPI_get_opt( PAPI_CLOCKRATE, (PAPI_option_t *)  NULL );
 }
 
 /** @class PAPIF_get_preload
@@ -1406,7 +1413,7 @@ PAPI_FCALL( papif_get_domain, PAPIF_GET_DOMAIN,
 	PAPI_option_t d;
 
 	if ( *mode == PAPI_DEFDOM ) {
-		*domain = PAPI_get_opt( *mode, NULL );
+		*domain = PAPI_get_opt( *mode, (PAPI_option_t *) NULL );
 		*check = PAPI_OK;
 	} else if ( *mode == PAPI_DOMAIN ) {
 		d.domain.eventset = *eventset;

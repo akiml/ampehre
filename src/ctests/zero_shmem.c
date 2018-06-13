@@ -1,41 +1,20 @@
-/* This file performs the following test: start, stop and timer
-functionality for 2 slave OMP threads
-
-   - It attempts to use the following two counters. It may use less
-depending on hardware counter resource limitations. These are counted
-in the default counting domain and default granularity, depending on
-the platform. Usually this is the user domain (PAPI_DOM_USER) and
-thread context (PAPI_GRN_THR).
-
-     + PAPI_FP_INS
-     + PAPI_TOT_CYC
-
-Each of 2 slave pthreads:
-   - Get cyc.
-   - Get us.
-   - Start counters
-   - Do flops
-   - Stop and read counters
-   - Get us.
-   - Get cyc.
-
-Master pthread:
-   - Get us.
-   - Get cyc.
-   - Fork threads
-   - Wait for threads to exit
-   - Get us.
-   - Get cyc.
-*/
+/* This code attempts to test that SHMEM works with PAPI	*/
+/* SHMEM was developed by Cray and supported by various		*/
+/* other vendors.						*/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <memory.h>
 #include <malloc.h>
 #include <pthread.h>
+
+#include "papi.h"
 #include "papi_test.h"
+
+#include "do_loops.h"
 
 void
 Thread( int n )
@@ -58,13 +37,15 @@ Thread( int n )
 	elapsed_cyc = PAPI_get_real_cyc(  );
 
 	retval = PAPI_start( EventSet1 );
-	if ( retval >= PAPI_OK )
+
+	/* we should indicate failure somehow, not just exit */
+	if ( retval != PAPI_OK )
 		exit( 1 );
 
 	do_flops( n );
 
 	retval = PAPI_stop( EventSet1, values[0] );
-	if ( retval >= PAPI_OK )
+	if ( retval != PAPI_OK )
 		exit( 1 );
 
 	elapsed_us = PAPI_get_real_usec(  ) - elapsed_us;
@@ -88,19 +69,24 @@ Thread( int n )
 int
 main( int argc, char **argv )
 {
-    /* Set TESTS_QUIET variable */
-    tests_quiet( argc, argv );
-
+	int quiet;
 	long long elapsed_us, elapsed_cyc;
+
+	/* Set TESTS_QUIET variable */
+	quiet=tests_quiet( argc, argv );
 
 	elapsed_us = PAPI_get_real_usec(  );
 
 	elapsed_cyc = PAPI_get_real_cyc(  );
 
 #ifdef HAVE_OPENSHMEM
+	/* Start 2 processing elements (SHMEM call) */
 	start_pes( 2 );
 	Thread( 1000000 * ( _my_pe(  ) + 1 ) );
 #else
+	if (!quiet) {
+		printf("No OpenSHMEM support\n");
+	}
 	test_skip( __FILE__, __LINE__, "OpenSHMEM support not found, skipping.", 0);
 #endif
 
@@ -111,5 +97,5 @@ main( int argc, char **argv )
 	printf( "Master real usec   : \t%lld\n", elapsed_us );
 	printf( "Master real cycles : \t%lld\n", elapsed_cyc );
 
-	exit( 0 );
+	return 0;
 }

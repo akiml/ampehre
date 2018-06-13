@@ -13,6 +13,7 @@
 *          differennt cpu's or count activity in different domains.
 */
 
+#include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
@@ -31,7 +32,7 @@
 
 /* libpfm4 includes */
 #include "papi_libpfm4_events.h"
-#include "peu_libpfm4_events.h"
+#include "components/perf_event/pe_libpfm4_events.h"
 #include "perfmon/pfmlib.h"
 #include PEINCLUDE
 
@@ -50,10 +51,10 @@ papi_vector_t _perf_event_uncore_vector;
 /* Globals */
 struct native_event_table_t uncore_native_event_table;
 static int our_cidx;
-int
-_peu_libpfm4_get_cidx() {
-	return our_cidx;
-}
+//int
+//_peu_libpfm4_get_cidx() {
+//	return our_cidx;
+//}
 
 /* Defines for ctx->state */
 #define PERF_EVENTS_OPENED  0x01
@@ -620,7 +621,7 @@ _peu_init_component( int cidx )
 
    /* Run the uncore specific libpfm4 setup */
 
-   retval = _peu_libpfm4_init(_papi_hwd[cidx], 
+   retval = _peu_libpfm4_init(_papi_hwd[cidx], our_cidx,
 			       &uncore_native_event_table,
                                PMU_TYPE_UNCORE);
    if (retval) {
@@ -659,13 +660,14 @@ _peu_init_component( int cidx )
 static int
 _peu_shutdown_component( void ) {
 
-  /* deallocate our event table */
-  _peu_libpfm4_shutdown(&_perf_event_uncore_vector, &uncore_native_event_table);
+	/* deallocate our event table */
+	_pe_libpfm4_shutdown(&_perf_event_uncore_vector,
+				&uncore_native_event_table);
 
-  /* Shutdown libpfm4 */
-  _papi_libpfm4_shutdown();
+	/* Shutdown libpfm4 */
+	_papi_libpfm4_shutdown(&_perf_event_uncore_vector);
 
-  return PAPI_OK;
+	return PAPI_OK;
 }
 
 /* This function clears the current contents of the control structure and
@@ -1238,16 +1240,16 @@ _peu_ntv_enum_events( unsigned int *PapiEventCode, int modifier )
   if (_perf_event_uncore_vector.cmp_info.disabled) return PAPI_ENOEVNT;
 
 
-  return _peu_libpfm4_ntv_enum_events(PapiEventCode, modifier,
+  return _pe_libpfm4_ntv_enum_events(PapiEventCode, modifier, our_cidx,
                                        &uncore_native_event_table);
 }
 
 static int
-_peu_ntv_name_to_code( char *name, unsigned int *event_code) {
+_peu_ntv_name_to_code( const char *name, unsigned int *event_code) {
 
   if (_perf_event_uncore_vector.cmp_info.disabled) return PAPI_ENOEVNT;
 
-  return _peu_libpfm4_ntv_name_to_code(name,event_code,
+  return _pe_libpfm4_ntv_name_to_code(name,event_code, our_cidx,
                                         &uncore_native_event_table);
 }
 
@@ -1257,7 +1259,7 @@ _peu_ntv_code_to_name(unsigned int EventCode,
 
    if (_perf_event_uncore_vector.cmp_info.disabled) return PAPI_ENOEVNT;
 
-   return _peu_libpfm4_ntv_code_to_name(EventCode,
+   return _pe_libpfm4_ntv_code_to_name(EventCode,
                                          ntv_name, len, 
 					 &uncore_native_event_table);
 }
@@ -1268,7 +1270,7 @@ _peu_ntv_code_to_descr( unsigned int EventCode,
 
    if (_perf_event_uncore_vector.cmp_info.disabled) return PAPI_ENOEVNT;
 
-   return _peu_libpfm4_ntv_code_to_descr(EventCode,ntv_descr,len,
+   return _pe_libpfm4_ntv_code_to_descr(EventCode,ntv_descr,len,
                                           &uncore_native_event_table);
 }
 
@@ -1278,7 +1280,7 @@ _peu_ntv_code_to_info(unsigned int EventCode,
 
   if (_perf_event_uncore_vector.cmp_info.disabled) return PAPI_ENOEVNT;
 
-  return _peu_libpfm4_ntv_code_to_info(EventCode, info,
+  return _pe_libpfm4_ntv_code_to_info(EventCode, info,
                                         &uncore_native_event_table);
 }
 

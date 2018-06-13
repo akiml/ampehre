@@ -1,4 +1,4 @@
-/* 
+/*
 * File:    cmpinfo.c
 * Author:  Philip Mucci
 *          mucci@cs.utk.edu
@@ -7,6 +7,8 @@
 */
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "papi.h"
 #include "papi_test.h"
 
 int
@@ -25,6 +27,7 @@ main( int argc, char **argv )
 	if ( ( cmpinfo = PAPI_get_component_info( 0 ) ) == NULL )
 		test_fail( __FILE__, __LINE__, "PAPI_get_component_info", retval );
 
+	if (!TESTS_QUIET) {
 	printf( "name: %s\n", cmpinfo->name );
 	printf( "component_version: %s\n", cmpinfo->version );
 	printf( "support_version: %s\n", cmpinfo->support_version );
@@ -50,7 +53,9 @@ main( int argc, char **argv )
 	printf( "fast_virtual_timer: %d\n", cmpinfo->fast_virtual_timer );	/* Has a fast virtual timer */
 	printf( "attach: %d\n", cmpinfo->attach );	/* Supports attach */
 	printf( "attach_must_ptrace: %d\n", cmpinfo->attach_must_ptrace );	/* */
+	}
 
-	test_pass( __FILE__, NULL, 0 );
-	exit( 0 );
+	test_pass( __FILE__ );
+
+	return 0;
 }

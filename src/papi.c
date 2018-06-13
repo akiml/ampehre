@@ -501,7 +501,7 @@ PAPI_library_init( int version )
 {
     APIDBG( "Entry: version: %#x\n", version);
 
-	int tmp = 0, tmpel;
+	int tmp = 0;
 
 	/* This is a poor attempt at a lock. 
 	   For 3.1 this should be replaced with a 
@@ -591,15 +591,10 @@ PAPI_library_init( int version )
 	}
 #endif
 
-	/* Be verbose for now */
-
-	tmpel = _papi_hwi_error_level;
-	_papi_hwi_error_level = PAPI_VERB_ECONT;
 
 	/* Initialize internal globals */
 	if ( _papi_hwi_init_global_internal(  ) != PAPI_OK ) {
 		_in_papi_library_init_cnt--;
-		_papi_hwi_error_level = tmpel;
 		papi_return( PAPI_EINVAL );
 	}
 
@@ -609,7 +604,6 @@ PAPI_library_init( int version )
 	   init_retval = tmp;
 	   _papi_hwi_shutdown_global_internal(  );
 	   _in_papi_library_init_cnt--;
-	   _papi_hwi_error_level = tmpel;
 	   papi_return( init_retval );
 	}
 
@@ -620,7 +614,6 @@ PAPI_library_init( int version )
 		init_retval = tmp;
 		_papi_hwi_shutdown_global_internal(  );
 		_in_papi_library_init_cnt--;
-		_papi_hwi_error_level = tmpel;
 		papi_return( init_retval );
 	}
 	
@@ -637,13 +630,11 @@ PAPI_library_init( int version )
 		    }
 		}
 		_in_papi_library_init_cnt--;
-		_papi_hwi_error_level = tmpel;
 		papi_return( init_retval );
 	}
 
 	init_level = PAPI_LOW_LEVEL_INITED;
 	_in_papi_library_init_cnt--;
-	_papi_hwi_error_level = tmpel;
 
 	return ( init_retval = PAPI_VER_CURRENT );
 }
@@ -728,7 +719,7 @@ PAPI_query_event( int EventCode )
  *
  * @par C Interface:
  * \#include <papi.h> @n
- * int PAPI_query_named_event(char *EventName);
+ * int PAPI_query_named_event(const char *EventName);
  *
  * PAPI_query_named_event() asks the PAPI library if the PAPI named event can be 
  * counted on this architecture. 
@@ -762,10 +753,10 @@ PAPI_query_event( int EventCode )
  * @see PAPI_query_event 
  */
 int
-PAPI_query_named_event( char *EventName )
+PAPI_query_named_event( const char *EventName )
 {
 	int ret, code;
-	
+
 	ret = PAPI_event_name_to_code( EventName, &code );
 	if ( ret == PAPI_OK ) ret = PAPI_query_event( code );
 	papi_return( ret);
@@ -967,7 +958,7 @@ PAPI_event_code_to_name( int EventCode, char *out )
  *
  *	@par C Interface:
  *	\#include <papi.h> @n
- *	int PAPI_event_name_to_code( char * EventName, int * EventCode );
+ *	int PAPI_event_name_to_code( const char * EventName, int * EventCode );
  *
  *	PAPI_event_name_to_code is used to translate an ASCII PAPI event name 
  *	into an integer PAPI event code. 
@@ -1010,7 +1001,7 @@ PAPI_event_code_to_name( int EventCode, char *out )
  *	@see PAPI_native
  */
 int
-PAPI_event_name_to_code( char *in, int *out )
+PAPI_event_name_to_code( const char *in, int *out )
 {
    APIDBG("Entry: in: %p, name: %s, out: %p\n", in, in, out);
 	int i;
@@ -1823,7 +1814,7 @@ PAPI_remove_event( int EventSet, int EventCode )
  *
  *	@par C Interface:
  *	\#include <papi.h> @n
- *	int PAPI_add_named_event( int EventSet, char *EventName );
+ *	int PAPI_add_named_event( int EventSet, const char *EventName );
  *
  *	PAPI_add_named_event adds one event to a PAPI EventSet. @n
  *	A hardware event can be either a PAPI preset or a native hardware event code.
@@ -1882,12 +1873,12 @@ PAPI_remove_event( int EventSet, int EventCode )
  *	PAPI_remove_named_event
  */
 int
-PAPI_add_named_event( int EventSet, char *EventName )
+PAPI_add_named_event( int EventSet, const char *EventName )
 {
 	APIDBG("Entry: EventSet: %d, EventName: %s\n", EventSet, EventName);
 
 	int ret, code;
-	
+
 	ret = PAPI_event_name_to_code( EventName, &code );
 	if ( ret != PAPI_OK ) {
 		APIDBG("EXIT: return: %d\n", ret);
@@ -1911,7 +1902,7 @@ PAPI_add_named_event( int EventSet, char *EventName )
  *
  *   @par C Interface:
  *   \#include <papi.h> @n
- *   int PAPI_remove_event( int  EventSet, int  EventCode );
+ *   int PAPI_remove_named_event( int  EventSet, const char *EventName );
  *
  *   @param[in] EventSet
  *	   -- an integer handle for a PAPI event set as created 
@@ -1967,14 +1958,15 @@ PAPI_add_named_event( int EventSet, char *EventName )
  *	PAPI_add_named_event
  */
 int
-PAPI_remove_named_event( int EventSet, char *EventName )
+PAPI_remove_named_event( int EventSet, const char *EventName )
 {
 	APIDBG("Entry: EventSet: %d, EventName: %s\n", EventSet, EventName);
 	int ret, code;
-	
+
 	ret = PAPI_event_name_to_code( EventName, &code );
 	if ( ret == PAPI_OK ) ret = PAPI_remove_event( EventSet, code );
 	papi_return( ret );
+
 }
 
 /** @class PAPI_destroy_eventset 
@@ -1990,15 +1982,15 @@ PAPI_remove_named_event( int EventSet, char *EventName )
  *		A pointer to the integer handle for a PAPI event set as created by PAPI_create_eventset.
  *		The value pointed to by EventSet is then set to PAPI_NULL on success. 
  *
- *	@retval PAPI_EINVAL 
- *		One or more of the arguments is invalid. 
+ *	@retval PAPI_EINVAL
+ *		One or more of the arguments is invalid.
  *		Attempting to destroy a non-empty event set or passing in a null pointer to be destroyed.
- *	@retval PAPI_ENOEVST 
+ *	@retval PAPI_ENOEVST
  *		The EventSet specified does not exist.
- *	@retval PAPI_EISRUN 
+ *	@retval PAPI_EISRUN
  *		The EventSet is currently counting events.
- *	@retval PAPI_EBUG 
- *		Internal error, send mail to ptools-perfapi@ptools.org and complain. 
+ *	@retval PAPI_EBUG
+ *		Internal error, send mail to <ptools-perfapi@icl.utk.edu> and complain.
  *
  *	@par Examples:
  *	@code
@@ -2866,15 +2858,15 @@ PAPI_write( int EventSet, long long *values )
  *	@param EventSet
  *		An integer handle for a PAPI event set as created by PAPI_create_eventset.
  *
- *	@retval PAPI_EINVAL 
- *		One or more of the arguments is invalid. 
+ *	@retval PAPI_EINVAL
+ *		One or more of the arguments is invalid.
  *		Attempting to destroy a non-empty event set or passing in a null pointer to be destroyed.
- *	@retval PAPI_ENOEVST 
+ *	@retval PAPI_ENOEVST
  *		The EventSet specified does not exist.
- *	@retval PAPI_EISRUN 
+ *	@retval PAPI_EISRUN
  *		The EventSet is currently counting events.
- *	@retval PAPI_EBUG 
- *		Internal error, send mail to ptools-perfapi@ptools.org and complain. 
+ *	@retval PAPI_EBUG
+ *		Internal error, send mail to <ptools-perfapi@icl.utk.edu> and complain.
  *
  *	@par Examples:
  *	@code
@@ -4621,7 +4613,7 @@ PAPI_strerror( int errorCode )
  *
  * @par C Interface:
  *     \#include <papi.h> @n
- *     void PAPI_perror( char *s );
+ *     void PAPI_perror( const char *s );
  *
  *  @param[in] s
  *      -- Optional message to print before the string describing the last error message. 
@@ -4658,7 +4650,7 @@ PAPI_strerror( int errorCode )
  *  @see PAPI_strerror
  */
 void
-PAPI_perror( char *msg )
+PAPI_perror( const char *msg )
 {
 	char *foo;
 
@@ -4668,7 +4660,7 @@ PAPI_perror( char *msg )
 
 	if ( msg )
 		if ( *msg )
-				fprintf( stderr, "%s: ", msg );
+			fprintf( stderr, "%s: ", msg );
 
 	fprintf( stderr, "%s\n", foo );
 }
@@ -6598,7 +6590,7 @@ PAPI_get_event_component( int EventCode)
  *	@brief returns the component index for the named component
  *	@retval ENOCMP
  *		component does not exist
- *	
+ *
  *	@param name
  *              name of component to find index for
  *	@par Examples:
@@ -6615,7 +6607,7 @@ PAPI_get_event_component( int EventCode)
  *	@bug	Doesn't work for preset events
  *	@see  PAPI_get_event_component
  */
-int  PAPI_get_component_index(char *name)
+int  PAPI_get_component_index(const char *name)
 {
 	APIDBG( "Entry: name: %s\n", name);
   int cidx;
@@ -6642,7 +6634,7 @@ int  PAPI_get_component_index(char *name)
  *		component does not exist
  *      @retval ENOINIT
  *              cannot disable as PAPI has already been initialized
- *	
+ *
  *	@param cidx
  *              component index of component to be disabled
  *	@par Examples:
@@ -6722,7 +6714,7 @@ PAPI_disable_component( int cidx )
  *	\see PAPI_disable_component
 */
 int
-PAPI_disable_component_by_name( char *name )
+PAPI_disable_component_by_name(const char *name )
 {
 	APIDBG( "Entry: name: %s\n", name);
 	int cidx;

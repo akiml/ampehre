@@ -221,7 +221,7 @@
 
 /* This is the official PAPI version */
 /* The final digit represents the patch count */
-#define PAPI_VERSION  			PAPI_VERSION_NUMBER(5,5,1,0)
+#define PAPI_VERSION  			PAPI_VERSION_NUMBER(5,6,1,0)
 #define PAPI_VER_CURRENT 		(PAPI_VERSION & 0xffff0000)
 
   /* Tests for checking event code type */
@@ -275,7 +275,8 @@ failure.
 #define PAPI_EATTR		-22    /**< Invalid or missing event attributes */
 #define PAPI_ECOUNT		-23    /**< Too many events or attributes */
 #define PAPI_ECOMBO		-24    /**< Bad combination of features */
-#define PAPI_NUM_ERRORS	 25    /**< Number of error messages specified in this API */
+#define PAPI_ECMP_DISABLED	-25    /**< Component containing event is disabled */
+#define PAPI_NUM_ERRORS	 26    /**< Number of error messages specified in this API */
 
 #define PAPI_NOT_INITED		0
 #define PAPI_LOW_LEVEL_INITED 	1       /* Low level has called library init */
@@ -1021,10 +1022,9 @@ enum {
 /** \internal
   * @defgroup low_api The Low Level API 
   @{ */
-   int ffsll(long long lli); //required for --with-ffsll and used in extras.c/papi.c
    int   PAPI_accum(int EventSet, long long * values); /**< accumulate and reset hardware events from an event set */
    int   PAPI_add_event(int EventSet, int Event); /**< add single PAPI preset or native hardware event to an event set */
-   int   PAPI_add_named_event(int EventSet, char *EventName); /**< add an event by name to a PAPI event set */
+   int   PAPI_add_named_event(int EventSet, const char *EventName); /**< add an event by name to a PAPI event set */
    int   PAPI_add_events(int EventSet, int *Events, int number); /**< add array of PAPI preset or native hardware events to an event set */
    int   PAPI_assign_eventset_component(int EventSet, int cidx); /**< assign a component index to an existing but empty eventset */
    int   PAPI_attach(int EventSet, unsigned long tid); /**< attach specified event set to a specific process or thread id */
@@ -1035,7 +1035,7 @@ enum {
    int   PAPI_enum_event(int *EventCode, int modifier); /**< return the event code for the next available preset or natvie event */
    int   PAPI_enum_cmp_event(int *EventCode, int modifier, int cidx); /**< return the event code for the next available component event */
    int   PAPI_event_code_to_name(int EventCode, char *out); /**< translate an integer PAPI event code into an ASCII PAPI preset or native name */
-   int   PAPI_event_name_to_code(char *in, int *out); /**< translate an ASCII PAPI preset or native name into an integer PAPI event code */
+   int   PAPI_event_name_to_code(const char *in, int *out); /**< translate an ASCII PAPI preset or native name into an integer PAPI event code */
    int  PAPI_get_dmem_info(PAPI_dmem_info_t *dest); /**< get dynamic memory usage information */
    int   PAPI_get_event_info(int EventCode, PAPI_event_info_t * info); /**< get the name and descriptions for a given preset or native event code */
    const PAPI_exe_info_t *PAPI_get_executable_info(void); /**< get the executable's address space information */
@@ -1060,20 +1060,20 @@ enum {
    int   PAPI_lock(int); /**< lock one of two PAPI internal user mutex variables */
    int   PAPI_multiplex_init(void); /**< initialize multiplex support in the PAPI library */
    int   PAPI_num_cmp_hwctrs(int cidx); /**< return the number of hardware counters for a specified component */
-    int   PAPI_num_events(int EventSet); /**< return the number of events in an event set */
+   int   PAPI_num_events(int EventSet); /**< return the number of events in an event set */
    int   PAPI_overflow(int EventSet, int EventCode, int threshold,
                      int flags, PAPI_overflow_handler_t handler); /**< set up an event set to begin registering overflows */
-   void   PAPI_perror(char *msg ); /**< Print a PAPI error message */
+   void  PAPI_perror(const char *msg ); /**< Print a PAPI error message */
    int   PAPI_profil(void *buf, unsigned bufsiz, caddr_t offset, 
 					 unsigned scale, int EventSet, int EventCode, 
 					 int threshold, int flags); /**< generate PC histogram data where hardware counter overflow occurs */
    int   PAPI_query_event(int EventCode); /**< query if a PAPI event exists */
-   int   PAPI_query_named_event(char *EventName); /**< query if a named PAPI event exists */
+   int   PAPI_query_named_event(const char *EventName); /**< query if a named PAPI event exists */
    int   PAPI_read(int EventSet, long long * values); /**< read hardware events from an event set with no reset */
    int   PAPI_read_ts(int EventSet, long long * values, long long *cyc); /**< read from an eventset with a real-time cycle timestamp */
    int   PAPI_register_thread(void); /**< inform PAPI of the existence of a new thread */
    int   PAPI_remove_event(int EventSet, int EventCode); /**< remove a hardware event from a PAPI event set */
-   int   PAPI_remove_named_event(int EventSet, char *EventName); /**< remove a named event from a PAPI event set */
+   int   PAPI_remove_named_event(int EventSet, const char *EventName); /**< remove a named event from a PAPI event set */
    int   PAPI_remove_events(int EventSet, int *Events, int number); /**< remove an array of hardware events from a PAPI event set */
    int   PAPI_reset(int EventSet); /**< reset the hardware event counts in an event set */
    int   PAPI_set_debug(int level); /**< set the current debug level for PAPI */
@@ -1097,9 +1097,9 @@ enum {
    int   PAPI_write(int EventSet, long long * values); /**< write counter values into counters */
    int   PAPI_get_event_component(int EventCode);  /**< return which component an EventCode belongs to */
    int   PAPI_get_eventset_component(int EventSet);  /**< return which component an EventSet is assigned to */
-   int   PAPI_get_component_index(char *name); /**< Return component index for component with matching name */
+   int   PAPI_get_component_index(const char *name); /**< Return component index for component with matching name */
    int   PAPI_disable_component(int cidx); /**< Disables a component before init */
-   int	 PAPI_disable_component_by_name( char *name ); /**< Disable, before library init, a component by name. */
+   int	 PAPI_disable_component_by_name(const char *name ); /**< Disable, before library init, a component by name. */
 
 
    /** @} */

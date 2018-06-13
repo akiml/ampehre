@@ -1,6 +1,5 @@
-/* 
+/*
 * File:    exec.c
-* CVS:     $Id$
 * Author:  Philip Mucci
 *          mucci@cs.utk.edu
 * Mods:    <your name here>
@@ -10,8 +9,14 @@
 /* This file performs the following test: start, stop and timer
 functionality for a parent and a forked child. */
 
-#include "papi_test.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <sys/wait.h>
+
+#include "papi.h"
+#include "papi_test.h"
 
 int
 main( int argc, char **argv )
@@ -33,6 +38,8 @@ main( int argc, char **argv )
 			test_fail( __FILE__, __LINE__, "execlp", PAPI_ESYS );
 	}
 
-	test_pass( __FILE__, NULL, 0 );
-	exit( 1 );
+	test_pass( __FILE__ );
+
+	return 0;
+
 }

@@ -28,9 +28,14 @@ Master pthread:
    - Get cyc.
 */
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
 
+#include "papi.h"
 #include "papi_test.h"
+
+#include "do_loops.h"
 
 void *
 Thread( void *arg )
@@ -48,13 +53,21 @@ Thread( void *arg )
 	   test_fail( __FILE__, __LINE__, "PAPI_register_thread", retval );
 	}
 
-	printf( "Thread %#x started\n", ( int ) pthread_self(  ) );
+	if (!TESTS_QUIET) {
+		printf( "Thread %#x started\n", ( int ) pthread_self(  ) );
+	}
 
-	/* add PAPI_TOT_CYC and one of the events in 
-	   PAPI_FP_INS, PAPI_FP_OPS or PAPI_TOT_INS, 
-	   depending on the availability of the event 
+	/* add PAPI_TOT_CYC and one of the events in
+	   PAPI_FP_INS, PAPI_FP_OPS or PAPI_TOT_INS,
+	   depending on the availability of the event
 	   on the platform                              */
 	EventSet1 = add_two_events( &num_events1, &PAPI_event, &mask1 );
+	if (!TESTS_QUIET) {
+		printf("Events %d\n",num_events1);
+	}
+	if (num_events1<2) {
+	   test_fail( __FILE__, __LINE__, "Not enough events", retval );
+	}
 
 	retval = PAPI_event_code_to_name( PAPI_event, event_name );
 	if ( retval != PAPI_OK ) {
@@ -88,7 +101,7 @@ Thread( void *arg )
 				event_name, values[0][1] );
 	   printf( "Thread %#x PAPI_TOT_CYC : \t%lld\n", (int) pthread_self(),
 				values[0][0] );
-	   printf( "Thread %#x Real usec    : \t%lld\n", 
+	   printf( "Thread %#x Real usec    : \t%lld\n",
 			( int ) pthread_self(  ),
 				elapsed_us );
 	   printf( "Thread %#x Real cycles  : \t%lld\n", (int) pthread_self(),
@@ -111,9 +124,10 @@ main( int argc, char **argv )
 	int retval, rc;
 	pthread_attr_t attr;
 	long long elapsed_us, elapsed_cyc;
+	int quiet;
 
 	/* Set TESTS_QUIET variable */
-	tests_quiet( argc, argv );
+	quiet = tests_quiet( argc, argv );
 
 	/* Init PAPI library */
 	retval = PAPI_library_init( PAPI_VER_CURRENT );
@@ -121,15 +135,26 @@ main( int argc, char **argv )
 	   test_fail( __FILE__, __LINE__, "PAPI_library_init", retval );
 	}
 
-	retval = PAPI_thread_init( ( unsigned long ( * )( void ) ) 
+	if (PAPI_query_event(PAPI_TOT_INS)!=PAPI_OK) {
+		if (!quiet) printf("Can't find PAPI_TOT_INS\n");
+		test_skip(__FILE__,__LINE__,"Event missing",1);
+	}
+
+	if (PAPI_query_event(PAPI_TOT_CYC)!=PAPI_OK) {
+		if (!quiet) printf("Can't find PAPI_TOT_CYC\n");
+		test_skip(__FILE__,__LINE__,"Event missing",1);
+	}
+
+	retval = PAPI_thread_init( ( unsigned long ( * )( void ) )
 				   ( pthread_self ) );
+
 	if ( retval != PAPI_OK ) {
-	   if ( retval == PAPI_ECMP ) {
-	      test_skip( __FILE__, __LINE__, "PAPI_thread_init", retval );
-	   }
-	   else {
-	      test_fail( __FILE__, __LINE__, "PAPI_thread_init", retval );
-	   }
+		if ( retval == PAPI_ECMP ) {
+			test_skip( __FILE__, __LINE__, "PAPI_thread_init", retval );
+		}
+		else {
+			test_fail( __FILE__, __LINE__, "PAPI_thread_init", retval );
+		}
 	}
 
 	elapsed_us = PAPI_get_real_usec(  );
@@ -184,12 +209,14 @@ main( int argc, char **argv )
 	elapsed_cyc = PAPI_get_real_cyc(  ) - elapsed_cyc;
 	elapsed_us = PAPI_get_real_usec(  ) - elapsed_us;
 
-	if ( !TESTS_QUIET ) {
+	if ( !quiet ) {
 		printf( "Master real usec   : \t%lld\n", elapsed_us );
 		printf( "Master real cycles : \t%lld\n", elapsed_cyc );
 	}
 
-	test_pass( __FILE__, NULL, 0 );
+	test_pass( __FILE__ );
+
 	pthread_exit( NULL );
-	exit( 1 );
+
+	return 0;
 }

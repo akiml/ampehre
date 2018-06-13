@@ -13,6 +13,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+
+#include "papi.h"
 #include "papi_test.h"
 
 #define MAX_RAPL_EVENTS 64
@@ -359,7 +363,7 @@ int main (int argc, char **argv)
                               "PAPI_destroy_eventset()",retval);
      }
 
-     test_pass( __FILE__, NULL, 0 );
+     test_pass( __FILE__ );
 
      return 0;
 }
