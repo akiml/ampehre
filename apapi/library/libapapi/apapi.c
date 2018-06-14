@@ -169,7 +169,7 @@ void APAPI_destroy() {
 		if (NULL != _apapi_default_eventlist_file_buffer) {
 			free(_apapi_default_eventlist_file_buffer);
 			_apapi_default_eventlist_file_buffer = NULL;
-			_apapi_free_sorted_eventlist(&_apapi_default_eventlist_cmp, &_apapi_default_eventlist_sorted);
+			APAPI_free_sorted_eventlist(&_apapi_default_eventlist_cmp, &_apapi_default_eventlist_sorted);
 		}
 		_apapi_initialized = 0;
 	}

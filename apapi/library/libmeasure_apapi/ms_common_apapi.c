@@ -1517,6 +1517,17 @@ void ms_fini(MS_SYSTEM *ms_system) {
 		if (mgmt->user_eventops != NULL) {
 			free(mgmt->user_eventops);
 		}
+		if (mgmt->user_eventlist_file != NULL) {
+			free(mgmt->user_eventlist_file);
+		}
+		// nothing will be done if pointers are NULL
+		APAPI_free_sorted_eventlist(&(mgmt->user_eventlist_cmp), &(mgmt->user_eventlist_sorted));
+		if (mgmt->user_cmplist_buffer != NULL) {
+			free(mgmt->user_cmplist_buffer);
+		}
+		if (mgmt->user_cmplist != NULL) {
+			free(mgmt->user_cmplist);
+		}
 		free(ms_system->mgmt);
 	}
 	if (ms_system->config != NULL) {

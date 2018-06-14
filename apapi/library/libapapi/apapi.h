@@ -481,6 +481,17 @@ int APAPI_read_env_eventops(char **buffer, struct apapi_event_ops **events_out, 
  */
 int APAPI_read_env_eventlist(char **cmp_list, char **buffer, char ****sorted_list, char ***used_cmp);
 
+/** 
+ *	@class APAPI_free_sorted_eventlist
+ *	@brief free sorted event list and list of used components as output from APAPI_read_env_eventlist
+ *
+ *	@param char ***used_cmp
+ *		pointer to list of used components
+ *	@param char ****sorted_events
+ *		pointer to list of event names sorted by components
+ */
+void APAPI_free_sorted_eventlist(char ***used_cmp, char ****sorted_events);
+
 /** @class APAPI_read_env_cmplist
  *	@brief reads component list from APAPI_CMPLIST and creates an array with the component names
  *

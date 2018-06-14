@@ -723,16 +723,16 @@ int32_t _apapi_sort_events(char **cmp_list, char **events, char ***used_cmp, cha
 	return 0;
 }
 
-/** Internal 
- *	@class _apapi_free_sorted_eventlist
- *	@brief free sorted event list and list of used components
+/** 
+ *	@class APAPI_free_sorted_eventlist
+ *	@brief free sorted event list and list of used components as output from APAPI_read_env_eventlist
  *
  *	@param char ***used_cmp
  *		pointer to list of used components
  *	@param char ****sorted_events
  *		pointer to list of event names sorted by components
  */
-void _apapi_free_sorted_eventlist(char ***used_cmp, char ****sorted_events){
+void APAPI_free_sorted_eventlist(char ***used_cmp, char ****sorted_events){
 	if (used_cmp != NULL) {
 		free(*used_cmp);
 		*used_cmp = NULL;
