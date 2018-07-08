@@ -20,8 +20,10 @@
 #
 
 BASE_DIR=/usr/ampehre/
-GCC=/usr/bin/gcc-4.6
-GXX=/usr/bin/g++-4.6
+#GCC=/usr/bin/gcc-4.6
+#GXX=/usr/bin/g++-4.6
+GCC=/opt/rh/devtoolset-2/root/usr/bin/gcc
+GXX=/opt/rh/devtoolset-2/root/usr/bin/g++
 
 .PHONY: all install debug clean driver driver_install gaussblur gaussblur_install correlation correlation_install mic_start docs client client_clean
 
