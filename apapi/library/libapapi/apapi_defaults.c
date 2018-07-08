@@ -733,12 +733,12 @@ int32_t _apapi_sort_events(char **cmp_list, char **events, char ***used_cmp, cha
  *		pointer to list of event names sorted by components
  */
 void APAPI_free_sorted_eventlist(char ***used_cmp, char ****sorted_events){
-	if (used_cmp != NULL) {
+	if (used_cmp != NULL && NULL != *used_cmp) {
 		free(*used_cmp);
 		*used_cmp = NULL;
 	}
 
-	if (sorted_events != NULL) {
+	if (sorted_events != NULL && NULL != *sorted_events) {
 		int ix = 0;
 		for(ix = 0; (*sorted_events)[ix] != NULL; ix++) {
 			free((*sorted_events)[ix]);
