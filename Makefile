@@ -20,15 +20,17 @@
 #
 
 BASE_DIR=/usr/ampehre/
-GCC=/usr/bin/gcc-4.6
-GXX=/usr/bin/g++-4.6
+#GCC=/usr/bin/gcc-4.6
+GCC=gcc
+#GXX=/usr/bin/g++-4.6
+GXX=g++
 
 .PHONY: all install debug clean driver driver_install gaussblur gaussblur_install correlation correlation_install mic_start docs client client_clean
 
 all:
 	mkdir -p build
 	cd build && cmake -DSIGNALS=ON  -DDEBUG_SYMS=OFF -DCMAKE_INSTALL_PREFIX=$(BASE_DIR) -DCMAKE_C_COMPILER=$(GCC) -DCMAKE_CXX_COMPILER=$(GXX) .. && make
-	cd utilities/msmonitor_cs/client && qmake-qt4 PREFIX=$(BASE_DIR) msmonitor.pro && make
+	#cd utilities/msmonitor_cs/client && qmake-qt4 PREFIX=$(BASE_DIR) msmonitor.pro && make
 
 debug:
 	mkdir -p build

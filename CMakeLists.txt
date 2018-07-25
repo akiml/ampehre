@@ -29,14 +29,16 @@ cmake_minimum_required (VERSION 2.6)
 
 project(ampehre)
 
+#set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
+
 # Please set support flags to ON if the corresponding device should be enabled for measuring.
-option(DELL_IDRAC7_SUPPORT "build library with dell idrac7 support" ON)
-option(MIC_INTEL_KNC_SUPPORT "build library with mic intel knc support" ON)
+option(DELL_IDRAC7_SUPPORT "build library with dell idrac7 support" OFF)
+option(MIC_INTEL_KNC_SUPPORT "build library with mic intel knc support" OFF)
 option(GPU_NVIDIA_TESLA_SUPPORT "build library with gpu nvidia tesla support" ON)
 option(FPGA_MAXELER_MAX3A_SUPPORT "build library with fpga maxeler max3a support" ON)
 option(CPU_INTEL_SANDY_SUPPORT "build library with cpu intel xeon sandy support" ON)
 
-option(GUI_TOOLS "build tools with gui" ON)
+option(GUI_TOOLS "build tools with gui" OFF)
 
 
 
@@ -85,16 +87,20 @@ set(MS_LIBRARY_MODULE_PATH
 # nvml
 find_library(NVML_LIBRARY libnvidia-ml.so PATHS
 	/usr/lib64
+	/usr/local/cuda-8.0/targets/x86_64-linux/lib/stubs/
 )
 find_path(NVML_HEADER nvml.h PATHS
 	/usr/include
+	/usr/local/cuda-8.0/targets/x86_64-linux/include/
 )
+message("nvml lib" ${NVML_LIBRARY})
+message("nvml header" ${NVML_HEADER})
 # maxeler
 find_library(MAX_LIBRARY libmaxeleros.so PATHS
 	/opt/maxeler/maxeleros/lib
 )
 find_path(MAX_HEADER maxdsd.h PATHS
-	/upb/departments/agce/modules/software/maxeler/compiler/Maxcompiler-2013.3_vectis/lib/maxeleros-sim/include
+	/home/share/maxeler_all_2018_2/maxcompiler-2018.2-full-installer/maxcompiler-2018.2/lib/maxeleros-sim/include
 )
 
 option(DEBUG_SYMS "Compile library and applications with debug symbols." OFF)

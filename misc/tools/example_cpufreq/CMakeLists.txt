@@ -18,6 +18,9 @@
 add_executable(example_cpufreq
 	example_cpufreq.c
 )
-target_link_libraries(example_cpufreq -lcpufreq)
+set(CPUPOWER_LIBRARY
+	/usr/lib64/libcpupower.so.0.0.0
+)
+target_link_libraries(example_cpufreq ${CPUPOWER_LIBRARY})
 
 install(TARGETS example_cpufreq RUNTIME DESTINATION bin)

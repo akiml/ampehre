@@ -24,7 +24,7 @@ add_executable(atime
 	atime.c
 )
 
-target_link_libraries(atime apapi -lrt -pthread -ldl )
+target_link_libraries(atime apapi -lrt -pthread -ldl ${MAX_LIBRARY})
 add_dependencies(atime apapi)
 
 install(TARGETS atime RUNTIME DESTINATION bin)

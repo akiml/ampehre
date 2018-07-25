@@ -20,6 +20,7 @@ add_executable(gpu_management
 	gpu_mgmt.c
 )
 
+target_include_directories(gpu_management PRIVATE ${NVML_HEADER})
 target_link_libraries(gpu_management ${NVML_LIBRARY})
 
 install(TARGETS gpu_management RUNTIME DESTINATION bin)
