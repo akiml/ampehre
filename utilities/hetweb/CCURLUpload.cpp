@@ -82,14 +82,14 @@ int CCURLUpload::start(){
 	}
 
 	// set Xfer function
-	curlret = curl_easy_setopt(mpCurlHandle, CURLOPT_XFERINFOFUNCTION, &CCURLUpload::progress);
+	curlret = curl_easy_setopt(mpCurlHandle, CURLOPT_PROGRESSFUNCTION, &CCURLUpload::progress);
 	if (CURLE_OK != curlret) {
 		std::cerr << "CURL setting progress function failed" << std::endl;
 		return -1;
 	}
 
 	// set Xfer data
-	curlret = curl_easy_setopt(mpCurlHandle, CURLOPT_XFERINFODATA, this);
+	curlret = curl_easy_setopt(mpCurlHandle, CURLOPT_PROGRESSDATA, this);
 	if (CURLE_OK != curlret) {
 		std::cerr << "CURL setting progress data failed" << std::endl;
 		return -1;
@@ -193,7 +193,12 @@ void CCURLUpload::intervalThread(){
 			// print time
 			if (1 == transfer_error || 1 == http_error) {
 				time_t wakeup_time_t = std::chrono::system_clock::to_time_t(wakeup_time);
-				std::cerr << std::put_time(std::localtime(&wakeup_time_t), "%Y-%m-%d %X") << std::endl;
+				char timebuffer[25];
+				memset(timebuffer, 0, 25);
+				struct tm wakeup_time_tm = {};
+				localtime_r(&wakeup_time_t, &wakeup_time_tm);
+				strftime(timebuffer, 24, "%Y.%m.%d %X", &wakeup_time_tm);
+				std::cerr << timebuffer << std::endl;
 			}
 
 			// print error

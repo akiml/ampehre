@@ -127,7 +127,7 @@ int main(int argc, char **argv){
 	int ret = 0;
 
 	if (url == 0) {
-		std::cerr << "-u URL not given " << url << std::endl;
+		std::cerr << "-u URL not given " << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
