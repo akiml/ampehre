@@ -16,6 +16,8 @@ CWebMeasure::CWebMeasure(long intervalNs, int bufferSize){
 //  fpga process name + nvml max process * nvml max process name
 
 	long maxline = 
+		// prefix + suffix in json mode
+		27 +
 		// timestamps + ,
 		// analog to uint64_t
 		2*(21) +
@@ -354,8 +356,6 @@ int printList(char* target, struct CWebMeasure::measure_data* data){
 //	}
 //	ret += sprintf(&(target[ret]), "\"");
 
-	ret += sprintf(&(target[ret]), "\n");
-
 	return ret;
 }
 	const char* csv_header = 
@@ -399,25 +399,48 @@ char* CWebMeasure::generateCSV(){
 
 
 	long pos = 0;
-	int ret = 0;
 	strcpy(&(mCSV[pos]),csv_header);
 	pos += strlen(csv_header);
 	
 	// for first $mBufferSize elements don't print empty elements
 	if (mCount >= mBufferSize) {
 		for (int i=mBufferPos; i<mBufferSize; i++) {
-			ret = printList(&(mCSV[pos]), &(mBuffer[i]));
-			pos += ret;
+			pos += printList(&(mCSV[pos]), &(mBuffer[i]));
+			pos += sprintf(&(mCSV[pos]),"\n");
 		}
 	}
 
 	for (int i=0; i<mBufferPos; i++) {
-		ret = printList(&(mCSV[pos]), &(mBuffer[i]));
-		pos += ret;
+		pos += printList(&(mCSV[pos]), &(mBuffer[i]));
+		pos += sprintf(&(mCSV[pos]),"\n");
 	}
 
 	mCSV[pos] = 0;
 
 	// TODO: parallel calls may corrupt buffer, duplicate string or move buffer to client?
+	return mCSV;
+}
+
+char* CWebMeasure::generateJsonCSVBulk(){
+
+	long pos = 0;
+
+	// for first $mBufferSize elements don't print empty elements
+	if (mCount >= mBufferSize) {
+		for (int i=mBufferPos; i<mBufferSize; i++) {
+			pos += sprintf(&(mCSV[pos]),"{\"index\": {}}\n{\"_data\":\"");
+			pos += printList(&(mCSV[pos]), &(mBuffer[i]));
+			pos += sprintf(&(mCSV[pos]),"\"}\n");
+		}
+	}
+
+	for (int i=0; i<mBufferPos; i++) {
+		pos += sprintf(&(mCSV[pos]),"{\"index\": {}}\n{\"_data\":\"");
+		pos += printList(&(mCSV[pos]), &(mBuffer[i]));
+		pos += sprintf(&(mCSV[pos]),"\"}\n");
+	}
+
+	mCSV[pos] = 0;
+
 	return mCSV;
 }

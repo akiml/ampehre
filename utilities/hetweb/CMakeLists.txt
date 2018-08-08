@@ -21,7 +21,17 @@ add_executable(hetweb
 set_target_properties(hetweb PROPERTIES
 COMPILE_FLAGS -std=c++11
 )
-target_link_libraries(hetweb)
 target_link_libraries(hetweb ${MS_LIBRARY})
 
+find_package(CURL REQUIRED)
+
+add_executable(hetwebpush
+	hetwebpush.cpp CWebMeasure.cpp CCURLUpload.cpp
+)
+set_target_properties(hetwebpush PROPERTIES
+COMPILE_FLAGS -std=c++11
+)
+target_link_libraries(hetwebpush ${MS_LIBRARY} ${CURL_LIBRARY})
+
 install(TARGETS hetweb RUNTIME DESTINATION bin)
+install(TARGETS hetwebpush RUNTIME DESTINATION bin)

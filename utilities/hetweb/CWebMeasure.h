@@ -45,6 +45,7 @@ class CWebMeasure {
 		void startMeasurement();
 		void stopMeasurement();
 		char* generateCSV();
+		char* generateJsonCSVBulk();
 
 };
 
