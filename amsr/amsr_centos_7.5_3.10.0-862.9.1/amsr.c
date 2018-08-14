@@ -355,20 +355,6 @@ static int __init msr_init(void)
 	msr_class->devnode = msr_devnode;
     msr_class->dev_uevent = msr_dev_uevent;
 
-
-//	if (__register_chrdev(MSR_MAJOR, 0, NR_CPUS, "cpu/amsr", &msr_fops)) {
-//		printk(KERN_ERR "amsr: unable to get major %d for amsr\n",
-//		       MSR_MAJOR);
-//		err = -EBUSY;
-//		goto out;
-//	}
-//	msr_class = class_create(THIS_MODULE, "msr");
-//	if (IS_ERR(msr_class)) {
-//		err = PTR_ERR(msr_class);
-//		goto out_chrdev;
-//	}
-//	msr_class->devnode = msr_devnode;
-
 	minor_devices = kzalloc(sizeof(struct minor_cpu) * NR_CPUS, GFP_KERNEL);
 	if (minor_devices == NULL) {
 		printk("amsr: unable to allocate memory for cpu devices\n");
@@ -410,7 +396,6 @@ static void __exit msr_exit(void)
 	for_each_online_cpu(cpu)
 		msr_device_destroy(cpu);
 	class_destroy(msr_class);
-	//__unregister_chrdev(MSR_MAJOR, 0, NR_CPUS, "cpu/amsr");
 	__unregister_hotcpu_notifier(&msr_class_cpu_notifier);
 	unregister_chrdev_region(device, NR_CPUS);
 	if (minor_devices != NULL) {

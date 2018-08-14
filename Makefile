@@ -29,12 +29,12 @@ GXX=g++
 
 all:
 	mkdir -p build
-	cd build && cmake -DSIGNALS=ON  -DDEBUG_SYMS=OFF -DCMAKE_INSTALL_PREFIX=$(BASE_DIR) -DCMAKE_C_COMPILER=$(GCC) -DCMAKE_CXX_COMPILER=$(GXX) .. && make
+	cd build && BASE_DIR=$(BASE_DIR) cmake -DSIGNALS=ON  -DDEBUG_SYMS=OFF -DCMAKE_INSTALL_PREFIX=$(BASE_DIR) -DCMAKE_C_COMPILER=$(GCC) -DCMAKE_CXX_COMPILER=$(GXX) ..  && make
 	#cd utilities/msmonitor_cs/client && qmake-qt4 PREFIX=$(BASE_DIR) msmonitor.pro && make
 
 debug:
 	mkdir -p build
-	cd build && cmake -DSIGNALS=ON  -DDEBUG_SYMS=ON  -DCMAKE_INSTALL_PREFIX=$(BASE_DIR) -DCMAKE_C_COMPILER=$(GCC) -DCMAKE_CXX_COMPILER=$(GXX) .. && make
+	cd build && BASE_DIR=$(BASE_DIR) cmake -DSIGNALS=ON  -DDEBUG_SYMS=ON  -DCMAKE_INSTALL_PREFIX=$(BASE_DIR) -DCMAKE_C_COMPILER=$(GCC) -DCMAKE_CXX_COMPILER=$(GXX) .. && make
 
 install: all
 	sudo mkdir -p $(BASE_DIR) $(BASE_DIR)/bin $(BASE_DIR)/lib $(BASE_DIR)/include $(BASE_DIR)/share $(BASE_DIR)/share/data $(BASE_DIR)/man $(BASE_DIR)/share/papi $(BASE_DIR)/share/apapi

@@ -27,7 +27,14 @@
 
 cmake_minimum_required (VERSION 2.6)
 
+
 project(ampehre)
+
+# Reconfiguration leads to overwrite of CMAKE_INSTALL_PREFIX variable to /usr/local
+# This happens after project() command
+# Make sure the variable is set correctly
+SET(CMAKE_INSTALL_PREFIX "$ENV{BASE_DIR}")
+message("Install Dir: ${CMAKE_INSTALL_PREFIX}")
 
 #set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
 
@@ -93,8 +100,6 @@ find_path(NVML_HEADER nvml.h PATHS
 	/usr/include
 	/usr/local/cuda-8.0/targets/x86_64-linux/include/
 )
-message("nvml lib" ${NVML_LIBRARY})
-message("nvml header" ${NVML_HEADER})
 # maxeler
 find_library(MAX_LIBRARY libmaxeleros.so PATHS
 	/opt/maxeler/maxeleros/lib
@@ -102,7 +107,13 @@ find_library(MAX_LIBRARY libmaxeleros.so PATHS
 find_path(MAX_HEADER maxdsd.h PATHS
 	/home/share/maxeler_all_2018_2/maxcompiler-2018.2-full-installer/maxcompiler-2018.2/lib/maxeleros-sim/include
 )
+# cpufreq/cpupower
+find_library(
+		CPUPOWER_LIBRARY
+		NAMES libcpufreq.so libcpupower.so
+)
 
+# check options
 option(DEBUG_SYMS "Compile library and applications with debug symbols." OFF)
 if (DEBUG_SYMS)
 	message(STATUS "${Yellow}INFO: Compile with debug symbols ENABLED.${ColourReset}")
