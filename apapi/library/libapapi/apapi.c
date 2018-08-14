@@ -66,6 +66,9 @@ char **_apapi_default_eventlist_cmp;
 
 int APAPI_init() {
 
+	// reset errno from previous code
+	errno = 0;
+
 	int retval;
 
 	if (0 == _apapi_initialized) {
