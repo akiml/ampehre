@@ -16,6 +16,8 @@
 #
 #
 
+include_directories(/usr/local/cuda-9.2/targets/x86_64-linux/include/)
+
 add_executable(gpu_management
 	gpu_mgmt.c
 )

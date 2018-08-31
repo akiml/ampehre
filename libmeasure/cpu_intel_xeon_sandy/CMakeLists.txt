@@ -25,7 +25,7 @@ set(SRC_CPU_LIBRARY
 
 # Full library
 add_library(ms_cpu_intel_xeon_sandy SHARED ${SRC_CPU_LIBRARY})
-target_link_libraries(ms_cpu_intel_xeon_sandy ms_common -lcpufreq)
+target_link_libraries(ms_cpu_intel_xeon_sandy ms_common -lcpupower)
 
 install(TARGETS ms_cpu_intel_xeon_sandy LIBRARY DESTINATION lib)
 install(FILES ms_cpu_intel_xeon_sandy.h DESTINATION include)

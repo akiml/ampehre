@@ -19,6 +19,8 @@
 #          0.7.0 - modularized measurement struct
 #
 
+include_directories(/usr/local/cuda-9.2/targets/x86_64-linux/include/)
+
 set(SRC_GPU_LIBRARY
 	ms_plugin_interface.cpp
 )

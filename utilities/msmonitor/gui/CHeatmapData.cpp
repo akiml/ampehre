@@ -29,14 +29,14 @@ namespace Ui {
 	}
 
 	HeatmapData::HeatmapData(double *data, uint32_t size, int32_t minX, int32_t maxX, double minY, double maxY):
-		QwtRasterData(QwtDoubleRect(0, minX, minX+size, 1.0)),
+		QwtRasterData(),
 		mpData(data),
 		mSize(size),
 		mMinX(minX),
 		mMaxX(maxX),
 		mMinY(minY),
 		mMaxY(maxY) {
-
+		pixelHint(QwtDoubleRect(0, minX, minX+size, 1.0));
 	}
 	
     HeatmapData::~HeatmapData() {

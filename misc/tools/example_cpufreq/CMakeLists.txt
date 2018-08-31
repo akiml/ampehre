@@ -18,6 +18,6 @@
 add_executable(example_cpufreq
 	example_cpufreq.c
 )
-target_link_libraries(example_cpufreq -lcpufreq)
+target_link_libraries(example_cpufreq -lcpupower)
 
 install(TARGETS example_cpufreq RUNTIME DESTINATION bin)

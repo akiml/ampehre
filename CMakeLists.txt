@@ -85,9 +85,11 @@ set(MS_LIBRARY_MODULE_PATH
 # nvml
 find_library(NVML_LIBRARY libnvidia-ml.so PATHS
 	/usr/lib64
+	/usr/lib64/nvidia
 )
 find_path(NVML_HEADER nvml.h PATHS
 	/usr/include
+	/usr/local/cuda-8.0/targets/x86_64-linux/include
 )
 # maxeler
 find_library(MAX_LIBRARY libmaxeleros.so PATHS
