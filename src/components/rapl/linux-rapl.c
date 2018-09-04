@@ -192,10 +192,10 @@ struct cpu_stat_counter {
 	uint64_t mem_free;
 	uint64_t mem_buffers;
 	uint64_t mem_cached;
-	
-	long long time_work;
-	long long time_idle;
-	long long util;
+
+	double util;
+	double time_work;
+	double time_idle;
 	long long memory_total;
 	long long memory_used;
 	long long memory_free;
@@ -417,7 +417,7 @@ void rapl_update_systemstats() {
 	}
 
 		// compare to first
-		cpu_stat->time_work = (long long) ( (double)(
+		cpu_stat->time_work = ( (double)(
 			(cpu_stat->nice - cpu_stat_first->nice) + 
 			(cpu_stat->system - cpu_stat_first->system) + 
 			(cpu_stat->user - cpu_stat_first->user) +
@@ -425,14 +425,13 @@ void rapl_update_systemstats() {
 			(cpu_stat->softirq - cpu_stat_first->softirq) +
 			(cpu_stat->steal - cpu_stat_first->steal) +
 			(cpu_stat->guest - cpu_stat_first->guest) ) / (double)sc_clk_tck / (double)num_cpus * 1000.0);
-		cpu_stat->time_idle = (long long) ( (double)(
+		cpu_stat->time_idle = ( (double)(
 			(cpu_stat->idle - cpu_stat_first->idle) + 
 			(cpu_stat->iowait - cpu_stat_first->iowait)) / (double)sc_clk_tck / (double)num_cpus * 1000.0);
-			//cpu_stat->util = (long long) ((double) (cpu_stat->nice + cpu_stat->system + cpu_stat->user) / (double) (cpu_stat->nice + cpu_stat->system + cpu_stat->user + cpu_stat->idle + cpu_stat->iowait) * 100.0);
 
-		// compare to first
-		//cpu_stat->util = (long long) ( (double)cpu_stat->time_work / (double)(cpu_stat->time_work + cpu_stat->time_idle) * 100.0);
-		// compare to last
+		// compare to last for util computation
+		// util is computed for the last sample period (previous sample until current sample)
+		// util for the whole measurement time is computed by computing the average over the single util values
 		double time_work = ( (double)(
 			(cpu_stat->nice - cpu_stat_last->nice) + 
 			(cpu_stat->system - cpu_stat_last->system) + 
@@ -445,11 +444,11 @@ void rapl_update_systemstats() {
 			(cpu_stat->idle - cpu_stat_last->idle) + 
 			(cpu_stat->iowait - cpu_stat_last->iowait)) / (double)sc_clk_tck / (double)num_cpus * 1000.0);
 
-
+		// util for last sample period
 		if (time_work + time_idle == 0) {
 			cpu_stat->util = 0;
 		} else {
-			cpu_stat->util = (long long) ( (double)time_work / (double)(time_work + time_idle) * 100.0);
+			cpu_stat->util = ( (double)time_work / (double)(time_work + time_idle) * 100.0);
 		}
 
 
@@ -462,13 +461,13 @@ long long rapl_get_systemstats(int index) {
 
 	switch(rapl_native_events[index].msr) {
 		case 0:
-			return cpu_stat->time_work;
+			return *((long long*)&(cpu_stat->time_work));
 		break;
 		case 1:
-			return cpu_stat->time_idle;
+			return *((long long*)&(cpu_stat->time_idle));
 		break;
 		case 2:
-			return cpu_stat->util;
+			return *((long long*)&(cpu_stat->util));
 		break;
 		case 3:
 			return cpu_stat->memory_total;
@@ -1297,7 +1296,7 @@ _rapl_init_component( int cidx )
 	   	rapl_native_events[k].msr=0;
 	   	rapl_native_events[k].resources.selector = k + 1;
 	   	rapl_native_events[k].type=SYSTEM_STATS;
-	   	rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+	   	rapl_native_events[k].return_type=PAPI_DATATYPE_FP64;
 		k++;
 
 		sprintf(rapl_native_events[k].name,
@@ -1309,7 +1308,7 @@ _rapl_init_component( int cidx )
 	   	rapl_native_events[k].msr=1;
 	   	rapl_native_events[k].resources.selector = k + 1;
 	   	rapl_native_events[k].type=SYSTEM_STATS;
-	   	rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+	   	rapl_native_events[k].return_type=PAPI_DATATYPE_FP64;
 		k++;
 
 		sprintf(rapl_native_events[k].name,
@@ -1321,7 +1320,7 @@ _rapl_init_component( int cidx )
 	   	rapl_native_events[k].msr=2;
 	   	rapl_native_events[k].resources.selector = k + 1;
 	   	rapl_native_events[k].type=SYSTEM_STATS;
-	   	rapl_native_events[k].return_type=PAPI_DATATYPE_UINT64;
+	   	rapl_native_events[k].return_type=PAPI_DATATYPE_FP64;
 		k++;
 
 		sprintf(rapl_native_events[k].name,
