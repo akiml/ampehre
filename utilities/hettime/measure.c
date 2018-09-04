@@ -72,6 +72,9 @@ static void init_measuring_system(ARGUMENTS *settings, MS_SYSTEM **ms, MS_LIST *
 	// Initialize library and measuring system
 	MS_VERSION version = { .major = MS_MAJOR_VERSION, .minor = MS_MINOR_VERSION, .revision = MS_REVISION_VERSION };
 	*ms	= ms_init(&version, settings->cpu_gov, settings->cpu_freq_min, settings->cpu_freq_max, settings->gpu_freq, settings->timeout_setting, settings->skip_ms, settings->variant);
+	if (NULL == *ms) {
+		exit(1);
+	}
 	
 	// Forcing FPGA to idle if desired
 	if (settings->force_idle_fpga) {

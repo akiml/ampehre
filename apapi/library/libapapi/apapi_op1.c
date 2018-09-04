@@ -31,22 +31,66 @@
  *	@param double *value1
  *		Output parameter, result of the operation
  */
-void _apapi_exec_op1(enum APAPI_op1 op1, long long sample0, long long sample1, long long time0, long long time1, double *value1) {
+void _apapi_exec_op1(enum APAPI_op1 op1, long long sample0, long long sample1, long long time0, long long time1, long double *value1, int data_type) {
+	switch(data_type) {
 
-	switch(op1) {
-		case APAPI_OP1_SAMPLE_DIFF:
-			*value1 = sample1 - sample0;
+		case PAPI_DATATYPE_FP64:
+			switch(op1) {
+				case APAPI_OP1_SAMPLE_DIFF:
+					*value1 = *((double *)(&sample1)) - *((double *)(&sample0));
+				break;
+				case APAPI_OP1_SAMPLE1_MUL_DIFF_TIME:
+					*value1 = *((double *)(&sample1)) * (long double) (time1 - time0);
+				break;
+				case APAPI_OP1_AVG_SAMPLE_MUL_DIFF_TIME:
+					*value1 = (long double)( *((double *)(&sample0)) + *((double *)(&sample1)) ) / 2.0 * (time1 - time0);
+				break;
+				case APAPI_OP1_DIV_DIFF_TIME:
+					*value1 = *((double *)(&sample1)) / (long double) (time1 - time0);
+				break;
+				default:
+				break;
+			}
 		break;
-		case APAPI_OP1_SAMPLE1_MUL_DIFF_TIME:
-			*value1 = (double) sample1 * (double) (time1 - time0);
+
+		case PAPI_DATATYPE_BIT64:
+		case PAPI_DATATYPE_UINT64:
+			switch(op1) {
+				case APAPI_OP1_SAMPLE_DIFF:
+					*value1 = (unsigned long long)sample1 - (unsigned long long)sample0;
+				break;
+				case APAPI_OP1_SAMPLE1_MUL_DIFF_TIME:
+					*value1 = (long double) ((unsigned long long)sample1) * (long double) (time1 - time0);
+				break;
+				case APAPI_OP1_AVG_SAMPLE_MUL_DIFF_TIME:
+					*value1 = ((unsigned long long)sample0 + (unsigned long long)sample1) / 2.0 * (time1 - time0);
+				break;
+				case APAPI_OP1_DIV_DIFF_TIME:
+					*value1 = (long double) ((unsigned long long)sample1) / (long double) (time1 - time0);
+				break;
+				default:
+				break;
+			}
 		break;
-		case APAPI_OP1_AVG_SAMPLE_MUL_DIFF_TIME:
-			*value1 = (sample0 + sample1) / 2.0 * (time1 - time0);
-		break;
-		case APAPI_OP1_DIV_DIFF_TIME:
-			*value1 = (double) sample1 / (double) (time1 - time0);
-		break;
+
+		case PAPI_DATATYPE_INT64:
 		default:
+			switch(op1) {
+				case APAPI_OP1_SAMPLE_DIFF:
+					*value1 = sample1 - sample0;
+				break;
+				case APAPI_OP1_SAMPLE1_MUL_DIFF_TIME:
+					*value1 = (long double) sample1 * (long double) (time1 - time0);
+				break;
+				case APAPI_OP1_AVG_SAMPLE_MUL_DIFF_TIME:
+					*value1 = (long double) (sample0 + sample1) / 2.0 * (time1 - time0);
+				break;
+				case APAPI_OP1_DIV_DIFF_TIME:
+					*value1 = (long double) sample1 / (long double) (time1 - time0);
+				break;
+				default:
+				break;
+			}
 		break;
 	}
 }

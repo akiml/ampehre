@@ -34,6 +34,18 @@ void __map(struct __mapper *map) {
 	// in case of factor=1, do a distinction?
 	for(i=0; map[i].source != NULL; ++i) {
 		switch(map[i].type) {
+			case ulonglong2longlong:
+				*((long long*)(map[i].destination)) = *((unsigned long long*)(map[i].source)) / map[i].factor;
+			break;
+			case ulonglong2double:
+				*((double*)(map[i].destination)) = *((unsigned long long*)(map[i].source)) / map[i].factor;
+			break;
+			case ulonglong2uint32:
+				*((uint32_t*)(map[i].destination)) = *((unsigned long long*)(map[i].source)) / map[i].factor;
+			break;
+			case ulonglong2uint64:
+				*((uint64_t*)(map[i].destination)) = *((unsigned long long*)(map[i].source)) / map[i].factor;
+			break;
 			case longlong2longlong:
 				*((long long*)(map[i].destination)) = *((long long*)(map[i].source)) / map[i].factor;
 			break;
@@ -54,6 +66,15 @@ void __map(struct __mapper *map) {
 			break;
 			case double2uint64:
 				*((uint64_t*)(map[i].destination)) = *((double*)(map[i].source)) / map[i].factor;
+			break;
+			case longdouble2double:
+				*((double*)(map[i].destination)) = *((long double*)(map[i].source)) / map[i].factor;
+			break;
+			case longdouble2uint32:
+				*((uint32_t*)(map[i].destination)) = *((long double*)(map[i].source)) / map[i].factor;
+			break;
+			case longdouble2uint64:
+				*((uint64_t*)(map[i].destination)) = *((long double*)(map[i].source)) / map[i].factor;
 			break;
 		}
 	}
@@ -84,20 +105,20 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 					// set energy total cpu 0 pkg  [mWs]:
 					map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 					map[mapIx].destination =  &(cpu->msr_energy_acc[pkgIx][0]);
-					map[mapIx].type = double2double;
+					map[mapIx].type = longdouble2double;
 					map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // Ws * 1000 = mWs
 					mapIx++;
 					// set power  avg   cpu 0 pkg  [mW ]:
 					map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_AVG]); // value1 avg
 					map[mapIx].destination =  &(cpu->msr_power_avg[pkgIx][0]);
-					map[mapIx].type = double2double;
+					map[mapIx].type = longdouble2double;
 					map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
 					mapIx++;
 				}
 				// set current power
 				map[mapIx].source = &(set->last_values1[eIx]); // last value
 				map[mapIx].destination =  &(cpu->msr_power_cur[pkgIx][0]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
 				mapIx++;
 			}
@@ -109,13 +130,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 					// set energy total cpu 0 pp0  [mWs]:
 					map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 					map[mapIx].destination =  &(cpu->msr_energy_acc[pkgIx][1]);
-					map[mapIx].type = double2double;
+					map[mapIx].type = longdouble2double;
 					map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // Ws * 1000 = mWs
 					mapIx++;
 					// set power  avg   cpu 0 pkg  [mW ]:
 					map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_AVG]); // value1 avg
 					map[mapIx].destination =  &(cpu->msr_power_avg[pkgIx][1]);
-					map[mapIx].type = double2double;
+					map[mapIx].type = longdouble2double;
 					map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
 					mapIx++;
 				}
@@ -128,20 +149,20 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 					// set energy total cpu 0 dram [mWs]:
 					map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 					map[mapIx].destination =  &(cpu->msr_energy_acc[pkgIx][2]);
-					map[mapIx].type = double2double;
+					map[mapIx].type = longdouble2double;
 					map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // Ws * 1000 = mWs
 					mapIx++;
 					// set power  avg   cpu 0 pkg  [mW ]:
 					map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_AVG]); // value1 avg
 					map[mapIx].destination =  &(cpu->msr_power_avg[pkgIx][2]);
-					map[mapIx].type = double2double;
+					map[mapIx].type = longdouble2double;
 					map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
 					mapIx++;
 				}
 				// set current power
 				map[mapIx].source = &(set->last_values1[eIx]); // last value
 				map[mapIx].destination =  &(cpu->msr_power_cur[pkgIx][2]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // W * 1000 = mW
 				mapIx++;
 			}
@@ -153,14 +174,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 					// set temp   max   cpu 0 pkg  [°C ]:
 					map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 					map[mapIx].destination =  &(cpu->msr_temperature_pkg_max[pkgIx]);
-					map[mapIx].type = double2uint32;
+					map[mapIx].type = longdouble2uint32;
 					map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C = °C
 					mapIx++;
 				}
 				// set current temperature
 				map[mapIx].source = &(set->current_samples[eIx]); // last value0
 				map[mapIx].destination =  &(cpu->msr_temperature_pkg_cur[pkgIx]);
-				map[mapIx].type = longlong2uint32;
+				switch(set->event_ops[eIx].data_type) {
+					case PAPI_DATATYPE_FP64:
+						map[mapIx].type = double2uint32;
+					break;
+					case PAPI_DATATYPE_BIT64:
+					case PAPI_DATATYPE_UINT64:
+						map[mapIx].type = ulonglong2uint32;
+					break;
+					case PAPI_DATATYPE_INT64:
+					default:
+						map[mapIx].type = longlong2uint32;
+					break;
+				}
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C = °C
 				mapIx++;
 			}
@@ -175,7 +208,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 						// set temp   max   cpu 0 c 0  [°C ]:
 						map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 						map[mapIx].destination =  &(cpu->msr_temperature_core_max[pkgIx][cpuIx]);
-						map[mapIx].type = double2uint32;
+						map[mapIx].type = longdouble2uint32;
 						map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C = °C
 						mapIx++;
 					}
@@ -188,7 +221,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 						// set freq   avg   cpu 0 c 0  [MHz]:
 						map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 						map[mapIx].destination =  &(cpu->msr_freq_core_avg[pkgIx][cpuIx]);
-						map[mapIx].type = double2double;
+						map[mapIx].type = longdouble2double;
 						map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1000.0; // KHz * 1000 = MHz
 						mapIx++;
 					}
@@ -201,14 +234,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 						// set freq   eff   cpu 0 c 0  [MHz]:
 						map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 						map[mapIx].destination =  &(cpu->msr_freq_core_eff_avg[pkgIx][cpuIx]);
-						map[mapIx].type = double2double;
+						map[mapIx].type = longdouble2double;
 						map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1000.0; // KHz * 1000 = MHz
 						mapIx++;
 					}
 					// set current frequency
 					map[mapIx].source = &(set->current_samples[eIx]); // last value0
 					map[mapIx].destination =  &(cpu->msr_freq_core_eff_cur[pkgIx][cpuIx]);
-					map[mapIx].type = longlong2double;
+					switch(set->event_ops[eIx].data_type) {
+						case PAPI_DATATYPE_FP64:
+							map[mapIx].type = double2double;
+						break;
+						case PAPI_DATATYPE_BIT64:
+						case PAPI_DATATYPE_UINT64:
+							map[mapIx].type = ulonglong2double;
+						break;
+						case PAPI_DATATYPE_INT64:
+						default:
+							map[mapIx].type = longlong2double;
+						break;
+					}
 					map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1000.0; // KHz * 1000 = MHz
 					mapIx++;
 				}
@@ -222,7 +267,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set time   avg   cpus  work [ s ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(cpu->measure_util_active_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // s = s
 				mapIx++;
 			}
@@ -235,7 +280,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set time   avg   cpus  idle [ s ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(cpu->measure_util_idle_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // s = s
 				mapIx++;
 			}
@@ -248,14 +293,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set util   avg   cpus       [ % ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(cpu->measure_util_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // % = %
 				mapIx++;
 			}
 			// set current utilization
 			map[mapIx].source = &(set->current_samples[eIx]); // last value0
 			map[mapIx].destination =  &(cpu->measure_util_avg_cur);
-			map[mapIx].type = longlong2double;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2double;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2double;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2double;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // % = %
 			mapIx++;
 		}
@@ -267,7 +324,19 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set memory total cpu        [kiB]:
 				map[mapIx].source = &(set->current_samples[eIx]); // last value0
 				map[mapIx].destination =  &(cpu->measure_memory_cur[0]);
-				map[mapIx].type = longlong2uint64;
+				switch(set->event_ops[eIx].data_type) {
+					case PAPI_DATATYPE_FP64:
+						map[mapIx].type = double2uint64;
+					break;
+					case PAPI_DATATYPE_BIT64:
+					case PAPI_DATATYPE_UINT64:
+						map[mapIx].type = ulonglong2uint64;
+					break;
+					case PAPI_DATATYPE_INT64:
+					default:
+						map[mapIx].type = longlong2uint64;
+					break;
+				}
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB = kiB
 				mapIx++;
 			}
@@ -280,14 +349,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set memory max   cpu used   [kiB]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(cpu->measure_memory_used_max);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB = kiB
 				mapIx++;
 			}
 			// set current memory
 			map[mapIx].source = &(set->current_samples[eIx]); // last value0
 			map[mapIx].destination =  &(cpu->measure_memory_cur[CPU_MEM_RAM_USED]);
-			map[mapIx].type = longlong2uint64;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint64;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint64;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint64;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB = kiB
 			mapIx++;
 		}
@@ -299,7 +380,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set memory max   cpu free   [kiB]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(cpu->measure_memory_free_max);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB = kiB
 				mapIx++;
 			}
@@ -312,7 +393,19 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set swap   total cpu        [kiB]:
 				map[mapIx].source = &(set->current_samples[eIx]); // last value
 				map[mapIx].destination =  &(cpu->measure_memory_cur[3]);
-				map[mapIx].type = longlong2uint64;
+				switch(set->event_ops[eIx].data_type) {
+					case PAPI_DATATYPE_FP64:
+						map[mapIx].type = double2uint64;
+					break;
+					case PAPI_DATATYPE_BIT64:
+					case PAPI_DATATYPE_UINT64:
+						map[mapIx].type = ulonglong2uint64;
+					break;
+					case PAPI_DATATYPE_INT64:
+					default:
+						map[mapIx].type = longlong2uint64;
+					break;
+				}
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB = kiB
 				mapIx++;
 			}
@@ -325,14 +418,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set swap   max   cpu used   [kiB]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(cpu->measure_swap_used_max);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB = kiB
 				mapIx++;
 			}
 			// set current swap
 			map[mapIx].source = &(set->current_samples[eIx]); // last value0
 			map[mapIx].destination =  &(cpu->measure_memory_cur[CPU_MEM_SWAP_USED]);
-			map[mapIx].type = longlong2uint64;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint64;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint64;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint64;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB = kiB
 			mapIx++;
 		}
@@ -344,7 +449,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set swap   max   cpu free   [kiB]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(cpu->measure_swap_free_max);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB = kiB
 				mapIx++;
 			}
@@ -372,7 +477,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set energy total gpu        [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(gpu->nvml_energy_acc);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000 = mWs
 				mapIx++;
 			}
@@ -385,14 +490,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   gpu        [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(gpu->nvml_power_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000 = mW
 				mapIx++;
 			}
 			// set current power
 			map[mapIx].source = &(set->current_samples[eIx]); // last value0
 			map[mapIx].destination =  &(gpu->nvml_power_cur);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000 = mW
 			mapIx++;
 		}
@@ -404,14 +521,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set temp   max   gpu        [°C ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(gpu->nvml_temperature_max);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C = °C
 				mapIx++;
 			}
 			// set current temperature
 			map[mapIx].source = &(set->current_samples[eIx]); // last value0
 			map[mapIx].destination =  &(gpu->nvml_temperature_cur);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C = °C
 			mapIx++;
 		}
@@ -423,14 +552,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set freq   avg   gpu graph  [MHz]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(gpu->nvml_clock_graphics_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz = MHz
 				mapIx++;
 			}
 			// set current frequency
 			map[mapIx].source = &(set->current_samples[eIx]); // last value0
 			map[mapIx].destination =  &(gpu->nvml_clock_graphics_cur);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz = MHz
 			mapIx++;
 		}
@@ -442,14 +583,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set freq   avg   gpu sm     [MHz]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(gpu->nvml_clock_sm_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz = MHz
 				mapIx++;
 			}
 			// set current frequency
 			map[mapIx].source = &(set->current_samples[eIx]); // last value0
 			map[mapIx].destination =  &(gpu->nvml_clock_sm_cur);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz = MHz
 			mapIx++;
 		}
@@ -461,14 +614,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set freq   avg   gpu mem    [MHz]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(gpu->nvml_clock_mem_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz = MHz
 				mapIx++;
 			}
 			// set current frequency
 			map[mapIx].source = &(set->current_samples[eIx]); // last value0
 			map[mapIx].destination =  &(gpu->nvml_clock_mem_cur);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz = MHz
 			mapIx++;
 		}
@@ -480,14 +645,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set util   avg   gpu gpu    [ % ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(gpu->nvml_util_gpu_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // % = %
 				mapIx++;
 			}
 			// set current utilization
 			map[mapIx].source = &(set->current_samples[eIx]); // last value0
 			map[mapIx].destination =  &(gpu->nvml_util_gpu_cur);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // % = %
 			mapIx++;
 		}
@@ -499,14 +676,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set util   avg   gpu mem    [ % ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(gpu->nvml_util_mem_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // % = %
 				mapIx++;
 			}
 			// set current utilization
 			map[mapIx].source = &(set->current_samples[eIx]); // last value0
 			map[mapIx].destination =  &(gpu->nvml_util_mem_cur);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // % = %
 			mapIx++;
 		}
@@ -518,7 +707,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set memory total gpu        [kiB]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(gpu->nvml_memory_total);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1024.0; // B / 1024 = kiB
 				mapIx++;
 			}
@@ -531,14 +720,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set memory max   gpu used   [kiB]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(gpu->nvml_memory_used_max);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1024.0; // B / 1024 = kiB
 				mapIx++;
 			}
 			// set current memory
 			map[mapIx].source = &(set->current_samples[eIx]); // last value0
 			map[mapIx].destination =  &(gpu->nvml_memory_used_cur);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1024.0; // B / 1024 = kiB
 			mapIx++;
 		}
@@ -550,7 +751,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set memory max   gpu free   [kiB]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(gpu->nvml_memory_free_max);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix * 1024.0; // B / 1024 = kiB
 				mapIx++;
 			}
@@ -563,14 +764,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set proc   max   gpu active [   ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(gpu->nvml_active_processes_count_max);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // # = #
 				mapIx++;
 			}
 			// set current processes
 			map[mapIx].source = &(set->current_samples[eIx]); // last value0
 			map[mapIx].destination =  &(gpu->nvml_active_processes_count_cur);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // # = #
 			mapIx++;
 		}
@@ -597,13 +810,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   vcc1v0_c   [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[VCC10]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total vcc1v0_c   [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[VCC10]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
@@ -616,13 +829,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   vcc1v5_c   [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[VCC15]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total vcc1v5_c   [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[VCC15]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
@@ -635,13 +848,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   vcc2v5_c   [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[VCC25]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total vcc2v5_c   [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[VCC25]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
@@ -654,13 +867,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   imgt_1v0   [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[IMGT10]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total imgt_1v0   [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[IMGT10]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
@@ -673,13 +886,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   imgt_1v2   [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[IMGT12]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total imgt_1v2   [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[IMGT12]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
@@ -692,13 +905,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   mgt_1v0   [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[MGT10]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total mgt_1v0   [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[MGT10]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
@@ -711,13 +924,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   mgt_1v2   [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[MGT12]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total mgt_1v2   [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[MGT12]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
@@ -730,20 +943,32 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   fpga       [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_power_avg[POWER]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total fpga       [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(fpga->maxeler_energy_acc[POWER]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
 			// set current power
 			map[mapIx].source = &(set->current_samples[eIx]); // last value
 			map[mapIx].destination =  &(fpga->maxeler_power_cur[POWER]);
-			map[mapIx].type = longlong2double;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2double;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2double;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2double;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // Ws * 1000  = mWs
 			mapIx++;
 		}
@@ -755,14 +980,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set temp   max   fpga  imgt [°C ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(fpga->maxeler_temperature_max[ITEMP]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
 				mapIx++;
 			}
 			// set current temperature
 			map[mapIx].source = &(set->current_samples[eIx]); // last value
 			map[mapIx].destination =  &(fpga->maxeler_temperature_cur[ITEMP]);
-			map[mapIx].type = longlong2double;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2double;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2double;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2double;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
 			mapIx++;
 		}
@@ -774,14 +1011,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set temp   max   fpga  mmgt [°C ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(fpga->maxeler_temperature_max[MTEMP]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
 				mapIx++;
 			}
 			// set current temperature
 			map[mapIx].source = &(set->current_samples[eIx]); // last value
 			map[mapIx].destination =  &(fpga->maxeler_temperature_cur[MTEMP]);
-			map[mapIx].type = longlong2double;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2double;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2double;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2double;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
 			mapIx++;
 		}
@@ -793,14 +1042,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set util   avg   fpga  comp [ % ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(fpga->maxeler_util_comp_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // % = %
 				mapIx++;
 			}
 			// set current utilization
 			map[mapIx].source = &(set->current_samples[eIx]); // last value
 			map[mapIx].destination =  &(fpga->maxeler_util_comp_cur);
-			map[mapIx].type = longlong2double;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2double;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2double;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2double;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // % = %
 			mapIx++;
 		}
@@ -829,13 +1090,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   pcie       [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_power_avg[MIC_PCIE]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total pcie       [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(mic->mic_energy_acc[MIC_PCIE]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
@@ -848,13 +1109,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   c2x3       [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_power_avg[MIC_C2X3]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total c2x3       [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(mic->mic_energy_acc[MIC_C2X3]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
@@ -867,13 +1128,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   c2x4       [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_power_avg[MIC_C2X4]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total c2x4       [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(mic->mic_energy_acc[MIC_C2X4]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
@@ -886,13 +1147,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   vccp       [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_power_avg[MIC_VCCP]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total vccp       [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(mic->mic_energy_acc[MIC_VCCP]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
@@ -905,13 +1166,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   vddg       [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_power_avg[MIC_VDDG]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total vddg       [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(mic->mic_energy_acc[MIC_VDDG]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
@@ -924,13 +1185,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   vddq       [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_power_avg[MIC_VDDQ]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total vddq       [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(mic->mic_energy_acc[MIC_VDDQ]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
@@ -943,20 +1204,32 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   mic        [mW ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_power_avg[MIC_POWER]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 				mapIx++;
 				// set energy total mic        [mWs]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(mic->mic_energy_acc[MIC_POWER]);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix / 1000.0; // Ws * 1000  = mWs
 				mapIx++;
 			}
 			// set current power
 			map[mapIx].source = &(set->current_samples[eIx]); // last value
 			map[mapIx].destination =  &(mic->mic_power_cur[MIC_POWER]);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix / 1000.0; // W * 1000  = mW
 			mapIx++;
 		}
@@ -968,14 +1241,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set temp   max   die        [°C ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_temperature_max[MIC_DIE_TEMP]);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
 				mapIx++;
 			}
 			// set current temperature
 			map[mapIx].source = &(set->current_samples[eIx]); // last value
 			map[mapIx].destination =  &(mic->mic_temperature_cur[MIC_DIE_TEMP]);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
 			mapIx++;
 
@@ -988,7 +1273,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set temp   max   gddr        [°C ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_temperature_max[MIC_GDDR_TEMP]);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
 				mapIx++;
 			}
@@ -1001,7 +1286,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set temp   max   fan in      [°C ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_temperature_max[MIC_FAN_IN_TEMP]);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
 				mapIx++;
 			}
@@ -1014,7 +1299,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set temp   max   fan out    [°C ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_temperature_max[MIC_FAN_OUT_TEMP]);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
 				mapIx++;
 			}
@@ -1027,7 +1312,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set temp   max   vccp       [°C ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_temperature_max[MIC_VCCP_TEMP]);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
 				mapIx++;
 			}
@@ -1040,7 +1325,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set temp   max   vddg       [°C ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_temperature_max[MIC_VDDG_TEMP]);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
 				mapIx++;
 			}
@@ -1053,7 +1338,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set temp   max   vddq       [°C ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_temperature_max[MIC_VDDQ_TEMP]);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
 				mapIx++;
 			}
@@ -1066,14 +1351,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set freq   avg   mic core   [MHz]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_freq_core_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz  = MHz
 				mapIx++;
 			}
 			// set current frequency
 			map[mapIx].source = &(set->current_samples[eIx]); // last value
 			map[mapIx].destination =  &(mic->mic_freq_core_cur);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz  = MHz
 			mapIx++;
 		}
@@ -1085,14 +1382,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set freq   avg   mic mem    [MHz]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_freq_mem_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz  = MHz
 				mapIx++;
 			}
 			// set current frequency
 			map[mapIx].source = &(set->current_samples[eIx]); // last value
 			map[mapIx].destination =  &(mic->mic_freq_mem_cur);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // MHz  = MHz
 			mapIx++;
 
@@ -1105,7 +1414,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set time   avg   mic active [ s ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(mic->mic_util_active_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // s  = s
 				mapIx++;
 			}
@@ -1118,7 +1427,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set time   avg   mic idle   [ s ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_ACC]); // value0 acc
 				map[mapIx].destination =  &(mic->mic_util_idle_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // s  = s
 				mapIx++;
 			}
@@ -1131,14 +1440,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set util   avg   mic        [ % ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(mic->mic_util_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // %  = %
 				mapIx++;
 			}
 			// set current utilization
 			map[mapIx].source = &(set->current_samples[eIx]); // last value
 			map[mapIx].destination =  &(mic->mic_util_avg_cur);
-			map[mapIx].type = longlong2double;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2double;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2double;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2double;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // %  = %
 			mapIx++;
 
@@ -1151,7 +1472,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set memory total mic        [kiB]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_memory_total);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB  = kiB
 				mapIx++;
 			}
@@ -1164,14 +1485,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set memory total mic        [kiB]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_memory_used_max);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB  = kiB
 				mapIx++;
 			}
 			// set current memory
 			map[mapIx].source = &(set->current_samples[eIx]); // last value
 			map[mapIx].destination =  &(mic->mic_memory_used_cur);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB  = kiB
 			mapIx++;
 		}
@@ -1183,7 +1516,7 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set memory total mic        [kiB]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(mic->mic_memory_free_max);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // kiB  = kiB
 				mapIx++;
 			}
@@ -1211,13 +1544,13 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   board      [ W ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(sys->ipmi_power_sysboard_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // W  = W
 				mapIx++;
 				// set energy total board      [Ws ]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(sys->ipmi_energy_sysboard_acc);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix; // Ws  = Ws
 				mapIx++;
 			}
@@ -1230,20 +1563,32 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set power  avg   system     [ W ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_AVG]); // value0 avg
 				map[mapIx].destination =  &(sys->ipmi_power_server_avg);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // W  = W
 				mapIx++;
 				// set energy total system     [Ws ]:
 				map[mapIx].source = &(set->values1[eIx * APAPI_FIELDS + APAPI_ACC]); // value1 acc
 				map[mapIx].destination =  &(sys->ipmi_energy_server_acc);
-				map[mapIx].type = double2uint32;
+				map[mapIx].type = longdouble2uint32;
 				map[mapIx].factor = set->event_ops[eIx].value1_prefix; // Ws  = Ws
 				mapIx++;
 			}
 			// set current power
 			map[mapIx].source = &(set->current_samples[eIx]); // last value
 			map[mapIx].destination =  &(sys->ipmi_power_server_cur);
-			map[mapIx].type = longlong2uint32;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2uint32;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2uint32;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2uint32;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // W  = W
 			mapIx++;
 
@@ -1256,14 +1601,26 @@ int __create_mapper(int msId, void *measurement, char *cmp, struct apapi_eventse
 				// set temp   max   system     [°C ]:
 				map[mapIx].source = &(set->values0[eIx * APAPI_FIELDS + APAPI_MAX]); // value0 max
 				map[mapIx].destination =  &(sys->ipmi_temperature_sysboard_max);
-				map[mapIx].type = double2double;
+				map[mapIx].type = longdouble2double;
 				map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
 				mapIx++;
 			}
 			// set current temperature
 			map[mapIx].source = &(set->current_samples[eIx]); // last value
 			map[mapIx].destination =  &(sys->ipmi_temperature_sysboard_cur);
-			map[mapIx].type = longlong2double;
+			switch(set->event_ops[eIx].data_type) {
+				case PAPI_DATATYPE_FP64:
+					map[mapIx].type = double2double;
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					map[mapIx].type = ulonglong2double;
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					map[mapIx].type = longlong2double;
+				break;
+			}
 			map[mapIx].factor = set->event_ops[eIx].value0_prefix; // °C  = °C
 			mapIx++;
 

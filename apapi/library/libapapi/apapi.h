@@ -87,6 +87,8 @@ struct apapi_event_ops {
 	char *value1_unit;
 	// factor to scale measured value to useful value, useful_value = value1 / factor
 	double value1_prefix;
+	// event data type
+	int data_type;
 };
 
 /*
@@ -124,12 +126,12 @@ struct apapi_eventset {
 	long long first_time;
 	long long last_time;
 	// last value1 values
-	double *last_values1;
+	long double *last_values1;
 	// min,max,avg,acc values - as arrays of size 4
 	// statistics for unprocessed values
-	double *values0;
+	long double *values0;
 	// statistics for values processed by op1
-	double *values1;
+	long double *values1;
 	// operations to process values, value1 = op1(value0)
 	enum APAPI_op1 *values_op1;
 	// which statistics to calculate for value0/value1

@@ -94,13 +94,20 @@ struct __mgmt_internal {
  *	value copying
  */
 enum __mapper_type {
+	ulonglong2longlong,
+	ulonglong2double,
+	ulonglong2uint32,
+	ulonglong2uint64,
 	longlong2longlong,
 	longlong2double,
 	longlong2uint32,
 	longlong2uint64,
 	double2double,
 	double2uint32,
-	double2uint64
+	double2uint64,
+	longdouble2double,
+	longdouble2uint32,
+	longdouble2uint64
 };
 
 /**
