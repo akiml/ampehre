@@ -40,13 +40,13 @@ namespace Ui {
 		
 		qwtPlot->setAxisTitle(QwtPlot::yLeft, createTitle(QString::fromUtf8("Temperature [°C]")));
 		
-		mpCurveTempCpu0->setPen(mColorCpu);
-		mpCurveTempCpu1->setPen(mColorCpuAlternative);
-		mpCurveTempGpu->setPen(mColorGpu);
-		mpCurveTempFpgaM->setPen(mColorFpga);
-		mpCurveTempFpgaI->setPen(mColorFpgaAlternative);
-		mpCurveTempMic->setPen(mColorMic);
-		mpCurveTempSystem->setPen(mColorSystem);
+		mpCurveTempCpu0->setPen(mColorCpu, 2.0);
+		mpCurveTempCpu1->setPen(mColorCpuAlternative, 2.0);
+		mpCurveTempGpu->setPen(mColorGpu, 2.0);
+		mpCurveTempFpgaM->setPen(mColorFpga, 2.0);
+		mpCurveTempFpgaI->setPen(mColorFpgaAlternative, 2.0);
+		mpCurveTempMic->setPen(mColorMic, 2.0);
+		mpCurveTempSystem->setPen(mColorSystem, 2.0);
 		
 		setupCurves();
 		
@@ -93,13 +93,13 @@ namespace Ui {
 		double *y_temp_mic		= mpDataHandler->getMeasurement().mpYTempMicDie->getDataPtr();
 		double *y_temp_system	= mpDataHandler->getMeasurement().mpYTempSystem->getDataPtr();
 		
-		mpCurveTempCpu0->setRawData(x, y_temp_cpu_0, ticks);
-		mpCurveTempCpu1->setRawData(x, y_temp_cpu_1, ticks);
-		mpCurveTempGpu->setRawData(x, y_temp_gpu, ticks);
-		mpCurveTempFpgaM->setRawData(x, y_temp_fpga_m, ticks);
-		mpCurveTempFpgaI->setRawData(x, y_temp_fpga_i, ticks);
-		mpCurveTempMic->setRawData(x, y_temp_mic, ticks);
-		mpCurveTempSystem->setRawData(x, y_temp_system, ticks);
+		mpCurveTempCpu0->setRawSamples(x, y_temp_cpu_0, ticks);
+		mpCurveTempCpu1->setRawSamples(x, y_temp_cpu_1, ticks);
+		mpCurveTempGpu->setRawSamples(x, y_temp_gpu, ticks);
+		mpCurveTempFpgaM->setRawSamples(x, y_temp_fpga_m, ticks);
+		mpCurveTempFpgaI->setRawSamples(x, y_temp_fpga_i, ticks);
+		mpCurveTempMic->setRawSamples(x, y_temp_mic, ticks);
+		mpCurveTempSystem->setRawSamples(x, y_temp_system, ticks);
 		
 		scaleAxis(x[ticks-1], mpDataHandler->getSettings().mYAxisTempMin, mpDataHandler->getSettings().mYAxisTempMax);
 	}

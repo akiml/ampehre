@@ -45,7 +45,7 @@ option(GPU_NVIDIA_TESLA_SUPPORT "build library with gpu nvidia tesla support" ON
 option(FPGA_MAXELER_MAX3A_SUPPORT "build library with fpga maxeler max3a support" ON)
 option(CPU_INTEL_SANDY_SUPPORT "build library with cpu intel xeon sandy support" ON)
 
-option(GUI_TOOLS "build tools with gui" OFF)
+option(GUI_TOOLS "build tools with gui" ON)
 
 
 
@@ -95,6 +95,7 @@ set(MS_LIBRARY_MODULE_PATH
 find_library(NVML_LIBRARY libnvidia-ml.so PATHS
 	/usr/lib64
 	/usr/local/cuda-8.0/targets/x86_64-linux/lib/stubs/
+	/usr/lib64/nvidia
 )
 find_path(NVML_HEADER nvml.h PATHS
 	/usr/include

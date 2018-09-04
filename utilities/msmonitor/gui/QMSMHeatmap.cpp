@@ -30,14 +30,14 @@ namespace Ui {
 		mpColorMap->addColorStop(SECOND_COLOR_STOP);
 		mpColorMap->addColorStop(THIRD_COLOR_STOP);
 		
-		mpSpectrogram->setColorMap(*mpColorMap);
-		mpSpectrogram->setData(*mpHeatmapData);
+		mpSpectrogram->setColorMap(mpColorMap);
+		mpSpectrogram->setData(mpHeatmapData);
 		mpSpectrogram->attach(this);
 		
 		enableAxis(QwtPlot::yLeft, false);
 		mpRightAxis = axisWidget(QwtPlot::yRight);
 		mpRightAxis->setColorBarEnabled(true);
-		mpRightAxis->setColorMap(mpSpectrogram->data().range(),mpSpectrogram->colorMap());
+		mpRightAxis->setColorMap(mpSpectrogram->data()->interval(Qt::XAxis),(QwtColorMap*)(mpSpectrogram->colorMap()));
 		scale->setMinimumExtent(40);
 		mpRightAxis->setScaleDraw(scale);
 		updateYAxis();
@@ -62,7 +62,7 @@ namespace Ui {
 
 	void QMSMHeatmap::setColorMap(QwtLinearColorMap *colorMap) {
 		mpColorMap = colorMap;
-		mpSpectrogram->setColorMap(*mpColorMap);
+		mpSpectrogram->setColorMap(mpColorMap);
 	}
 
 	void QMSMHeatmap::setData(double *data, uint32_t size) {
@@ -76,7 +76,7 @@ namespace Ui {
 	
     void QMSMHeatmap::setYInterval(double minY, double maxY) {
 		mpHeatmapData->setYInterval(minY, maxY);
-		mpSpectrogram->setData(*mpHeatmapData);
+		mpSpectrogram->setData(mpHeatmapData);
 		updateYAxis();
 	}
 	
@@ -86,11 +86,11 @@ namespace Ui {
 		int interval = (maxY - minY)/5;
 		int stepSize = interval + 4 - (interval - 1) % 5;
 		setAxisScale(QwtPlot::yRight, minY, maxY, stepSize);
-		mpRightAxis->setColorMap(mpSpectrogram->data().range(),mpSpectrogram->colorMap());
+		mpRightAxis->setColorMap(mpSpectrogram->data()->interval(Qt::XAxis),(QwtColorMap*)(mpSpectrogram->colorMap()));
 	}
 	
 	void QMSMHeatmap::refresh() {
-		mpSpectrogram->setData(*mpHeatmapData);
+		mpSpectrogram->setData(mpHeatmapData);
 		replot();
 	}
 }

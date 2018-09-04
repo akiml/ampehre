@@ -69,8 +69,8 @@ namespace Ui {
 		
 		mpGrid->enableXMin(true);
 		mpGrid->enableYMin(true);
-		mpGrid->setMajPen(QPen(Qt::black, 0, Qt::DotLine));
-		mpGrid->setMinPen(QPen(Qt::gray, 0, Qt::DotLine));
+		mpGrid->setMajorPen(QPen(Qt::black, 0, Qt::DotLine));
+		mpGrid->setMinorPen(QPen(Qt::gray, 0, Qt::DotLine));
 		mpGrid->attach(qwtPlot);
 		
 		createActions();
@@ -135,14 +135,14 @@ namespace Ui {
 		
 		QPixmap pixmap(mpDataHandler->getSettings().mImageSizeX, mpDataHandler->getSettings().mImageSizeY);
 		
-		
+		/*
 		QwtPlotPrintFilter filter;
 		//filter.color(Qt::white, QwtPlotPrintFilter::CanvasBackground);
 		//filter.setOptions(QwtPlotPrintFilter::PrintBackground);
 		filter.setOptions(QwtPlotPrintFilter::PrintAll);
 		
 		qwtPlot->print(pixmap, filter);
-		
+		*/
 		if (pixmap.save(filename, "png")) {
 			std::cout << "INFO : Image stored as '" << qPrintable(filename) << "'." << std::endl;
 		} else {
@@ -181,7 +181,7 @@ namespace Ui {
 	void QMSMFormMeasurementAbstract::addMarker(void) {
 		QwtPlotMarker *marker = new QwtPlotMarker();
 		
-		marker->setSymbol(mVerticalLine);
+		marker->setSymbol(&mVerticalLine);
 		marker->setLabel(QwtText(mMarkerLabel));
 		marker->setLabelAlignment(Qt::AlignTop);
 		marker->setValue(mMarkerTime, getMiddleOfYAxis());

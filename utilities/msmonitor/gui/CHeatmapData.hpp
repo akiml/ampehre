@@ -20,6 +20,7 @@
 
 #include <qwt_raster_data.h>
 #include <stdint.h>
+#include <qwt_compat.h>
 
 namespace Ui {
 	class HeatmapData:
