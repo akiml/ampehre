@@ -61,8 +61,8 @@ namespace Ui {
 		if (0 == interval || 0 == mSize) {
 			return 0.0;
 		}
-		int index = ((x-mMinX)/(double)interval*mSize);
-		if (0 == mpData || index < 0 || index >= mSize) {
+		unsigned int index = ((x-mMinX)/(double)interval*mSize);
+		if (0 == mpData || index >= mSize) {
 			return 0.0;
 		}
 		return mpData[index];
