@@ -185,9 +185,9 @@ static void print_ostream_cpu(FILE *file, ARGUMENTS *settings, MS_LIST *m) {
 	);
 	
 	fprintf(file,
-		"time   avg   cpus  work [ s ]: %.2lf\n"
-		"time   avg   cpus  idle [ s ]: %.2lf\n"
-		"util   avg   cpus       [ %% ]: %.2lf\n",
+		"time   avg   cpus  work [ s ]: %.6lf\n"
+		"time   avg   cpus  idle [ s ]: %.6lf\n"
+		"util   avg   cpus       [ %% ]: %.6lf\n",
 		cpu_active_avg_all(m),
 		cpu_idle_avg_all(m),
 		cpu_util_avg_all(m)
@@ -365,9 +365,9 @@ static void print_ostream_mic(FILE *file, ARGUMENTS *settings, MS_LIST *m){
 	);
 	
 	fprintf(file,
-		"time   avg   mic active [ s ]: %.2lf\n"
-		"time   avg   mic idle   [ s ]: %.2lf\n"
-		"util   avg   mic        [ %% ]: %.2lf\n",
+		"time   avg   mic active [ s ]: %.6lf\n"
+		"time   avg   mic idle   [ s ]: %.6lf\n"
+		"util   avg   mic        [ %% ]: %.6lf\n",
 		mic_active_avg_all(m),
 		mic_idle_avg_all(m),
 		mic_util_avg_all(m)
