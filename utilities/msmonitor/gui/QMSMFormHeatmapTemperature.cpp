@@ -45,13 +45,13 @@ namespace Ui {
 	}
 	
 	QMSMFormHeatmapTemperature::~QMSMFormHeatmapTemperature(void) {
-		delete mpCPU0Data;
-		delete mpCPU1Data;
-		delete mpGPUData;
-		delete mpFPGAComputeData;
-		delete mpFPGAInterfaceData;
-		delete mpMICData;
-		delete mpSysboardData;
+		free(mpCPU0Data);
+		free(mpCPU1Data);
+		free(mpGPUData);
+		free(mpFPGAComputeData);
+		free(mpFPGAInterfaceData);
+		free(mpMICData);
+		free(mpSysboardData);
 		
 		spFormHeatTemp = 0;
 	}

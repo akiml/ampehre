@@ -35,7 +35,7 @@ namespace NCommon {
 			CRingBuffer(int size) {
 				mSize = size;
 		
-				mpData = (T*) malloc(2 * size * sizeof(T));
+				mpData = (T*) malloc(3 * size * sizeof(T));
 				reset();
 			}
 			
@@ -44,30 +44,27 @@ namespace NCommon {
 			}
 			
 			void push_back(T rData) {
-				mpData[mFirst] = rData;
 				mpData[mSecond] = rData;
-		
-				mFirst = (mFirst+1 == mSize) ? 0 : mFirst+1;
-				mSecond = mSize + mFirst;
+				if (mSecond >= mSize+mSize) {
+					mpData[mFirst] = rData;
+				}
+				mSecond = (mSecond+1 == mSize+mSize+mSize) ? mSize : mSecond+1;
+				mFirst = mSecond-mSize-mSize;
 			}
 			
 			void reset() {
 				mFirst 	=	0;
-				mSecond =	mSize;
+				mSecond =	mSize+mSize;
 		
-				std::memset(mpData, 0, 2 * mSize * sizeof(T));
+				std::memset(mpData, 0, 3 * mSize * sizeof(T));
 			}
 			
 			T* getDataPtr() {
-				return mpData + mFirst+1;
+				return mpData + mSecond - mSize;
 			}
 			
 			const T& getLast() {
-				if(mFirst==0) {
-					return mpData[mSize-1];
-				} else {
-					return mpData[mFirst-1];
-				}
+				return mpData[mSecond-1];
 			}
 	};
 }

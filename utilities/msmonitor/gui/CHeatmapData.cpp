@@ -26,6 +26,8 @@ namespace Ui {
 		 mMinY(0),
 		 mMaxY(100) {
 
+		QwtInterval interv(mMinY, mMaxY);
+		this->setInterval(Qt::ZAxis, interv);
 	}
 
 	HeatmapData::HeatmapData(double *data, uint32_t size, int32_t minX, int32_t maxX, double minY, double maxY):
@@ -37,6 +39,8 @@ namespace Ui {
 		mMinY(minY),
 		mMaxY(maxY) {
 		pixelHint(QwtDoubleRect(0, minX, minX+size, 1.0));
+		QwtInterval interv(minY, maxY);
+		this->setInterval(Qt::ZAxis, interv);
 	}
 	
     HeatmapData::~HeatmapData() {
@@ -54,8 +58,13 @@ namespace Ui {
 			
 	double HeatmapData::value(double x, double y) const {
 		double interval = (mMaxX-mMinX);
+		if (0 == interval || 0 == mSize) {
+			return 0.0;
+		}
 		int index = ((x-mMinX)/(double)interval*mSize);
-		
+		if (0 == mpData || index < 0 || index >= mSize) {
+			return 0.0;
+		}
 		return mpData[index];
 	}
 
@@ -76,6 +85,8 @@ namespace Ui {
     void HeatmapData::setYInterval(double minY, double maxY) {
 		mMinY = minY;
 		mMaxY = maxY;
+		QwtInterval interv(minY, maxY);
+		this->setInterval(Qt::ZAxis, interv);
     }
 }
 

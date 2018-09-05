@@ -22,6 +22,7 @@ namespace Ui {
 		QwtPlot(parent),
 		mpSpectrogram(new QwtPlotSpectrogram()),
 		mpColorMap(new QwtLinearColorMap(START_COLOR, STOP_COLOR)),
+		mpAxisColorMap(new QwtLinearColorMap(START_COLOR, STOP_COLOR)),
 		mpHeatmapData(new HeatmapData()) {
 
 		QwtScaleDraw *scale = new QwtScaleDraw();
@@ -29,6 +30,10 @@ namespace Ui {
 		mpColorMap->addColorStop(FIRST_COLOR_STOP);
 		mpColorMap->addColorStop(SECOND_COLOR_STOP);
 		mpColorMap->addColorStop(THIRD_COLOR_STOP);
+
+		mpAxisColorMap->addColorStop(FIRST_COLOR_STOP);
+		mpAxisColorMap->addColorStop(SECOND_COLOR_STOP);
+		mpAxisColorMap->addColorStop(THIRD_COLOR_STOP);
 		
 		mpSpectrogram->setColorMap(mpColorMap);
 		mpSpectrogram->setData(mpHeatmapData);
@@ -37,7 +42,7 @@ namespace Ui {
 		enableAxis(QwtPlot::yLeft, false);
 		mpRightAxis = axisWidget(QwtPlot::yRight);
 		mpRightAxis->setColorBarEnabled(true);
-		mpRightAxis->setColorMap(mpSpectrogram->data()->interval(Qt::XAxis),(QwtColorMap*)(mpSpectrogram->colorMap()));
+		mpRightAxis->setColorMap(mpSpectrogram->data()->interval(Qt::ZAxis),(QwtColorMap*)(mpAxisColorMap));
 		scale->setMinimumExtent(40);
 		mpRightAxis->setScaleDraw(scale);
 		updateYAxis();
@@ -49,9 +54,12 @@ namespace Ui {
 	
     QMSMHeatmap::~QMSMHeatmap() {
 		delete mpSpectrogram;
-		delete mpHeatmapData;
-		delete mpColorMap;
+		// mpSpectrogram deletes mpHeatmapData and mpColorMap in the destructor
+		//delete mpHeatmapData;
+		//delete mpColorMap;
 		delete mpRightAxis;
+		// mpRightAxis deletes mpAxisColorMap in the destructor
+		//delete mpAxisColorMap;
     }
 
 	void QMSMHeatmap::setTitle(const std::string &name) {
@@ -86,7 +94,7 @@ namespace Ui {
 		int interval = (maxY - minY)/5;
 		int stepSize = interval + 4 - (interval - 1) % 5;
 		setAxisScale(QwtPlot::yRight, minY, maxY, stepSize);
-		mpRightAxis->setColorMap(mpSpectrogram->data()->interval(Qt::XAxis),(QwtColorMap*)(mpSpectrogram->colorMap()));
+		mpRightAxis->setColorMap(mpSpectrogram->data()->interval(Qt::ZAxis),(QwtColorMap*)(mpAxisColorMap));
 	}
 	
 	void QMSMHeatmap::refresh() {

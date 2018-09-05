@@ -27,6 +27,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <cstdlib>
 
 namespace NData {
 	uint32_t CDataLibrary::sNumberOfCSVs = 0;
@@ -71,6 +72,9 @@ namespace NData {
 										  mrSettings.mSkipMsRate,
 										  mrSettings.mLibVariant
  										);
+		if (0 == mpMSSystem) {
+			::exit(1);
+		}
 		
 		mpMSMeasurement			= ms_alloc_measurement(mpMSSystem);
 		

@@ -51,6 +51,7 @@ namespace Ui {
 			QwtPlotSpectrogram *mpSpectrogram;
 			QwtScaleWidget *mpRightAxis;
 			QwtLinearColorMap *mpColorMap;
+			QwtLinearColorMap *mpAxisColorMap;
 			HeatmapData *mpHeatmapData;
 			
 		private:
