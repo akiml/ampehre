@@ -459,15 +459,23 @@ void rapl_update_systemstats() {
 
 long long rapl_get_systemstats(int index) {
 
+	union {
+		long long ll;
+		double fp;
+	} return_value;
+
 	switch(rapl_native_events[index].msr) {
 		case 0:
-			return *((long long*)&(cpu_stat->time_work));
+			return_value.fp = cpu_stat->time_work;
+			return return_value.ll;
 		break;
 		case 1:
-			return *((long long*)&(cpu_stat->time_idle));
+			return_value.fp = cpu_stat->time_idle;
+			return return_value.ll;
 		break;
 		case 2:
-			return *((long long*)&(cpu_stat->util));
+			return_value.fp = cpu_stat->util;
+			return return_value.ll;
 		break;
 		case 3:
 			return cpu_stat->memory_total;

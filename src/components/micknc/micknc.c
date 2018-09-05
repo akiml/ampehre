@@ -60,32 +60,33 @@ struct event_def {
 	char* desc;
 	int event_id;
 	int event_type;
+	int data_type;
 };
 
 struct event_def event_definitions[] = {
-	{"POWER_PCIE:DEVICE%d", 	"pcie power for device %d", EVENT_POWER_PCIE, TYPE_POWER},
-	{"POWER_C2X3:DEVICE%d", 	"%d", EVENT_POWER_C2X3, TYPE_POWER},
-	{"POWER_C2X4:DEVICE%d", 	"%d", EVENT_POWER_C2X4, TYPE_POWER},
-	{"POWER_VCCP:DEVICE%d", 	"%d", EVENT_POWER_VCCP, TYPE_POWER},
-	{"POWER_VDDG:DEVICE%d", 	"%d", EVENT_POWER_VDDG, TYPE_POWER},
-	{"POWER_VDDQ:DEVICE%d", 	"%d", EVENT_POWER_VDDQ, TYPE_POWER},
-	{"POWER_MIC:DEVICE%d", 		"%d", EVENT_POWER_MIC, TYPE_POWER},
-	{"TEMP_DIE:DEVICE%d", 		"%d", EVENT_TEMP_DIE, TYPE_TEMP},
-	{"TEMP_GDDR:DEVICE%d", 		"%d", EVENT_TEMP_GDDR, TYPE_TEMP},
-	{"TEMP_FANIN:DEVICE%d", 	"%d", EVENT_TEMP_FANIN, TYPE_TEMP},
-	{"TEMP_FANOUT:DEVICE%d", 	"%d", EVENT_TEMP_FANOUT, TYPE_TEMP},
-	{"TEMP_VCCP:DEVICE%d", 		"%d", EVENT_TEMP_VCCP, TYPE_TEMP},
-	{"TEMP_VDDG:DEVICE%d", 		"%d", EVENT_TEMP_VDDG, TYPE_TEMP},
-	{"TEMP_VDDQ:DEVICE%d", 		"%d", EVENT_TEMP_VDDQ, TYPE_TEMP},
-	{"FREQ_CORE:DEVICE%d", 		"%d", EVENT_FREQ_CORE, TYPE_FREQ},
-	{"FREQ_MEM:DEVICE%d", 		"%d", EVENT_FREQ_MEM, TYPE_FREQ},
-	{"TIME_ACTIVE:DEVICE%d", 	"%d", EVENT_TIME_ACTIVE, TYPE_TIME},
-	{"TIME_IDLE:DEVICE%d", 		"%d", EVENT_TIME_IDLE, TYPE_TIME},
-	{"UTIL:DEVICE%d", 			"%d", EVENT_UTIL, TYPE_TIME},
-	{"MEM_TOTAL:DEVICE%d", 		"%d", EVENT_MEM_TOTAL, TYPE_MEM},
-	{"MEM_USED:DEVICE%d", 		"%d", EVENT_MEM_USED, TYPE_MEM},
-	{"MEM_FREE:DEVICE%d", 		"%d", EVENT_MEM_FREE, TYPE_MEM},
-	{NULL,						NULL, 0, 0}
+	{"POWER_PCIE:DEVICE%d", 	"PCI-e edge fingers power for device %d", 			EVENT_POWER_PCIE, 	TYPE_POWER,	PAPI_DATATYPE_UINT64},
+	{"POWER_C2X3:DEVICE%d", 	"2x3 aux connector power for device %d", 			EVENT_POWER_C2X3, 	TYPE_POWER,	PAPI_DATATYPE_UINT64},
+	{"POWER_C2X4:DEVICE%d", 	"2x4 aux connector power for device %d", 			EVENT_POWER_C2X4, 	TYPE_POWER, PAPI_DATATYPE_UINT64},
+	{"POWER_VCCP:DEVICE%d", 	"core rail power for device %d", 					EVENT_POWER_VCCP, 	TYPE_POWER, PAPI_DATATYPE_UINT64},
+	{"POWER_VDDG:DEVICE%d", 	"uncore rail power for device %d", 					EVENT_POWER_VDDG, 	TYPE_POWER,	PAPI_DATATYPE_UINT64},
+	{"POWER_VDDQ:DEVICE%d", 	"memory subsystem rail power for device %d", 		EVENT_POWER_VDDQ, 	TYPE_POWER,	PAPI_DATATYPE_UINT64},
+	{"POWER_MIC:DEVICE%d", 		"power for device %d", 								EVENT_POWER_MIC, 	TYPE_POWER,	PAPI_DATATYPE_UINT64},
+	{"TEMP_DIE:DEVICE%d", 		"die temperature for device %d", 					EVENT_TEMP_DIE, 	TYPE_TEMP,	PAPI_DATATYPE_UINT64},
+	{"TEMP_GDDR:DEVICE%d", 		"gddr temperature for device %d", 					EVENT_TEMP_GDDR, 	TYPE_TEMP,	PAPI_DATATYPE_UINT64},
+	{"TEMP_FANIN:DEVICE%d", 	"fan inlet temperature for device %d", 				EVENT_TEMP_FANIN, 	TYPE_TEMP,	PAPI_DATATYPE_UINT64},
+	{"TEMP_FANOUT:DEVICE%d", 	"fan outlet temperature for device %d", 			EVENT_TEMP_FANOUT, 	TYPE_TEMP,	PAPI_DATATYPE_UINT64},
+	{"TEMP_VCCP:DEVICE%d", 		"core rail temperature for device %d", 				EVENT_TEMP_VCCP, 	TYPE_TEMP,	PAPI_DATATYPE_UINT64},
+	{"TEMP_VDDG:DEVICE%d", 		"uncore rail temperature for device %d", 			EVENT_TEMP_VDDG, 	TYPE_TEMP,	PAPI_DATATYPE_UINT64},
+	{"TEMP_VDDQ:DEVICE%d", 		"memory subsystem rail temperature for device %d", 	EVENT_TEMP_VDDQ, 	TYPE_TEMP,	PAPI_DATATYPE_UINT64},
+	{"FREQ_CORE:DEVICE%d", 		"core frequency for device %d", 					EVENT_FREQ_CORE, 	TYPE_FREQ,	PAPI_DATATYPE_UINT64},
+	{"FREQ_MEM:DEVICE%d", 		"memory frequency for device %d", 					EVENT_FREQ_MEM, 	TYPE_FREQ,	PAPI_DATATYPE_UINT64},
+	{"TIME_ACTIVE:DEVICE%d", 	"active time for device %d", 						EVENT_TIME_ACTIVE, 	TYPE_TIME,	PAPI_DATATYPE_FP64},
+	{"TIME_IDLE:DEVICE%d", 		"idle time for device %d", 							EVENT_TIME_IDLE, 	TYPE_TIME, 	PAPI_DATATYPE_FP64},
+	{"UTIL:DEVICE%d", 			"utilization for device %d", 						EVENT_UTIL, 		TYPE_TIME,	PAPI_DATATYPE_FP64},
+	{"MEM_TOTAL:DEVICE%d", 		"total memory for device %d", 						EVENT_MEM_TOTAL, 	TYPE_MEM,	PAPI_DATATYPE_UINT64},
+	{"MEM_USED:DEVICE%d", 		"used memory for device %d", 						EVENT_MEM_USED, 	TYPE_MEM,	PAPI_DATATYPE_UINT64},
+	{"MEM_FREE:DEVICE%d", 		"free memory for device %d", 						EVENT_MEM_FREE, 	TYPE_MEM,	PAPI_DATATYPE_UINT64},
+	{NULL,						NULL,												0,					0,			0}
 };
 
 /*
@@ -292,6 +293,7 @@ typedef struct micknc_native_event_entry
 	int event_id;
 	int event_type;
 	int device_id;
+	int return_type;
 } micknc_native_event_entry_t;
 
 /** This structure is used when doing register allocation 
@@ -534,90 +536,112 @@ micknc_read_necessary_counters(int event_types) {
 static int
 micknc_set_counter(int native_id, int device_id, long long *result) {
 
-	uint32_t temp = 0;
+	union {
+		long long ll;
+		double fp;
+	} result_value;
+
+	double tempfp = 0;
+	uint32_t temp32 = 0;
 	uint16_t temp16 = 0;
 	uint32_t pcie, c2x3, c2x4;
 
 	switch (native_id) {
 		case EVENT_POWER_PCIE:
-			mic_get_pcie_power_readings(mic_info_power[device_id], &temp);
+			mic_get_pcie_power_readings(mic_info_power[device_id], &temp32);
+			result_value.ll = temp32;
 		break;
 		case EVENT_POWER_C2X3:
-			mic_get_c2x3_power_readings(mic_info_power[device_id],  &temp);
+			mic_get_c2x3_power_readings(mic_info_power[device_id],  &temp32);
+			result_value.ll = temp32;
 		break;
 		case EVENT_POWER_C2X4:
-			mic_get_c2x4_power_readings(mic_info_power[device_id], &temp);
+			mic_get_c2x4_power_readings(mic_info_power[device_id], &temp32);
+			result_value.ll = temp32;
 		break;
 		case EVENT_POWER_VCCP:
-			mic_get_vccp_power_readings(mic_info_power[device_id], &temp);
+			mic_get_vccp_power_readings(mic_info_power[device_id], &temp32);
+			result_value.ll = temp32;
 		break;
 		case EVENT_POWER_VDDG:
-			mic_get_vddg_power_readings(mic_info_power[device_id], &temp);
+			mic_get_vddg_power_readings(mic_info_power[device_id], &temp32);
+			result_value.ll = temp32;
 		break;
 		case EVENT_POWER_VDDQ:
-			mic_get_vddq_power_readings(mic_info_power[device_id], &temp);
+			mic_get_vddq_power_readings(mic_info_power[device_id], &temp32);
+			result_value.ll = temp32;
 		break;
 		case EVENT_POWER_MIC:
 			mic_get_pcie_power_readings(mic_info_power[device_id], &pcie);
 			mic_get_c2x3_power_readings(mic_info_power[device_id],  &c2x3);
 			mic_get_c2x4_power_readings(mic_info_power[device_id], &c2x4);
-			temp = pcie + c2x3 + c2x4;
+			temp32 = pcie + c2x3 + c2x4;
+			result_value.ll = temp32;
 		break;
 		case EVENT_TEMP_DIE:
-			mic_get_die_temp(mic_info_thermal[device_id], &temp);
+			mic_get_die_temp(mic_info_thermal[device_id], &temp32);
+			result_value.ll = temp32;
 		break;
 		case EVENT_TEMP_GDDR:
 			mic_get_gddr_temp(mic_info_thermal[device_id], &temp16);
+			result_value.ll = temp16;
 		break;
 		case EVENT_TEMP_FANIN:
 			mic_get_fanin_temp(mic_info_thermal[device_id], &temp16);
+			result_value.ll = temp16;
 		break;
 		case EVENT_TEMP_FANOUT:
 			mic_get_fanout_temp(mic_info_thermal[device_id], &temp16);
+			result_value.ll = temp16;
 		break;
 		case EVENT_TEMP_VCCP:
 			mic_get_vccp_temp(mic_info_thermal[device_id], &temp16);
+			result_value.ll = temp16;
 		break;
 		case EVENT_TEMP_VDDG:
 			mic_get_vddg_temp(mic_info_thermal[device_id], &temp16);
+			result_value.ll = temp16;
 		break;
 		case EVENT_TEMP_VDDQ:
 			mic_get_vddq_temp(mic_info_thermal[device_id], &temp16);
+			result_value.ll = temp16;
 		break;
 		case EVENT_FREQ_CORE:
-			mic_get_cores_frequency(mic_info_cores[device_id], &temp);
+			mic_get_cores_frequency(mic_info_cores[device_id], &temp32);
+			result_value.ll = temp32;
 		break;
 		case EVENT_FREQ_MEM:
-			mic_get_memory_frequency(mic_info_memory[device_id], &temp);
+			mic_get_memory_frequency(mic_info_memory[device_id], &temp32);
+			result_value.ll = temp32;
 		break;
 		case EVENT_TIME_ACTIVE:
-			temp = 	(uint64_t) (1000.0 * (double)(mic_info_core_util_values[device_id].sys_sum +
-					mic_info_core_util_values[device_id].nice_sum +
-					mic_info_core_util_values[device_id].user_sum) * S_PER_JIFFY / MIC_CORES / MIC_THREADS) ;
+			result_value.fp = 	(1000.0 * (double)(mic_info_core_util_values[device_id].sys_sum +
+								mic_info_core_util_values[device_id].nice_sum +
+								mic_info_core_util_values[device_id].user_sum) * S_PER_JIFFY / MIC_CORES / MIC_THREADS) ;
 		break;
 		case EVENT_TIME_IDLE:
-			temp = (uint64_t) (1000.0 * (double) mic_info_core_util_values[device_id].idle_sum * S_PER_JIFFY / MIC_CORES / MIC_THREADS);
+			result_value.fp = (1000.0 * (double) mic_info_core_util_values[device_id].idle_sum * S_PER_JIFFY / MIC_CORES / MIC_THREADS);
 		break;
 		case EVENT_UTIL:
-			temp = 	mic_info_core_util_values[device_id].sys_sum +
-					mic_info_core_util_values[device_id].nice_sum +
-					mic_info_core_util_values[device_id].user_sum;
-			temp = (uint64_t) ( (double)temp / (double)(temp + mic_info_core_util_values[device_id].idle_sum) * 100.0);
+			tempfp = 	mic_info_core_util_values[device_id].sys_sum +
+						mic_info_core_util_values[device_id].nice_sum +
+						mic_info_core_util_values[device_id].user_sum;
+			result_value.fp = ( (double)tempfp / (double)(tempfp + mic_info_core_util_values[device_id].idle_sum) * 100.0);
 		break;
 		case EVENT_MEM_TOTAL:
-			temp = mic_info_memory_counters[device_id].total;
+			result_value.ll = mic_info_memory_counters[device_id].total;
 		break;
 		case EVENT_MEM_USED:
-			temp = mic_info_memory_counters[device_id].used;
+			result_value.ll = mic_info_memory_counters[device_id].used;
 		break;
 		case EVENT_MEM_FREE:
-			temp = mic_info_memory_counters[device_id].free;
+			result_value.ll = mic_info_memory_counters[device_id].free;
 		break;
 		default:
 			return -1;
 		break;
 	}
-	*result = temp + temp16;
+	*result = result_value.ll;
 
 	return 0;
 }
@@ -709,6 +733,7 @@ _micknc_init_component( int cidx )
         	micknc_native_table[eventIx].event_id = event_definitions[j].event_id;
         	micknc_native_table[eventIx].event_type = event_definitions[j].event_type;
         	micknc_native_table[eventIx].device_id = deviceIx;
+        	micknc_native_table[eventIx].return_type = event_definitions[j].data_type;
         	eventIx++;
 
 		}
@@ -1128,6 +1153,28 @@ _micknc_ntv_code_to_descr( unsigned int EventCode, char *descr, int len )
   return PAPI_ENOEVNT;
 }
 
+static int
+_micknc_ntv_code_to_info(unsigned int EventCode, PAPI_event_info_t *info)
+{
+	int index = EventCode;
+
+	if ( ( index < 0) || (index >= num_events )) return PAPI_ENOEVNT;
+
+	strncpy( info->symbol, micknc_native_table[index].name, sizeof(info->symbol)-1);
+	info->symbol[sizeof(info->symbol)-1] = '\0';
+
+	strncpy( info->long_descr, micknc_native_table[index].description, sizeof(info->long_descr)-1);
+	info->long_descr[sizeof(info->long_descr)-1] = '\0';
+
+	//strncpy( info->units, micknc_native_table[index].units, sizeof(info->units)-1);
+	//info->units[sizeof(info->units)-1] = '\0';
+
+	info->data_type = micknc_native_table[index].return_type;
+	
+	return PAPI_OK;
+
+}
+
 /** Vector that points to entry points for our component */
 papi_vector_t _micknc_vector = {
 	.cmp_info = {
@@ -1203,7 +1250,7 @@ papi_vector_t _micknc_vector = {
         /* if .ntv_name_to_code not available, PAPI emulates  */
         /* it by enumerating all events and looking manually  */
    	.ntv_name_to_code  = NULL,
-
+	.ntv_code_to_info =     _micknc_ntv_code_to_info,
    
 	/* These are only used by _papi_hwi_get_native_event_info() */
 	/* Which currently only uses the info for printing native   */
