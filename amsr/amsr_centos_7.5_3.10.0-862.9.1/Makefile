@@ -12,6 +12,8 @@ all:
 install: unload
 	sudo rm -f /lib/modules/$(KVERSION)/kernel/drivers/amsr.ko
 	sudo cp amsr.ko /lib/modules/$(KVERSION)/kernel/drivers
+	sudo cp amsr.conf /etc//etc/modules-load.d/
+	sudo cp 100-udev-driver_measure.rules /etc/udev/rules.d/
 	sudo depmod
 	make load
 
