@@ -66,9 +66,6 @@ char **_apapi_default_eventlist_cmp;
 
 int APAPI_init() {
 
-	// reset errno from previous code
-	errno = 0;
-
 	int retval = 0;
 	int papi_ver = 0;
 
@@ -78,6 +75,9 @@ int APAPI_init() {
 		APAPI_PRINTERR("PAPI failed to initialize %d\n", retval)
 		return -1;
 	}
+
+	// reset errno from previous code
+	errno = 0;
 
 	// read environment variables
 	if (0 == _apapi_initialized) {
