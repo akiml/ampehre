@@ -32,21 +32,37 @@
  *		Output parameter, result of the operation
  */
 void _apapi_exec_op1(enum APAPI_op1 op1, long long sample0, long long sample1, long long time0, long long time1, long double *value1, int data_type) {
+
+	union {
+		long long ll;
+		double fp;
+	} usample0;
+	union {
+		long long ll;
+		double fp;
+	} usample1;
+
 	switch(data_type) {
 
 		case PAPI_DATATYPE_FP64:
 			switch(op1) {
 				case APAPI_OP1_SAMPLE_DIFF:
-					*value1 = *((double *)(&sample1)) - *((double *)(&sample0));
+					usample0.ll = sample0;
+					usample1.ll = sample1;
+					*value1 = usample1.fp - usample0.fp;
 				break;
 				case APAPI_OP1_SAMPLE1_MUL_DIFF_TIME:
-					*value1 = *((double *)(&sample1)) * (long double) (time1 - time0);
+					usample1.ll = sample1;
+					*value1 = usample1.fp * (long double) (time1 - time0);
 				break;
 				case APAPI_OP1_AVG_SAMPLE_MUL_DIFF_TIME:
-					*value1 = (long double)( *((double *)(&sample0)) + *((double *)(&sample1)) ) / 2.0 * (time1 - time0);
+					usample0.ll = sample0;
+					usample1.ll = sample1;
+					*value1 = (long double)( usample0.fp + usample1.fp ) / 2.0 * (time1 - time0);
 				break;
 				case APAPI_OP1_DIV_DIFF_TIME:
-					*value1 = *((double *)(&sample1)) / (long double) (time1 - time0);
+					usample1.ll = sample1;
+					*value1 = usample1.fp / (long double) (time1 - time0);
 				break;
 				default:
 				break;
