@@ -76,10 +76,10 @@ namespace Ui {
 		double *y_memory_gpu	= mpDataHandler->getMeasurement().mpYMemoryGpu->getDataPtr();
 		double *y_memory_mic	= mpDataHandler->getMeasurement().mpYMemoryMic->getDataPtr();
 				
-		mpCurveMemoryCpu->setRawData(x, y_memory_cpu, ticks);
-		mpCurveSwapCpu->setRawData(x, y_swap_cpu, ticks);
-		mpCurveMemoryGpu->setRawData(x, y_memory_gpu, ticks);
-		mpCurveMemoryMic->setRawData(x, y_memory_mic, ticks);
+		mpCurveMemoryCpu->setRawSamples(x, y_memory_cpu, ticks);
+		mpCurveSwapCpu->setRawSamples(x, y_swap_cpu, ticks);
+		mpCurveMemoryGpu->setRawSamples(x, y_memory_gpu, ticks);
+		mpCurveMemoryMic->setRawSamples(x, y_memory_mic, ticks);
 				
 		scaleAxis(x[ticks-1], mpDataHandler->getSettings().mYAxisMemoryMin, mpDataHandler->getSettings().mYAxisMemoryMax);
 	}

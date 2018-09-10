@@ -31,6 +31,8 @@ all:
 install: unload
 	sudo rm -f /lib/modules/$(KVERSION)/kernel/drivers/driver_measure.ko
 	sudo cp driver_measure.ko /lib/modules/$(KVERSION)/kernel/drivers
+	[ -d "/etc/modules-load.d/" ] && sudo cp driver_measure.conf /etc/modules-load.d/
+	[ -d "/etc/udev/rules.d/" ] &&  sudo cp 100-udev-driver_measure.rules /etc/udev/rules.d/
 	sudo depmod
 	make load
 

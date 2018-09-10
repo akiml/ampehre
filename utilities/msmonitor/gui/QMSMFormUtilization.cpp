@@ -85,11 +85,11 @@ namespace Ui {
 		double *y_util_fpga		= mpDataHandler->getMeasurement().mpYUtilFpga->getDataPtr();
 		double *y_util_mic		= mpDataHandler->getMeasurement().mpYUtilMic->getDataPtr();
 		
-		mpCurveUtilCpu->setRawData(x, y_util_cpu, ticks);
-		mpCurveUtilGpuCore->setRawData(x, y_util_gpu_core, ticks);
-		mpCurveUtilGpuMemory->setRawData(x, y_util_gpu_mem, ticks);
-		mpCurveUtilFpga->setRawData(x, y_util_fpga, ticks);
-		mpCurveUtilMic->setRawData(x, y_util_mic, ticks);
+		mpCurveUtilCpu->setRawSamples(x, y_util_cpu, ticks);
+		mpCurveUtilGpuCore->setRawSamples(x, y_util_gpu_core, ticks);
+		mpCurveUtilGpuMemory->setRawSamples(x, y_util_gpu_mem, ticks);
+		mpCurveUtilFpga->setRawSamples(x, y_util_fpga, ticks);
+		mpCurveUtilMic->setRawSamples(x, y_util_mic, ticks);
 		
 		scaleAxis(x[ticks-1], mpDataHandler->getSettings().mYAxisUtilMin, mpDataHandler->getSettings().mYAxisUtilMax);
 	}

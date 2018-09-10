@@ -59,7 +59,7 @@ void measure_custom(void** arg, int last_measurement){
 		ATIME_PRINT("%lld ", set->current_time)
 		ATIME_PRINT("%s ", set->event_ops[eventIx].event_name)
 		ATIME_PRINT("%lld ", set->current_samples[eventIx])
-		ATIME_PRINT("%f\n", set->values0[eventIx*4 + 3])
+		ATIME_PRINT("%Lf\n", set->values0[eventIx*4 + 3])
 	}
 
 }

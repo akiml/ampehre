@@ -41,11 +41,11 @@ namespace Ui {
 	}
 	
 	QMSMFormHeatmapUtilization::~QMSMFormHeatmapUtilization(void) {
-		delete mpCPUData;
-		delete mpGPUCoreData;
-		delete mpGPUMemoryData;
-		delete mpFPGAData;
-		delete mpMICData;
+		free(mpCPUData);
+		free(mpGPUCoreData);
+		free(mpGPUMemoryData);
+		free(mpFPGAData);
+		free(mpMICData);
 		
 		spFormHeatUtil = 0;
 	}

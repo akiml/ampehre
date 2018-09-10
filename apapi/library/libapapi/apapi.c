@@ -40,7 +40,7 @@ int _apapi_verbose = 0;
 int _apapi_softfail = 0;
 
 // default op to use if no event definition found
-struct apapi_event_ops _apapi_default_op = {"default", APAPI_OP1_NOP, APAPI_STAT_ALL, APAPI_STAT_NO, 0, "unknown", "unknown", 1, NULL, NULL, 1};
+struct apapi_event_ops _apapi_default_op = {"default", APAPI_OP1_NOP, APAPI_STAT_ALL, APAPI_STAT_NO, 0, "unknown", "unknown", 1, NULL, NULL, 1, PAPI_DATATYPE_INT64};
 // default PAPI components
 char *APAPI_default_components[] = {
 	"rapl",
@@ -66,8 +66,20 @@ char **_apapi_default_eventlist_cmp;
 
 int APAPI_init() {
 
-	int retval;
+	int retval = 0;
+	int papi_ver = 0;
 
+	// load PAPI
+	papi_ver = PAPI_library_init(PAPI_VER_CURRENT);
+	if (PAPI_VER_CURRENT != papi_ver) {
+		APAPI_PRINTERR("PAPI failed to initialize %d\n", retval)
+		return -1;
+	}
+
+	// reset errno from previous code
+	errno = 0;
+
+	// read environment variables
 	if (0 == _apapi_initialized) {
 		// search for APAPI_VERBOSE variable
 		int envIx;
@@ -107,7 +119,6 @@ int APAPI_init() {
 				_apapi_softfail = v;
 			}
 		}
-
 
 		// load default files
 		char filename_buffer[50];
@@ -149,8 +160,7 @@ int APAPI_init() {
 		_apapi_initialized = 1;
 	}
 
-	retval = PAPI_library_init(PAPI_VER_CURRENT);
-	return retval;
+	return papi_ver;
 };
 
 void APAPI_destroy() {
@@ -368,7 +378,7 @@ void _apapi_swap_pointer(void **pointer1, void **pointer2){
  *		points to array for output values
  */
 void _apapi_stats(enum APAPI_stats stats_op, long double value, long long avg_value_weight, 
-	long long avg_last_total_weight, long long avg_new_total_weight, int sample_count, double *stats){
+	long long avg_last_total_weight, long long avg_new_total_weight, int sample_count, long double *stats){
 
 	// accumulate
 	if ((stats_op & APAPI_STAT_ACC) == APAPI_STAT_ACC) {
@@ -416,7 +426,9 @@ void _apapi_stats(enum APAPI_stats stats_op, long double value, long long avg_va
 void _apapi_timer_measure_stats(struct apapi_eventset *set) {
 
 	int eventIx;
-	double value1 = 0.0;
+	long double value0 = 0.0;
+	long double value1 = 0.0;
+	int data_type = PAPI_DATATYPE_INT64;
 	for (eventIx = 0; eventIx < set->num_events; eventIx++) {
 
 		// always skip first measurement
@@ -425,25 +437,53 @@ void _apapi_timer_measure_stats(struct apapi_eventset *set) {
 		}
 
 		value1 = 0.0;
+		data_type = set->event_ops[eventIx].data_type;
 
 		// compute value1
 		if (APAPI_OP1_NOP != set->values_op1[eventIx]) {
-			_apapi_exec_op1(set->values_op1[eventIx], set->previous_samples[eventIx], set->current_samples[eventIx], set->previous_time, set->current_time, &value1);
+			_apapi_exec_op1(set->values_op1[eventIx],
+				set->previous_samples[eventIx],
+				set->current_samples[eventIx],
+				set->previous_time,
+				set->current_time,
+				&value1,
+				data_type);
 			set->last_values1[eventIx] = value1;
 		}
 
 		// compute value0 statistics
 		if (set->values0_stats[eventIx] != APAPI_STAT_NO) {
-			_apapi_stats(set->values0_stats[eventIx], set->current_samples[eventIx],
-				set->current_time - set->previous_time, set->previous_time - set->first_time, set->current_time - set->first_time,
-				set->count, &(set->values0[eventIx*APAPI_FIELDS]));
+			switch(data_type) {
+				case PAPI_DATATYPE_FP64:
+					value0 = *((double *)(&(  set->current_samples[eventIx]  )));
+				break;
+				case PAPI_DATATYPE_BIT64:
+				case PAPI_DATATYPE_UINT64:
+					value0 = (unsigned long long) set->current_samples[eventIx];
+				break;
+				case PAPI_DATATYPE_INT64:
+				default:
+					value0 = (long double) set->current_samples[eventIx];
+				break;
+			}
+			_apapi_stats(set->values0_stats[eventIx],
+				value0,
+				set->current_time - set->previous_time,
+				set->previous_time - set->first_time,
+				set->current_time - set->first_time,
+				set->count,
+				&(set->values0[eventIx*APAPI_FIELDS]));
 		}
 
 		// compute value1 statistics
 		if (set->values1_stats[eventIx] != APAPI_STAT_NO) {
-			_apapi_stats(set->values1_stats[eventIx], value1,
-				set->current_time - set->previous_time, set->previous_time - set->first_time, set->current_time - set->first_time,
-				set->count, &(set->values1[eventIx*APAPI_FIELDS]));
+			_apapi_stats(set->values1_stats[eventIx],
+				value1,
+				set->current_time - set->previous_time,
+				set->previous_time - set->first_time,
+				set->current_time - set->first_time,
+				set->count,
+				&(set->values1[eventIx*APAPI_FIELDS]));
 		}
 	}
 }
@@ -679,11 +719,11 @@ int APAPI_change_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, v
 		set->count = 0;
 		int eventIx;
 		for (eventIx = 0; eventIx < set->num_events; ++eventIx) {
-			set->values0[eventIx * APAPI_FIELDS + APAPI_MIN] = DBL_MAX;
+			set->values0[eventIx * APAPI_FIELDS + APAPI_MIN] = LDBL_MAX;
 			set->values0[eventIx * APAPI_FIELDS + APAPI_MAX] = 0;
 			set->values0[eventIx * APAPI_FIELDS + APAPI_AVG] = 0;
 			set->values0[eventIx * APAPI_FIELDS + APAPI_ACC] = 0;
-			set->values1[eventIx * APAPI_FIELDS + APAPI_MIN] = DBL_MAX;
+			set->values1[eventIx * APAPI_FIELDS + APAPI_MIN] = LDBL_MAX;
 			set->values1[eventIx * APAPI_FIELDS + APAPI_MAX] = 0;
 			set->values1[eventIx * APAPI_FIELDS + APAPI_AVG] = 0;
 			set->values1[eventIx * APAPI_FIELDS + APAPI_ACC] = 0;
@@ -717,11 +757,11 @@ int APAPI_reset_timer(struct apapi_timer *timer, time_t tv_sec, long tv_nsec, vo
 		set->count = 0;
 		int eventIx;
 		for (eventIx = 0; eventIx < set->num_events; eventIx++) {
-			set->values0[eventIx * APAPI_FIELDS + APAPI_MIN] = DBL_MAX;
+			set->values0[eventIx * APAPI_FIELDS + APAPI_MIN] = LDBL_MAX;
 			set->values0[eventIx * APAPI_FIELDS + APAPI_MAX] = 0;
 			set->values0[eventIx * APAPI_FIELDS + APAPI_AVG] = 0;
 			set->values0[eventIx * APAPI_FIELDS + APAPI_ACC] = 0;
-			set->values1[eventIx * APAPI_FIELDS + APAPI_MIN] = DBL_MAX;
+			set->values1[eventIx * APAPI_FIELDS + APAPI_MIN] = LDBL_MAX;
 			set->values1[eventIx * APAPI_FIELDS + APAPI_MAX] = 0;
 			set->values1[eventIx * APAPI_FIELDS + APAPI_AVG] = 0;
 			set->values1[eventIx * APAPI_FIELDS + APAPI_ACC] = 0;
@@ -905,8 +945,8 @@ int APAPI_init_apapi_eventset_cmp(struct apapi_eventset **set, int cidx, char **
 
 
 	// (4*3*num) * sizeof(double) - space for stats
-	newset->last_values1 = calloc(newset->num_events, sizeof(double));
-	newset->values0 = calloc(newset->num_events, sizeof(double) * APAPI_FIELDS * 2);
+	newset->last_values1 = calloc(newset->num_events, sizeof(long double));
+	newset->values0 = calloc(newset->num_events, sizeof(long double) * APAPI_FIELDS * 2);
 	newset->values1 = &(newset->values0[newset->num_events * APAPI_FIELDS]);
 
 	newset->values_op1 = calloc(newset->num_events, sizeof(enum APAPI_op1));
@@ -1023,52 +1063,66 @@ void APAPI_print_apapi_eventset(struct apapi_eventset *set) {
 	char name[PAPI_MAX_STR_LEN];
 	memset(name, 0, PAPI_MAX_STR_LEN);
 	int eventIx;
-	double *values;
+	long double *values;
 	for(eventIx = 0; eventIx < set->num_events; ++eventIx) {
 		retv = PAPI_event_code_to_name(events[eventIx], name);
 		if (PAPI_OK != retv) {
 			strncpy(name, "unknown", 8); // also copy null-terminator
 		}
-		printf("%s %lld\n", name, set->current_samples[eventIx]);
+		switch (set->event_ops[eventIx].data_type) {
+			case PAPI_DATATYPE_UINT64:
+				printf("%s %llu\n", name, (unsigned long long) set->current_samples[eventIx]);
+			break;
+			case PAPI_DATATYPE_FP64:
+				printf("%s %f\n", name, *((double *)( &(set->current_samples[eventIx]) )));
+			break;
+			case PAPI_DATATYPE_BIT64:
+				printf("%s %llX\n", name, set->current_samples[eventIx]);
+			break;
+			case PAPI_DATATYPE_INT64:
+			default:
+				printf("%s %lld\n", name, set->current_samples[eventIx]);
+			break;
+		}
 		if (set->values0_stats[eventIx] != APAPI_STAT_NO) {
 			values = &(set->values0[eventIx * APAPI_FIELDS]);
 				printf("  %s %s %f\n", set->event_ops[eventIx].value0_type, 
 					set->event_ops[eventIx].value0_unit, set->event_ops[eventIx].value0_prefix);
 				if ((set->values0_stats[eventIx] & APAPI_STAT_MIN) == APAPI_STAT_MIN)
-					printf("    min: %20.1f\n", 
+					printf("    min: %20.1Lf\n", 
 						( set->event_ops[eventIx].value0_prefix == 1.0 ? values[APAPI_MIN] : 
 						  values[APAPI_MIN] / set->event_ops[eventIx].value0_prefix));
 				if ((set->values0_stats[eventIx] & APAPI_STAT_MAX) == APAPI_STAT_MAX)
-					printf("    max: %20.1f\n", 
+					printf("    max: %20.1Lf\n", 
 						( set->event_ops[eventIx].value0_prefix == 1.0 ? values[APAPI_MAX] :
 						  values[APAPI_MAX] / set->event_ops[eventIx].value0_prefix));
 				if ((set->values0_stats[eventIx] & APAPI_STAT_AVG) == APAPI_STAT_AVG)
-					printf("    avg: %20.1f\n", 
+					printf("    avg: %20.1Lf\n", 
 						( set->event_ops[eventIx].value0_prefix == 1.0 ?  values[APAPI_AVG] :
 						  values[APAPI_ACC] / set->event_ops[eventIx].value0_prefix));
 				if ((set->values0_stats[eventIx] & APAPI_STAT_ACC) == APAPI_STAT_ACC)
-					printf("    acc: %20.1f\n", 
+					printf("    acc: %20.1Lf\n", 
 						( set->event_ops[eventIx].value0_prefix == 1.0 ? values[APAPI_ACC] :
 						  values[APAPI_ACC] / set->event_ops[eventIx].value0_prefix));
 		}
 		if (set->values1_stats[eventIx] != APAPI_STAT_NO) {
 			values = &(set->values1[eventIx * APAPI_FIELDS]);
-				printf("  %s %s %f\n", set->event_ops[eventIx].value1_type, 
-					set->event_ops[eventIx].value1_unit, set->event_ops[eventIx].value1_prefix);
+				printf("  %s %s %f %Lf\n", set->event_ops[eventIx].value1_type, 
+					set->event_ops[eventIx].value1_unit, set->event_ops[eventIx].value1_prefix, set->last_values1[eventIx]);
 				if ((set->values1_stats[eventIx] & APAPI_STAT_MIN) == APAPI_STAT_MIN)
-					printf("    min: %20.1f\n", 
+					printf("    min: %20.1Lf\n", 
 						( set->event_ops[eventIx].value1_prefix == 1.0 ? values[APAPI_MIN] :
 						  values[APAPI_MIN] / set->event_ops[eventIx].value1_prefix));
 				if ((set->values1_stats[eventIx] & APAPI_STAT_MAX) == APAPI_STAT_MAX)
-					printf("    max: %20.1f\n", 
+					printf("    max: %20.1Lf\n", 
 						( set->event_ops[eventIx].value1_prefix == 1.0 ? values[APAPI_MAX] :
 						  values[APAPI_MAX] / set->event_ops[eventIx].value1_prefix));
 				if ((set->values1_stats[eventIx] & APAPI_STAT_AVG) == APAPI_STAT_AVG)
-					printf("    avg: %20.1f\n", 
+					printf("    avg: %20.1Lf\n", 
 						( set->event_ops[eventIx].value1_prefix == 1.0 ? values[APAPI_AVG] :
 						  values[APAPI_AVG] / set->event_ops[eventIx].value1_prefix));
 				if ((set->values1_stats[eventIx] & APAPI_STAT_ACC) == APAPI_STAT_ACC)
-					printf("    acc: %20.1f\n", 
+					printf("    acc: %20.1Lf\n", 
 						( set->event_ops[eventIx].value1_prefix == 1.0 ? values[APAPI_ACC] :
 						  values[APAPI_ACC] / set->event_ops[eventIx].value1_prefix));
 		}

@@ -18,6 +18,11 @@
 add_executable(example_cpufreq
 	example_cpufreq.c
 )
-target_link_libraries(example_cpufreq -lcpufreq)
+
+if(NOT CPUPOWER_LIBRARY)
+	message(FATAL_ERROR "Cpupower/Cpufreq library not found. Check find_library in root CMakeLists.txt")
+endif()
+
+target_link_libraries(example_cpufreq ${CPUPOWER_LIBRARY})
 
 install(TARGETS example_cpufreq RUNTIME DESTINATION bin)

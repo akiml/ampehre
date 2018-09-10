@@ -20,21 +20,19 @@
 #
 
 BASE_DIR=/usr/ampehre/
-#GCC=/usr/bin/gcc-4.6
-#GXX=/usr/bin/g++-4.6
-GCC=/opt/rh/devtoolset-2/root/usr/bin/gcc
-GXX=/opt/rh/devtoolset-2/root/usr/bin/g++
+GCC=/usr/bin/gcc
+GXX=/usr/bin/g++
 
 .PHONY: all install debug clean driver driver_install gaussblur gaussblur_install correlation correlation_install mic_start docs client client_clean
 
 all:
 	mkdir -p build
-	cd build && cmake -DSIGNALS=ON  -DDEBUG_SYMS=OFF -DCMAKE_INSTALL_PREFIX=$(BASE_DIR) -DCMAKE_C_COMPILER=$(GCC) -DCMAKE_CXX_COMPILER=$(GXX) .. && make
+	cd build && BASE_DIR=$(BASE_DIR) cmake -DSIGNALS=ON  -DDEBUG_SYMS=OFF -DCMAKE_INSTALL_PREFIX=$(BASE_DIR) -DCMAKE_C_COMPILER=$(GCC) -DCMAKE_CXX_COMPILER=$(GXX) ..  && make
 	cd utilities/msmonitor_cs/client && qmake-qt4 PREFIX=$(BASE_DIR) msmonitor.pro && make
 
 debug:
 	mkdir -p build
-	cd build && cmake -DSIGNALS=ON  -DDEBUG_SYMS=ON  -DCMAKE_INSTALL_PREFIX=$(BASE_DIR) -DCMAKE_C_COMPILER=$(GCC) -DCMAKE_CXX_COMPILER=$(GXX) .. && make
+	cd build && BASE_DIR=$(BASE_DIR) cmake -DSIGNALS=ON  -DDEBUG_SYMS=ON  -DCMAKE_INSTALL_PREFIX=$(BASE_DIR) -DCMAKE_C_COMPILER=$(GCC) -DCMAKE_CXX_COMPILER=$(GXX) .. && make
 
 install: all
 	sudo mkdir -p $(BASE_DIR) $(BASE_DIR)/bin $(BASE_DIR)/lib $(BASE_DIR)/include $(BASE_DIR)/share $(BASE_DIR)/share/data $(BASE_DIR)/man $(BASE_DIR)/share/papi $(BASE_DIR)/share/apapi

@@ -163,7 +163,7 @@ static void print_csv_cpu(FILE *csv, char* captions, int* cur_caption_pos, char*
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "time_avg_cpus_work;"
 								"time_avg_cpus_idle;"
 								"util_avg_cpus;");
-	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%.2lf;%.2lf;%.2lf;", cpu_active_avg_all(m),
+	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%.6lf;%.6lf;%.6lf;", cpu_active_avg_all(m),
 								cpu_idle_avg_all(m),
 								cpu_util_avg_all(m));
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"s;s;%%;");
@@ -330,7 +330,7 @@ static void print_csv_mic(FILE *csv, char* captions, int* cur_caption_pos, char*
 	*cur_caption_pos += snprintf(captions + *cur_caption_pos, MAX_HEADER_LENGTH - *cur_caption_pos, "time_avg_mic_active;"
 								"time_avg_mic_idle;"
 								"util_avg_mic;");
-	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%.2lf;%.2lf;%.2lf;", mic_active_avg_all(m),
+	*cur_value_pos += snprintf(values + *cur_value_pos, MAX_VALUES_LENGTH - *cur_value_pos, "%.6lf;%.6lf;%.6lf;", mic_active_avg_all(m),
 								mic_idle_avg_all(m),
 								mic_util_avg_all(m));
 	*cur_unit_pos += snprintf(units + *cur_unit_pos, MAX_UNITS_LENGTH - *cur_unit_pos,"s;s;%%;");

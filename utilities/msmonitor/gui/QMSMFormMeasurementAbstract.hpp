@@ -31,12 +31,13 @@
 
 #include "CGuiTimer.hpp"
 
+#include <qwt_compat.h>
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_legend.h>
 #include <qwt_plot_magnifier.h>
 #include <qwt_plot_panner.h>
-#include <qwt_plot_printfilter.h>
+//#include <qwt_plot_printfilter.h>
 #include <qwt_plot_grid.h>
 #include <qwt_symbol.h>
 #include <qwt_plot_marker.h>

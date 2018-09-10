@@ -19,6 +19,8 @@
 #          0.7.0 - modularized measurement struct
 #
 
+include_directories(/usr/local/cuda-9.2/targets/x86_64-linux/include/)
+
 set(SRC_GPU_LIBRARY
 	ms_plugin_interface.cpp
 )
@@ -26,6 +28,7 @@ set(SRC_GPU_LIBRARY
 # Full library
 add_library(ms_gpu_nvidia_tesla_kepler SHARED ${SRC_GPU_LIBRARY})
 target_link_libraries(ms_gpu_nvidia_tesla_kepler ms_common ${NVML_LIBRARY})
+target_include_directories(ms_gpu_nvidia_tesla_kepler PRIVATE ${NVML_HEADER})
 
 install(TARGETS ms_gpu_nvidia_tesla_kepler LIBRARY DESTINATION lib)
 install(FILES ms_gpu_nvidia_tesla_kepler.h DESTINATION include)

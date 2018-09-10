@@ -1,0 +1,1 @@
+KERNEL=="driver_measure", ACTION=="add", MODE="0666", RUN+="/bin/chmod 666 /dev/measure"

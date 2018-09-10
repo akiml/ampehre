@@ -88,12 +88,12 @@ namespace Ui {
 		double *y_clock_mic_core	= mpDataHandler->getMeasurement().mpYClockMicCore->getDataPtr();
 		double *y_clock_mic_mem		= mpDataHandler->getMeasurement().mpYClockMicMem->getDataPtr();
 		
-		mpCurveClockCpu0->setRawData(x, y_clock_cpu_0, ticks);
-		mpCurveClockCpu1->setRawData(x, y_clock_cpu_1, ticks);
-		mpCurveClockGpuCore->setRawData(x, y_clock_gpu_core, ticks);
-		mpCurveClockGpuMemory->setRawData(x, y_clock_gpu_mem, ticks);
-		mpCurveClockMicCore->setRawData(x, y_clock_mic_core, ticks);
-		mpCurveClockMicMemory->setRawData(x, y_clock_mic_mem, ticks);
+		mpCurveClockCpu0->setRawSamples(x, y_clock_cpu_0, ticks);
+		mpCurveClockCpu1->setRawSamples(x, y_clock_cpu_1, ticks);
+		mpCurveClockGpuCore->setRawSamples(x, y_clock_gpu_core, ticks);
+		mpCurveClockGpuMemory->setRawSamples(x, y_clock_gpu_mem, ticks);
+		mpCurveClockMicCore->setRawSamples(x, y_clock_mic_core, ticks);
+		mpCurveClockMicMemory->setRawSamples(x, y_clock_mic_mem, ticks);
 		
 		scaleAxis(x[ticks-1], mpDataHandler->getSettings().mYAxisClockMin, mpDataHandler->getSettings().mYAxisClockMax);
 	}

@@ -331,6 +331,7 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
         }
         currentPos = lineBreak+1;
     }
+
     if (error) {
         // free memory
         APAPI_PRINTERR("An error occured while reading events\n")
@@ -338,6 +339,26 @@ int APAPI_read_event_ops_csv(char *input, char delimiter, struct apapi_event_ops
 		*events_out = NULL;
         return -1;
     }
+
+	for (eventIx = 0; eventIx < read_events; ++eventIx) {
+		PAPI_event_info_t info = {};
+		int event_code = -1;
+		// get event code by event name
+		retv = PAPI_event_name_to_code((*events_out)[eventIx].event_name, &event_code);
+		if (PAPI_OK == retv) {
+			// get info struct
+			retv = PAPI_get_event_info(event_code, &info);
+			if (PAPI_OK == retv) {
+				(*events_out)[eventIx].data_type = info.data_type;
+				continue;
+			}
+		}
+		// event code or info not found, setting data type to default
+		(*events_out)[eventIx].data_type = PAPI_DATATYPE_INT64;
+		if (1 == _apapi_verbose) {
+			APAPI_PRINTERR("Event %s not found by PAPI\n", (*events_out)[eventIx].event_name)
+		}
+	}
 
     *num_events_out = read_events;
     return PAPI_OK;

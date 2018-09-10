@@ -39,12 +39,12 @@ namespace Ui {
 		
 		qwtPlot->setAxisTitle(QwtPlot::yLeft, createTitle(QString::fromUtf8("Power [W]")));
 		
-		mpCurvePowerCpu0->setPen(mColorCpu);
-		mpCurvePowerCpu1->setPen(mColorCpuAlternative);
-		mpCurvePowerGpu->setPen(mColorGpu);
-		mpCurvePowerFpga->setPen(mColorFpga);
-		mpCurvePowerMic->setPen(mColorMic);
-		mpCurvePowerSystem->setPen(mColorSystem);
+		mpCurvePowerCpu0->setPen(mColorCpu, 2.0);
+		mpCurvePowerCpu1->setPen(mColorCpuAlternative, 2.0);
+		mpCurvePowerGpu->setPen(mColorGpu, 2.0);
+		mpCurvePowerFpga->setPen(mColorFpga, 2.0);
+		mpCurvePowerMic->setPen(mColorMic, 2.0);
+		mpCurvePowerSystem->setPen(mColorSystem, 2.0);
 		
 		setupCurves();
 		
@@ -88,12 +88,12 @@ namespace Ui {
 		double *y_power_mic		= mpDataHandler->getMeasurement().mpYPowerMic->getDataPtr();
 		double *y_power_system	= mpDataHandler->getMeasurement().mpYPowerSystem->getDataPtr();
 		
-		mpCurvePowerCpu0->setRawData(x, y_power_cpu_0, ticks);
-		mpCurvePowerCpu1->setRawData(x, y_power_cpu_1, ticks);
-		mpCurvePowerGpu->setRawData(x, y_power_gpu, ticks);
-		mpCurvePowerFpga->setRawData(x, y_power_fpga, ticks);
-		mpCurvePowerMic->setRawData(x, y_power_mic, ticks);
-		mpCurvePowerSystem->setRawData(x, y_power_system, ticks);
+		mpCurvePowerCpu0->setRawSamples(x, y_power_cpu_0, ticks);
+		mpCurvePowerCpu1->setRawSamples(x, y_power_cpu_1, ticks);
+		mpCurvePowerGpu->setRawSamples(x, y_power_gpu, ticks);
+		mpCurvePowerFpga->setRawSamples(x, y_power_fpga, ticks);
+		mpCurvePowerMic->setRawSamples(x, y_power_mic, ticks);
+		mpCurvePowerSystem->setRawSamples(x, y_power_system, ticks);
 		
 		scaleAxis(x[ticks-1], mpDataHandler->getSettings().mYAxisPowerMin, mpDataHandler->getSettings().mYAxisPowerMax);
 	}
