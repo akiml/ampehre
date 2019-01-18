@@ -33,8 +33,8 @@ CWebMeasure::CWebMeasure(long intervalNs, int bufferSize){
 		// max uint64_t value: 18446744073709551616
 		// decimal digits: 20
 		3*21 +
-		// newline + zero byte
-		2 +
+		// newline + newline + zero byte
+		3 +
 		// fpga process name + "",
 		//MAXELER_BUFFER_SIZE +3 +
 		// nvml max process count * nvml max process name + "",
@@ -439,8 +439,9 @@ char* CWebMeasure::generateJsonCSVBulk(){
 		pos += printList(&(mCSV[pos]), &(mBuffer[i]));
 		pos += sprintf(&(mCSV[pos]),"\"}\n");
 	}
-
-	mCSV[pos] = 0;
+	
+	mCSV[pos++] = '\n';
+	mCSV[pos++] = 0;
 
 	return mCSV;
 }
