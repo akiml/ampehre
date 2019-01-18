@@ -60,7 +60,7 @@
 
 #include "../include/ms_driver.h"
 
-#ifdef KERNEL_CENTOS65
+#ifndef KERNEL_CENTOS65
 #include <linux/jiffies.h>
 #include <linux/smp_lock.h>
 #include <asm/system.h>

@@ -39,8 +39,8 @@ message("Install Dir: ${CMAKE_INSTALL_PREFIX}")
 #set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
 
 # Please set support flags to ON if the corresponding device should be enabled for measuring.
-option(DELL_IDRAC7_SUPPORT "build library with dell idrac7 support" OFF)
-option(MIC_INTEL_KNC_SUPPORT "build library with mic intel knc support" OFF)
+option(DELL_IDRAC7_SUPPORT "build library with dell idrac7 support" ON)
+option(MIC_INTEL_KNC_SUPPORT "build library with mic intel knc support" ON)
 option(GPU_NVIDIA_TESLA_SUPPORT "build library with gpu nvidia tesla support" ON)
 option(FPGA_MAXELER_MAX3A_SUPPORT "build library with fpga maxeler max3a support" ON)
 option(CPU_INTEL_SANDY_SUPPORT "build library with cpu intel xeon sandy support" ON)
