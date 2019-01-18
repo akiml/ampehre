@@ -54,6 +54,8 @@ int CCURLUpload::start(){
 		"Content-Type: application/x-ndjson");
 	mpCurlHeaders = curl_slist_append(mpCurlHeaders,
 		"User-Agent: hetwebpush");
+	mpCurlHeaders = curl_slist_append(mpCurlHeaders,
+		"Expect:");
 	curlret = curl_easy_setopt(mpCurlHandle, CURLOPT_HTTPHEADER, mpCurlHeaders);
 	if (CURLE_OK != curlret) {
 		std::cerr << "CURL setting header failed" << std::endl;
@@ -163,9 +165,22 @@ void CCURLUpload::intervalThread(){
 			char* json_data = mrMeasure.generateJsonCSVBulk();
 			long json_length = strlen(json_data);
 
+			if (json_length <= 1) {
+				continue;
+			}
+
 			mUploadData.data = json_data;
 			mUploadData.size = json_length;
 			mUploadData.written = 0;
+
+			// set content length
+			CURLcode curlret = CURLE_OK;
+			//curlret = curl_easy_setopt(mpCurlHandle, CURLOPT_INFILESIZE, json_length);
+			curlret = curl_easy_setopt(mpCurlHandle, CURLOPT_POSTFIELDSIZE, json_length);
+			if (CURLE_OK != curlret) {
+				std::cerr << "CURL setting content length failed" << std::endl;
+				return;
+			}
 
 			int transfer_error = 0;
 			int http_error = 0;
@@ -179,7 +194,7 @@ void CCURLUpload::intervalThread(){
 
 			// get transfer information
 			long http_response = 0;
-			CURLcode curlret = CURLE_OK;
+			curlret = CURLE_OK;
 			curlret = curl_easy_getinfo(mpCurlHandle, CURLINFO_RESPONSE_CODE, &http_response);
 			if (CURLE_OK != curlret) {
 				http_response = 0;
