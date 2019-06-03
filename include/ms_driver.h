@@ -33,7 +33,7 @@
 #warning "Don't forget to change nr_cpu_ids value if you port the driver to a different system."
 #endif /* SHOW_WARNINGS */
 
-#define KERNEL_CENTOS65
+//#define KERNEL_CENTOS65
 #define LSEEK_MAX_2
 #define nr_cpu_ids	8
 

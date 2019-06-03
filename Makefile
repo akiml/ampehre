@@ -36,7 +36,7 @@ debug:
 
 install: all
 	sudo mkdir -p $(BASE_DIR) $(BASE_DIR)/bin $(BASE_DIR)/lib $(BASE_DIR)/include $(BASE_DIR)/share $(BASE_DIR)/share/data $(BASE_DIR)/man $(BASE_DIR)/share/papi $(BASE_DIR)/share/apapi
-	sudo chown -R $(shell id -u -n):user $(BASE_DIR)
+	sudo chown -R $(shell id -u -n):$(shell id -u -n) $(BASE_DIR)
 	sudo chmod 775 -R $(BASE_DIR) $(BASE_DIR)
 	sudo rm -f $(BASE_DIR)/bin/gpu_management
 	cd build && make install
